@@ -1,49 +1,83 @@
-# Synergy
+# Synergy - 无序列号版本
 
-[![CodeQL Analysis](https://github.com/symless/synergy/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/symless/synergy/actions/workflows/codeql-analysis.yml)
-[![SonarCloud Analysis](https://github.com/symless/synergy/actions/workflows/sonarcloud-analysis.yml/badge.svg)](https://github.com/symless/synergy/actions/workflows/sonarcloud-analysis.yml)
+基于 [Synergy](https://github.com/symless/synergy) 的修改版本，移除了序列号验证和许可证激活系统，可直接使用。
 
-Use the keyboard, mouse, or trackpad of one computer to control nearby computers, and work seamlessly between them.
+## 功能特性
 
-- [Get Synergy](https://synergyapp.io)
-- [Technical support](https://synergyapp.io/contact)
+- 跨平台键鼠共享（Windows、macOS、Linux）
+- 支持多台电脑之间的无缝切换
+- **无需序列号/许可证密钥**
+- 基于 Qt6 的图形用户界面
+- TLS 加密通信支持
 
-This repository contains the source code used to build Synergy 1 and the Core for Synergy 3.
-It's based on the upstream Deskflow community project, which is sponsored by Synergy.
+## 项目结构
 
-- [Contibute to Deskflow](https://deskflow.org)
+```
+synergy/
+├── src/                 # 核心源代码
+│   ├── lib/             # 核心库
+│   ├── apps/            # 应用程序
+│   └── unittests/       # 单元测试
+├── extra/               # 扩展功能（许可证系统已移除）
+├── cmake/               # CMake 配置
+├── subprojects/         # 第三方依赖
+└── docs/                # 文档
+```
 
-## FAQ
+## 编译说明
 
-### How do I build the source code?
-If you're a customer, you generally don’t need to build Synergy yourself as we provide pre-built, tested releases.
-However, if you're a customer looking to build Synergy from source, [contact us](https://synergyapp.io/contact) so we can help with that.
-If you're a developer looking to contribute to an open source community, join us in our [Deskflow](https://deskflow.org) project.
+### 环境要求
 
-### What’s the difference between Synergy and Deskflow?
-Synergy is a stable, supported commercial product. It is quality assurance tested, has a warranty, and is maintained by a team of full-time engineers.
-Deskflow is the upstream project where the open source community, including Synergy engineers, prototype and iterate on new features.
-Synergy is your business-ready solution; Deskflow is for open source contributors and early adopters.
+- **Windows**: Visual Studio 2022 + CMake 3.24+ + Qt 6.7+ + vcpkg
+- **macOS**: Xcode + CMake 3.24+ + Qt 6.7+ (Homebrew)
+- **Linux**: GCC 12+ / Clang 15+ + CMake 3.24+ + Qt 6.7+
 
-### Where should I file bugs or feature requests?
-For supported customers, reach out to our [support team](https://synergyapp.io/contact) and we’ll triage and track issues internally.
-If you're contributing to the community project, use [Deskflow issues](https://github.com/deskflow/deskflow/issues) to report bugs or request features.
+### 编译步骤
 
-### Can I contribute code to Synergy?
-We welcome contributions, but our community development happens upstream in Deskflow. 
-That’s the best place to propose changes and collaborate with the wider community. 
-Changes flow downstream to Synergy once they have matured enough and are ready for customer usage.
+#### Windows
 
-### How often does Deskflow merge into Synergy?
-We regularly port stable features and fixes from Deskflow into Synergy.
-This involves QA, integration testing, and compliance review. Critical bug fixes are fast-tracked.
-For specific timelines on particular bug fixes and features, please [get in touch](https://synergyapp.io/contact).
+```powershell
+# 安装依赖后
+cmake -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+```
 
-### Is Deskflow stable?
-Deskflow is intended for developers and contributors who can self-support and fix issues.
-It’s not suitable for production or business-critical environments requiring stability guarantees.
-For those cases, we recommend using Synergy.
+#### macOS (Apple Silicon)
 
-### Why have two projects?
-This model lets us move fast without breaking things. Deskflow empowers rapid community-driven innovation.
-Synergy delivers a stable, supported experience to customers.
+```bash
+cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64"
+cmake --build build --config Release
+```
+
+#### Linux
+
+```bash
+cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j$(nproc)
+```
+
+## 修改说明
+
+本版本对原版 Synergy 进行了以下修改：
+
+1. **移除序列号验证** - `gui_hook.h` 中所有许可证检查钩子已被绕过
+2. **禁用许可证激活** - `LicenseHandler.cpp` 中所有强制执行方法已被禁用
+3. **保留核心功能** - 所有键鼠共享功能保持完整
+
+## 技术栈
+
+- C++20
+- Qt 6.7+
+- CMake 3.24+
+- OpenSSL 3.0+
+
+## 致谢
+
+本项目基于以下开源项目：
+
+- [Synergy](https://github.com/symless/synergy) - 原始项目
+- [Deskflow](https://deskflow.org) - 上游社区项目
+
+## 许可证
+
+本项目遵循原项目的 GNU General Public License v2.0 许可证。
