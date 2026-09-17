@@ -1,0 +1,148 @@
+# SPDX-FileCopyrightText: 2024 Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "Install dependencies for deskflow"
+description: "Install the dependencies needed to build deskflow"
+
+inputs:
+  like:
+    description: "Used only on linux distro type: debian, fedora, suse, arch"
+    required: false
+
+  qt-version:
+    description: "The version of Qt to install (Windows & macOS)"
+    required: false
+
+  vcpkg-triplet:
+    description: "vcpkg triplet to use (Windows)"
+    required: false
+
+outputs:
+  vcpkg-cmake-config:
+    description: "windows vcpkg output for cmaket"
+    value: ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Install Depends
+      if: ${{ runner.os != 'Windows' }}
+      run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            brew install openssl doxygen --quiet
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            if [ ${{inputs.like}} == "debian" ]; then
+              apt update -qqq > /dev/null
+              # qt6-l10n-tools + qt6-tools-dev-tools provide lconvert/lupdate/lrelease that
+              # qt6-tools-dev's LinguistTools cmake references but doesn't always pull in.
+              apt install -qqq cmake build-essential ninja-build \
+                xorg-dev libx11-dev libxtst-dev libssl-dev \
+                libglib2.0-dev libxkbfile-dev qt6-base-dev qt6-tools-dev \
+                qt6-l10n-tools qt6-tools-dev-tools \
+                libgtk-3-dev \
+                help2man doxygen -y >/dev/null
+              # libei/libportal aren't packaged on older releases (e.g. Debian 12); install
+              # where present, else the build falls back to X11-only.
+              for pkg in libei-dev libportal-dev; do
+                if apt-cache show "$pkg" >/dev/null 2>&1; then
+                  apt install -qqq "$pkg" -y >/dev/null
+                fi
+              done
+            elif [ ${{inputs.like}} == "fedora" ]; then
+              dnf install -y cmake make ninja-build gcc-c++ rpm-build openssl-devel \
+                glib2-devel libXtst-devel libxkbfile-devel qt6-qtbase-devel qt6-qttools-devel \
+                gtk3-devel libei-devel libportal-devel help2man doxygen
+            elif [ ${{inputs.like}} == "suse" ]; then
+              zypper refresh
+              zypper install -y --force-resolution \
+                cmake make ninja gcc-c++ rpm-build libopenssl-devel \
+                glib2-devel libXtst-devel libxkbfile-devel qt6-base-devel qt6-tools-devel \
+                qt6-linguist-devel gtk3-devel doxygen \
+                libei-devel libportal-devel help2man
+            elif [ ${{ inputs.like }} == "arch" ]; then
+              pacman -Syu --noconfirm base-devel cmake ninja \
+                gcc openssl glib2 libxtst libxkbfile libei libportal \
+                qt6-base qt6-tools qt6-svg qt6-translations qt6-declarative gtk3 help2man doxygen graphviz rsync
+            elif [ ${{ inputs.like }} == "rhel" ]; then
+              # el8: Qt5 + X11 only (no Qt6, no libei/libportal); tests and translations are
+              # off so no qttools. -devel packages live in the CodeReady Builder repo
+              # (powertools on el8).
+              dnf install -y 'dnf-command(config-manager)'
+              dnf install -y epel-release
+              dnf config-manager --set-enabled powertools 2>/dev/null \
+                || dnf config-manager --set-enabled crb 2>/dev/null || true
+              dnf install -y \
+                cmake make ninja-build rpm-build help2man \
+                gcc-toolset-13 \
+                openssl-devel glib2-devel \
+                libX11-devel libXext-devel libXtst-devel libXrandr-devel \
+                libXinerama-devel libXi-devel libxkbfile-devel \
+                qt5-qtbase-devel gtk3-devel
+            else
+              echo "Unknown like"
+            fi
+          else
+            echo "Unknown OS: $RUNNER_OS"
+          fi
+      shell: bash
+
+    # el8's system GCC 8 can't build C++20, so use gcc-toolset-13. It links the newer libstdc++
+    # bits statically (libstdc++_nonshared) over the stable system ABI, so the binary still runs
+    # on stock el8. cmake comes from the distro (the project floor is lowered to match).
+    - name: Setup RHEL toolchain
+      if: ${{ inputs.like == 'rhel' }}
+      shell: bash
+      run: |
+        toolset=/opt/rh/gcc-toolset-13/root/usr
+        echo "${toolset}/bin" >> "$GITHUB_PATH"
+        echo "CC=${toolset}/bin/gcc" >> "$GITHUB_ENV"
+        echo "CXX=${toolset}/bin/g++" >> "$GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=${toolset}/lib64" >> "$GITHUB_ENV"
+
+    - name: Install Qt
+      if: ${{runner.os != 'Linux' }}
+      uses: jurplel/install-qt-action@v4
+      env:
+        AQT_CONFIG: ${{ github.workspace }}/.github/actions/install-dependencies/aqt.ini
+      with:
+        version: ${{inputs.qt-version}}
+        cache: true
+        cache-key-prefix: ${{matrix.target.os}}-${{inputs.qt-version}}
+
+    - name: Build and cache vcpkg
+      if: ${{ runner.os == 'Windows' }}
+      id: vcpkg
+      uses: johnwason/vcpkg-action@v8
+      with:
+        pkgs: openssl
+        extra-args: --classic --host-triplet=${{inputs.vcpkg-triplet}}
+        triplet: ${{inputs.vcpkg-triplet}}
+        token: ${{ github.token }}
+        revision: master
+
+    - name: Cache Chocolatey
+      id: cache-choco
+      if: (runner.os == 'Windows')
+      uses: actions/cache@v5
+      with:
+        path: |
+            C:/ProgramData/chocolatey/bin/
+            C:/ProgramData/chocolatey/lib/doxygen.install
+            C:/Program*/doxygen/
+        key: cache-chocolatey${{ matrix.config.arch }}-doxygen
+
+    - name: Install doxygen (windows)
+      if: ((runner.os == 'Windows') && (steps.cache-choco.outputs.cache-hit != 'true'))
+      shell: bash
+      run: choco install doxygen.install
+
+    - name: Install Wix
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        dotnet tool install --global wix --version 5.0.2
+        wix extension add --global WixToolset.UI.wixext/5.0.2
+        wix extension add --global WixToolset.Util.wixext/5.0.2
+        wix extension add --global WixToolset.Firewall.wixext/5.0.2
+      shell: pwsh
+

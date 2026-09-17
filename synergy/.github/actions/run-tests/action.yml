@@ -1,0 +1,14 @@
+name: "Run tests"
+description: "Runs the unit tests"
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Unit Tests
+      id: unit-tests
+      env:
+        QT_QPA_PLATFORM: offscreen
+      run: |
+        ctest --test-dir "build/src/unittests" --output-on-failure
+      shell: bash

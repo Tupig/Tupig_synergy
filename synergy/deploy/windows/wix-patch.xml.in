@@ -1,0 +1,56 @@
+<CPackWiXPatch>
+  <CPackWiXFragment Id="CM_CP_@CMAKE_PROJECT_NAME@_daemon.exe">
+    <ServiceInstall
+      Id="ServiceInstall"
+      Name="@CMAKE_PROJECT_PROPER_NAME@"
+      DisplayName="@CMAKE_PROJECT_PROPER_NAME@"
+      Description="Runs the Core process on secure desktops (UAC prompts, login screen, etc)."
+      ErrorControl="normal"
+      Start="auto"
+      Type="ownProcess">
+      <util:ServiceConfig
+        ResetPeriodInDays="1"
+        RestartServiceDelayInSeconds="1"
+        FirstFailureActionType="restart"
+        SecondFailureActionType="restart"
+        ThirdFailureActionType="none"
+      />
+    </ServiceInstall>
+    <ServiceControl Id="ServiceControl" Name="@CMAKE_PROJECT_PROPER_NAME@" Remove="uninstall" Start="install" Stop="both"/>
+    <RemoveFile Id="RmOldLog" On="install" Name="@CMAKE_PROJECT_NAME@-daemon.log"/>
+  </CPackWiXFragment>
+
+  <CPackWiXFragment Id="CM_CP_@CMAKE_PROJECT_NAME@_core.exe">
+    <firewall:FirewallException Id="ServerFirewallException" Name="@CMAKE_PROJECT_PROPER_NAME@ Server" Program="[INSTALL_ROOT]@CMAKE_PROJECT_NAME@-core.exe" Scope="any"/>
+    <firewall:FirewallException Id="ClientFirewallException" Name="@CMAKE_PROJECT_PROPER_NAME@ Client" Program="[INSTALL_ROOT]@CMAKE_PROJECT_NAME@-core.exe" Scope="any"/>
+  </CPackWiXFragment>
+
+  <CPackWiXFragment Id="#PRODUCT">
+    <!-- Bundle the MSVC C++ runtime (CRT) so end users don't have to install the
+         Visual C++ redistributable themselves. Expands to nothing if the merge
+         module wasn't found at configure time (see deploy.cmake). -->
+    @WIX_REDIST_MERGE@
+
+    <UI>
+       <Publish Dialog="ExitDialog"
+           Control="Finish"
+           Event="DoAction"
+           Value="RunApp"
+           Condition= "WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+       <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+       <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Run @CMAKE_PROJECT_PROPER_NAME@ when finished" />
+    </UI>
+
+    <CustomAction
+      Id="RunApp"
+      ExeCommand="[INSTALL_ROOT]@CMAKE_PROJECT_NAME@.exe"
+      Directory="INSTALL_ROOT"
+      Execute="immediate"
+      Impersonate="yes"
+      Return="asyncNoWait" />
+  </CPackWiXFragment>
+
+  <CPackWiXFragment Id="#PRODUCTFEATURE">
+    @WIX_REDIST_MERGE_REF@
+  </CPackWiXFragment>
+</CPackWiXPatch>

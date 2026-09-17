@@ -1,0 +1,49 @@
+/*
+ * Synergy -- mouse and keyboard sharing utility
+ * Copyright (C) 2026 Synergy App Ltd
+ *
+ * This package is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * found in the file LICENSE that should have accompanied this file.
+ *
+ * This package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+class QWidget;
+
+namespace synergy::gui::migration {
+
+/// Bumped each time a new migration is added.
+constexpr int kCurrentSchemaVersion = 1;
+
+/**
+ * @brief Ports legacy-format settings (Synergy 1.x, both user and system
+ * scope, native QSettings backend) into the new Settings layout.
+ *
+ * Must run before Settings::instance() is constructed: upstream's
+ * cleanSettings() strips any key not in its allow-list, which would erase
+ * the legacy keys before this can read them. Idempotent, gated on
+ * migration/schemaVersion in Synergy.extra.conf.
+ *
+ * @return true if a migration was performed this launch.
+ */
+bool migrateIfNeeded();
+
+/**
+ * @brief Modal one-time notice shown after MainWindow is open.
+ *
+ * No-op unless a migration ran since the last call. Marks
+ * migration/notifiedFor=schemaVersion when dismissed so a new migration
+ * (bumped schema version) shows the popup again.
+ */
+void showNoticeIfPending(QWidget *parent);
+
+} // namespace synergy::gui::migration

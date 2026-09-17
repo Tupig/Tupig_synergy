@@ -1,0 +1,49 @@
+name: "Test Package"
+description: "Installs the built package and verifies the installed binaries can run"
+
+inputs:
+  like:
+    description: "Used only on linux distro type: debian, fedora, suse, arch"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Test package
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          dmg=$(ls build/synergy[-_]*.dmg | head -1)
+          echo "Y" | hdiutil attach "$dmg" -nobrowse -mountpoint /tmp/synergy-dmg
+          /tmp/synergy-dmg/Synergy.app/Contents/MacOS/synergy-core --version
+          hdiutil detach /tmp/synergy-dmg
+
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          7z x build/synergy[-_]*-portable.7z -otmp/synergy-pkg
+          exe=$(find tmp/synergy-pkg -name "synergy-core.exe" -type f | head -1)
+          exe_dir=$(dirname "$exe")
+          pkg_root=$(dirname "$exe_dir")
+          export PATH="$exe_dir:$pkg_root:$pkg_root/lib:$PATH"
+          "$exe" --version
+
+        elif [ "$RUNNER_OS" == "Linux" ]; then
+          if [ "${{inputs.like}}" == "debian" ]; then
+            apt-get install -y ./build/synergy[-_]*.deb
+          elif [ "${{inputs.like}}" == "fedora" ] || [ "${{inputs.like}}" == "rhel" ]; then
+            dnf install -y build/synergy[-_]*.rpm
+          elif [ "${{inputs.like}}" == "suse" ]; then
+            zypper install -y --allow-unsigned-rpm build/synergy[-_]*.rpm
+          elif [ "${{inputs.like}}" == "arch" ]; then
+            pacman -U --noconfirm build/synergy[-_]*.pkg.tar.zst
+          else
+            echo "Unknown like: ${{inputs.like}}"
+            exit 1
+          fi
+          synergy-core --version
+
+        else
+          echo "Unknown OS: $RUNNER_OS"
+          exit 1
+        fi

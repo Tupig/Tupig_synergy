@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd
+# SPDX-License-Identifier: GPL-2.0-only
+
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Synergy
+Comment=Share one keyboard and mouse between computers
+Exec=synergy
+Icon=com.symless.synergy
+Terminal=false
+Categories=Utility;
+Keywords=keyboard;mouse;sharing;network;share;
