@@ -1,0 +1,12 @@
+[Icon Theme]
+Name=synergy-light
+Inherits=deskflow-light
+
+Directories=apps/64
+
+[apps/64]
+Size=64
+Context=Applications
+Type=Scalable
+MinSize=22
+MaxSize=256

@@ -1,0 +1,12 @@
+[Icon Theme]
+Name=synergy-dark
+Inherits=deskflow-dark
+
+Directories=apps/64
+
+[apps/64]
+Size=64
+Context=Applications
+Type=Scalable
+MinSize=22
+MaxSize=256

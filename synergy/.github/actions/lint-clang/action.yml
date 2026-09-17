@@ -1,0 +1,63 @@
+name: "Lint Clang"
+description: "Fails CI if any source file doesn't match clang-format"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      run: pipx install --global clang-format==20.1.0
+      shell: bash
+
+    - name: Run format command
+      run: find src/ -regex '.*\.\(cpp\|hpp\|cc\|cxx\|h\|c\|m\|mm\)' -exec clang-format -i {} \;
+      shell: bash
+
+    - name: Find changes
+      id: changes
+      run: |
+        file=clang-format.diff
+        diff=$(git diff | tee $file)
+
+        if [ -z "$diff" ]; then
+          echo "No changes detected"
+          exit 0
+        fi
+
+        echo "file=$file" >> $GITHUB_OUTPUT
+
+        {
+          echo "diff<<EOF"
+          cat $file
+          echo "EOF"
+        } >> $GITHUB_OUTPUT
+
+      shell: bash
+
+    - name: Upload to GitHub
+      id: upload
+      if: steps.changes.outputs.diff
+      uses: actions/upload-artifact@v7
+      with:
+        name: clang-format-diff
+        path: ${{ steps.changes.outputs.file }}
+        if-no-files-found: error
+
+    - name: Set summary
+      if: steps.changes.outputs.diff
+      run: |
+        code_block="\`\`\`"
+        clang_version=$(clang-format --version | sed -n 's/^.*version //p')
+        cat <<EOF >> $GITHUB_STEP_SUMMARY
+        ❌ \`clang-format\` \`v${clang_version}\`: changes don't match the code style.
+
+        Run \`clang-format -i\` on the changed files, or download the \`clang-format-diff\` artifact and \`git apply\` it.
+        $code_block diff
+        ${{ steps.changes.outputs.diff }}
+        $code_block
+        EOF
+      shell: bash
+
+    - name: Fail if diff exists
+      if: steps.changes.outputs.diff
+      run: exit 1
+      shell: bash

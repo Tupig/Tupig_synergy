@@ -1,0 +1,6 @@
+{
+    "com.symless.synergy": [
+        "metainfo-missing-screenshots",
+        "appstream-screenshots-not-mirrored-in-ostree"
+    ]
+}

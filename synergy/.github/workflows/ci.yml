@@ -1,0 +1,780 @@
+# All-in-one continuous integration (CI) workflow.
+# Runs on all platforms (Windows, macOS, and Linux)
+# for all events (pull request, release, and schedule).
+
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      package-type:
+        description: "dev (commit SHA), snapshot (nightly), release (clean semver)"
+        required: false
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - snapshot
+          - release
+      aws-s3-uri:
+        description: "Override AWS S3 target (e.g. s3://bucket/path)"
+        required: false
+        type: string
+      platform:
+        description: "Build only one platform (blank = all)"
+        required: false
+        default: ""
+        type: choice
+        options:
+          - ""
+          - windows
+          - macos
+          - linux
+  push:
+    branches: [beta]
+  pull_request:
+  release:
+    types: [published]
+  schedule:
+    - cron: "0 5 * * *" # 5am UTC nightly snapshot
+
+# Cancel superseded PR builds; pushes to branches/tags always run to completion.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PACKAGE_PREFIX: ${{ vars.SYNERGY_PACKAGE_PREFIX || 'synergy' }}
+  PACKAGE_PATH: ./dist
+  CMAKE_CONFIGURE: "cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DSKIP_BUILD_TESTS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON"
+
+  # Release shape, propagated to cmake (Synergy.cmake reads these as options).
+  # Release events + explicit "release" workflow_dispatch input → release build.
+  # Push to beta + schedule + explicit "snapshot" dispatch → snapshot build.
+  # PRs and "dev" dispatch fall through to dev (the cmake default).
+  SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
+  SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
+
+jobs:
+  # Quality gate to allow PR merge, used in the branch protection rules.
+  ci-passed:
+    runs-on: ubuntu-latest
+    needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
+    if: always()
+
+    steps:
+      # 'skipped' is treated as passing because the user/event deliberately
+      # filtered the platform set (workflow_dispatch with inputs.platform=windows
+      # skips macos+linux jobs). A failed job is still a failure. get-version never
+      # filters out, so requiring it catches a build skipped by its failure.
+      - name: Check all jobs passed or were intentionally skipped
+        run: |
+          ok() {
+            [[ "$1" == "success" || "$1" == "skipped" ]]
+          }
+          if ok "${{needs.get-version.result}}" \
+             && ok "${{needs.build-windows.result}}" \
+             && ok "${{needs.build-macos.result}}" \
+             && ok "${{needs.build-linux.result}}" \
+             && ok "${{needs.build-flatpak.result}}"; then
+            echo "✅ CI passed" > $GITHUB_STEP_SUMMARY
+          else
+            exit 1
+          fi
+
+  lint-clang:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Lint Checker
+        uses: ./.github/actions/lint-clang
+
+  analyze-valgrind:
+    needs: lint-clang
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/valgrind-analysis.yml
+
+  get-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Get version
+        id: get-version
+        uses: ./.github/actions/get-version
+
+  build-windows:
+    needs: [lint-clang, get-version]
+    if: ${{ inputs.platform == '' || inputs.platform == 'windows' }}
+    name: ${{ matrix.target.name }}
+    runs-on: ${{ matrix.target.runs-on }}
+    timeout-minutes: 30
+
+    env:
+      # esigner-codesign installs Corretto 11 when JAVA_VERSION < 11; none exists for
+      # Windows/arm64, so pin >= 11 to skip that install and use the preinstalled JDK.
+      JAVA_VERSION: "21"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "windows-2022-x64"
+            runs-on: "windows-2022"
+            vcpkg-triplet: x64-windows-release
+            arch: "amd64"
+            qt-version: 6.10.3
+
+          - name: "windows-2022-arm64"
+            runs-on: "windows-11-arm"
+            vcpkg-triplet: arm64-windows
+            arch: "arm64"
+            qt-version: 6.11.1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # Effectively runs vcvarsall.bat. VC++ itself is already pre-installed on the runner.
+      - name: Setup VC++ environment
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: ${{ matrix.target.arch }}
+          spectre: true
+
+      - name: Install dependencies
+        id: get-deps
+        uses: ./.github/actions/install-dependencies
+        with:
+          qt-version: ${{ matrix.target.qt-version }}
+          vcpkg-triplet: ${{ matrix.target.vcpkg-triplet }}
+
+      - name: Update Windows Paths
+        shell: pwsh
+        run: echo "C:\Program Files\doxygen\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Configure
+        run: ${{ env.CMAKE_CONFIGURE }} -G Ninja ${{ steps.get-deps.outputs.vcpkg-cmake-config }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release -j8
+
+      # Inner binaries (synergy-core.exe, synergy.exe, synergy-daemon.exe) must
+      # be signed BEFORE the MSI is built — WiX embeds them into the installer,
+      # and signing the MSI afterward doesn't propagate signatures to embedded
+      # files. Stages all non-test exes into one dir so they can be batch-signed
+      # with a single OTP, then restores them in-place before the package step.
+      - name: Stage binaries for signing
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        shell: pwsh
+        run: |
+          $stageIn = "$env:RUNNER_TEMP\sign-stage\in"
+          $stageOut = "$env:RUNNER_TEMP\sign-stage\out"
+          New-Item -ItemType Directory -Force -Path $stageIn, $stageOut | Out-Null
+          $exes = Get-ChildItem build/bin/*.exe | Where-Object { $_.Name -notmatch 'test' }
+          if (-not $exes) { throw "no binaries found in build/bin to sign" }
+          foreach ($exe in $exes) { Copy-Item $exe.FullName "$stageIn\$($exe.Name)" -Force }
+
+      - name: Sign inner binaries
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        uses: SSLcom/esigner-codesign@develop
+        with:
+          command: batch_sign
+          username: ${{ secrets.WINDOWS_SSL_USERNAME }}
+          password: ${{ secrets.WINDOWS_SSL_PASSWORD }}
+          credential_id: ${{ secrets.WINDOWS_SSL_CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.WINDOWS_SSL_TOTP_SECRET }}
+          dir_path: ${{ runner.temp }}\sign-stage\in
+          output_path: ${{ runner.temp }}\sign-stage\out
+          environment_name: PROD
+
+          # The pre-sign malware scan draws on a separate, much smaller quota than signing and
+          # exhausts it across a full release; signing produces a valid signature without it.
+          malware_block: "false"
+
+      - name: Restore + verify signed binaries
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        shell: pwsh
+        run: |
+          Get-ChildItem "$env:RUNNER_TEMP\sign-stage\out\*.exe" | ForEach-Object {
+            $dst = "build/bin/$($_.Name)"
+            Copy-Item $_.FullName $dst -Force
+            $sig = Get-AuthenticodeSignature $dst
+            if ($sig.Status -ne 'Valid') { throw "signature check failed on $dst (Status: $($sig.Status))" }
+            Write-Host "OK: $dst signed by $($sig.SignerCertificate.Subject)"
+          }
+
+      - name: Package
+        shell: bash
+        run: cmake --build build --config Release -j8 --target package
+
+      - name: Locate MSI
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        id: locate-msi
+        shell: pwsh
+        run: |
+          $msi = (Get-ChildItem build/*.msi | Select-Object -First 1).FullName
+          if (-not $msi) { throw "no MSI found in build/" }
+          "path=$msi" | Out-File $env:GITHUB_OUTPUT -Append
+
+      - name: Sign MSI
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        uses: SSLcom/esigner-codesign@develop
+        with:
+          command: sign
+          username: ${{ secrets.WINDOWS_SSL_USERNAME }}
+          password: ${{ secrets.WINDOWS_SSL_PASSWORD }}
+          credential_id: ${{ secrets.WINDOWS_SSL_CREDENTIAL_ID }}
+          totp_secret: ${{ secrets.WINDOWS_SSL_TOTP_SECRET }}
+          file_path: ${{ steps.locate-msi.outputs.path }}
+          override: "true"
+          # The pre-sign malware scan draws on a separate, much smaller quota than signing and
+          # exhausts it across a full payload; signing produces a valid signature without it.
+          malware_block: "false"
+          environment_name: PROD
+
+      - name: Verify MSI is signed
+        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        shell: pwsh
+        run: |
+          $sig = Get-AuthenticodeSignature "${{ steps.locate-msi.outputs.path }}"
+          if ($sig.Status -ne 'Valid') { throw "MSI not signed (Status: $($sig.Status))" }
+          Write-Host "OK: MSI signed by $($sig.SignerCertificate.Subject)"
+
+      - name: Tests
+        uses: ./.github/actions/run-tests
+        timeout-minutes: 2
+
+      - name: Test package
+        uses: ./.github/actions/test-package
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+
+  build-macos:
+    needs: [lint-clang, get-version]
+    if: ${{ inputs.platform == '' || inputs.platform == 'macos' }}
+    name: ${{ matrix.target.name }}
+    runs-on: ${{ matrix.target.runs-on }}
+    timeout-minutes: ${{ matrix.target.timeout }}
+
+    env:
+      MAC_SIGNING: ${{ secrets.APPLE_CODESIGN_ID != '' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "macos-arm64"
+            runs-on: macos-15
+            timeout: 10
+            qt-version: 6.11.1
+            # Deployment target is set once in extra/cmake/Synergy.cmake (single
+            # source of truth); don't pass -DCMAKE_OSX_DEPLOYMENT_TARGET here.
+            config-args: '-DCMAKE_OSX_ARCHITECTURES="arm64"'
+
+          - name: "macos-x64"
+            runs-on: macos-15-intel
+            timeout: 20
+            qt-version: 6.9.3
+            config-args: '-DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_SYSROOT=/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          qt-version: ${{ matrix.target.qt-version }}
+
+      - name: Configure
+        run: ${{ env.CMAKE_CONFIGURE }} ${{ matrix.target.config-args }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }} -DAPPLE_CODESIGN_ID="${{ secrets.APPLE_CODESIGN_ID }}"
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release -j8
+
+      # Create an ephemeral keychain just for this run and import the Developer
+      # ID Application certificate from the base64-encoded P12 in secrets. Using
+      # a per-run keychain (rather than System.keychain) keeps the cert out of
+      # any shared state on the runner; the keychain is destroyed at job end.
+      # set-key-partition-list grants codesign passwordless access so the later
+      # sign step doesn't prompt.
+      - name: Set up signing keychain
+        if: env.MAC_SIGNING == 'true'
+        shell: bash
+        env:
+          APPLE_P12_CERTIFICATE: ${{ secrets.APPLE_P12_CERTIFICATE }}
+          APPLE_P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/sign.keychain-db"
+          keychain_pass=$(openssl rand -base64 32)
+          security create-keychain -p "$keychain_pass" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_pass" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d ' "')
+          cert_file="$RUNNER_TEMP/cert.p12"
+          echo "$APPLE_P12_CERTIFICATE" | base64 --decode > "$cert_file"
+          security import "$cert_file" -k "$keychain" -P "$APPLE_P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_pass" "$keychain"
+          rm -f "$cert_file"
+          echo "SIGN_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          echo "SIGN_KEYCHAIN_PASS=$keychain_pass" >> "$GITHUB_ENV"
+
+      # CPack runs macdeployqt and, when a Developer ID is configured, codesigns
+      # the bundle that gets embedded in the DMG (see deploy/mac/deploy.cmake), so
+      # the keychain must be unlocked first. CPack on macOS is flaky; retry a
+      # handful of times before failing.
+      - name: Package
+        shell: bash
+        run: |
+          if [ -n "$SIGN_KEYCHAIN" ]; then
+            security unlock-keychain -p "$SIGN_KEYCHAIN_PASS" "$SIGN_KEYCHAIN"
+          fi
+          for i in $(seq 1 5); do
+            if cmake --build build --config Release -j8 --target package 2>&1; then
+              echo "Package successful"
+              exit 0
+            fi
+            echo "Package attempt $i failed"
+            sleep 1
+          done
+          echo "ERROR: package failed after 5 attempts" >&2
+          exit 1
+
+      # Sign the DMG itself so Gatekeeper trusts it before extraction. Then
+      # submit to notarytool (synchronous via --wait) and staple the returned
+      # ticket so Gatekeeper can verify offline.
+      - name: Sign + notarize + staple DMG
+        if: env.MAC_SIGNING == 'true'
+        shell: bash
+        env:
+          APPLE_CODESIGN_ID: ${{ secrets.APPLE_CODESIGN_ID }}
+          APPLE_NOTARY_USER: ${{ secrets.APPLE_NOTARY_USER }}
+          APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          dmg=$(find build -maxdepth 2 -name "*.dmg" -type f | head -n1)
+          if [ -z "$dmg" ]; then
+            echo "ERROR: no DMG found under build/" >&2
+            find build -maxdepth 2 -name "*.dmg" 2>/dev/null
+            exit 1
+          fi
+          echo "Found DMG: $dmg"
+
+          security unlock-keychain -p "$SIGN_KEYCHAIN_PASS" "$SIGN_KEYCHAIN"
+          /usr/bin/codesign --force --timestamp --sign "$APPLE_CODESIGN_ID" "$dmg"
+
+          result=$(xcrun notarytool submit "$dmg" \
+            --apple-id "$APPLE_NOTARY_USER" \
+            --password "$APPLE_NOTARY_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --output-format json --wait)
+          echo "$result"
+          id=$(echo "$result" | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+          status=$(echo "$result" | python3 -c "import sys, json; print(json.load(sys.stdin)['status'])")
+          if [ "$status" != "Accepted" ]; then
+            echo "Notarization $status; per-file detail follows:" >&2
+            xcrun notarytool log "$id" \
+              --apple-id "$APPLE_NOTARY_USER" \
+              --password "$APPLE_NOTARY_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID"
+            exit 1
+          fi
+
+          xcrun stapler staple "$dmg"
+          xcrun stapler validate "$dmg"
+          spctl -a -t open --context context:primary-signature -v "$dmg"
+          echo "DMG signed + notarized + stapled: $dmg"
+
+      - name: Tests
+        uses: ./.github/actions/run-tests
+        timeout-minutes: 2
+
+      - name: Test package
+        uses: ./.github/actions/test-package
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+
+  build-linux:
+    needs: [lint-clang, get-version]
+    if: ${{ inputs.platform == '' || inputs.platform == 'linux' }}
+    name: ${{ matrix.target.name }}
+    runs-on: ${{ matrix.target.runs-on }}
+    container: ${{ matrix.target.container }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: "debian-13-x86_64"
+            runs-on: ubuntu-latest
+            container: debian:13-slim
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "debian-13-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: debian:13-slim
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          # Debian 12's GCC 12 trips -Wstringop-overflow false positives (gone in GCC 13),
+          # so warnings-as-errors is off here; the GCC 13+ legs keep it on.
+          - name: "debian-12-x86_64"
+            runs-on: ubuntu-latest
+            container: debian:12-slim
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF"
+
+          - name: "debian-12-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: debian:12-slim
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF"
+
+          - name: "fedora-42-x86_64"
+            runs-on: ubuntu-latest
+            container: fedora:42
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "fedora-42-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: fedora:42
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "fedora-43-x86_64"
+            runs-on: ubuntu-latest
+            container: fedora:43
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "fedora-43-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: fedora:43
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "fedora-44-x86_64"
+            runs-on: ubuntu-latest
+            container: fedora:44
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "fedora-44-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: fedora:44
+            like: "fedora"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          # RHEL/Rocky: Qt5, X11-only, tests off (the suite needs Qt6 Test).
+          - name: "rocky-8-x86_64"
+            runs-on: ubuntu-latest
+            container: rockylinux:8
+            like: "rhel"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+
+          - name: "rocky-9-x86_64"
+            runs-on: ubuntu-latest
+            container: rockylinux:9
+            like: "rhel"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+
+          - name: "opensuse-x86_64"
+            runs-on: ubuntu-latest
+            container: opensuse/tumbleweed:latest
+            like: "suse"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "opensuse-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: opensuse/tumbleweed:latest
+            like: "suse"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "archlinux-x86_64"
+            runs-on: ubuntu-latest
+            container: archlinux:latest
+            like: "arch"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_DEV_DOCS=ON"
+
+          - name: "ubuntu-24.04-x86_64"
+            runs-on: ubuntu-latest
+            container: ubuntu:24.04
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "ubuntu-24.04-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: ubuntu:24.04
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "ubuntu-26.04-x86_64"
+            runs-on: ubuntu-latest
+            container: ubuntu:26.04
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+          - name: "ubuntu-26.04-arm64"
+            runs-on: ubuntu-24.04-arm
+            container: ubuntu:26.04
+            like: "debian"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+
+    steps:
+      # Containers don't ship git; everything else needs it for checkout + describe.
+      - name: Install Git on Container
+        shell: bash
+        run: |
+          if [ "${{ matrix.target.like }}" == "debian" ]; then
+            apt update -qqq > /dev/null && apt install -qqq git devscripts > /dev/null
+          elif [ "${{ matrix.target.like }}" == "fedora" ]; then
+            dnf install -y git
+          elif [ "${{ matrix.target.like }}" == "suse" ]; then
+            zypper refresh
+            zypper install -y --force-resolution git
+          elif [ "${{ matrix.target.like }}" == "arch" ]; then
+            pacman -Syu --noconfirm git
+          elif [ "${{ matrix.target.like }}" == "rhel" ]; then
+            dnf install -y git
+          else
+            echo "Unknown: ${{ matrix.target.like }}"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # The container runs as root over a host-owned workspace, so git rejects it as
+      # dubious-owned and the Configure step's `git describe` degrades the rev count
+      # to 0, naming packages +r0 while non-container builds use the real count.
+      - name: Trust workspace for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          like: ${{ matrix.target.like }}
+
+      # 24.04's system libportal (0.7.x) lacks the input-capture portal the code needs
+      # (>= 0.8.0), and that LTS's libs are frozen. Build a newer libportal and static-link
+      # it so the shipped binary carries no runtime dependency on a >= 0.8 system libportal
+      # (libei from the system is fine). The code uses no xdp_parent, so no GUI backend is
+      # needed, and removing the system .so makes `-lportal` resolve to the static archive.
+      - name: Build newer libportal (Ubuntu 24.04)
+        if: startsWith(matrix.target.name, 'ubuntu-24.04')
+        shell: bash
+        run: |
+          apt-get install -y -qq meson pkg-config
+          git clone --depth 1 --branch 0.9.1 https://github.com/flatpak/libportal.git /tmp/libportal
+          meson setup /tmp/libportal/_build /tmp/libportal --prefix=/usr --libdir=lib/$(gcc -dumpmachine) \
+            --default-library=static \
+            -Dbackend-gtk3=disabled -Dbackend-gtk4=disabled -Dbackend-qt5=disabled -Dbackend-qt6=disabled \
+            -Ddocs=false -Dintrospection=false -Dvapi=false -Dtests=false
+          meson install -C /tmp/libportal/_build
+          rm -f /usr/lib/$(gcc -dumpmachine)/libportal.so*
+          ldconfig
+
+      - name: Configure
+        run: ${{ env.CMAKE_CONFIGURE }} ${{ matrix.target.config-args }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release -j8
+
+      - name: Package
+        shell: bash
+        run: |
+          if [[ "${{ matrix.target.like }}" == "arch" ]]; then
+            useradd -m build
+            sudo chown -R build build
+            cd build
+            sudo -u build makepkg -s
+            export OSNAME=$(cat /etc/os-release | grep ^ID= | sed 's/ID=//g')
+            [ "$OSNAME" = "arch" ] && OSNAME="arch-linux"
+            export ARCH=$(uname -m)
+            mv *.pkg.tar.zst ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_${OSNAME}_${ARCH}.pkg.tar.zst
+            cd ..
+          else
+            cmake --build build --config Release -j8 --target package
+          fi
+
+      - name: Tests
+        if: ${{ matrix.target.like != 'rhel' }}
+        uses: ./.github/actions/run-tests
+        timeout-minutes: 2
+
+      - name: Test package
+        uses: ./.github/actions/test-package
+        with:
+          like: ${{ matrix.target.like }}
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+
+  build-flatpak:
+    needs: [lint-clang, get-version]
+    if: ${{ inputs.platform == '' || inputs.platform == 'linux' }}
+    name: flatpak-${{matrix.flatpak.arch}}
+    runs-on: ${{matrix.flatpak.runs-on}}
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.10
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        flatpak:
+          - runs-on: ubuntu-latest
+            arch: x86_64
+          - runs-on: ubuntu-24.04-arm
+            arch: aarch64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - run: git config --global protocol.file.allow always
+
+      - name: Lint appsteam
+        run: flatpak-builder-lint appstream extra/deploy/linux/com.symless.synergy.metainfo.xml
+
+      - name: Lint manifest
+        run: flatpak-builder-lint manifest extra/deploy/linux/flatpak/com.symless.synergy.yml
+
+      - name: Build
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_linux_${{ matrix.flatpak.arch }}.flatpak
+          manifest-path: extra/deploy/linux/flatpak/com.symless.synergy.yml
+          cache-key: flatpak-builder-${{matrix.flatpak.arch}}-2.0
+          arch: ${{matrix.flatpak.arch}}
+          upload-artifact: false
+
+      - name: Validate build
+        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
+          path: ${{github.workspace}}/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
+
+  # Upload all packages that built to AWS S3 for distribution. Runs after the
+  # build jobs on push/dispatch/release events (PRs skipped, no secrets), and
+  # uploads whatever artifacts exist — one failed target must not block shipping
+  # the rest (a flaky distro shouldn't sink a whole nightly snapshot). Gated only
+  # on get-version, which supplies the path. Layout: <dir>/<dev|snapshot|release>/<version>/...
+  s3-upload:
+    needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
+    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: package-*
+          path: dist
+          merge-multiple: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Upload to AWS S3
+        shell: bash
+        run: |
+          version="${{ needs.get-version.outputs.version }}"
+          s3_uri="${{ inputs.aws-s3-uri || format('s3://{0}/{1}', vars.AWS_S3_BUCKET, vars.AWS_S3_UPLOAD_DIR) }}"
+          s3_uri="${s3_uri%/}"
+
+          if [[ "${{ env.SYNERGY_VERSION_RELEASE }}" == "true" ]]; then
+            sub_dir="release"
+          elif [[ "${{ env.SYNERGY_VERSION_SNAPSHOT }}" == "true" ]]; then
+            # Group snapshots by base version, keeping the stage so the folder
+            # matches the release path (i.e. 1.21.2-beta/1.21.2-beta-snapshot+r42).
+            base_version="${version%%-snapshot*}"
+            sub_dir="snapshot/$base_version"
+          else
+            sub_dir="dev"
+          fi
+
+          url="$s3_uri/$sub_dir/$version"
+          echo "Uploading to AWS S3: $url"
+          aws s3 cp ./dist/ "$url" --recursive
+
+  report:
+    needs: [get-version, build-windows, build-macos, build-linux, build-flatpak, s3-upload]
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && contains(needs.*.result, 'failure') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Build Slack message
+        id: message
+        shell: bash
+        run: |
+          link="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          {
+            echo "text<<EOF"
+            echo "<!channel>"
+            echo "❌ Synergy CI failed"
+            [ "${{ needs.build-windows.result }}" = "failure" ] && echo "• Windows build failed"
+            [ "${{ needs.build-macos.result }}" = "failure" ] && echo "• macOS build failed"
+            [ "${{ needs.build-linux.result }}" = "failure" ] && echo "• Linux build failed"
+            [ "${{ needs.build-flatpak.result }}" = "failure" ] && echo "• Flatpak build failed"
+            [ "${{ needs.s3-upload.result }}" = "failure" ] && echo "• S3 upload failed"
+            echo "<$link|View workflow>"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v3
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_TOKEN }}
+          payload: |
+            channel: ${{ secrets.SLACK_NOTIFY_CHANNEL_ID }}
+            text: ${{ toJSON(steps.message.outputs.text) }}
