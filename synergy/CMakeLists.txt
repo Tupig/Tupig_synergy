@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (C) 2024 - 2026 Deskflow Developers
+# SPDX-FileCopyrightText: (C) 2024 - 2026 TuPig
 # SPDX-FileCopyrightText: (C) 2012 - 2024 Symless Ltd
 # SPDX-FileCopyrightText: (C) 2009 - 2012 Nick Bolton
 # SPDX-License-Identifier: MIT
@@ -57,18 +57,18 @@ endif()
 project(
   deskflow
   VERSION "${DESKFLOW_VERSION_MAJOR}.${DESKFLOW_VERSION_MINOR}.${DESKFLOW_VERSION_PATCH}.${DESKFLOW_VERSION_TWEAK}"
-  DESCRIPTION "Keyboard and mouse sharing utility"
-  HOMEPAGE_URL "https://deskflow.org"
+  DESCRIPTION "TuPig Synergy - Keyboard and mouse sharing utility"
+  HOMEPAGE_URL "https://tupig.com"
   LANGUAGES C CXX
 )
 
 # Define Additional "PROJECT" vars for packaging and metadata
-set(CMAKE_PROJECT_PROPER_NAME "Deskflow")
-set(CMAKE_PROJECT_VENDOR "${CMAKE_PROJECT_PROPER_NAME} Devs")
+set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
+set(CMAKE_PROJECT_VENDOR "TuPig")
 set(CMAKE_PROJECT_COPYRIGHT "(C) 2024-2026 ${CMAKE_PROJECT_VENDOR}")
-set(CMAKE_PROJECT_CONTACT "${CMAKE_PROJECT_PROPER_NAME} <maintainers@deskflow.org>")
-set(CMAKE_PROJECT_REV_FQDN "org.deskflow.deskflow")
-set(CMAKE_PROJECT_DOMAIN "deskflow.org")
+set(CMAKE_PROJECT_CONTACT "${CMAKE_PROJECT_PROPER_NAME} <support@tupig.com>")
+set(CMAKE_PROJECT_REV_FQDN "com.tupig.synergy")
+set(CMAKE_PROJECT_DOMAIN "tupig.com")
 
 # Captured before any downstream brand override of CMAKE_PROJECT_NAME, for use
 # by code that reads upstream-named on-disk artifacts (Qt .qm translation files).

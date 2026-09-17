@@ -1,26 +1,26 @@
-# SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd
+# SPDX-FileCopyrightText: (C) 2012 - 2026 TuPig
 # SPDX-License-Identifier: MIT
 
 # Must be included after deskflow's project() call and the CMAKE_PROJECT_*
 # defaults are set, so these overrides take effect.
-set(CMAKE_PROJECT_PROPER_NAME "Synergy")
-set(CMAKE_PROJECT_VENDOR "Synergy App Ltd")
+set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
+set(CMAKE_PROJECT_VENDOR "TuPig")
 set(CMAKE_PROJECT_COPYRIGHT "(C) 2012-2026 ${CMAKE_PROJECT_VENDOR}")
-set(CMAKE_PROJECT_CONTACT "${CMAKE_PROJECT_PROPER_NAME} <support@synergyapp.io>")
-set(CMAKE_PROJECT_REV_FQDN "com.symless.synergy")
-set(CMAKE_PROJECT_DOMAIN "synergyapp.io")
-set(CMAKE_PROJECT_HOMEPAGE_URL "https://synergyapp.io")
+set(CMAKE_PROJECT_CONTACT "${CMAKE_PROJECT_PROPER_NAME} <support@tupig.com>")
+set(CMAKE_PROJECT_REV_FQDN "com.tupig.synergy")
+set(CMAKE_PROJECT_DOMAIN "tupig.com")
+set(CMAKE_PROJECT_HOMEPAGE_URL "https://tupig.com")
 
-# Display brand. "Synergy 1" is the default user-facing name (window title,
-# About dialog). When building as the Core, flip to "Synergy Core" so the 
+# Display brand. "TuPig Synergy 1" is the default user-facing name (window title,
+# About dialog). When building as the Core, flip to "TuPig Synergy Core" so the 
 # same codebase ships under a different product label.
-# Distinct from CMAKE_PROJECT_PROPER_NAME, which stays "Synergy" to keep file paths
-# (~/.config/Synergy/, Synergy.conf) and Windows globals space-free.
-option(SYNERGY_CORE_FLAVOR "Build as Synergy Core" OFF)
+# Distinct from CMAKE_PROJECT_PROPER_NAME, which stays "TuPig Synergy" to keep file paths
+# (~/.config/TuPig Synergy/, TuPig Synergy.conf) and Windows globals space-free.
+option(SYNERGY_CORE_FLAVOR "Build as TuPig Synergy Core" OFF)
 if(SYNERGY_CORE_FLAVOR)
-  set(SYNERGY_DISPLAY_NAME "Synergy Core")
+  set(SYNERGY_DISPLAY_NAME "TuPig Synergy Core")
 else()
-  set(SYNERGY_DISPLAY_NAME "Synergy 1")
+  set(SYNERGY_DISPLAY_NAME "TuPig Synergy 1")
 endif()
 add_compile_definitions(SYNERGY_DISPLAY_NAME="${SYNERGY_DISPLAY_NAME}")
 

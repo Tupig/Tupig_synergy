@@ -1,13 +1,13 @@
-# Contributing to Synergy {#contributing_guide}
+# TuPig Synergy 贡献指南 {#contributing_guide}
 
-Thanks for your interest in contributing to Synergy! We welcome all kinds of contributions — bug reports, feature suggestions, documentation improvements, and code.
+感谢您对 TuPig Synergy 的关注！我们欢迎各种贡献——错误报告、功能建议、文档改进和代码。
 
-## Read the Full Guidelines
+## 阅读完整指南
 
-To keep this repository clean and contribution-friendly, we've outlined our full contributing guidelines on the Synergy Wiki:
+为了保持仓库整洁和对贡献者友好，我们在 TuPig Synergy Wiki 中概述了完整的贡献指南：
 
-👉 [How to Contribute to Synergy](https://github.com/nicehash/Synergy/wiki/Contributing)
+👉 [如何为 TuPig Synergy 做贡献](https://github.com/tupig/synergy/wiki/Contributing)
 
-Please take a moment to read through the page before opening an issue or submitting a pull request.
+在提交 issue 或 pull request 之前，请花时间阅读该页面。
 
-Thanks again for helping make Synergy better!
+再次感谢您帮助 TuPig Synergy 变得更好！

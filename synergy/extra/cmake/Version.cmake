@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd
+# SPDX-FileCopyrightText: (C) 2012 - 2026 TuPig
 # SPDX-License-Identifier: MIT
 
 # Synergy version: single source of truth, shared between the build (root

@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: MIT
 
 version = 1
-SPDX-PackageName = "deskflow"
-SPDX-PackageSupplier = "Deskflow Devs"
-SPDX-PackageDownloadLocation = "https://github.com/deskflow/deskflow"
+SPDX-PackageName = "TuPig Synergy"
+SPDX-PackageSupplier = "TuPig"
+SPDX-PackageDownloadLocation = "https://github.com/tupig/synergy"
 
 [[annotations]]
 path = [
@@ -29,7 +29,7 @@ path = [
  , "src/apps/res/entitlements-dev.plist"
  , "translations/*.ts"
 ]
-SPDX-FileCopyrightText = "Deskflow Developers"
+SPDX-FileCopyrightText = "TuPig"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
@@ -45,7 +45,7 @@ path = [
  , "src/apps/res/deskflow.ico"
  , "src/apps/res/deskflow.qrc"
 ]
-SPDX-FileCopyrightText = "Deskflow Developers"
+SPDX-FileCopyrightText = "TuPig"
 SPDX-License-Identifier = "GPL-2.0-only"
 
 [[annotations]]
@@ -63,5 +63,5 @@ path = [
    "src/lib/gui/MainWindow.ui"
  , "src/lib/gui/dialogs/*.ui"
 ]
-SPDX-FileCopyrightText = "Deskflow Developers"
+SPDX-FileCopyrightText = "TuPig"
 SPDX-License-Identifier = "GPL-2.0-only WITH LicenseRef-OpenSSL-Exception"

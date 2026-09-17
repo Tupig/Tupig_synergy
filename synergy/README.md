@@ -1,4 +1,4 @@
-# Synergy - 无序列号版本
+# TuPig Synergy - 无序列号版本
 
 基于 [Synergy](https://github.com/symless/synergy) 的修改版本，移除了序列号验证和许可证激活系统，可直接使用。
 
