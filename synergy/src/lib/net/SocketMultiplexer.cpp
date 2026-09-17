@@ -24,10 +24,10 @@
 //
 
 SocketMultiplexer::SocketMultiplexer()
-    : m_mutex(new Mutex),
-      m_jobsReady(new CondVar<bool>(m_mutex, false)),
-      m_jobListLock(new CondVar<bool>(m_mutex, false)),
-      m_jobListLockLocked(new CondVar<bool>(m_mutex, false))
+    : m_mutex(std::make_unique<Mutex>()),
+      m_jobsReady(std::make_unique<CondVar<bool>>(m_mutex.get(), false)),
+      m_jobListLock(std::make_unique<CondVar<bool>>(m_mutex.get(), false)),
+      m_jobListLockLocked(std::make_unique<CondVar<bool>>(m_mutex.get(), false))
 {
   // this pointer just has to be unique and not nullptr.  it will
   // never be dereferenced.  it's used to identify cursor nodes
@@ -37,7 +37,7 @@ SocketMultiplexer::SocketMultiplexer()
 
   // start thread
   auto tMethodJob = new TMethodJob<SocketMultiplexer>(this, &SocketMultiplexer::serviceThread);
-  m_thread = new Thread(tMethodJob);
+  m_thread = std::make_unique<Thread>(tMethodJob);
 }
 
 SocketMultiplexer::~SocketMultiplexer()
@@ -45,13 +45,10 @@ SocketMultiplexer::~SocketMultiplexer()
   m_thread->cancel();
   m_thread->unblockPollSocket();
   m_thread->wait();
-  delete m_thread;
-  delete m_jobsReady;
-  delete m_jobListLock;
-  delete m_jobListLockLocked;
+  // m_thread, m_jobsReady, m_jobListLock, m_jobListLockLocked, m_mutex
+  // are all std::unique_ptr — automatically cleaned up.
   delete m_jobListLocker;
   delete m_jobListLockLocker;
-  delete m_mutex;
 
   // clean up jobs
   for (auto i = m_socketJobMap.begin(); i != m_socketJobMap.end(); ++i) {
@@ -167,10 +164,15 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
 
     int status;
     try {
-      // check for status
+      // check for status — use bounded timeout (seconds) so the service thread
+      // can periodically wake up and process pending jobs even when
+      // no socket activity occurs (e.g. keepalive timers).
+      static const double kPollTimeout = 1.0;
       if (!pfds.empty()) {
-        status = ARCH->pollSocket(&pfds[0], (int)pfds.size(), -1);
+        status = ARCH->pollSocket(&pfds[0], static_cast<int>(pfds.size()), kPollTimeout);
       } else {
+        // no sockets to poll — sleep briefly to avoid busy-spinning
+        ARCH->sleep(0.1);
         status = 0;
       }
     } catch (ArchNetworkException &e) {

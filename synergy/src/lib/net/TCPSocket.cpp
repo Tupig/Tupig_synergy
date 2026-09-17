@@ -169,8 +169,15 @@ void TCPSocket::write(const void *buffer, uint32_t n)
 void TCPSocket::flush()
 {
   Lock lock(&m_mutex);
+  static const double kFlushTimeout = 10.0;
+  Stopwatch timer(true);
   while (m_flushed == false) {
-    m_flushed.wait();
+    double remaining = kFlushTimeout - timer.getTime();
+    if (remaining <= 0.0) {
+      LOG_WARN("socket flush timed out after %.1f seconds", kFlushTimeout);
+      break;
+    }
+    m_flushed.wait(remaining);
   }
 }
 
@@ -301,7 +308,7 @@ void TCPSocket::init()
 TCPSocket::JobResult TCPSocket::doRead()
 {
   uint8_t buffer[4096];
-  memset(buffer, 0, sizeof(buffer));
+  // 注意：不需要 memset，因为 readSocket 会填充 buffer
   size_t bytesRead = 0;
 
   bytesRead = ARCH->readSocket(m_socket, buffer, sizeof(buffer));
@@ -348,7 +355,7 @@ TCPSocket::JobResult TCPSocket::doWrite()
 
   bufferSize = m_outputBuffer.getSize();
   const void *buffer = m_outputBuffer.peek(bufferSize);
-  bytesWrote = (uint32_t)ARCH->writeSocket(m_socket, buffer, bufferSize);
+  bytesWrote = static_cast<int>(ARCH->writeSocket(m_socket, buffer, bufferSize));
 
   if (bytesWrote > 0) {
     discardWrittenData(bytesWrote);

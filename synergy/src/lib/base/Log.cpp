@@ -126,11 +126,11 @@ Log::Log(Log *src)
 Log::~Log()
 {
   // clean up
-  for (auto index = m_outputters.begin(); index != m_outputters.end(); ++index) {
-    delete *index;
+  for (auto *outputter : m_outputters) {
+    delete outputter;
   }
-  for (auto index = m_alwaysOutputters.begin(); index != m_alwaysOutputters.end(); ++index) {
-    delete *index;
+  for (auto *outputter : m_alwaysOutputters) {
+    delete outputter;
   }
 }
 
@@ -237,18 +237,12 @@ void Log::output(LogLevel::Level priority, const char *msg)
 
   std::scoped_lock lock{m_mutex};
 
-  OutputterList::const_iterator i;
-
-  for (i = m_alwaysOutputters.begin(); i != m_alwaysOutputters.end(); ++i) {
-
-    // write to outputter
-    (*i)->write(priority, msg);
+  for (const auto *outputter : m_alwaysOutputters) {
+    outputter->write(priority, msg);
   }
 
-  for (i = m_outputters.begin(); i != m_outputters.end(); ++i) {
-
-    // write to outputter and break out of loop if it returns false
-    if (!(*i)->write(priority, msg)) {
+  for (const auto *outputter : m_outputters) {
+    if (!outputter->write(priority, msg)) {
       break;
     }
   }

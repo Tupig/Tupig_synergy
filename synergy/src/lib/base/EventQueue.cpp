@@ -29,7 +29,8 @@ static void interrupt(Arch::ThreadSignal, void *data)
 // EventQueue
 //
 
-EventQueue::EventQueue() : m_readyMutex(new Mutex), m_readyCondVar(new CondVar<bool>(m_readyMutex, false))
+EventQueue::EventQueue()
+    : m_readyMutex(std::make_unique<Mutex>()), m_readyCondVar(std::make_unique<CondVar<bool>>(m_readyMutex.get(), false))
 {
   ARCH->setSignalHandler(Arch::ThreadSignal::Interrupt, &interrupt, this);
   ARCH->setSignalHandler(Arch::ThreadSignal::Terminate, &interrupt, this);
@@ -38,9 +39,6 @@ EventQueue::EventQueue() : m_readyMutex(new Mutex), m_readyCondVar(new CondVar<b
 
 EventQueue::~EventQueue()
 {
-  delete m_readyCondVar;
-  delete m_readyMutex;
-
   ARCH->setSignalHandler(Arch::ThreadSignal::Interrupt, nullptr, nullptr);
   ARCH->setSignalHandler(Arch::ThreadSignal::Terminate, nullptr, nullptr);
 }
@@ -52,14 +50,16 @@ int EventQueue::loop()
     Lock lock(m_readyMutex);
     *m_readyCondVar = true;
     m_readyCondVar->signal();
+    // drain pending events under the same lock that addEvent uses
+    // to prevent a race where events are pushed after the drain
+    while (!m_pending.empty()) {
+      LOG_DEBUG("add pending events to buffer");
+      Event &event = m_pending.front();
+      addEventToBuffer(std::move(event));
+      m_pending.pop();
+    }
   }
   LOG_DEBUG("event queue is ready");
-  while (!m_pending.empty()) {
-    LOG_DEBUG("add pending events to buffer");
-    Event &event = m_pending.front();
-    addEventToBuffer(std::move(event));
-    m_pending.pop();
-  }
 
   Event event;
   getEvent(event);
@@ -195,10 +195,14 @@ void EventQueue::addEvent(Event &&event)
   if ((event.getFlags() & Event::EventFlags::DeliverImmediately) != 0) {
     dispatchEvent(event);
     Event::deleteData(event);
-  } else if (!(*m_readyCondVar)) {
-    m_pending.push(std::move(event));
   } else {
-    addEventToBuffer(std::move(event));
+    // hold m_readyMutex to prevent race with loop()'s pending drain
+    Lock lock(m_readyMutex);
+    if (!(*m_readyCondVar)) {
+      m_pending.push(std::move(event));
+    } else {
+      addEventToBuffer(std::move(event));
+    }
   }
 }
 

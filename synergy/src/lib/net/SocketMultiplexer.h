@@ -9,6 +9,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 template <class T> class CondVar;
 class Mutex;
@@ -87,12 +88,12 @@ private:
   void unlockJobList();
 
 private:
-  Mutex *m_mutex = nullptr;
-  Thread *m_thread = nullptr;
+  std::unique_ptr<Mutex> m_mutex;
+  std::unique_ptr<Thread> m_thread;
   bool m_update = false;
-  CondVar<bool> *m_jobsReady = nullptr;
-  CondVar<bool> *m_jobListLock = nullptr;
-  CondVar<bool> *m_jobListLockLocked = nullptr;
+  std::unique_ptr<CondVar<bool>> m_jobsReady;
+  std::unique_ptr<CondVar<bool>> m_jobListLock;
+  std::unique_ptr<CondVar<bool>> m_jobListLockLocked;
   Thread *m_jobListLocker = nullptr;
   Thread *m_jobListLockLocker = nullptr;
 

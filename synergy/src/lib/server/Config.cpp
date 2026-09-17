@@ -2005,7 +2005,7 @@ IPlatformScreen::ButtonInfo ConfigReadContext::parseMouse(const std::string &mou
   }
 
   char *end;
-  auto button = (ButtonID)strtol(s.c_str(), &end, 10);
+  auto button = static_cast<ButtonID>(strtol(s.c_str(), &end, 10));
   if (*end != '\0') {
     throw ServerConfigReadException(*this, "unable to parse button");
   }

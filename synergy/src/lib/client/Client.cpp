@@ -437,7 +437,8 @@ void Client::setupScreen()
 void Client::setupTimer()
 {
   assert(m_timer == nullptr);
-  m_timer = m_events->newOneShotTimer(2.0, nullptr);
+  // increased from 2s to 5s to tolerate TLS handshake and slow networks
+  m_timer = m_events->newOneShotTimer(5.0, nullptr);
   m_events->addHandler(EventTypes::Timer, m_timer, [this](const auto &) { handleConnectTimeout(); });
 }
 
