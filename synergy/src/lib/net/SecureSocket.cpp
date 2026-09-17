@@ -12,7 +12,7 @@
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Settings.h"
-#include "deskflow/ipc/CoreIpc.h"
+#include "ipc/CoreIpc.h"
 #include "mt/Lock.h"
 #include "net/FingerprintDatabase.h"
 #include "net/TCPSocket.h"

@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "deskflow/ClipboardChunk.h"
-#include "deskflow/ClipboardTypes.h"
-#include "deskflow/KeyTypes.h"
-#include "deskflow/KeyboardLayoutManager.h"
+#include "ClipboardChunk.h"
+#include "ClipboardTypes.h"
+#include "KeyTypes.h"
+#include "KeyboardLayoutManager.h"
 
 class Client;
 class ClientInfo;

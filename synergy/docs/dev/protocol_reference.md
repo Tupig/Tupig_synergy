@@ -1,10 +1,10 @@
 # Protocol Reference {#protocol_reference}
 
-This document provides a comprehensive reference for the Deskflow network protocol. It is the primary source of information for developers implementing Deskflow clients or extending the protocol.
+This document provides a comprehensive reference for the Synergy network protocol. It is the primary source of information for developers implementing Deskflow clients or extending the protocol.
 
 ## Protocol Overview
 
-The Deskflow protocol enables keyboard and mouse sharing between multiple computers over a TCP network connection. The protocol uses two distinct sets of terminology to describe the roles of the computers involved:
+The Synergy protocol enables keyboard and mouse sharing between multiple computers over a TCP network connection. The protocol uses two distinct sets of terminology to describe the roles of the computers involved:
 
 - **Network Role (Client/Server)**: This describes the connection architecture.
   - **Server**: The machine that listens for incoming TCP connections.

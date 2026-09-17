@@ -7,7 +7,7 @@
 
 #include "KeyboardLayoutManagerTests.h"
 
-#include "deskflow/KeyboardLayoutManager.h"
+#include "KeyboardLayoutManager.h"
 
 void KeyboardLayoutManagerTests::initTestCase()
 {

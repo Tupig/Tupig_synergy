@@ -14,7 +14,7 @@
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
 #include "common/VersionInfo.h"
-#include "deskflow/ipc/DaemonIpcServer.h"
+#include "ipc/DaemonIpcServer.h"
 
 #if defined(Q_OS_WIN)
 #include "arch/win32/ArchMiscWindows.h"

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "deskflow/AppUtil.h"
+#include "AppUtil.h"
 
 #define ARCH_APP_UTIL AppUtilUnix
 

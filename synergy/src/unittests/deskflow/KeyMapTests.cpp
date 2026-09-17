@@ -6,7 +6,7 @@
  */
 #include "KeyMapTests.h"
 
-#include "deskflow/KeyMap.h"
+#include "KeyMap.h"
 
 using namespace deskflow;
 using KeyItemList = KeyMap::KeyItemList;

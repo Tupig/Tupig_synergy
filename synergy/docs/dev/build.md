@@ -1,13 +1,13 @@
-# Building Deskflow
+# Building Synergy
 
-To build Deskflow you will a minimum of: 
+To build Synergy you will a minimum of: 
     - [cmake] 3.24+
     - [Qt] 6.7.0+
     - [openssl] 3.0+
     - [libportal] 0.9.1+ (linux, bsd)
     - [libei] 1.3+ (linux, bsd)
 
-By default a build of Deskflow will: 
+By default a build of Synergy will: 
      - The GUI application `deskflow`
      - The Core application `deskflow-core`
      - Documentation if [doxygen] was found on your system
@@ -15,7 +15,7 @@ By default a build of Deskflow will:
 
 ## Configuration
 
-Deskflow supports the following CMake options:
+Synergy supports the following CMake options:
 
 |         Option           |            Description                  |   Default Value    | Additional requirements |
 :-------------------------:|:---------------------------------------:|:------------------:|:-----------------------:|
@@ -88,13 +88,13 @@ After configuring you should be able to run make to build all targets.
 
 ## Making Deskflow packages
 
- Deskflow can generate several packages using `cpack`.
+ Synergy can generate several packages using `cpack`.
  
  To generate packages build the `package` or `package_source` target.
 
  Example: ` cmake --build build --target package package_source` would generate both package and package source packages.
  
- Deskflow can generate several package types depending on the system. 
+ Synergy can generate several package types depending on the system. 
  
  Archive-based packages should work on all platforms. On Linux deb and rpm info is set up, Flatpaks can be generated from the included file in deploy/linux and a `PKGBUILD` for Arch linux is generated in the build folder. On macos a dmg file will be created and signed. For windows WiX can be used to create an installer.
  

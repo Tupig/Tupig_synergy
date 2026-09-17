@@ -10,9 +10,9 @@
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "deskflow/DeskflowException.h"
-#include "deskflow/ProtocolTypes.h"
-#include "deskflow/ProtocolUtil.h"
+#include "DeskflowException.h"
+#include "ProtocolTypes.h"
+#include "ProtocolUtil.h"
 #include "io/IStream.h"
 #include "server/ClientProxy1_0.h"
 #include "server/ClientProxy1_1.h"

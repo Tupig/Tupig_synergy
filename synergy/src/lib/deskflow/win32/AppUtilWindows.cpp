@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#include "deskflow/win32/AppUtilWindows.h"
+#include "win32/AppUtilWindows.h"
 
 #include "arch/Arch.h"
 #include "arch/win32/ArchDaemonWindows.h"
@@ -17,11 +17,11 @@
 #include "base/Log.h"
 #include "base/LogOutputters.h"
 #include "common/Constants.h"
-#include "deskflow/App.h"
-#include "deskflow/DeskflowException.h"
-#include "deskflow/Screen.h"
+#include "App.h"
+#include "DeskflowException.h"
+#include "Screen.h"
 #include "mt/Thread.h"
-#include "platform/MSWindowsScreen.h"
+#include "MSWindowsScreen.h"
 
 #include <Windows.h>
 #include <conio.h>

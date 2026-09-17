@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "deskflow/IClient.h"
+#include "IClient.h"
 
 namespace deskflow {
 class IStream;

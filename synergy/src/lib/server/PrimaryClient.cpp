@@ -8,7 +8,7 @@
 #include "server/PrimaryClient.h"
 
 #include "base/Log.h"
-#include "deskflow/Screen.h"
+#include "Screen.h"
 //
 // PrimaryClient
 //

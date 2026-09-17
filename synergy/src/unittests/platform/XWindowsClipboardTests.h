@@ -11,7 +11,7 @@
 #include <QTest>
 
 #if !WINAPI_LIBEI && !WINAPI_PORTAL
-#include "platform/XWindowsClipboard.h"
+#include "XWindowsClipboard.h"
 #endif
 
 class XWindowsClipboardTests : public QObject

@@ -10,8 +10,8 @@
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "deskflow/DeskflowException.h"
-#include "deskflow/ProtocolUtil.h"
+#include "DeskflowException.h"
+#include "ProtocolUtil.h"
 #include "io/IStream.h"
 
 #include <cstring>

@@ -8,7 +8,7 @@
 
 #include "MSWindowsClipboardTests.h"
 
-#include "platform/MSWindowsClipboard.h"
+#include "MSWindowsClipboard.h"
 
 void MSWindowsClipboardTests::initTestCase()
 {

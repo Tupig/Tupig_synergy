@@ -11,10 +11,10 @@
 #include "base/Event.h"
 #include "base/Stopwatch.h"
 #include "common/NetworkProtocol.h"
-#include "deskflow/Clipboard.h"
-#include "deskflow/ClipboardTypes.h"
-#include "deskflow/KeyTypes.h"
-#include "deskflow/MouseTypes.h"
+#include "Clipboard.h"
+#include "ClipboardTypes.h"
+#include "KeyTypes.h"
+#include "MouseTypes.h"
 #include "server/Config.h"
 
 #include <climits>

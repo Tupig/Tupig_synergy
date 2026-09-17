@@ -5,8 +5,8 @@
  */
 
 #include "base/Log.h"
-#include "deskflow/KeyboardLayoutManager.h"
-#include "deskflow/ProtocolUtil.h"
+#include "KeyboardLayoutManager.h"
+#include "ProtocolUtil.h"
 
 #include "ClientProxy1_8.h"
 

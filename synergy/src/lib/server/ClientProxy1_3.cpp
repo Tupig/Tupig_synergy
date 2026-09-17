@@ -10,7 +10,7 @@
 
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "deskflow/ProtocolUtil.h"
+#include "ProtocolUtil.h"
 
 #include <cstring>
 

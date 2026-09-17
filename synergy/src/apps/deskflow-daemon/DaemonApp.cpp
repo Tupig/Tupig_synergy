@@ -13,14 +13,14 @@
 #include "base/LogOutputters.h"
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
-#include "deskflow/ipc/DaemonIpcServer.h"
+#include "ipc/DaemonIpcServer.h"
 
 #if defined(Q_OS_WIN)
 #include "arch/win32/ArchDaemonWindows.h"
-#include "deskflow/Screen.h"
-#include "platform/MSWindowsDebugOutputter.h"
-#include "platform/MSWindowsEventQueueBuffer.h"
-#include "platform/MSWindowsWatchdog.h"
+#include "Screen.h"
+#include "MSWindowsDebugOutputter.h"
+#include "MSWindowsEventQueueBuffer.h"
+#include "MSWindowsWatchdog.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

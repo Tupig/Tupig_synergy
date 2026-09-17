@@ -10,8 +10,8 @@
 
 #include "base/BaseException.h"
 #include "base/String.h"
-#include "deskflow/IPlatformScreen.h"
-#include "deskflow/OptionTypes.h"
+#include "IPlatformScreen.h"
+#include "OptionTypes.h"
 #include "net/NetworkAddress.h"
 #include "server/InputFilter.h"
 

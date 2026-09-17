@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "deskflow/IClient.h"
+#include "IClient.h"
 
 #include "base/EventTypes.h"
 #include "common/Enums.h"
-#include "deskflow/IClipboard.h"
+#include "IClipboard.h"
 #include "net/NetworkAddress.h"
 
 #include <climits>

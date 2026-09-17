@@ -7,9 +7,9 @@
 #include "server/ClientProxy1_6.h"
 
 #include "base/Log.h"
-#include "deskflow/ClipboardChunk.h"
-#include "deskflow/ProtocolUtil.h"
-#include "deskflow/StreamChunker.h"
+#include "ClipboardChunk.h"
+#include "ProtocolUtil.h"
+#include "StreamChunker.h"
 #include "io/IStream.h"
 #include "server/Server.h"
 

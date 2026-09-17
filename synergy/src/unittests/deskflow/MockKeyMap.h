@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include "deskflow/KeyMap.h"
+#include "KeyMap.h"
 
 // NOTE: do not mock methods that are not pure virtual. this mock exists only
 // to provide an implementation of the KeyMap abstract class.

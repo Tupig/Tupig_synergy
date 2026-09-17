@@ -39,7 +39,7 @@
 #endif
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-#include "platform/XDGPortalRegistry.h"
+#include "XDGPortalRegistry.h"
 #endif
 
 using namespace deskflow::gui;

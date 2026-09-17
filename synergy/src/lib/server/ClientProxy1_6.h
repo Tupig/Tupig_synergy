@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "deskflow/ClipboardChunk.h"
+#include "ClipboardChunk.h"
 #include "server/ClientProxy1_5.h"
 
 #include <string>

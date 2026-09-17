@@ -9,9 +9,9 @@
 #pragma once
 
 #include "base/DirectionTypes.h"
-#include "deskflow/IPlatformScreen.h"
-#include "deskflow/KeyTypes.h"
-#include "deskflow/MouseTypes.h"
+#include "IPlatformScreen.h"
+#include "KeyTypes.h"
+#include "MouseTypes.h"
 
 #include <set>
 

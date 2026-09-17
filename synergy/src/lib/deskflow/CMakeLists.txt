@@ -5,7 +5,7 @@
 
 set(lib_name app)
 
-# arch
+# Platform-specific code
 if(WIN32)
   set(PLATFORM_CODE
     win32/AppUtilWindows.cpp
@@ -24,69 +24,89 @@ elseif(UNIX)
 endif()
 
 add_library(${lib_name} STATIC ${PLATFORM_CODE}
-  App.cpp
-  App.h
-  AppUtil.cpp
-  AppUtil.h
-  Chunk.cpp
-  Chunk.h
-  ClientApp.cpp
-  ClientApp.h
-  ClipboardTypes.h
-  Clipboard.cpp
-  Clipboard.h
-  ClipboardChunk.cpp
-  ClipboardChunk.h
-  DeskflowException.cpp
-  DeskflowException.h
-  DisplayInvalidException.h
-  IApp.h
-  IClient.h
-  IClipboard.cpp
-  IClipboard.h
-  IKeyState.cpp
-  IKeyState.h
-  IPlatformScreen.cpp
-  IPlatformScreen.h
-  IPrimaryScreen.cpp
-  IPrimaryScreen.h
-  IScreen.h
-  IScreenSaver.h
-  ISecondaryScreen.h
-  KeyTypes.cpp
-  KeyTypes.h
-  KeyMap.cpp
-  KeyMap.h
-  KeyState.cpp
-  KeyState.h
-  MouseTypes.h
-  OptionTypes.h
-  PacketStreamFilter.cpp
-  PacketStreamFilter.h
-  PlatformScreen.cpp
-  PlatformScreen.h
-  ProtocolTypes.cpp
-  ProtocolTypes.h
-  ProtocolUtil.cpp
-  ProtocolUtil.h
-  Screen.cpp
-  Screen.h
-  ScreenException.cpp
-  ScreenException.h
-  ServerApp.cpp
-  ServerApp.h
-  StreamChunker.cpp
-  StreamChunker.h
-  KeyboardLayoutManager.cpp
-  KeyboardLayoutManager.h
-  ipc/IpcServer.cpp
-  ipc/IpcServer.h
-  ipc/DaemonIpcServer.cpp
-  ipc/DaemonIpcServer.h
+  # Core
+  core/App.cpp
+  core/App.h
+  core/AppUtil.cpp
+  core/AppUtil.h
+  core/ClientApp.cpp
+  core/ClientApp.h
+  core/ServerApp.cpp
+  core/ServerApp.h
+  core/IApp.h
+  core/IClient.h
+  core/DeskflowException.cpp
+  core/DeskflowException.h
+  core/DisplayInvalidException.h
+  # Clipboard
+  clipboard/Clipboard.cpp
+  clipboard/Clipboard.h
+  clipboard/ClipboardChunk.cpp
+  clipboard/ClipboardChunk.h
+  clipboard/ClipboardTypes.h
+  clipboard/IClipboard.cpp
+  clipboard/IClipboard.h
+  # Input
+  input/KeyMap.cpp
+  input/KeyMap.h
+  input/KeyState.cpp
+  input/KeyState.h
+  input/KeyTypes.cpp
+  input/KeyTypes.h
+  input/MouseTypes.h
+  input/KeyboardLayoutManager.cpp
+  input/KeyboardLayoutManager.h
+  input/IKeyState.cpp
+  input/IKeyState.h
+  # Protocol
+  protocol/Chunk.cpp
+  protocol/Chunk.h
+  protocol/OptionTypes.h
+  protocol/PacketStreamFilter.cpp
+  protocol/PacketStreamFilter.h
+  protocol/ProtocolTypes.cpp
+  protocol/ProtocolTypes.h
+  protocol/ProtocolUtil.cpp
+  protocol/ProtocolUtil.h
+  protocol/StreamChunker.cpp
+  protocol/StreamChunker.h
+  # Screen
+  screen/IPlatformScreen.cpp
+  screen/IPlatformScreen.h
+  screen/IPrimaryScreen.cpp
+  screen/IPrimaryScreen.h
+  screen/IScreen.h
+  screen/IScreenSaver.h
+  screen/ISecondaryScreen.h
+  screen/PlatformScreen.cpp
+  screen/PlatformScreen.h
+  screen/Screen.cpp
+  screen/Screen.h
+  screen/ScreenException.cpp
+  screen/ScreenException.h
+  # IPC
   ipc/CoreIpc.cpp
   ipc/CoreIpc.h
   ipc/CoreIpcServer.cpp
   ipc/CoreIpcServer.h
+  ipc/DaemonIpcServer.cpp
+  ipc/DaemonIpcServer.h
+  ipc/IpcServer.cpp
+  ipc/IpcServer.h
+)
+
+# Add deskflow subdirectories to include path so files can include each other
+# using just the filename (e.g., #include "App.h" instead of #include "core/App.h")
+target_include_directories(${lib_name} PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/core
+  ${CMAKE_CURRENT_SOURCE_DIR}/clipboard
+  ${CMAKE_CURRENT_SOURCE_DIR}/input
+  ${CMAKE_CURRENT_SOURCE_DIR}/protocol
+  ${CMAKE_CURRENT_SOURCE_DIR}/screen
+  ${CMAKE_CURRENT_SOURCE_DIR}/ipc
+  ${CMAKE_CURRENT_SOURCE_DIR}/win32
+  ${CMAKE_CURRENT_SOURCE_DIR}/unix
 )
 
 target_link_libraries(${lib_name} PUBLIC common Qt6::Core Qt6::Network)

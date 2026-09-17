@@ -11,7 +11,7 @@
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
 #include "common/VersionInfo.h"
-#include "deskflow/ProtocolTypes.h"
+#include "ProtocolTypes.h"
 
 #include <QTextStream>
 

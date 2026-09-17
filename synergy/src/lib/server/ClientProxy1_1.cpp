@@ -8,7 +8,7 @@
 #include "server/ClientProxy1_1.h"
 
 #include "base/Log.h"
-#include "deskflow/ProtocolUtil.h"
+#include "ProtocolUtil.h"
 
 //
 // ClientProxy1_1

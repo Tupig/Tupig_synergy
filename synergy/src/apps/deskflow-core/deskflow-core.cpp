@@ -13,9 +13,9 @@
 #include "base/Log.h"
 #include "common/Constants.h"
 #include "common/ExitCodes.h"
-#include "deskflow/ClientApp.h"
-#include "deskflow/ServerApp.h"
-#include "deskflow/ipc/CoreIpcServer.h"
+#include "ClientApp.h"
+#include "ServerApp.h"
+#include "ipc/CoreIpcServer.h"
 
 #if defined(Q_OS_WIN)
 #include "arch/win32/ArchMiscWindows.h"

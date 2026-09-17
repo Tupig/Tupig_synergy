@@ -24,147 +24,148 @@ endif()
 
 if(WIN32)
   set(PLATFORM_SOURCES
-    IMSWindowsClipboardFacade.h
-    MSWindowsClipboard.cpp
-    MSWindowsClipboard.h
-    MSWindowsClipboardAnyTextConverter.cpp
-    MSWindowsClipboardAnyTextConverter.h
-    MSWindowsClipboardBitmapConverter.cpp
-    MSWindowsClipboardBitmapConverter.h
-    MSWindowsClipboardFacade.cpp
-    MSWindowsClipboardFacade.h
-    MSWindowsClipboardHTMLConverter.cpp
-    MSWindowsClipboardHTMLConverter.h
-    MSWindowsClipboardUTF16Converter.cpp
-    MSWindowsClipboardUTF16Converter.h
-    MSWindowsDebugOutputter.cpp
-    MSWindowsDebugOutputter.h
-    MSWindowsDesks.cpp
-    MSWindowsDesks.h
-    MSWindowsEventQueueBuffer.cpp
-    MSWindowsEventQueueBuffer.h
-    MSWindowsHook.cpp
-    MSWindowsHook.h
-    MSWindowsKeyState.cpp
-    MSWindowsKeyState.h
-    MSWindowsPowerManager.cpp
-    MSWindowsPowerManager.h
-    MSWindowsProcess.cpp
-    MSWindowsProcess.h
-    MSWindowsScreen.cpp
-    MSWindowsScreen.h
-    MSWindowsScreenSaver.cpp
-    MSWindowsScreenSaver.h
-    MSWindowsSession.cpp
-    MSWindowsSession.h
-    MSWindowsWatchdog.cpp
-    MSWindowsWatchdog.h
+    win32/IMSWindowsClipboardFacade.h
+    win32/MSWindowsClipboard.cpp
+    win32/MSWindowsClipboard.h
+    win32/MSWindowsClipboardAnyTextConverter.cpp
+    win32/MSWindowsClipboardAnyTextConverter.h
+    win32/MSWindowsClipboardBitmapConverter.cpp
+    win32/MSWindowsClipboardBitmapConverter.h
+    win32/MSWindowsClipboardFacade.cpp
+    win32/MSWindowsClipboardFacade.h
+    win32/MSWindowsClipboardHTMLConverter.cpp
+    win32/MSWindowsClipboardHTMLConverter.h
+    win32/MSWindowsClipboardUTF16Converter.cpp
+    win32/MSWindowsClipboardUTF16Converter.h
+    win32/MSWindowsDebugOutputter.cpp
+    win32/MSWindowsDebugOutputter.h
+    win32/MSWindowsDesks.cpp
+    win32/MSWindowsDesks.h
+    win32/MSWindowsEventQueueBuffer.cpp
+    win32/MSWindowsEventQueueBuffer.h
+    win32/MSWindowsHandle.h
+    win32/MSWindowsHook.cpp
+    win32/MSWindowsHook.h
+    win32/MSWindowsKeyState.cpp
+    win32/MSWindowsKeyState.h
+    win32/MSWindowsPowerManager.cpp
+    win32/MSWindowsPowerManager.h
+    win32/MSWindowsProcess.cpp
+    win32/MSWindowsProcess.h
+    win32/MSWindowsScreen.cpp
+    win32/MSWindowsScreen.h
+    win32/MSWindowsScreenSaver.cpp
+    win32/MSWindowsScreenSaver.h
+    win32/MSWindowsSession.cpp
+    win32/MSWindowsSession.h
+    win32/MSWindowsWatchdog.cpp
+    win32/MSWindowsWatchdog.h
   )
 elseif(APPLE)
   set(PLATFORM_SOURCES
-    IOSXKeyResource.cpp
-    IOSXKeyResource.h
-    OSXAutoTypes.h
-    OSXClipboard.cpp
-    OSXClipboard.h
-    OSXClipboardAnyBitmapConverter.cpp
-    OSXClipboardAnyBitmapConverter.h
-    OSXClipboardAnyTextConverter.cpp
-    OSXClipboardAnyTextConverter.h
-    OSXClipboardBMPConverter.cpp
-    OSXClipboardBMPConverter.h
-    OSXClipboardHTMLConverter.cpp
-    OSXClipboardHTMLConverter.h
-    OSXClipboardTextConverter.cpp
-    OSXClipboardTextConverter.h
-    OSXClipboardUTF8Converter.cpp
-    OSXClipboardUTF8Converter.h
-    OSXClipboardUTF16Converter.cpp
-    OSXClipboardUTF16Converter.h
-    OSXCocoaApp.h
-    OSXCocoaApp.m
-    OSXEventQueueBuffer.cpp
-    OSXEventQueueBuffer.h
-    OSXKeyState.cpp
-    OSXKeyState.h
-    OSXMediaKeySupport.h
-    OSXMediaKeySupport.m
-    OSXPasteboardPeeker.h
-    OSXPasteboardPeeker.m
-    OSXPowerManager.cpp
-    OSXPowerManager.h
-    OSXScreen.h
-    OSXScreen.mm
-    OSXScreenSaver.cpp
-    OSXScreenSaver.h
-    OSXScreenSaverControl.h
-    OSXScreenSaverUtil.h
-    OSXScreenSaverUtil.m
-    OSXUchrKeyResource.cpp
-    OSXUchrKeyResource.h
+    macos/IOSXKeyResource.cpp
+    macos/IOSXKeyResource.h
+    macos/OSXAutoTypes.h
+    macos/OSXClipboard.cpp
+    macos/OSXClipboard.h
+    macos/OSXClipboardAnyBitmapConverter.cpp
+    macos/OSXClipboardAnyBitmapConverter.h
+    macos/OSXClipboardAnyTextConverter.cpp
+    macos/OSXClipboardAnyTextConverter.h
+    macos/OSXClipboardBMPConverter.cpp
+    macos/OSXClipboardBMPConverter.h
+    macos/OSXClipboardHTMLConverter.cpp
+    macos/OSXClipboardHTMLConverter.h
+    macos/OSXClipboardTextConverter.cpp
+    macos/OSXClipboardTextConverter.h
+    macos/OSXClipboardUTF8Converter.cpp
+    macos/OSXClipboardUTF8Converter.h
+    macos/OSXClipboardUTF16Converter.cpp
+    macos/OSXClipboardUTF16Converter.h
+    macos/OSXCocoaApp.h
+    macos/OSXCocoaApp.m
+    macos/OSXEventQueueBuffer.cpp
+    macos/OSXEventQueueBuffer.h
+    macos/OSXKeyState.cpp
+    macos/OSXKeyState.h
+    macos/OSXMediaKeySupport.h
+    macos/OSXMediaKeySupport.m
+    macos/OSXPasteboardPeeker.h
+    macos/OSXPasteboardPeeker.m
+    macos/OSXPowerManager.cpp
+    macos/OSXPowerManager.h
+    macos/OSXScreen.h
+    macos/OSXScreen.mm
+    macos/OSXScreenSaver.cpp
+    macos/OSXScreenSaver.h
+    macos/OSXScreenSaverControl.h
+    macos/OSXScreenSaverUtil.h
+    macos/OSXScreenSaverUtil.m
+    macos/OSXUchrKeyResource.cpp
+    macos/OSXUchrKeyResource.h
   )
 elseif(UNIX)
   set(PLATFORM_SOURCES
-    XDGPortalRegistry.h
-    XDGPowerManager.cpp
-    XDGPowerManager.h
-    XDGKeyUtil.h
-    XDGKeyUtil.cpp
+    linux/XDGPortalRegistry.h
+    linux/XDGPowerManager.cpp
+    linux/XDGPowerManager.h
+    linux/XDGKeyUtil.h
+    linux/XDGKeyUtil.cpp
   )
   if (BUILD_X11_SUPPORT)
-    configure_file(XWindowsConfig.h.in XWindowsConfig.h @ONLY)
+    configure_file(linux/XWindowsConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/XWindowsConfig.h @ONLY)
     list(APPEND PLATFORM_SOURCES
-      XWindowsClipboard.cpp
-      XWindowsClipboard.h
-      XWindowsClipboardAnyBitmapConverter.cpp
-      XWindowsClipboardAnyBitmapConverter.h
-      XWindowsClipboardBMPConverter.cpp
-      XWindowsClipboardBMPConverter.h
-      XWindowsClipboardHTMLConverter.cpp
-      XWindowsClipboardHTMLConverter.h
-      XWindowsClipboardTextConverter.cpp
-      XWindowsClipboardTextConverter.h
-      XWindowsClipboardUCS2Converter.cpp
-      XWindowsClipboardUCS2Converter.h
-      XWindowsClipboardUTF8Converter.cpp
-      XWindowsClipboardUTF8Converter.h
-      XWindowsEventQueueBuffer.cpp
-      XWindowsEventQueueBuffer.h
-      XWindowsKeyState.cpp
-      XWindowsKeyState.h
-      XWindowsScreen.cpp
-      XWindowsScreen.h
-      XWindowsScreenSaver.cpp
-      XWindowsScreenSaver.h
-      XWindowsUtil.cpp
-      XWindowsUtil.h
+      linux/XWindowsClipboard.cpp
+      linux/XWindowsClipboard.h
+      linux/XWindowsClipboardAnyBitmapConverter.cpp
+      linux/XWindowsClipboardAnyBitmapConverter.h
+      linux/XWindowsClipboardBMPConverter.cpp
+      linux/XWindowsClipboardBMPConverter.h
+      linux/XWindowsClipboardHTMLConverter.cpp
+      linux/XWindowsClipboardHTMLConverter.h
+      linux/XWindowsClipboardTextConverter.cpp
+      linux/XWindowsClipboardTextConverter.h
+      linux/XWindowsClipboardUCS2Converter.cpp
+      linux/XWindowsClipboardUCS2Converter.h
+      linux/XWindowsClipboardUTF8Converter.cpp
+      linux/XWindowsClipboardUTF8Converter.h
+      linux/XWindowsEventQueueBuffer.cpp
+      linux/XWindowsEventQueueBuffer.h
+      linux/XWindowsKeyState.cpp
+      linux/XWindowsKeyState.h
+      linux/XWindowsScreen.cpp
+      linux/XWindowsScreen.h
+      linux/XWindowsScreenSaver.cpp
+      linux/XWindowsScreenSaver.h
+      linux/XWindowsUtil.cpp
+      linux/XWindowsUtil.h
       ${CMAKE_CURRENT_BINARY_DIR}/XWindowsConfig.h
     )
   endif()
 
   if(LIBEI_FOUND)
     list(APPEND PLATFORM_SOURCES
-      EiClipboard.cpp
-      EiClipboard.h
-      EiEventQueueBuffer.cpp
-      EiEventQueueBuffer.h
-      EiKeyState.cpp
-      EiKeyState.h
-      EiScreen.cpp
-      EiScreen.h
+      linux/EiClipboard.cpp
+      linux/EiClipboard.h
+      linux/EiEventQueueBuffer.cpp
+      linux/EiEventQueueBuffer.h
+      linux/EiKeyState.cpp
+      linux/EiKeyState.h
+      linux/EiScreen.cpp
+      linux/EiScreen.h
     )
     # The Portal sources also require EI.
     if(LIBPORTAL_FOUND)
       list(APPEND PLATFORM_SOURCES
-        PortalInputCapture.cpp
-        PortalInputCapture.h
-        PortalRemoteDesktop.cpp
-        PortalRemoteDesktop.h
+        linux/PortalInputCapture.cpp
+        linux/PortalInputCapture.h
+        linux/PortalRemoteDesktop.cpp
+        linux/PortalRemoteDesktop.h
       )
       if(HAVE_LP_CLIPBOARD)
         list(APPEND PLATFORM_SOURCES
-          PortalClipboard.cpp
-          PortalClipboard.h
+          linux/PortalClipboard.cpp
+          linux/PortalClipboard.h
         )
       endif()
     endif()
@@ -173,6 +174,16 @@ endif()
 
 # wayland.h is included to check for wayland support
 add_library(platform STATIC ${PLATFORM_SOURCES})
+
+# Add platform subdirectories to include path so files can include each other
+# using just the filename (e.g., #include "EiClipboard.h" instead of #include "linux/EiClipboard.h")
+# PUBLIC so other libraries (deskflow, etc.) can also find platform headers
+target_include_directories(platform PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/win32
+  ${CMAKE_CURRENT_SOURCE_DIR}/macos
+  ${CMAKE_CURRENT_SOURCE_DIR}/linux
+)
 
 target_link_libraries(platform client ${libs})
 

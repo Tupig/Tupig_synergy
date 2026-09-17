@@ -9,11 +9,11 @@
 #include "server/Config.h"
 
 #include "base/IEventQueue.h"
-#include "deskflow/DeskflowException.h"
-#include "deskflow/KeyMap.h"
-#include "deskflow/KeyTypes.h"
-#include "deskflow/OptionTypes.h"
-#include "deskflow/ProtocolTypes.h"
+#include "DeskflowException.h"
+#include "KeyMap.h"
+#include "KeyTypes.h"
+#include "OptionTypes.h"
+#include "ProtocolTypes.h"
 #include "net/SocketException.h"
 #include "server/Server.h"
 

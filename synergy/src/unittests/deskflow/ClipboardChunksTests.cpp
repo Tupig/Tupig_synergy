@@ -7,9 +7,9 @@
 
 #include "ClipboardChunksTests.h"
 
-#include "deskflow/ClipboardChunk.h"
-#include "deskflow/ProtocolTypes.h"
-#include "deskflow/ProtocolUtil.h"
+#include "ClipboardChunk.h"
+#include "ProtocolTypes.h"
+#include "ProtocolUtil.h"
 #include "io/IStream.h"
 
 #include <algorithm>

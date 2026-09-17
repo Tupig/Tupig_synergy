@@ -14,14 +14,51 @@
 
 ```
 synergy/
-├── src/                 # 核心源代码
-│   ├── lib/             # 核心库
-│   ├── apps/            # 应用程序
-│   └── unittests/       # 单元测试
-├── extra/               # 扩展功能（许可证系统已移除）
-├── cmake/               # CMake 配置
-├── subprojects/         # 第三方依赖
-└── docs/                # 文档
+├── src/                          # 核心源代码
+│   ├── apps/                     # 应用程序
+│   │   ├── deskflow-core/        # 核心服务
+│   │   ├── deskflow-daemon/      # 守护进程
+│   │   ├── deskflow-gui/         # GUI界面
+│   │   └── res/                  # 资源文件
+│   └── lib/                      # 核心库
+│       ├── arch/                 # 架构抽象层（跨平台接口）
+│       ├── base/                 # 基础工具（事件、日志、字符串）
+│       ├── client/               # 客户端实现
+│       ├── common/               # 公共定义（常量、枚举、设置）
+│       ├── deskflow/             # 核心逻辑库
+│       │   ├── core/             # 应用核心（App、Client、Server）
+│       │   ├── clipboard/        # 剪贴板功能
+│       │   ├── input/            # 输入处理（键盘、鼠标）
+│       │   ├── protocol/         # 网络协议
+│       │   ├── screen/           # 屏幕管理
+│       │   ├── ipc/              # 进程间通信
+│       │   ├── unix/             # Unix/Linux特定代码
+│       │   └── win32/            # Windows特定代码
+│       ├── gui/                  # GUI组件
+│       │   ├── config/           # 配置管理
+│       │   ├── core/             # GUI核心
+│       │   ├── dialogs/          # 对话框
+│       │   ├── ipc/              # GUI IPC
+│       │   ├── validators/       # 输入验证
+│       │   └── widgets/          # 自定义控件
+│       ├── io/                   # IO流抽象
+│       ├── mt/                   # 多线程（互斥锁、条件变量）
+│       ├── net/                  # 网络（TCP、SSL、Socket）
+│       ├── platform/             # 平台特定实现
+│       │   ├── win32/            # Windows实现
+│       │   ├── macos/            # macOS实现
+│       │   └── linux/            # Linux实现（X11、Wayland、Portal）
+│       └── server/               # 服务端实现
+├── extra/                        # 扩展功能（GUI hooks）
+├── cmake/                        # CMake配置
+├── deploy/                       # 部署脚本
+│   ├── linux/
+│   ├── mac/
+│   └── windows/
+├── docs/                         # 文档
+├── translations/                 # 翻译文件
+├── .github/                      # GitHub配置
+└── .vscode/                      # VS Code配置
 ```
 
 ## 编译说明
@@ -55,6 +92,32 @@ cmake --build build --config Release
 cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)
 ```
+
+## 模块说明
+
+### 核心库 (src/lib/)
+
+| 模块 | 说明 | 文件数 |
+|------|------|--------|
+| `arch` | 架构抽象层，提供跨平台的系统调用接口 | ~10 |
+| `base` | 基础工具库，事件队列、日志、字符串处理 | ~32 |
+| `client` | 客户端实现，处理与服务端的连接 | ~5 |
+| `common` | 公共定义，常量、枚举、配置 | ~16 |
+| `deskflow` | 核心逻辑，键鼠共享的主要实现 | ~59 |
+| `gui` | Qt GUI组件，用户界面 | ~33 |
+| `io` | IO流抽象 | ~8 |
+| `mt` | 多线程原语 | ~12 |
+| `net` | 网络通信，TCP/SSL | ~33 |
+| `platform` | 平台特定实现 | ~121 |
+| `server` | 服务端实现 | ~35 |
+
+### 应用程序 (src/apps/)
+
+| 应用 | 说明 |
+|------|------|
+| `deskflow-core` | 核心服务进程 |
+| `deskflow-daemon` | 后台守护进程 |
+| `deskflow-gui` | 图形用户界面 |
 
 ## 修改说明
 

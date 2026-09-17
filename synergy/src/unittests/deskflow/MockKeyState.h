@@ -8,7 +8,7 @@
 #pragma once
 
 #include "base/IEventQueue.h"
-#include "deskflow/KeyState.h"
+#include "KeyState.h"
 
 // NOTE: do not mock methods that are not pure virtual. this mock exists only
 // to provide an implementation of the KeyState abstract class.

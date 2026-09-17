@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "deskflow/AppUtil.h"
+#include "AppUtil.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include "Windows.h" // IWYU pragma: keep

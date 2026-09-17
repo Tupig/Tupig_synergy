@@ -8,7 +8,7 @@
 
 #include "KeyStateTests.h"
 #include "base/EventQueue.h"
-#include "deskflow/KeyMap.h"
+#include "KeyMap.h"
 
 #include "MockEventQueue.h"
 #include "MockKeyMap.h"

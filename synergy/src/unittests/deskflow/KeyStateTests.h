@@ -9,7 +9,7 @@
 
 #include "arch/Arch.h"
 #include "base/Log.h"
-#include "deskflow/KeyMap.h"
+#include "KeyMap.h"
 
 class KeyStateTests : public QObject
 {
