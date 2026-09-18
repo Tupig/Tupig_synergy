@@ -59,6 +59,12 @@ public:
 
   virtual ISocketMultiplexerJob *newJob();
 
+  // IDataSocket overrides
+  ArchSocket getSocket() const override
+  {
+    return m_socket;
+  }
+
 protected:
   enum class JobResult
   {

@@ -118,8 +118,9 @@ uint32_t LegacyNetworkTransport::getSize() const
 
 ArchSocket LegacyNetworkTransport::getSocket() const
 {
-  // Legacy sockets don't expose their raw socket directly
-  // This will be addressed in Step 3 when we implement QtTcpTransport
+  if (m_dataSocket) {
+    return m_dataSocket->getSocket();
+  }
   return nullptr;
 }
 

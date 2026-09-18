@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "arch/IArchNetwork.h"
 #include "io/IStream.h"
 #include "net/ISocket.h"
 
@@ -54,4 +55,12 @@ public:
   void *getEventTarget() const override;
 
   virtual bool isFatal() const = 0;
+
+  //! Get the underlying socket file descriptor
+  /*!
+  Returns the opaque socket handle for poll operations.
+  This is used by the transport layer to integrate with
+  platform-specific I/O multiplexing.
+  */
+  virtual ArchSocket getSocket() const = 0;
 };
