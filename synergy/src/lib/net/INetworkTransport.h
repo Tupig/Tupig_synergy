@@ -18,6 +18,12 @@
 This interface defines a unified abstraction for network transport implementations.
 It provides a common API for both legacy (raw sockets) and Qt-based transport,
 enabling runtime switching between implementations.
+
+Ownership Model:
+- INetworkTransport instances own their underlying socket resources
+- The socket is created/owned by the factory or the accept() method
+- Closing an INetworkTransport closes the underlying socket
+- Destruction of INetworkTransport closes and releases the socket
 */
 class INetworkTransport
 {
@@ -90,7 +96,12 @@ public:
 //! Listen socket interface for transport layer
 /*!
 This interface defines a listen socket that accepts connections
-and returns IDataSocket instances.
+and returns INetworkTransport instances.
+
+Ownership Model:
+- The listen socket owns the underlying socket resource
+- accept() returns a new INetworkTransport with ownership transferred
+- The caller owns the returned INetworkTransport instance
 */
 class ITransportListenSocket
 {

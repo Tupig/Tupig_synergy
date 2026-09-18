@@ -22,11 +22,11 @@ and reference implementation for the Qt-based transport.
 class LegacyNetworkTransport : public INetworkTransport
 {
 public:
-  //! Create a data transport wrapping an existing socket
-  LegacyNetworkTransport(IDataSocket *socket, IEventQueue *events);
+  //! Create a data transport wrapping an existing socket (takes ownership)
+  LegacyNetworkTransport(std::unique_ptr<IDataSocket> socket, IEventQueue *events);
 
-  //! Create a listen transport wrapping an existing socket
-  LegacyNetworkTransport(IListenSocket *socket, IEventQueue *events);
+  //! Create a listen transport wrapping an existing socket (takes ownership)
+  LegacyNetworkTransport(std::unique_ptr<IListenSocket> socket, IEventQueue *events);
 
   ~LegacyNetworkTransport() override;
 
@@ -52,8 +52,8 @@ public:
   IDataSocket *getSocketImpl() const;
 
 private:
-  IDataSocket *m_dataSocket = nullptr;
-  IListenSocket *m_listenSocket = nullptr;
+  std::unique_ptr<IDataSocket> m_dataSocket;
+  std::unique_ptr<IListenSocket> m_listenSocket;
   IEventQueue *m_events;
   SecurityLevel m_securityLevel = SecurityLevel::PlainText;
 };
@@ -65,12 +65,12 @@ This class wraps IListenSocket to provide ITransportListenSocket interface.
 class LegacyTransportListenSocket : public ITransportListenSocket
 {
 public:
-  LegacyTransportListenSocket(IListenSocket *socket);
+  LegacyTransportListenSocket(std::unique_ptr<IListenSocket> socket);
   ~LegacyTransportListenSocket() override;
 
   std::unique_ptr<INetworkTransport> accept() override;
   ArchSocket getSocket() const override;
 
 private:
-  IListenSocket *m_socket;
+  std::unique_ptr<IListenSocket> m_socket;
 };

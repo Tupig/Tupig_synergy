@@ -13,15 +13,15 @@
 // LegacyNetworkTransport
 //
 
-LegacyNetworkTransport::LegacyNetworkTransport(IDataSocket *socket, IEventQueue *events)
-    : m_dataSocket(socket),
+LegacyNetworkTransport::LegacyNetworkTransport(std::unique_ptr<IDataSocket> socket, IEventQueue *events)
+    : m_dataSocket(std::move(socket)),
       m_events(events)
 {
   // do nothing
 }
 
-LegacyNetworkTransport::LegacyNetworkTransport(IListenSocket *socket, IEventQueue *events)
-    : m_listenSocket(socket),
+LegacyNetworkTransport::LegacyNetworkTransport(std::unique_ptr<IListenSocket> socket, IEventQueue *events)
+    : m_listenSocket(std::move(socket)),
       m_events(events)
 {
   // do nothing
@@ -130,15 +130,15 @@ SecurityLevel LegacyNetworkTransport::getSecurityLevel() const
 
 IDataSocket *LegacyNetworkTransport::getSocketImpl() const
 {
-  return m_dataSocket;
+  return m_dataSocket.get();
 }
 
 //
 // LegacyTransportListenSocket
 //
 
-LegacyTransportListenSocket::LegacyTransportListenSocket(IListenSocket *socket)
-    : m_socket(socket)
+LegacyTransportListenSocket::LegacyTransportListenSocket(std::unique_ptr<IListenSocket> socket)
+    : m_socket(std::move(socket))
 {
   // do nothing
 }
@@ -152,7 +152,7 @@ std::unique_ptr<INetworkTransport> LegacyTransportListenSocket::accept()
     if (dataSocket) {
       // We need to get the event queue from somewhere
       // For now, pass nullptr - this will be fixed when we integrate
-      return std::make_unique<LegacyNetworkTransport>(dataSocket.release(), nullptr);
+      return std::make_unique<LegacyNetworkTransport>(std::move(dataSocket), nullptr);
     }
   }
   return nullptr;
