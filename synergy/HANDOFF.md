@@ -1,8 +1,9 @@
 # HANDOFF — TuPig Synergy 代码库优化重构
 
 > **最后更新**: 2026-09-18  
-> **分支**: `refactor/security-baseline`  
-> **最新 Commit**: `17d65778e` (docs: Phase 2 plan)
+> **当前分支**: `main`  
+> **最新 Commit**: `13d448213` (docs: add HANDOFF.md)  
+> **状态**: Phase 0+1 已完成并合并到 main，Phase 2 方案已制定
 
 ---
 
@@ -41,7 +42,7 @@
 ## 2. 已完成进展
 
 ### Phase 0: 基础设施 ✅
-- [x] 创建 `refactor/security-baseline` 分支
+- [x] 创建 `refactor/security-baseline` 分支 (已合并删除)
 - [x] `CMakePresets.json` 增强 (ASan/TSan/Coverage presets)
 - [x] `.github/workflows/static-analysis.yml` (clang-tidy + cppcheck CI)
 - [x] 删除误提交的 `CMakeUserPresets.json`
@@ -62,12 +63,19 @@
 - 安全审查: 通过，无高危发现
 - 并发审查: `InputValidator::isRateLimited` 非线程安全 (单线程场景 OK)
 
-### 提交记录 (按时间)
+### 分支合并 ✅
+- `refactor/security-baseline` 已合并到 `main` (fast-forward + rebase)
+- 分支已删除 (本地 + 远程)
+- 所有变更已推送到 `origin/main`
+
+### main 分支提交记录 (最新 6 个)
 ```
-72b6d74ca fix(security): address review findings
-106299284 feat(security): implement Phase 1 security fixes (S-1 through S-5)
-593a6de7f docs(security): add GitHub Issue tracking document
-93b95eec4 docs(security): update issue tracker
+13d448213 docs: add HANDOFF.md for session continuity
+f005aef5f docs(phase2): add detailed QtNetwork migration plan with contingency
+f38a6a1ea fix(security): address review findings — remaining assert, redundant assignment, comment clarity
+5bf7a34d5 docs(security): update issue tracker — S-4 and S-5 completed
+6ca684a6e feat(security): implement Phase 1 security fixes (S-1 through S-5)
+cca322a6c docs(security): add GitHub Issue tracking document for 23-item security/quality refactoring
 ```
 
 ---
@@ -93,7 +101,7 @@
 
 ## 4. 涉及的重要文件及代码位置
 
-### 4.1 核心变更文件
+### 4.1 核心变更文件 (已在 main)
 | 文件 | Phase | 变更内容 |
 |------|-------|----------|
 | `src/lib/net/SecureSocket.cpp` | S-1 | `verifyCertificateCallback` (行 68-108) |
@@ -111,8 +119,9 @@
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
 | `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 23 项 Issue 追踪 |
 | `docs/security.md` | 安全策略文档 |
-| `docs/phase2-qt-network-migration.md` | Phase 2 详细方案 |
-| `docs/optimization-plan.md` | 总体优化计划书 |
+| `docs/phase2-qt-network-migration.md` | Phase 2 详细方案 (412 行) |
+| `docs/optimization-plan.md` | 总体优化计划书 (317 行) |
+| `HANDOFF.md` | 本文件 — 会话交接文档 |
 
 ### 4.3 Phase 2 涉及文件 (待改)
 | 文件 | 用途 | 操作 |
@@ -187,4 +196,4 @@
 
 ---
 
-> **交接完成**。下一个 agent 应从审核 Phase 2 方案开始，确认后启动 Step 1。
+> **交接完成**。当前在 `main` 分支，Phase 0+1 已完成。下一个 agent 应从审核 Phase 2 方案开始，确认后启动 Step 1。
