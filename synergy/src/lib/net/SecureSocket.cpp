@@ -36,8 +36,6 @@
 //
 static const std::size_t s_maxInputBufferSize = 1024 * 1024;
 
-static const float s_retryDelay = 0.01f;
-
 struct Ssl
 {
   SSL_CTX *m_context = nullptr;
@@ -237,7 +235,7 @@ int SecureSocket::secureRead(void *buffer, int size, int &read)
     LOG_VERBOSE("reading secure socket");
     read = SSL_read(m_ssl->m_ssl, buffer, size);
 
-    static int retry;
+    int retry = 0;
 
     // Check result will cleanup the connection in the case of a fatal
     checkResult(read, retry);
@@ -265,7 +263,7 @@ int SecureSocket::secureWrite(const void *buffer, int size, int &wrote)
 
     wrote = SSL_write(m_ssl->m_ssl, buffer, size);
 
-    static int retry;
+    int retry = 0;
 
     // Check result will cleanup the connection in the case of a fatal
     checkResult(wrote, retry);

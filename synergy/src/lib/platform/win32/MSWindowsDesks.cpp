@@ -91,7 +91,13 @@ static void send_keyboard_input(WORD wVk, WORD wScan, DWORD dwFlags)
   inp.ki.dwFlags = dwFlags & 0xF;
   inp.ki.time = 0;
   inp.ki.dwExtraInfo = 0;
-  SendInput(1, &inp, sizeof(inp));
+  if (SendInput(1, &inp, sizeof(inp)) == 0) {
+    static bool s_loggedBlock = false;
+    if (!s_loggedBlock) {
+      s_loggedBlock = true;
+      LOG_WARN("SendInput blocked, input dropped (target window may run elevated)");
+    }
+  }
 }
 
 static void send_mouse_input(DWORD dwFlags, DWORD dx, DWORD dy, DWORD dwData)
@@ -104,7 +110,13 @@ static void send_mouse_input(DWORD dwFlags, DWORD dx, DWORD dy, DWORD dwData)
   inp.mi.mouseData = dwData;
   inp.mi.time = 0;
   inp.mi.dwExtraInfo = 0;
-  SendInput(1, &inp, sizeof(inp));
+  if (SendInput(1, &inp, sizeof(inp)) == 0) {
+    static bool s_loggedBlock = false;
+    if (!s_loggedBlock) {
+      s_loggedBlock = true;
+      LOG_WARN("SendInput blocked, input dropped (target window may run elevated)");
+    }
+  }
 }
 
 //

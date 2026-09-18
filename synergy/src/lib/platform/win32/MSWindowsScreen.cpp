@@ -1684,7 +1684,14 @@ void MSWindowsScreen::fakeLocalKey(KeyButton button, bool press) const
   input.ki.dwFlags = pressFlag;
   input.ki.time = 0;
   input.ki.dwExtraInfo = 0;
-  SendInput(1, &input, sizeof(input));
+  if (SendInput(1, &input, sizeof(input)) == 0) {
+    // UIPI blocks injection into elevated windows; log once, not per keystroke
+    static bool s_loggedBlock = false;
+    if (!s_loggedBlock) {
+      s_loggedBlock = true;
+      LOG_WARN("SendInput blocked, input dropped (target window may run elevated)");
+    }
+  }
 }
 
 //
