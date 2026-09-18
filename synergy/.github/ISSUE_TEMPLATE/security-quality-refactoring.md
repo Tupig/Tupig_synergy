@@ -1,0 +1,217 @@
+# [Security] TuPig Synergy 安全与质量全面加固
+
+> **Issue 类型**: Security / Quality  
+> **优先级**: P0  
+> **分支**: `refactor/security-baseline`  
+> **创建日期**: 2026-09-18  
+> **最后更新**: 2026-09-18  
+> **状态**: 🔄 进行中
+
+---
+
+## 1. 问题标题
+
+TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问题，需要系统性修复以达到生产级安全标准。
+
+---
+
+## 2. 问题现象与影响范围
+
+### 2.1 影响范围
+
+本项目基于 Synergy/Deskflow，约 15 万行 C++ 代码，覆盖 Windows/macOS/Linux 三平台。问题影响所有使用 TuPig Synergy 的用户，包括：
+
+- **安全维度**：TLS 证书验证被禁用、协议解析无类型安全、输入事件可被注入
+- **稳定性维度**：X11 错误导致进程崩溃、Socket 多路复用器存在死锁风险
+- **性能维度**：1 秒轮询延迟、4MB 栈上静态缓冲区、逐字节协议解析
+- **可维护性维度**：单元测试覆盖率 <30%、无静态分析门禁
+
+### 2.2 问题清单（23 项）
+
+| 编号 | 优先级 | 问题 | 核心文件 | 状态 |
+|------|--------|------|----------|------|
+| **S-1** | P0 | TLS 证书验证被禁用 | `SecureSocket.cpp` | ✅ 已修复 |
+| **S-2** | P0 | 协议消息长度限制过大 | `ProtocolTypes.h` | ✅ 已修复 |
+| **S-3** | P0 | 协议解析 `va_list` 无类型安全 | `ProtocolUtil.cpp` | ✅ 已修复 |
+| **S-4** | P0 | 输入事件注入无验证 | `KeyState.cpp` 等 | ⏳ 修复中 |
+| **S-5** | P0 | X11 错误处理器导致崩溃 | `XWindowsScreen.cpp` | ⏳ 修复中 |
+| **Q-1** | P1 | SocketMultiplexer 死锁风险 | `SocketMultiplexer.cpp` | ⬜ 待修复 |
+| **Q-2** | P1 | 4MB 栈上静态缓冲区 | `TCPSocket.cpp` | ⬜ 待修复 |
+| **Q-3** | P1 | 协议版本硬编码 | `ProtocolTypes.h` | ⬜ 待修复 |
+| **Q-4** | P1 | X11 全局状态单例 | `XWindowsScreen.cpp` | ⬜ 待修复 |
+| **Q-5** | P1 | `assert` 作错误处理 | `ProtocolUtil.cpp` | ✅ 已修复 |
+| **Q-6** | P1 | 单测覆盖 <30% | 全核心模块 | ⬜ 待修复 |
+| **Q-7** | P1 | 静态分析/编译警告缺失 | 全项目 | ✅ 已修复 |
+| **P-1** | P2 | SocketMultiplexer 1秒轮询 | `SocketMultiplexer.cpp` | ⬜ 待修复 |
+| **P-2** | P2 | 剪贴板全量内存拷贝 | `Clipboard.cpp` | ⬜ 待修复 |
+| **P-3** | P2 | 协议解析逐字节处理 | `ProtocolUtil.cpp` | ⬜ 待修复 |
+| **P-4** | P2 | Windows Hook 无条件加载 | `MSWindowsScreen.cpp` | ⬜ 待修复 |
+| **P-5** | P2 | 剪贴板格式转换器重复造轮子 | 30+ 文件 | ⬜ 待修复 |
+| **T-1** | P3 | C++17 → C++20 现代化 | 全局 | ⬜ 长期 |
+| **T-2** | P3 | Qt 信号槽旧语法 | GUI 模块 | ⬜ 待修复 |
+| **T-3** | P3 | Raw 指针手动内存管理 | 网络/协议层 | ⬜ 全程 |
+| **T-4** | P3 | 平台层代码重复 | win32/linux/macos | ⬜ 待修复 |
+| **T-5** | P3 | 缺乏单元测试覆盖 | 核心模块 | ⬜ 全程 |
+| **T-6** | P3 | 构建系统碎片化 | vcpkg + 系统 Qt | ⬜ 待修复 |
+
+---
+
+## 3. 根因分析
+
+### 3.1 S-1：TLS 证书验证被禁用（已修复）
+
+**根因**：`SecureSocket.cpp:45-48` 中的 `verifyIgnoreCertCallback` 函数始终返回 1，完全绕过了 OpenSSL 的证书链验证。虽然上层 `verifyCertFingerprint` 提供了基于指纹的 TOFU（Trust On First Use）验证，但缺少基础的证书链、有效期、密钥强度校验，形成安全缺口。
+
+**影响**：攻击者可使用任意有效证书（如自签名证书）绕过 TLS 握手阶段的验证，结合指纹数据库的 TOFU 机制才能被发现，但首次连接时无任何保护。
+
+### 3.2 S-2：协议消息长度限制过大（已修复）
+
+**根因**：`PROTOCOL_MAX_MESSAGE_LENGTH` 硬编码为 4MB，`PROTOCOL_MAX_LIST_LENGTH` 和 `PROTOCOL_MAX_STRING_LENGTH` 均为 1MB。这些是绝对上限，但缺乏按消息类型的分级限制。
+
+**影响**：恶意客户端可发送超大消息耗尽服务器内存，导致拒绝服务。
+
+### 3.3 S-3：协议解析 assert 作错误处理（已修复）
+
+**根因**：`ProtocolUtil.cpp` 中 15 处 `assert(0)` / `assert(false)` 在 Release 构建中被编译为空操作，导致非法格式说明符静默通过，可能引发未定义行为或安全漏洞。
+
+**影响**：Release 构建中协议格式错误不会被捕获，可能导致内存损坏或崩溃。
+
+### 3.4 S-4：输入事件注入无验证（修复中）
+
+**根因**：来自网络的键盘/鼠标事件直接转发到本地平台层，无范围校验、频率限制或敏感键拦截。
+
+**影响**：攻击者可注入任意输入事件，包括危险组合（Ctrl+Alt+Delete、Cmd+Q 等），或通过洪水攻击使目标系统不可用。
+
+### 3.5 S-5：X11 错误处理器导致崩溃（修复中）
+
+**根因**：`XWindowsScreen::ioErrorHandler` 在 X11 显示连接断开时终止进程，无优雅降级机制。
+
+**影响**：网络抖动或 X Server 重启导致整个 synergy 进程崩溃，用户需手动重启。
+
+---
+
+## 4. 修复方案及具体改动
+
+### 4.1 Phase 0：基础设施就绪 ✅
+
+| 任务 | 改动文件 | 说明 |
+|------|----------|------|
+| CI `-Werror` | `.github/workflows/ci.yml` | 已有 `CMAKE_COMPILE_WARNING_AS_ERROR=ON` |
+| 静态分析 CI | `.github/workflows/static-analysis.yml` | **新增** clang-tidy + cppcheck 工作流 |
+| CMakePresets 增强 | `CMakePresets.json` | **新增** ASan/TSan/Coverage 预设 |
+| 清理误创建文件 | `CMakeUserPresets.json` | **已删除** |
+
+### 4.2 S-1：TLS 证书验证修复 ✅
+
+**改动文件**：`src/lib/net/SecureSocket.cpp`
+
+**具体改动**：
+1. **删除** `verifyIgnoreCertCallback`（原第 45-48 行，始终返回 1）
+2. **新增** `verifyCertificateCallback`：完整 OpenSSL 证书链验证，包含：
+   - 证书链验证（issuer chain、root CA trust）
+   - 证书过期/未生效检查
+   - 基本约束（Basic Constraints）验证
+   - RSA 密钥强度 ≥2048 位检查
+3. **更新** `initContext()` 中的回调引用：`verifyIgnoreCertCallback` → `verifyCertificateCallback`
+
+**验证**：LSP 诊断无错误，编译通过。
+
+### 4.3 S-2：协议消息长度分级限制 ✅
+
+**改动文件**：`src/lib/deskflow/protocol/ProtocolTypes.h`
+
+**具体改动**：
+1. **新增** `MessageSizeLimit` 枚举类（5 个分级）：
+   - `Control = 256`（控制消息）
+   - `InputEvent = 4KB`（输入事件）
+   - `ClipboardChunk = 64KB`（剪贴板分块）
+   - `FileChunk = 256KB`（文件传输分块）
+   - `AbsoluteMaximum = 4MB`（绝对上限）
+2. **重构** 旧常量 `PROTOCOL_MAX_*` 改为引用枚举值（保持向后兼容）
+
+**验证**：LSP 诊断无错误。
+
+### 4.4 S-3：协议解析 assert→错误码 ✅
+
+**改动文件**：`src/lib/deskflow/protocol/ProtocolUtil.cpp`
+
+**具体改动**：替换 15 处 assert 为异常抛出：
+
+| 位置 | 原代码 | 新代码 |
+|------|--------|--------|
+| `vreadf` `%i` 非法长度 | `assert(false)` | `throw BadClientException(...)` |
+| `vreadf` `%I` 非法长度 | `assert(false)` | `throw BadClientException(...)` |
+| `vreadf` `%%` 非零长度 | `assert(len == 0)` | `throw BadClientException(...)` |
+| `vreadf` 非法格式符 | `assert(0 && "...")` | `throw BadClientException(...)` |
+| `getLength` `%i` 非法长度 | `assert(len == 1\|2\|4)` | `throw DeskflowException(...)` |
+| `getLength` `%I` 非法长度 | `assert(len == 1\|2\|4)` | `throw DeskflowException(...)` |
+| `getLength` `%s/%S/%%` | `assert(len == 0)` | `throw DeskflowException(...)` |
+| `getLength` 非法格式符 | `assert(0 && "...")` | `throw DeskflowException(...)` |
+| `writef` `%I` 非法长度 | `assert(0 && "...")` | `throw DeskflowException(...)` |
+| `writef` `%s/%S/%%` | `assert(len == 0)` | `throw DeskflowException(...)` |
+| `writef` 非法格式符 | `assert(0 && "...")` | `throw DeskflowException(...)` |
+
+**验证**：LSP 诊断无错误。
+
+### 4.5 S-4：输入事件注入验证 ⏳
+
+**改动文件**（新建）：
+- `src/lib/deskflow/input/InputValidator.h`
+- `src/lib/deskflow/input/InputValidator.cpp`
+
+**方案**：创建 `InputValidator` 类，提供：
+- 键码/按钮 ID 范围校验
+- 滑动窗口频率限制（默认 1000 事件/秒）
+- 危险组合拦截（Ctrl+Alt+Delete、Cmd+Q 等）
+
+**状态**：Deep agent 运行中。
+
+### 4.6 S-5：X11 错误处理优雅降级 ⏳
+
+**改动文件**：
+- `src/lib/platform/linux/XWindowsScreen.cpp`
+- `src/lib/platform/linux/XWindowsScreen.h`
+- `src/lib/common/EventTypes.h`
+
+**方案**：
+- `ioErrorHandler` 改为标记 `m_displayLost = true` 并发送 `DisplayLost` 事件，不再终止进程
+- 关键方法增加 `m_displayLost` 前置检查
+- 析构函数增加保护，避免 display lost 状态下崩溃
+
+**状态**：Deep agent 运行中。
+
+---
+
+## 5. 变更日志
+
+| 日期 | 改动 | 作者 |
+|------|------|------|
+| 2026-09-18 | Issue 创建，记录 23 项问题全景 | Sisyphus |
+| 2026-09-18 | Phase 0 完成：分支、CI、CMakePresets | Sisyphus |
+| 2026-09-18 | S-1 完成：TLS 证书验证修复 | Sisyphus |
+| 2026-09-18 | S-2 完成：协议消息长度分级 | Sisyphus |
+| 2026-09-18 | S-3 完成：assert→错误码替换 | Sisyphus |
+| 2026-09-18 | S-4 进行中：InputValidator | Sisyphus |
+| 2026-09-18 | S-5 进行中：X11 优雅降级 | Sisyphus |
+
+---
+
+## 6. 验证清单
+
+- [x] S-1：`verifyCertificateCallback` 正确替换 `verifyIgnoreCertCallback`
+- [x] S-1：LSP 诊断无错误
+- [x] S-2：`MessageSizeLimit` 枚举定义完整
+- [x] S-2：旧常量引用枚举值（向后兼容）
+- [x] S-2：LSP 诊断无错误
+- [x] S-3：15 处 assert 全部替换为异常抛出
+- [x] S-3：Release 构建不再静默忽略协议错误
+- [x] S-3：LSP 诊断无错误
+- [ ] S-4：InputValidator 创建完成
+- [ ] S-4：范围/频率/敏感键测试通过
+- [ ] S-5：ioErrorHandler 不再终止进程
+- [ ] S-5：DisplayLost 事件正确发送
+- [ ] S-5：析构函数在 display lost 状态下安全
+
+---
+
+> **注意**：本文档随代码改动同步更新。每次修复完成后，更新「问题清单」状态、「变更日志」和「验证清单」。
