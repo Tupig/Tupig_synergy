@@ -19,27 +19,21 @@
 
 #include <QString>
 
-#include <chrono> // IWYU pragma: keep -- clangd wrongly thinks this is unused
-
 namespace synergy::gui {
 
-const auto kUrlApi = "https://symless.com/synergy/api";
-const auto kUrlWebsite = QStringLiteral("https://synergyapp.io");
+const auto kUrlApi = "https://github.com/Tupig/TuPig_Product/tree/main/synergy";
+const auto kUrlWebsite = QStringLiteral("https://github.com/Tupig/TuPig_Product/tree/main/synergy");
 const auto kUrlSourceQuery = "utm_source=gui-s1";
 
 const auto kUrlGpl = QStringLiteral("https://www.gnu.org/licenses/old-licenses/gpl-2.0.html");
-const auto kUrlEula = QString("%1/eula").arg(kUrlWebsite);
+// EULA 指向项目 README（包含许可信息）
+const auto kUrlEula = QString("%1#readme").arg(kUrlWebsite);
 
 const auto kLink = R"(<a href="%1" style="color: %2">%3</a>)";
-const auto kLinkBuy = R"(<a href="%1" style="color: %2">Buy now</a>)";
-const auto kLinkRenew = R"(<a href="%1" style="color: %2">Renew now</a>)";
-const auto kLinkDownload = R"(<a href="%1" style="color: %2">Download now</a>)";
 
-const auto kUrlPersonalUpgrade = QString("%1/purchase/upgrade?%2").arg(kUrlWebsite, kUrlSourceQuery);
-const auto kUrlContact = QString("%1/contact?%2").arg(kUrlWebsite, kUrlSourceQuery);
-const auto kUrlAccount = QString("%1/account?%2").arg(kUrlWebsite, kUrlSourceQuery);
-
-constexpr auto kLicenseGracePeriod = std::chrono::days{14};
-constexpr auto kRemoteCheckInterval = std::chrono::hours{24};
+// 联系方式指向 GitHub Issues
+const auto kUrlContact = QString("%1/issues").arg(kUrlWebsite);
+// 讨论/社区指向 GitHub Discussions
+const auto kUrlAccount = QString("%1/discussions").arg(kUrlWebsite);
 
 } // namespace synergy::gui

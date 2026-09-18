@@ -36,7 +36,6 @@ add_library(${target} STATIC ${sources} ${ui_files} ${qrc_file})
 target_link_libraries(
   ${target}
   gui
-  license
   Qt6::Core
   Qt6::Widgets
   Qt6::Network)

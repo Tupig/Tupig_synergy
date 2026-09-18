@@ -18,7 +18,6 @@
 #include "FeatureHandler.h"
 
 #include "common/Settings.h"
-#include "license/LicenseHandler.h"
 #include "synergy/gui/SettingsMigration.h"
 #include "synergy/gui/SettingsScope.h"
 #include "synergy/gui/TestSettings.h"
@@ -102,10 +101,7 @@ void FeatureHandler::handleSettings(QDialog *parent) const
     return;
   }
 
-  const auto &licenseHandler = LicenseHandler::instance();
-  if (licenseHandler.isEnabled() && !licenseHandler.license().isSettingsScopeAvailable()) {
-    return;
-  }
+  // License check removed - settings scope always available
   addScopeTab(parent);
 }
 
@@ -163,9 +159,9 @@ void FeatureHandler::setAttribution(QDialog *parent) const
   description->setPalette(palette);
   description->setText(
       QObject::tr(
-          "Synergy was originally created by Chris Schoeneman. Thanks to our contributors "
-          "and the open source projects Synergy builds on, including Deskflow, Qt, OpenSSL, "
-          "and many others."
+          "TuPig Synergy is based on the original Synergy by Chris Schoeneman and the Deskflow project. "
+          "Thanks to our contributors and the open source projects TuPig Synergy builds on, "
+          "including Qt, OpenSSL, and many others."
       )
   );
 }
@@ -216,7 +212,7 @@ void FeatureHandler::addTrademark(QDialog *parent) const
 {
   if (auto *copyright = parent->findChild<QLabel *>(QStringLiteral("lblCopyright"))) {
     copyright->setText(
-        copyright->text() + QStringLiteral("\n") + QObject::tr("The Synergy logo is a trademark of Synergy App Ltd")
+        copyright->text() + QStringLiteral("\n") + QObject::tr("TuPig Synergy is a trademark of TuPig")
     );
   }
 }

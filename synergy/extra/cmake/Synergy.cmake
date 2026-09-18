@@ -103,3 +103,30 @@ endif()
 if(SYNERGY_VERSION_RELEASE OR SYNERGY_VERSION_SNAPSHOT)
   add_compile_definitions(SYNERGY_ENABLE_ACTIVATION)
 endif()
+
+# Function to set output name with version for executables
+# Usage: set_output_name_with_version(<target> [SUFFIX <suffix>])
+# Example: set_output_name_with_version(synergy-core SUFFIX "-core")
+function(set_output_name_with_version TARGET)
+  cmake_parse_arguments(ARG "" "SUFFIX" "" ${ARGN})
+  
+  # Get the base project name (synergy)
+  set(_base_name ${CMAKE_PROJECT_NAME})
+  
+  # Get the version string (without dev/snapshot suffix for cleaner filenames)
+  set(_version "${SYNERGY_VERSION_MAJOR}.${SYNERGY_VERSION_MINOR}.${SYNERGY_VERSION_PATCH}")
+  
+  # Build the output name: synergy-<suffix>-<version>
+  if(ARG_SUFFIX)
+    set(_output_name "${_base_name}${ARG_SUFFIX}-${_version}")
+  else()
+    set(_output_name "${_base_name}-${_version}")
+  endif()
+  
+  # Set the OUTPUT_NAME property for the target
+  set_target_properties(${TARGET} PROPERTIES
+    OUTPUT_NAME ${_output_name}
+  )
+  
+  message(STATUS "Set output name for ${TARGET}: ${_output_name}")
+endfunction()

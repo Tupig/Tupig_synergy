@@ -23,7 +23,6 @@
 #include "synergy/gui/SettingsMigration.h"
 #include "synergy/gui/SettingsScope.h"
 #include "synergy/gui/dev_mode.h"
-#include "synergy/gui/license/LicenseHandler.h"
 
 #include "synergy/gui/styles.h"
 
@@ -66,8 +65,6 @@ inline void onMainWindow(QMainWindow *mainWindow, deskflow::gui::CoreProcess *co
   palette.setColor(QPalette::Link, QColor(kColorSecondary));
   QGuiApplication::setPalette(palette);
 
-  // License check removed - software runs without serial key
-  // LicenseHandler::instance().handleMainWindow(mainWindow, coreProcess);
   FeatureHandler::instance().handleMainWindow(mainWindow);
   synergy::gui::migration::showNoticeIfPending(mainWindow);
 }
@@ -81,36 +78,26 @@ inline void onTitleApplied(QMainWindow *mainWindow)
 inline bool onAppStart()
 {
   FeatureHandler::instance().handleAppStart();
-  // License check removed - software runs without serial key
-  // return LicenseHandler::instance().handleAppStart();
   return true;
 }
 
 inline void onSettings(QDialog *parent)
 {
-  // License check removed - software runs without serial key
-  // LicenseHandler::instance().handleSettings(parent);
   FeatureHandler::instance().handleSettings(parent);
 }
 
 inline void onAbout(QDialog *parent)
 {
   FeatureHandler::instance().handleAbout(parent);
-  // License check removed - software runs without serial key
-  // LicenseHandler::instance().handleAbout(parent);
 }
 
 inline bool onCoreStart()
 {
-  // License check removed - software runs without serial key
-  // return LicenseHandler::instance().handleCoreStart();
   return true;
 }
 
 inline void onTestStart()
 {
-  // License check removed - software runs without serial key
-  // LicenseHandler::instance().disable();
 }
 
 /**
