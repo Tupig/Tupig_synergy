@@ -60,9 +60,14 @@ void LegacyNetworkTransport::close()
 
 bool LegacyNetworkTransport::isConnected() const
 {
-  // For data sockets, check if we have a valid socket
-  // The actual connection state is managed by the event system
-  return m_dataSocket != nullptr;
+  if (!m_dataSocket) {
+    return false;
+  }
+  // Check connection state based on socket state:
+  // - If socket is ready, it's connected and has data
+  // - If socket is not fatal, it's still connected (or connecting)
+  // - If socket is fatal, the connection has failed
+  return !m_dataSocket->isFatal();
 }
 
 uint32_t LegacyNetworkTransport::read(void *buffer, uint32_t size)
