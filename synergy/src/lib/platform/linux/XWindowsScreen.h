@@ -246,5 +246,10 @@ private:
   // pointer to (singleton) screen.  this is only needed by
   // ioErrorHandler().
   static XWindowsScreen *s_screen;
+
+  // Set to true by ioErrorHandler when X11 display connection is lost.
+  // Methods that access m_display should check this flag first.
+  bool m_displayLost = false;
+
   [[no_unique_address]] XDGPowerManager m_powerManager;
 };

@@ -1,0 +1,105 @@
+# Static analysis workflow: runs clang-tidy and cppcheck on PRs.
+# Triggered by ci.yml or directly for manual runs.
+
+name: Static Analysis
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to analyze"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  clang-tidy:
+    name: clang-tidy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang-tidy cmake ninja-build g++ \
+            libx11-dev libxi-dev libxtst-dev libxinerama-dev libxrandr-dev \
+            libxkbcommon-dev libglib2.0-dev libssl-dev \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools \
+            libgl1-mesa-dev
+
+      - name: Generate compile commands
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DSKIP_BUILD_TESTS=ON
+
+      - name: Run clang-tidy (errors only)
+        run: |
+          # Run on all source files, fail on errors
+          find src/ -regex '.*\.\(cpp\|cc\|cxx\)' \
+            | xargs clang-tidy -p build \
+              --checks='-*,bugprone-*,cert-*,cppcoreguidelines-*,clang-analyzer-*,-modernize-use-trailing-return-type' \
+              --warnings-as-errors='*' \
+            2>&1 | tee clang-tidy-output.txt
+
+          # Exit with error if any diagnostics
+          if grep -q "warning:" clang-tidy-output.txt 2>/dev/null; then
+            echo "::error::clang-tidy found issues. See output above."
+            exit 1
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: clang-tidy-results
+          path: clang-tidy-output.txt
+          if-no-files-found: ignore
+
+  cppcheck:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cppcheck
+
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=warning,style,performance,portability \
+            --std=c++20 \
+            --suppress=missingIncludeSystem \
+            --inline-suppr \
+            --error-exitcode=1 \
+            --output-file=cppcheck-results.txt \
+            --language=c++ \
+            src/
+
+          # Show results
+          cat cppcheck-results.txt
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cppcheck-results
+          path: cppcheck-results.txt
+          if-no-files-found: ignore

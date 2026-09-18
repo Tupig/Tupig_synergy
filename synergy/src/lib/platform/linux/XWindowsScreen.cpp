@@ -156,7 +156,6 @@ XWindowsScreen::XWindowsScreen(const char *displayName, bool isPrimary, IEventQu
 XWindowsScreen::~XWindowsScreen()
 {
   assert(s_screen != nullptr);
-  assert(m_display != nullptr);
 
   m_events->adoptBuffer(nullptr);
   m_events->removeHandler(EventTypes::System, m_events->getSystemTarget());
@@ -185,6 +184,10 @@ XWindowsScreen::~XWindowsScreen()
 
 void XWindowsScreen::enable()
 {
+  if (m_displayLost) {
+    return;
+  }
+
   if (!m_isPrimary) {
     // get the keyboard control state
     XKeyboardState keyControl;
@@ -206,6 +209,10 @@ void XWindowsScreen::enable()
 
 void XWindowsScreen::disable()
 {
+  if (m_displayLost) {
+    return;
+  }
+
   // release input context focus
   if (m_ic != nullptr) {
     XUnsetICFocus(m_ic);
@@ -223,6 +230,10 @@ void XWindowsScreen::disable()
 
 void XWindowsScreen::enter()
 {
+  if (m_displayLost) {
+    return;
+  }
+
   screensaver(false);
 
   // release input context focus
@@ -764,6 +775,10 @@ void XWindowsScreen::getCursorCenter(int32_t &x, int32_t &y) const
 
 void XWindowsScreen::fakeMouseButton(ButtonID button, bool press)
 {
+  if (m_displayLost) {
+    return;
+  }
+
   const unsigned int xButton = mapButtonToX(button);
   if (xButton > 0 && xButton < 11) {
     XTestFakeButtonEvent(m_display, xButton, press ? True : False, CurrentTime);
@@ -773,6 +788,10 @@ void XWindowsScreen::fakeMouseButton(ButtonID button, bool press)
 
 void XWindowsScreen::fakeMouseMove(int32_t x, int32_t y)
 {
+  if (m_displayLost) {
+    return;
+  }
+
   if (m_xinerama && m_xtestIsXineramaUnaware) {
     XWarpPointer(m_display, None, m_root, 0, 0, 0, 0, x, y);
   } else {
@@ -1610,29 +1629,25 @@ void XWindowsScreen::onError()
   m_screensaver->destroy();
   m_screensaver = nullptr;
   m_display = nullptr;
+  m_displayLost = true;
 
   // notify of failure
   sendEvent(EventTypes::ScreenError, nullptr);
-
-  // FIXME -- should ensure that we ignore operations that involve
-  // m_display from now on.  however, Xlib will simply exit the
-  // application in response to the X I/O error so there's no
-  // point in trying to really handle the error.  if we did want
-  // to handle the error, it'd probably be easiest to delegate to
-  // one of two objects.  one object would take the implementation
-  // from this class.  the other object would be stub methods that
-  // don't use X11.  on error, we'd switch to the latter.
 }
 
 int XWindowsScreen::ioErrorHandler(Display *)
 {
-  // the display has disconnected, probably because X is shutting
-  // down.  X forces us to exit at this point which is annoying.
-  // we'll pretend as if we won't exit so we try to make sure we
-  // don't access the display anymore.
-  LOG_CRIT("x display has unexpectedly disconnected");
-  s_screen->onError();
-  return 0;
+  // The X11 display has disconnected unexpectedly.  Instead of exiting,
+  // mark the display as lost and notify the application so it can attempt
+  // recovery or gracefully shut down.
+  if (s_screen != nullptr) {
+    s_screen->m_displayLost = true;
+    LOG_ERR("X11 display connection lost (ioErrorHandler fired)");
+    s_screen->onError();
+  }
+  // Return non-zero — some Xlib versions exit on 0 return anyway,
+  // but returning non-zero signals the error was "handled".
+  return 1;
 }
 
 void XWindowsScreen::selectEvents(Window w) const

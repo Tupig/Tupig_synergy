@@ -108,8 +108,69 @@ static const double kHeartRate = -1.0;
 static const double kHeartBeatsUntilDeath = 3.0;
 
 /**
+ * @defgroup protocol_size_limits Message Size Limits
+ * @brief Tiered size limits for different message categories
+ * @{
+ */
+
+/**
+ * @brief Tiered message size limits
+ *
+ * Different message types have different maximum allowed sizes based on their
+ * content. This prevents memory exhaustion attacks while allowing legitimate
+ * large payloads (e.g., clipboard data, file transfers).
+ *
+ * @since Protocol version 1.8
+ */
+enum class MessageSizeLimit : uint32_t
+{
+  /**
+   * @brief Control messages (handshake, keep-alive, screen enter/leave)
+   *
+   * These are small fixed-format messages. Anything larger indicates
+   * a protocol error or malicious client.
+   */
+  Control = 256,
+
+  /**
+   * @brief Input events (keyboard, mouse, clipboard metadata)
+   *
+   * Input events are small but may include language strings or
+   * option lists. Generous limit for future extensibility.
+   */
+  InputEvent = 4 * 1024,
+
+  /**
+   * @brief Clipboard data chunks
+   *
+   * Clipboard data is transmitted in chunks. Each chunk should not
+   * exceed this limit. Full clipboard content may span multiple chunks.
+   */
+  ClipboardChunk = 64 * 1024,
+
+  /**
+   * @brief File transfer data chunks
+   *
+   * File transfer data is transmitted in chunks. Each chunk should not
+   * exceed this limit.
+   */
+  FileChunk = 256 * 1024,
+
+  /**
+   * @brief Maximum total message size
+   *
+   * Absolute upper bound for any single protocol message. Messages
+   * exceeding this are always rejected, regardless of type.
+   */
+  AbsoluteMaximum = 4 * 1024 * 1024
+};
+
+/** @} */ // end of protocol_size_limits group
+
+/**
  * @brief Maximum allowed message length
  *
+ * @deprecated Use MessageSizeLimit::AbsoluteMaximum for new code.
  * Messages exceeding this size indicate a likely protocol error.
  * Such messages are not parsed and cause connection termination.
  * This prevents memory exhaustion attacks.
@@ -117,27 +178,32 @@ static const double kHeartBeatsUntilDeath = 3.0;
  * @note Clipboard messages are separately limited to 32KB chunks
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH = 4 * 1024 * 1024;
+static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH =
+    static_cast<uint32_t>(MessageSizeLimit::AbsoluteMaximum);
 
 /**
  * @brief Maximum allowed list length in protocol messages
  *
+ * @deprecated Use MessageSizeLimit::InputEvent for new code.
  * Limits the size of lists (arrays) in protocol messages to prevent
  * memory exhaustion attacks.
  *
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_LIST_LENGTH = 1024 * 1024;
+static constexpr uint32_t PROTOCOL_MAX_LIST_LENGTH =
+    static_cast<uint32_t>(MessageSizeLimit::InputEvent);
 
 /**
  * @brief Maximum allowed string length in protocol messages
  *
+ * @deprecated Use MessageSizeLimit::ClipboardChunk for new code.
  * Limits the size of strings in protocol messages to prevent
  * memory exhaustion attacks.
  *
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_STRING_LENGTH = 1024 * 1024;
+static constexpr uint32_t PROTOCOL_MAX_STRING_LENGTH =
+    static_cast<uint32_t>(MessageSizeLimit::ClipboardChunk);
 
 /** @} */ // end of protocol_constants group
 

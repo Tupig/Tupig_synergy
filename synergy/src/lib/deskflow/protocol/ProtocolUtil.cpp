@@ -155,11 +155,11 @@ void ProtocolUtil::vreadf(deskflow::IStream *stream, const char *fmt, va_list ar
           // 4 byte integer
           *static_cast<uint32_t *>(destination) = read4BytesInt(stream);
           break;
-        default:
-          // the length is wrong
+        default: {
+          // the length is wrong — throw instead of assert to avoid crash in Release builds
           LOG_ERR("read: length to be read is wrong: '%d' should be 1,2, or 4", len);
-          assert(false); // assert for debugging
-          break;
+          throw BadClientException("Invalid protocol integer format length");
+        }
         }
         break;
       }
@@ -179,11 +179,11 @@ void ProtocolUtil::vreadf(deskflow::IStream *stream, const char *fmt, va_list ar
           // 4 byte integer
           readVector4BytesInt(stream, *static_cast<std::vector<uint32_t> *>(destination));
           break;
-        default:
-          // the length is wrong
+        default: {
+          // the length is wrong — throw instead of assert
           LOG_ERR("read: length to be read is wrong: '%d' should be 1,2, or 4", len);
-          assert(false); // assert for debugging
-          break;
+          throw BadClientException("Invalid protocol integer vector format length");
+        }
         }
         break;
       }
@@ -201,11 +201,15 @@ void ProtocolUtil::vreadf(deskflow::IStream *stream, const char *fmt, va_list ar
       }
 
       case '%':
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("read: %% format specifier with unexpected length: '%d'", len);
+          throw BadClientException("Invalid %% format specifier length");
+        }
         break;
 
       default:
-        assert(0 && "invalid format specifier");
+        LOG_ERR("read: invalid format specifier: '%c'", *fmt);
+        throw BadClientException("Invalid protocol format specifier");
       }
 
       // next format character
@@ -237,12 +241,18 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       auto len = eatLength(&fmt);
       switch (*fmt) {
       case 'i':
-        assert(len == 1 || len == 2 || len == 4);
+        if (len != 1 && len != 2 && len != 4) {
+          LOG_ERR("getLength: invalid integer format length: '%d'", len);
+          throw DeskflowException("Invalid protocol integer format length");
+        }
         (void)va_arg(args, uint32_t);
         break;
 
       case 'I':
-        assert(len == 1 || len == 2 || len == 4);
+        if (len != 1 && len != 2 && len != 4) {
+          LOG_ERR("getLength: invalid integer vector format length: '%d'", len);
+          throw DeskflowException("Invalid protocol integer vector format length");
+        }
         switch (len) {
         case 1:
           len = (uint32_t)(va_arg(args, std::vector<uint8_t> *))->size() + 4;
@@ -263,22 +273,32 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
         break;
 
       case 's':
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("getLength: string format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol string format length");
+        }
         len = (uint32_t)(va_arg(args, std::string *))->size() + 4;
         break;
 
       case 'S':
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("getLength: raw string format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol raw string format length");
+        }
         len = va_arg(args, uint32_t) + 4;
         break;
 
       case '%':
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("getLength: %% format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol %% format specifier length");
+        }
         len = 1;
         break;
 
       default:
-        assert(0 && "invalid format specifier");
+        LOG_ERR("getLength: invalid format specifier: '%c'", *fmt);
+        throw DeskflowException("Invalid protocol format specifier");
       }
 
       // accumulate size
@@ -331,21 +351,27 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
         }
 
         default:
-          assert(0 && "invalid integer vector format length");
-          return;
+          LOG_ERR("writef: invalid integer vector format length: '%d'", len);
+          throw DeskflowException("Invalid protocol integer vector format length");
         }
         break;
       }
 
       case 's': {
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("writef: string format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol string format length");
+        }
         const std::string *src = va_arg(args, std::string *);
         writeString(src, buffer);
         break;
       }
 
       case 'S': {
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("writef: raw string format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol raw string format length");
+        }
         const uint32_t len = va_arg(args, uint32_t);
         const uint8_t *src = va_arg(args, uint8_t *);
         writeInt(len, sizeof(len), buffer);
@@ -354,12 +380,16 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
       }
 
       case '%':
-        assert(len == 0);
+        if (len != 0) {
+          LOG_ERR("writef: %% format specifier with unexpected length: '%d'", len);
+          throw DeskflowException("Invalid protocol %% format specifier length");
+        }
         buffer.push_back('%');
         break;
 
       default:
-        assert(0 && "invalid format specifier");
+        LOG_ERR("writef: invalid format specifier: '%c'", *fmt);
+        throw DeskflowException("Invalid protocol format specifier");
       }
 
       // next format character

@@ -329,17 +329,6 @@ gitGraph
 
 ---
 
-## 🗺️ Roadmap / 路线图
-
-| Milestone / 里程碑 | Target / 目标 | Status / 状态 | Description / 说明 |
-|---|---|---|---|
-| **v1.22** | Q1 2025 | 🟡 In Progress / 进行中 | Wayland Portal improvements, HDR support / Wayland Portal 改进, HDR 支持 |
-| **v1.23** | Q2 2025 | ⚪ Planned / 计划中 | Mobile companion app (iOS/Android) / 移动端伴侣应用 |
-| **v1.24** | Q3 2025 | ⚪ Planned / 计划中 | Plugin architecture, scripting API / 插件架构、脚本 API |
-| **v2.0** | 2026 | 💭 Vision / 愿景 | Distributed input mesh, cloud sync / 分布式输入网格、云同步 |
-
----
-
 ## 📚 Documentation / 文档导航
 
 | Document / 文档 | Description / 说明 |
