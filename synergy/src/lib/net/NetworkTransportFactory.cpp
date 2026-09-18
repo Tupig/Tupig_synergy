@@ -56,7 +56,8 @@ std::unique_ptr<INetworkTransport> NetworkTransportFactory::createTransport(
   if (m_legacyFactory) {
     LOG_DEBUG("NetworkTransportFactory: creating Legacy transport");
     auto *socket = m_legacyFactory->create(family, securityLevel);
-    return std::make_unique<LegacyNetworkTransport>(socket, m_events);
+    return std::make_unique<LegacyNetworkTransport>(
+        std::unique_ptr<IDataSocket>(socket), m_events);
   }
 
   LOG_ERR("NetworkTransportFactory: no factory available");
@@ -77,7 +78,8 @@ std::unique_ptr<ITransportListenSocket> NetworkTransportFactory::createListenTra
   if (m_legacyFactory) {
     LOG_DEBUG("NetworkTransportFactory: creating Legacy listen transport");
     auto *socket = m_legacyFactory->createListen(family, securityLevel);
-    return std::make_unique<LegacyTransportListenSocket>(socket);
+    return std::make_unique<LegacyTransportListenSocket>(
+        std::unique_ptr<IListenSocket>(socket));
   }
 
   LOG_ERR("NetworkTransportFactory: no factory available");
