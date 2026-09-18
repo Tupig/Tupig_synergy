@@ -522,6 +522,10 @@ void ProtocolUtil::readBytes(deskflow::IStream *stream, uint32_t len, std::strin
   // variable and will be embedded in the stream.
   if (len == 0) {
     len = read4BytesInt(stream);
+    if (len > PROTOCOL_MAX_STRING_LENGTH) {
+      LOG_ERR("read: string length exceeds maximum allowed size: %u", len);
+      throw BadClientException("Too long message received");
+    }
   }
 
   // use a fixed size buffer if its big enough
