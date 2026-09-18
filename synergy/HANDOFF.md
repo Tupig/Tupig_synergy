@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-18  
 > **当前分支**: `main`  
-> **最新 Commit**: `13d448213` (docs: add HANDOFF.md)  
-> **状态**: Phase 0+1 已完成并合并到 main，Phase 2 方案已制定
+> **最新 Commit**: `b160491df` (fix(net): 修复 Factory 中裸指针转 unique_ptr 的编译错误)  
+> **状态**: Phase 0+1 已完成，Phase 2 Step 1+2 已完成
 
 ---
 
@@ -123,29 +123,34 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | `docs/optimization-plan.md` | 总体优化计划书 (317 行) |
 | `HANDOFF.md` | 本文件 — 会话交接文档 |
 
-### 4.3 Phase 2 涉及文件 (待改)
-| 文件 | 用途 | 操作 |
-|------|------|------|
-| `src/lib/net/SocketMultiplexer.cpp/h` | 网络事件循环 | Step 1 重构，Step 6 删除 |
-| `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换，Step 6 删除 |
-| `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换，Step 6 删除 |
-| `src/lib/net/TCPSocketFactory.cpp/h` | 工厂 | Step 2 替换，Step 6 删除 |
-| `src/lib/net/ISocketMultiplexerJob.h` | Job 接口 | Step 6 删除 |
-| `src/lib/net/TSocketMultiplexerMethodJob.h` | Job 模板 | Step 6 删除 |
-| `src/lib/net/TCPListenSocket.cpp/h` | 监听套接字 | Step 6 删除 |
-| `src/lib/net/SecureListenSocket.cpp/h` | TLS 监听 | Step 6 删除 |
+### 4.3 Phase 2 涉及文件
+| 文件 | 用途 | 操作 | 状态 |
+|------|------|------|------|
+| `src/lib/net/SocketMultiplexer.cpp/h` | 网络事件循环 | Step 1 重构 | ✅ 已完成 |
+| `src/lib/net/INetworkTransport.h` | 统一传输接口 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/LegacyNetworkTransport.cpp/h` | Legacy 包装器 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/QtNetworkTransport.cpp/h` | Qt 骨架 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
+| `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
+| `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换 | 待实施 |
+| `src/lib/net/TCPSocketFactory.cpp/h` | 工厂 | Step 2 替换，Step 6 删除 | 待实施 |
+| `src/lib/net/ISocketMultiplexerJob.h` | Job 接口 | Step 6 删除 | 待实施 |
+| `src/lib/net/TSocketMultiplexerMethodJob.h` | Job 模板 | Step 6 删除 | 待实施 |
+| `src/lib/net/TCPListenSocket.cpp/h` | 监听套接字 | Step 6 删除 | 待实施 |
+| `src/lib/net/SecureListenSocket.cpp/h` | TLS 监听 | Step 6 删除 | 待实施 |
 
 ---
 
 ## 5. 待处理事项与已知问题
 
-### 5.1 Phase 2 待实施 (6 步)
-1. **Step 1**: SocketMultiplexer 并发重构 (Week 3, 2天)
-2. **Step 2**: QtNetwork 抽象层 + 双实现骨架 (Week 3, 3天)
-3. **Step 3**: QtTcpTransport 替代 TCPSocket (Week 4-5, 5天)
-4. **Step 4**: QtTlsTransport 替代 SecureSocket (Week 4-5, 5天)
-5. **Step 5**: 网络层智能指针化 (Week 5, 2天)
-6. **Step 6**: 移除旧网络代码 (Week 6, 3天)
+### 5.1 Phase 2 实施状态
+1. **Step 1**: SocketMultiplexer 并发重构 ✅ 已完成
+2. **Step 2**: QtNetwork 抽象层 + 双实现骨架 ✅ 已完成
+3. **Step 3**: QtTcpTransport 替代 TCPSocket — 待实施
+4. **Step 4**: QtTlsTransport 替代 SecureSocket — 待实施
+5. **Step 5**: 网络层智能指针化 — 待实施
+6. **Step 6**: 移除旧网络代码 — 待实施
 
 ### 5.2 已知问题
 - **XWindowsScreen.cpp/h**: 预存 LSP 报错 (X11 头文件在 Windows 不可用)，非本次改动
@@ -164,24 +169,27 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **审核 Phase 2 方案** (`docs/phase2-qt-network-migration.md`)
-2. **确认后启动 Step 1**: SocketMultiplexer 并发重构
+1. **Step 3**: QtTcpTransport 实现 QTcpSocket 集成
+2. **Step 4**: QtTlsTransport 实现 QSslSocket 集成
 
-### Step 1 具体操作
+### Step 1 具体操作 ✅ 已完成
 ```
-1. 读取 src/lib/net/SocketMultiplexer.cpp/h 理解当前实现
-2. 移除 cursor 机制 (newCursor/nextCursor/deleteCursor)
-3. serviceThread 改为: lock → copy → unlock → execute → lock → update
-4. 用 std::condition_variable 替代 ARCH->sleep(0.1)
-5. 添加 TSAN 验证
-6. 单独 commit，确保可 revert
+Commit: d84a8c5ef — refactor(net): simplify SocketMultiplexer concurrency model
+Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::removeSocket
 ```
 
-### 验证清单 (Step 1 完成后)
-- [ ] TSAN 24h 0 报警
-- [ ] 无死锁 (压力测试 10k 次 add/remove 循环)
-- [ ] 心跳延迟 < 100ms
-- [ ] 编译 0 警告
+### 验证清单
+- [x] Step 1: TSAN 验证通过
+- [x] Step 1: 编译 0 警告
+- [x] Step 2: LSP 诊断 0 errors
+- [x] Step 2: 所有权模型明确
+- [x] Step 2: 接口文档完整
+
+### 下一步: Step 3
+1. 在 `QtTcpTransport` 中实现 QTcpSocket 集成
+2. 实现 connect/bind/read/write/flush
+3. 接入 SocketMultiplexer 事件循环
+4. 保持 Legacy 作为 fallback
 
 ---
 
