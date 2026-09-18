@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![TuPig Synergy Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,15,30&height=200&section=header&text=TuPig%20Synergy&fontSize=50&fontAlignY=35&desc=跨平台键鼠共享工具%20%7C%20Cross-platform%20Keyboard%20Mouse%20Sharing&descAlignY=55&descAlign=50)
+![TuPig Synergy Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,15,30&height=180&section=header&text=TuPig%20Synergy&fontSize=45&fontAlignY=35&desc=跨平台键鼠共享工具%20%7C%20Cross-platform%20Keyboard%20Mouse%20Sharing&descAlignY=55&descAlign=50)
 
 **基于 Synergy 的免许可证现代分支 — 一套键鼠，无缝掌控多台电脑。**  
 **A modern, license-free fork of Synergy — Share one keyboard and mouse across multiple computers seamlessly.**
@@ -11,80 +11,55 @@
 
 ---
 
-## 📊 Project Status & Health
+## 📊 Project Status / 项目状态
 
 <div align="center">
 
-![License](https://img.shields.io/github/license/Tupig/TuPig_Product?style=for-the-badge&color=2D8CFF&logo=opensourceinitiative&logoColor=white)
-![Release](https://img.shields.io/github/v/release/Tupig/TuPig_Product?style=for-the-badge&color=00C853&logo=github&logoColor=white&include_prereleases)
-![Build Status](https://img.shields.io/github/actions/workflow/status/Tupig/TuPig_Product/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-0EA5E9?style=for-the-badge&logo=linux&logoColor=white)
-![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
-![Qt Version](https://img.shields.io/badge/Qt-6.7%2B-41CD52?style=for-the-badge&logo=qt&logoColor=white)
-![CMake](https://img.shields.io/badge/CMake-3.24%2B-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
+![License](https://img.shields.io/github/license/Tupig/TuPig_Product?style=flat-square&color=2D8CFF)
+![Release](https://img.shields.io/github/v/release/Tupig/TuPig_Product?style=flat-square&color=00C853&include_prereleases)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-0EA5E9?style=flat-square)
+![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat-square&logo=c%2B%2B)
+![Qt](https://img.shields.io/badge/Qt-6.7%2B-41CD52?style=flat-square&logo=qt)
+![CMake](https://img.shields.io/badge/CMake-3.24%2B-064F8C?style=flat-square&logo=cmake)
 
-![Stars](https://img.shields.io/github/stars/Tupig/TuPig_Product?style=flat-square&color=FFD700&logo=github&logoColor=white)
-![Forks](https://img.shields.io/github/forks/Tupig/TuPig_Product?style=flat-square&color=10B981&logo=github&logoColor=white)
-![Issues](https://img.shields.io/github/issues/Tupig/TuPig_Product?style=flat-square&color=F472B6&logo=github&logoColor=white)
-![Pull Requests](https://img.shields.io/github/issues-pr/Tupig/TuPig_Product?style=flat-square&color=8B5CF6&logo=github&logoColor=white)
-![Last Commit](https://img.shields.io/github/last-commit/Tupig/TuPig_Product?style=flat-square&color=6366F1&logo=git&logoColor=white)
-![Repo Size](https://img.shields.io/github/repo-size/Tupig/TuPig_Product?style=flat-square&color=EC4899&logo=github&logoColor=white)
+</div>
+
+**本项目基于 Synergy/Deskflow，移除了序列号验证与许可证激活，开箱即用。**  
+**This project is based on Synergy/Deskflow, with serial key verification and license activation removed — ready to use out of the box.**
+
+---
+
+## ✨ Key Features / 核心特性
+
+<div align="center">
+
+| Feature / 特性 | Description / 说明 | Status / 状态 |
+|---|---|---|
+| 🖱️ **Seamless Sharing / 无缝共享** | One keyboard & mouse across multiple computers / 一套键鼠控制多台电脑 | ✅ Stable / 稳定 |
+| 🌐 **Cross-Platform / 跨平台** | Windows, macOS, Linux (X11/Wayland) | ✅ Native / 原生 |
+| 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
+| 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
+| 📁 **File Drag-Drop / 文件拖拽** | Drag files between computers / 电脑间拖拽文件 | ✅ Supported / 支持 |
+| ⌨️ **Hotkey Switching / 热键切屏** | Instant screen switching via custom hotkeys / 自定义热键瞬间切换 | ✅ Configurable / 可配置 |
+| 🚫 **No License Required / 无需许可证** | Completely free, no serial keys or activation / 完全免费，无序列号/激活 | ✅ Forever / 永久 |
+| 🎨 **Modern Qt6 UI / 现代 Qt6 界面** | Beautiful, responsive graphical interface / 美观、响应式图形界面 | ✅ Polished / 打磨完成 |
 
 </div>
 
 ---
 
-## 📈 Repository Analytics
-
-<div align="center">
-
-### 📊 Contribution Activity
-
-![Contribution Graph](https://github-readme-activity-graph.vercel.app/graph?username=Tupig&theme=github-compact&bg_color=0D1117&color=2D8CFF&line=00C853&point=F472B6&area=true&hide_border=true)
-
-### 📈 Language Distribution
-
-![Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Tupig&layout=compact&theme=github_dark&hide_border=true&langs_count=8&card_width=480)
-
-### 🏗️ Repository Stats
-
-![Repo Stats](https://github-readme-stats.vercel.app/api?username=Tupig&show_icons=true&theme=github_dark&hide_border=true&count_private=true&include_all_commits=true&card_width=480)
-
-</div>
-
----
-
-## ✨ Key Features
-
-<div align="center">
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 🖱️ **Seamless Sharing** | One keyboard & mouse across multiple computers | ✅ Stable |
-| 🌐 **Cross-Platform** | Windows, macOS, Linux (X11/Wayland) | ✅ Native |
-| 🔒 **TLS Encryption** | Secure communication with OpenSSL 3.0+ | ✅ Enabled |
-| 📋 **Clipboard Sync** | Shared clipboard across all connected hosts | ✅ Full |
-| 📁 **File Drag-Drop** | Drag files between computers | ✅ Supported |
-| ⌨️ **Hotkey Switching** | Instant screen switching via custom hotkeys | ✅ Configurable |
-| 🚫 **No License Required** | Completely free, no serial keys or activation | ✅ Forever |
-| 🎨 **Modern Qt6 UI** | Beautiful, responsive graphical interface | ✅ Polished |
-
-</div>
-
----
-
-## 🏗️ Architecture Overview
+## 🏗️ Architecture Overview / 架构概览
 
 <div align="center">
 
 ```mermaid
 graph TB
-    subgraph "User Interface"
+    subgraph "User Interface / 用户界面"
         GUI[Qt6 GUI<br/>deskflow-gui]
         CLI[CLI Tools<br/>deskflow-core/daemon]
     end
 
-    subgraph "Core Libraries"
+    subgraph "Core Libraries / 核心库"
         APP[Application Layer<br/>app, common]
         DESKFLOW[Deskflow Core<br/>core, clipboard, input, protocol, screen]
         NET[Network Stack<br/>net, io, mt]
@@ -93,7 +68,7 @@ graph TB
         CLIENT[Client Implementation<br/>client]
     end
 
-    subgraph "External Dependencies"
+    subgraph "External Dependencies / 外部依赖"
         QT[Qt 6.7+]
         SSL[OpenSSL 3.0+]
         CMAKE[CMake 3.24+]
@@ -112,50 +87,46 @@ graph TB
     APP --> QT
 ```
 
-**🎯 Design Principles:**
-- **Modular Architecture** — Clear separation of concerns across 12 core libraries
-- **Platform Abstraction** — Unified interfaces for Windows/macOS/Linux specifics
-- **Thread Safety** — Lock-free queues, RAII mutexes, atomic operations
-- **Security First** — TLS 1.3, certificate pinning, constant-time comparisons
+**Design Principles / 设计原则：**
+- **Modular Architecture / 模块化架构** — 12 个核心库，关注点分离
+- **Platform Abstraction / 平台抽象** — 统一接口屏蔽 Windows/macOS/Linux 差异
+- **Thread Safety / 线程安全** — 无锁队列、RAII 互斥锁、原子操作
+- **Security First / 安全优先** — TLS 1.3、证书绑定、常数时间比较
 
 </div>
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start / 快速开始
 
-### Prerequisites
+### Prerequisites / 编译依赖
 
-<div align="center">
-
-| Platform | Compiler | Build System | Qt | Package Manager |
-|----------|----------|--------------|-----|-----------------|
+| Platform / 平台 | Compiler / 编译器 | Build System / 构建系统 | Qt | Package Manager / 包管理器 |
+|---|---|---|---|---|
 | **Windows** | MSVC 2022 (v143) | Ninja + CMake | 6.7+ (vcpkg) | vcpkg |
 | **macOS** | Apple Clang 15+ | Ninja + CMake | 6.7+ (Homebrew) | Homebrew |
 | **Linux** | GCC 12+ / Clang 15+ | Ninja + CMake | 6.7+ (System) | apt/dnf/pacman |
 
-</div>
+### Build Instructions / 编译步骤
 
-### Build Instructions
-
-<details open>
+<details>
 <summary><b>🪟 Windows (PowerShell)</b></summary>
 
 ```powershell
-# 1. Install vcpkg (if not installed)
+# 1. 安装 vcpkg (如未安装)
 git clone https://github.com/microsoft/vcpkg.git
 .\vcpkg\bootstrap-vcpkg.bat
 .\vcpkg\vcpkg integrate install
 
-# 2. Install dependencies
+# 2. 安装依赖
 .\vcpkg\vcpkg install qt6-openssl:x64-windows
 
-# 3. Configure & Build
+# 3. 配置与编译
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release
 
-# 4. Run
-.\build\bin\synergy-core-1.21.2.exe    # Core service
+# 4. 运行
+.\build\bin\synergy-core-1.21.2.exe    # 核心服务
 .\build\bin\synergy-1.21.2.exe         # GUI
 ```
 
@@ -165,10 +136,10 @@ cmake --build build --config Release
 <summary><b>🍎 macOS (Apple Silicon / Intel)</b></summary>
 
 ```bash
-# 1. Install dependencies
+# 1. 安装依赖
 brew install cmake ninja qt@6 openssl@3
 
-# 2. Configure & Build (Apple Silicon)
+# 2. 配置与编译 (Apple Silicon 原生)
 cmake -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_ARCHITECTURES=arm64 \
@@ -176,8 +147,8 @@ cmake -B build -G Ninja \
 
 cmake --build build --config Release
 
-# 3. Run
-./build/bin/synergy-core-1.21.2    # Core service
+# 3. 运行
+./build/bin/synergy-core-1.21.2    # 核心服务
 ./build/bin/synergy-1.21.2         # GUI
 ```
 
@@ -202,12 +173,12 @@ sudo dnf install -y cmake ninja-build gcc-c++ qt6-qtbase-devel \
 sudo pacman -S cmake ninja gcc qt6-base openssl \
   libx11 libxi libxtst libxinerama libxrandr libxkbcommon glib2
 
-# Configure & Build
+# 配置与编译
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)
 
-# Run
-./build/bin/synergy-core-1.21.2    # Core service
+# 运行
+./build/bin/synergy-core-1.21.2    # 核心服务
 ./build/bin/synergy-1.21.2         # GUI
 ```
 
@@ -215,120 +186,82 @@ cmake --build build --config Release -j$(nproc)
 
 ---
 
-## 📦 Release Artifacts
-
-<div align="center">
-
-### 📥 Download Pre-built Binaries
-
-| Platform | Artifact | Architecture | Size | SHA256 |
-|----------|----------|--------------|------|--------|
-| Windows | `TuPig-Synergy-1.21.2-windows-x64.zip` | x64 | ~45 MB | `pending` |
-| Windows | `TuPig-Synergy-1.21.2-windows-arm64.zip` | ARM64 | ~42 MB | `pending` |
-| macOS | `TuPig-Synergy-1.21.2-macos-universal.dmg` | Universal | ~52 MB | `pending` |
-| Linux | `TuPig-Synergy-1.21.2-linux-x64.tar.gz` | x64 | ~38 MB | `pending` |
-| Linux | `TuPig-Synergy-1.21.2-linux-arm64.tar.gz` | ARM64 | ~35 MB | `pending` |
-
-> **Note:** Binaries are signed and notarized (macOS) / Authenticode signed (Windows).  
-> Verify checksums before installation: `sha256sum -c SHA256SUMS.txt`
-
-</div>
-
----
-
-## 🖥️ Platform Support Matrix
-
-<div align="center">
-
-| Feature | Windows 10+ | macOS 12+ | Linux (X11) | Linux (Wayland) |
-|---------|-------------|-----------|-------------|-----------------|
-| **Core Service** | ✅ Native | ✅ Native | ✅ Native | ✅ Native |
-| **GUI Application** | ✅ Native | ✅ Native | ✅ Native | ✅ Native |
-| **Daemon (UAC/Secure Desktop)** | ✅ Required | ❌ N/A | ❌ N/A | ❌ N/A |
-| **Clipboard Sync** | ✅ Full | ✅ Full | ✅ Full | ✅ Full |
-| **File Drag-Drop** | ✅ Full | ✅ Full | ✅ Partial | ✅ Partial |
-| **TLS Encryption** | ✅ Hardware | ✅ Hardware | ✅ Software | ✅ Software |
-| **Auto-Start** | ✅ Service | ✅ LaunchAgent | ✅ systemd | ✅ systemd |
-| **Multi-Monitor** | ✅ Full | ✅ Full | ✅ Full | ✅ Full |
-| **High DPI** | ✅ Per-Monitor | ✅ Native | ✅ Fractional | ✅ Fractional |
-
-</div>
-
----
-
-## 📁 Project Structure
+## 📁 Project Structure / 项目结构
 
 <details>
-<summary><b>📂 Click to expand full directory tree</b></summary>
+<summary><b>📂 点击展开完整目录树</b></summary>
 
 ```
 synergy/
-├── .github/                    # GitHub workflows, templates, dependabot
-├── cmake/                      # CMake modules & toolchain files
-├── deploy/                     # Platform-specific packaging scripts
+├── .github/                    # GitHub 工作流、模板、Dependabot
+├── cmake/                      # CMake 模块与工具链文件
+├── deploy/                     # 平台打包脚本
 │   ├── linux/                  # AppImage, DEB, RPM, Snap
-│   ├── mac/                    # DMG, PKG, notarization
-│   └── windows/                # MSI, WIX, NSIS, signing
-├── docs/                       # Documentation (Markdown)
-│   ├── architecture.md         # Architecture decision records
-│   ├── building.md             # Detailed build guide
-│   ├── configuration.md        # Configuration reference
-│   └── troubleshooting.md      # Common issues & fixes
-├── extra/                      # Branding & deployment assets
-│   ├── cmake/                  # Version & branding CMake modules
-│   ├── deploy/                 # Installer resources (icons, banners, EULA)
-│   └── src/                    # Synergy-specific overlays (hooks, GUI extensions)
-├── src/                        # 🏗️ Main source tree
-│   ├── apps/                   # Entry points
-│   │   ├── deskflow-core/      # Combined server/client daemon
-│   │   ├── deskflow-daemon/    # Windows secure desktop handler
-│   │   ├── deskflow-gui/       # Qt6 configuration UI
-│   │   └── res/                # Resources (icons, qrc, manifests)
-│   ├── lib/                    # 📚 Core libraries (12 modules)
-│   │   ├── arch/               # Architecture abstraction (27 files)
-│   │   ├── base/               # Foundation: events, logging, strings (31)
-│   │   ├── client/             # Client connection logic (4)
-│   │   ├── common/             # Shared constants, enums, settings (13)
-│   │   ├── deskflow/           # 🧠 Core logic (72 files)
-│   │   │   ├── core/           # App, Client, Server orchestration
-│   │   │   ├── clipboard/      # Cross-platform clipboard
-│   │   │   ├── input/          # Keyboard/mouse event processing
-│   │   │   ├── protocol/       # Wire protocol & serialization
-│   │   │   ├── screen/         # Display topology & mapping
-│   │   │   ├── ipc/            # Inter-process communication
-│   │   │   ├── unix/           # POSIX platform specifics
-│   │   │   └── win32/          # Windows platform specifics
-│   │   ├── gui/                # Qt6 UI components (94 files)
-│   │   │   ├── config/         # Screen/server/client configuration
+│   ├── mac/                    # DMG, PKG, 公证
+│   └── windows/                # MSI, WIX, NSIS, 签名
+├── docs/                       # 文档
+│   ├── architecture.md         # 架构决策记录 (ADR)
+│   ├── build.md                # 详细编译指南
+│   ├── configuration.md        # 配置参考
+│   ├── contributing.md         # 贡献指南
+│   ├── protocol.md             # 协议参考
+│   ├── security.md             # 安全策略
+│   └── troubleshooting.md      # 故障排查
+├── extra/                      # 品牌与部署资源
+│   ├── cmake/                  # 版本与品牌 CMake 模块
+│   ├── deploy/                 # 安装程序资源
+│   └── src/                    # Synergy 专用覆盖层
+├── src/                        # 🏗️ 主源码树
+│   ├── apps/                   # 入口程序
+│   │   ├── deskflow-core/      # 核心服务进程
+│   │   ├── deskflow-daemon/    # Windows 安全桌面处理
+│   │   ├── deskflow-gui/       # Qt6 配置界面
+│   │   └── res/                # 资源文件
+│   ├── lib/                    # 📚 核心库 (12 模块)
+│   │   ├── arch/               # 架构抽象层
+│   │   ├── base/               # 基础设施: 事件、日志、字符串
+│   │   ├── client/             # 客户端连接逻辑
+│   │   ├── common/             # 共享常量、枚举、设置
+│   │   ├── deskflow/           # 🧠 核心逻辑
+│   │   │   ├── core/           # App/Client/Server 编排
+│   │   │   ├── clipboard/      # 跨平台剪贴板
+│   │   │   ├── input/          # 键鼠事件处理
+│   │   │   ├── protocol/       # 线路协议与序列化
+│   │   │   ├── screen/         # 显示拓扑与映射
+│   │   │   ├── ipc/            # 进程间通信
+│   │   │   ├── unix/           # POSIX 平台细节
+│   │   │   └── win32/          # Windows 平台细节
+│   │   ├── gui/                # Qt6 UI 组件
+│   │   │   ├── config/         # 屏幕/服务端/客户端配置
 │   │   │   ├── core/           # CoreProcess, NetworkMonitor
-│   │   │   ├── dialogs/        # Settings, About, Hotkeys, Screens
+│   │   │   ├── dialogs/        # 设置、关于、热键、屏幕对话框
 │   │   │   ├── ipc/            # GUI ↔ Core IPC
-│   │   │   ├── validators/     # Input validation framework
-│   │   │   └── widgets/        # Custom Qt widgets
-│   │   ├── io/                 # Stream abstraction (7)
-│   │   ├── mt/                 # Threading primitives (11)
-│   │   ├── net/                # Network: TCP, SSL, sockets (32)
-│   │   ├── platform/           # Platform implementations (114)
-│   │   │   ├── win32/          # Windows APIs
-│   │   │   ├── macos/          # macOS/Cocoa APIs
+│   │   │   ├── validators/     # 输入验证框架
+│   │   │   └── widgets/        # 自定义 Qt 控件
+│   │   ├── io/                 # 流抽象
+│   │   ├── mt/                 # 线程原语
+│   │   ├── net/                # 网络: TCP, SSL, Socket
+│   │   ├── platform/           # 平台实现
+│   │   │   ├── win32/          # Windows API
+│   │   │   ├── macos/          # macOS/Cocoa API
 │   │   │   └── linux/          # X11, Wayland, Portal
-│   │   └── server/             # Server implementation (34)
-│   └── unittests/              # Unit tests (GoogleTest)
-├── translations/               # Qt Linguist .ts files (i18n)
-├── CMakeLists.txt              # Root build configuration
-├── CMakePresets.json           # CMake preset configurations
-├── vcpkg.json                  # vcpkg manifest (Windows deps)
-├── LICENSE                     # GPL-2.0 license
-└── README.md                   # This file
+│   │   └── server/             # 服务端实现
+│   └── unittests/              # 单元测试 (GoogleTest)
+├── translations/               # Qt Linguist .ts 翻译文件
+├── CMakeLists.txt              # 根构建配置
+├── CMakePresets.json           # CMake 预设配置
+├── vcpkg.json                  # vcpkg 清单 (Windows 依赖)
+├── LICENSE                     # GPL-2.0 许可证
+└── README.md                   # 本文件
 ```
 
 </details>
 
 ---
 
-## 🔧 Configuration
+## 🔧 Configuration / 配置示例
 
-### Server Configuration (synergy-core)
+### Server (Primary / 主控端)
 
 ```ini
 # ~/.config/TuPig Synergy/Synergy.conf
@@ -348,7 +281,7 @@ main.position = 0,0
 laptop.position = right,main
 ```
 
-### Client Configuration
+### Client (Secondary / 被控端)
 
 ```ini
 [client]
@@ -358,15 +291,19 @@ reconnectInterval = 5
 autoConnect = true
 ```
 
+> 完整配置参考：[docs/configuration.md](docs/configuration.md)  
+> Full configuration reference: [docs/configuration.md](docs/configuration.md)
+
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing / 贡献指南
 
-<div align="center">
+欢迎各类贡献！请阅读完整指南：
 
-We welcome contributions! Please see our [Contributing Guide](docs/contributing.md) for details.
+> **Contributing Guide**: [docs/contributing.md](docs/contributing.md)  
+> **贡献指南**: [docs/contributing.md](docs/contributing.md)
 
-### Development Workflow
+### Development Workflow / 开发工作流
 
 ```mermaid
 gitGraph
@@ -380,58 +317,63 @@ gitGraph
     merge feature/xyz tag: "v1.22.0"
 ```
 
-### Code Standards
+### Code Standards / 代码规范
 
-| Aspect | Standard | Tool |
-|--------|----------|------|
-| **C++ Style** | C++20, Google-ish | `clang-format` (`.clang-format`) |
-| **CMake Style** | Modern CMake 3.24+ | `cmake-format` |
-| **Commit Messages** | Conventional Commits | `git-commit-msg` hook |
-| **Testing** | GoogleTest, >80% coverage | `ctest --output-on-failure` |
-| **Static Analysis** | Clang-Tidy, Cppcheck | CI Pipeline |
-
-</div>
+| Aspect / 方面 | Standard / 标准 | Tool / 工具 |
+|---|---|---|
+| **C++ Style / C++ 风格** | C++20, Google-ish | `clang-format` (`.clang-format`) |
+| **CMake Style / CMake 风格** | Modern CMake 3.24+ | `cmake-format` |
+| **Commit Messages / 提交信息** | Conventional Commits | `git-commit-msg` hook |
+| **Testing / 测试** | GoogleTest, >80% coverage | `ctest --output-on-failure` |
+| **Static Analysis / 静态分析** | Clang-Tidy, Cppcheck | CI Pipeline |
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap / 路线图
+
+| Milestone / 里程碑 | Target / 目标 | Status / 状态 | Description / 说明 |
+|---|---|---|---|
+| **v1.22** | Q1 2025 | 🟡 In Progress / 进行中 | Wayland Portal improvements, HDR support / Wayland Portal 改进, HDR 支持 |
+| **v1.23** | Q2 2025 | ⚪ Planned / 计划中 | Mobile companion app (iOS/Android) / 移动端伴侣应用 |
+| **v1.24** | Q3 2025 | ⚪ Planned / 计划中 | Plugin architecture, scripting API / 插件架构、脚本 API |
+| **v2.0** | 2026 | 💭 Vision / 愿景 | Distributed input mesh, cloud sync / 分布式输入网格、云同步 |
+
+---
+
+## 📚 Documentation / 文档导航
+
+| Document / 文档 | Description / 说明 |
+|---|---|
+| [build.md](docs/build.md) | Build Guide / 编译指南 |
+| [contributing.md](docs/contributing.md) | Contributing Guide / 贡献指南 |
+| [protocol.md](docs/protocol.md) | Protocol Reference / 协议参考 (v1.8) |
+| [configuration.md](docs/configuration.md) | Configuration Reference / 配置参考 |
+| [architecture.md](docs/architecture.md) | Architecture Decision Records / 架构决策记录 (ADR) |
+| [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查指南 |
+| [security.md](docs/security.md) | Security Policy / 安全策略 |
+
+---
+
+## 🐛 Known Issues / 已知问题
+
+| Issue / 问题 | Platform / 平台 | Workaround / 变通方案 | Status / 状态 |
+|---|---|---|---|
+| Wayland clipboard sync incomplete / Wayland 剪贴板同步不全 | Linux/Wayland | Use X11 fallback or Portal / 用 X11 回退或 Portal | 🔧 Investigating / 调查中 |
+| High DPI scaling on fractional scaling / 高 DPI 缩放异常 | Windows 11 | Set DPI awareness per-monitor / 设置逐显示器 DPI 感知 | ✅ Fixed v1.21.1 |
+| macOS notarization on ARM / macOS ARM 公证失败 | macOS ARM | Codesign with hardened runtime / 硬化运行时签名 | ✅ Fixed v1.21.0 |
+| Firewall blocks port 24800 / 防火墙拦截端口 24800 | All / 所有 | Allow inbound TCP 24800 / 放行入站 TCP 24800 | 📖 Documented / 已记录 |
+
+详细故障排查：[docs/troubleshooting.md](docs/troubleshooting.md)  
+Detailed troubleshooting: [docs/troubleshooting.md](docs/troubleshooting.md)
+
+---
+
+## 📜 License / 许可证
 
 <div align="center">
 
-| Milestone | Target | Status | Description |
-|-----------|--------|--------|-------------|
-| **v1.22** | Q1 2025 | 🟡 In Progress | Wayland Portal improvements, HDR support |
-| **v1.23** | Q2 2025 | ⚪ Planned | Mobile companion app (iOS/Android) |
-| **v1.24** | Q3 2025 | ⚪ Planned | Plugin architecture, scripting API |
-| **v2.0** | 2026 | 💭 Vision | Distributed input mesh, cloud sync |
-
-[View full roadmap →](https://github.com/Tupig/TuPig_Product/projects)
-
-</div>
-
----
-
-## 🐛 Known Issues & Troubleshooting
-
-<details>
-<summary><b>Common Issues</b></summary>
-
-| Issue | Platform | Workaround | Status |
-|-------|----------|------------|--------|
-| Wayland clipboard sync incomplete | Linux/Wayland | Use X11 fallback or Portal | 🔧 Investigating |
-| High DPI scaling on fractional scaling | Windows 11 | Set DPI awareness per-monitor | ✅ Fixed v1.21.1 |
-| macOS notarization on ARM | macOS ARM | Codesign with hardened runtime | ✅ Fixed v1.21.0 |
-| Firewall blocks port 24800 | All | Allow inbound TCP 24800 | 📖 Documented |
-
-</details>
-
----
-
-## 📜 License
-
-<div align="center">
-
-This project is licensed under the **GNU General Public License v2.0** — see [LICENSE](LICENSE) for details.
+本项目遵循 **GNU General Public License v2.0** — 详见 [LICENSE](LICENSE)  
+This project is licensed under the **GNU General Public License v2.0** — see [LICENSE](LICENSE)
 
 ```
 TuPig Synergy — Copyright (C) 2024-2026 TuPig
@@ -441,80 +383,62 @@ Based on original Synergy — Copyright (C) 2009-2012 Nick Bolton
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
+本程序为自由软件；您可依照自由软件基金会发布的 GNU 通用公共许可证第 2 版或更新版本进行再发布与修改。
+
 </div>
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgments / 致谢
 
 <div align="center">
 
-| Project | Role | License |
-|---------|------|---------|
-| **[Synergy](https://github.com/symless/synergy)** | Original upstream | GPL-2.0 |
-| **[Deskflow](https://deskflow.org)** | Community upstream | GPL-2.0 |
-| **[Qt](https://www.qt.io/)** | GUI Framework | LGPL-3.0 / Commercial |
+| Project / 项目 | Role / 角色 | License / 许可证 |
+|---|---|---|
+| **[Synergy](https://github.com/symless/synergy)** | Original upstream / 原始上游 | GPL-2.0 |
+| **[Deskflow](https://deskflow.org)** | Community upstream / 社区上游 | GPL-2.0 |
+| **[Qt](https://www.qt.io/)** | GUI Framework / GUI 框架 | LGPL-3.0 / Commercial |
 | **[OpenSSL](https://www.openssl.org/)** | TLS/Crypto | Apache-2.0 |
-| **[CMake](https://cmake.org/)** | Build System | BSD-3-Clause |
-| **[vcpkg](https://vcpkg.io/)** | Windows Package Manager | MIT |
-| **[GoogleTest](https://github.com/google/googletest)** | Testing Framework | BSD-3-Clause |
+| **[CMake](https://cmake.org/)** | Build System / 构建系统 | BSD-3-Clause |
+| **[vcpkg](https://vcpkg.io/)** | Windows Package Manager / Windows 包管理器 | MIT |
+| **[GoogleTest](https://github.com/google/googletest)** | Testing Framework / 测试框架 | BSD-3-Clause |
 
-Special thanks to all contributors and the open-source community! 💚
-
-</div>
-
----
-
-## 📞 Support & Community
-
-<div align="center">
-
-| Channel | Link | Purpose |
-|---------|------|---------|
-| **GitHub Issues** | [Issues](https://github.com/Tupig/TuPig_Product/issues) | Bug reports, feature requests |
-| **GitHub Discussions** | [Discussions](https://github.com/Tupig/TuPig_Product/discussions) | Q&A, ideas, showcase |
-| **Documentation** | [Wiki](https://github.com/Tupig/TuPig_Product/wiki) | Guides, FAQ, troubleshooting |
-| **Security** | [Security Policy](SECURITY.md) | Vulnerability disclosure |
+Special thanks to all contributors and the open-source community! 💚  
+感谢所有贡献者与开源社区！💚
 
 </div>
 
 ---
 
+## 📞 Support & Community / 获取帮助
+
+<div align="center">
+
+| Channel / 渠道 | Link / 链接 | Purpose / 用途 |
+|---|---|---|
+| **GitHub Issues** | [Issues](https://github.com/Tupig/TuPig_Product/issues) | Bug reports, feature requests / Bug 报告、功能请求 |
+| **GitHub Discussions** | [Discussions](https://github.com/Tupig/TuPig_Product/discussions) | Q&A, ideas, showcase / 问答、想法、展示 |
+| **Documentation / 文档** | [docs/](docs/) | Guides, FAQ, troubleshooting / 指南、常见问题、故障排查 |
+| **Security / 安全** | [docs/security.md](docs/security.md) | Vulnerability disclosure / 漏洞披露 |
+
+</div>
+
+---
+
 <div align="center">
 
 ---
 
-### ⭐ If you find this project useful, please consider giving it a star!
+### ⭐ If you find this project useful, please consider giving it a star!  
+### 如果这个项目对你有帮助，请给个 Star 支持一下！
 
 ![Star History](https://api.star-history.com/svg?repos=Tupig/TuPig_Product&type=Date&theme=dark)
 
 ---
 
-**Made with ❤️ by the TuPig Team**
+**Made with ❤️ by the TuPig Team**  
+**TuPig 团队倾力打造 ❤️**
 
-[Website](https://tupig.com) • [Twitter](https://twitter.com/tupig) • [Blog](https://blog.tupig.com)
+[GitHub](https://github.com/Tupig/TuPig_Product) • [Issues](https://github.com/Tupig/TuPig_Product/issues) • [Discussions](https://github.com/Tupig/TuPig_Product/discussions)
 
 </div>
-
----
-
-<details>
-<summary><b>📋 Visual Effects Used in This README</b></summary>
-
-| Effect Type | Implementation | GitHub Compatible | Purpose |
-|-------------|----------------|-------------------|---------|
-| **Animated Banner** | `capsule-render.vercel.app` SVG | ✅ Yes | Eye-catching header with gradient animation |
-| **Status Badges** | `shields.io` dynamic SVG | ✅ Yes | Real-time project health indicators |
-| **Activity Graph** | `github-readme-activity-graph` | ✅ Yes | Visualize contribution patterns over time |
-| **Language Stats** | `github-readme-stats` API | ✅ Yes | Repository language composition |
-| **Repo Stats Card** | `github-readme-stats` API | ✅ Yes | Stars, forks, commits, contributors |
-| **Mermaid Diagrams** | Native GitHub Mermaid | ✅ Yes | Architecture & workflow diagrams |
-| **Collapsible Sections** | `<details>/<summary>` HTML | ✅ Yes | Progressive disclosure for verbose content |
-| **Comparison Tables** | GitHub Flavored Markdown | ✅ Yes | Platform/feature matrices |
-| **Release Matrix** | Markdown Tables + Emoji | ✅ Yes | Download information at a glance |
-| **Roadmap Table** | Markdown + Status Emoji | ✅ Yes | Transparent project planning |
-| **Star History** | `star-history.com` SVG | ✅ Yes | Community adoption visualization |
-
-> **All effects render natively on GitHub** — no external JavaScript, no iframes, pure Markdown/HTML compatible with GitHub's sanitizer.
-
-</details>
