@@ -418,10 +418,10 @@ Special thanks to all contributors and the open-source community! 💚
 
 ---
 
-### If you find this project useful, please consider giving it a star!
+### ⭐ If you find this project useful, please consider giving it a star!
 ### 如果这个项目对你有帮助，请给个 Star 支持一下！
 
-![Star History](https://api.star-history.com/svg?repos=Tupig/TuPig_Product&type=Date&theme=dark)
+[![Star History Chart](https://api.star-history.com/svg?repos=Tupig/TuPig_Product&type=Date&theme=dark)](https://star-history.com/#Tupig/TuPig_Product&Date)
 
 ---
 
