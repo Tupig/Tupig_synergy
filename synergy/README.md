@@ -418,14 +418,14 @@ Special thanks to all contributors and the open-source community! 💚
 
 ---
 
-### ⭐ If you find this project useful, please consider giving it a star!  
+### If you find this project useful, please consider giving it a star!
 ### 如果这个项目对你有帮助，请给个 Star 支持一下！
 
 ![Star History](https://api.star-history.com/svg?repos=Tupig/TuPig_Product&type=Date&theme=dark)
 
 ---
 
-**Made with ❤️ by the TuPig Team**  
+**Made with ❤️ by the TuPig Team**
 **TuPig 团队倾力打造 ❤️**
 
 [GitHub](https://github.com/Tupig/TuPig_Product) • [Issues](https://github.com/Tupig/TuPig_Product/issues) • [Discussions](https://github.com/Tupig/TuPig_Product/discussions)
