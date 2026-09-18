@@ -86,11 +86,12 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
 
   Lock lock(m_mutex.get());
 
-  // mark for removal
+  // mark for deferred removal — do NOT delete job here as serviceThread
+  // may still be using it via snapshot.  The job will be deleted in
+  // updateJobState() after all references are gone.
   for (auto &entry : m_jobs) {
     if (entry.socket == socket && entry.job != nullptr) {
-      delete entry.job;
-      entry.job = nullptr;
+      m_pendingRemovals.push_back(socket);
       m_update = true;
       return;
     }
@@ -105,7 +106,18 @@ SocketMultiplexer::JobSnapshot SocketMultiplexer::buildJobSnapshot()
   snapshot.reserve(m_jobs.size());
 
   for (const auto &entry : m_jobs) {
-    if (entry.job != nullptr) {
+    // skip jobs marked for removal
+    if (entry.job == nullptr) {
+      continue;
+    }
+    bool pending = false;
+    for (ISocket *s : m_pendingRemovals) {
+      if (s == entry.socket) {
+        pending = true;
+        break;
+      }
+    }
+    if (!pending) {
       snapshot.push_back(entry);
     }
   }
@@ -126,7 +138,7 @@ void SocketMultiplexer::updateJobState(const JobSnapshot &snapshot)
     m_jobs.push_back(entry);
   }
 
-  // process pending removals
+  // process pending removals: delete jobs and remove entries
   for (ISocket *socket : m_pendingRemovals) {
     for (auto it = m_jobs.begin(); it != m_jobs.end();) {
       if (it->socket == socket) {
