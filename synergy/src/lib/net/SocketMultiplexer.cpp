@@ -17,24 +17,14 @@
 #include "mt/Thread.h"
 #include "net/ISocketMultiplexerJob.h"
 
-#include <vector>
-
 //
 // SocketMultiplexer
 //
 
 SocketMultiplexer::SocketMultiplexer()
     : m_mutex(std::make_unique<Mutex>()),
-      m_jobsReady(std::make_unique<CondVar<bool>>(m_mutex.get(), false)),
-      m_jobListLock(std::make_unique<CondVar<bool>>(m_mutex.get(), false)),
-      m_jobListLockLocked(std::make_unique<CondVar<bool>>(m_mutex.get(), false))
+      m_jobsReady(std::make_unique<CondVar<bool>>(m_mutex.get(), false))
 {
-  // this pointer just has to be unique and not nullptr.  it will
-  // never be dereferenced.  it's used to identify cursor nodes
-  // in the jobs list.
-  // TODO: Remove this evilness
-  m_cursorMark = reinterpret_cast<ISocketMultiplexerJob *>(this);
-
   // start thread
   auto tMethodJob = new TMethodJob<SocketMultiplexer>(this, &SocketMultiplexer::serviceThread);
   m_thread = std::make_unique<Thread>(tMethodJob);
@@ -45,14 +35,11 @@ SocketMultiplexer::~SocketMultiplexer()
   m_thread->cancel();
   m_thread->unblockPollSocket();
   m_thread->wait();
-  // m_thread, m_jobsReady, m_jobListLock, m_jobListLockLocked, m_mutex
-  // are all std::unique_ptr — automatically cleaned up.
-  delete m_jobListLocker;
-  delete m_jobListLockLocker;
+  // m_thread, m_jobsReady, m_mutex are all std::unique_ptr — automatically cleaned up.
 
   // clean up jobs
-  for (auto i = m_socketJobMap.begin(); i != m_socketJobMap.end(); ++i) {
-    delete *(i->second);
+  for (auto &entry : m_jobs) {
+    delete entry.job;
   }
 }
 
@@ -61,65 +48,108 @@ void SocketMultiplexer::addSocket(ISocket *socket, ISocketMultiplexerJob *job)
   assert(socket != nullptr);
   assert(job != nullptr);
 
-  // prevent other threads from locking the job list
-  lockJobListLock();
-
   // break thread out of poll
   m_thread->unblockPollSocket();
 
-  // lock the job list
-  lockJobList();
+  Lock lock(m_mutex.get());
 
-  // insert/replace job
-  if (SocketJobMap::iterator i = m_socketJobMap.find(socket); i == m_socketJobMap.end()) {
-    // we *must* put the job at the end so the order of jobs in
-    // the list continue to match the order of jobs in pfds in
-    // serviceThread().
-    JobCursor j = m_socketJobs.insert(m_socketJobs.end(), job);
-    m_update = true;
-    m_socketJobMap.insert(std::make_pair(socket, j));
-  } else {
-    if (JobCursor j = i->second; *j != job) {
-      delete *j;
-      *j = job;
+  // check if socket already exists
+  for (auto &entry : m_jobs) {
+    if (entry.socket == socket) {
+      // replace existing job
+      if (entry.job != job) {
+        delete entry.job;
+        entry.job = job;
+      }
+      m_update = true;
+      return;
     }
-    m_update = true;
   }
 
-  // unlock the job list
-  unlockJobList();
+  // add new socket/job pair
+  m_jobs.push_back({socket, job});
+  m_update = true;
+
+  // signal that jobs are ready
+  if (!*m_jobsReady) {
+    *m_jobsReady = true;
+    m_jobsReady->signal();
+  }
 }
 
 void SocketMultiplexer::removeSocket(ISocket *socket)
 {
   assert(socket != nullptr);
 
-  // prevent other threads from locking the job list
-  lockJobListLock();
-
   // break thread out of poll
   m_thread->unblockPollSocket();
 
-  // lock the job list
-  lockJobList();
+  Lock lock(m_mutex.get());
 
-  // remove job.  rather than removing it from the map we put nullptr
-  // in the list instead so the order of jobs in the list continues
-  // to match the order of jobs in pfds in serviceThread().
-  if (SocketJobMap::iterator i = m_socketJobMap.find(socket); i != m_socketJobMap.end() && (*(i->second) != nullptr)) {
-    delete *(i->second);
-    *(i->second) = nullptr;
-    m_update = true;
+  // mark for removal
+  for (auto &entry : m_jobs) {
+    if (entry.socket == socket && entry.job != nullptr) {
+      delete entry.job;
+      entry.job = nullptr;
+      m_update = true;
+      return;
+    }
+  }
+}
+
+SocketMultiplexer::JobSnapshot SocketMultiplexer::buildJobSnapshot()
+{
+  Lock lock(m_mutex.get());
+
+  JobSnapshot snapshot;
+  snapshot.reserve(m_jobs.size());
+
+  for (const auto &entry : m_jobs) {
+    if (entry.job != nullptr) {
+      snapshot.push_back(entry);
+    }
   }
 
-  // unlock the job list
-  unlockJobList();
+  m_update = false;
+  return snapshot;
+}
+
+void SocketMultiplexer::updateJobState(const JobSnapshot &snapshot)
+{
+  Lock lock(m_mutex.get());
+
+  // rebuild m_jobs from snapshot (jobs may have changed during execution)
+  m_jobs.clear();
+  m_jobs.reserve(snapshot.size());
+
+  for (const auto &entry : snapshot) {
+    m_jobs.push_back(entry);
+  }
+
+  // process pending removals
+  for (ISocket *socket : m_pendingRemovals) {
+    for (auto it = m_jobs.begin(); it != m_jobs.end();) {
+      if (it->socket == socket) {
+        delete it->job;
+        it = m_jobs.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+  m_pendingRemovals.clear();
+
+  // update ready state
+  bool isReady = !m_jobs.empty();
+  if (*m_jobsReady != isReady) {
+    *m_jobsReady = isReady;
+    m_jobsReady->signal();
+  }
 }
 
 [[noreturn]] void SocketMultiplexer::serviceThread(const void *)
 {
   std::vector<IArchNetwork::PollEntry> pfds;
-  IArchNetwork::PollEntry pfd;
 
   // service the connections
   for (;;) {
@@ -133,33 +163,24 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
       }
     }
 
-    // lock the job list
-    lockJobListLock();
-    lockJobList();
+    // build snapshot under lock, then release lock for execution
+    JobSnapshot snapshot = buildJobSnapshot();
 
-    // collect poll entries
-    if (m_update) {
-      m_update = false;
-      pfds.clear();
-      pfds.reserve(m_socketJobMap.size());
+    // collect poll entries from snapshot
+    pfds.clear();
+    pfds.reserve(snapshot.size());
 
-      JobCursor cursor = newCursor();
-      JobCursor jobCursor = nextCursor(cursor);
-      while (jobCursor != m_socketJobs.end()) {
-        if (const ISocketMultiplexerJob *job = *jobCursor; job) {
-          pfd.m_socket = job->getSocket();
-          pfd.m_events = 0;
-          if (job->isReadable()) {
-            pfd.m_events |= IArchNetwork::PollEventMask::In;
-          }
-          if (job->isWritable()) {
-            pfd.m_events |= IArchNetwork::PollEventMask::Out;
-          }
-          pfds.push_back(pfd);
-        }
-        jobCursor = nextCursor(cursor);
+    for (const auto &entry : snapshot) {
+      IArchNetwork::PollEntry pfd;
+      pfd.m_socket = entry.job->getSocket();
+      pfd.m_events = 0;
+      if (entry.job->isReadable()) {
+        pfd.m_events |= IArchNetwork::PollEventMask::In;
       }
-      deleteCursor(cursor);
+      if (entry.job->isWritable()) {
+        pfd.m_events |= IArchNetwork::PollEventMask::Out;
+      }
+      pfds.push_back(pfd);
     }
 
     int status;
@@ -180,139 +201,49 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
       status = 0;
     }
 
+    // execute jobs and collect results (no lock held)
     if (status != 0) {
-      // iterate over socket jobs, invoking each and saving the
-      // new job.
-      uint32_t i = 0;
-      JobCursor cursor = newCursor();
-      JobCursor jobCursor = nextCursor(cursor);
-      while (i < pfds.size() && jobCursor != m_socketJobs.end()) {
-        if (*jobCursor != nullptr) {
-          // get poll state
-          unsigned short revents = pfds[i].m_revents;
-          bool read = ((revents & int(IArchNetwork::PollEventMask::In)) != 0);
-          bool write = ((revents & int(IArchNetwork::PollEventMask::Out)) != 0);
-          bool error =
-              ((revents & (int(IArchNetwork::PollEventMask::Error) | int(IArchNetwork::PollEventMask::Invalid))) != 0);
+      JobSnapshot updatedSnapshot;
+      updatedSnapshot.reserve(snapshot.size());
 
-          // run job
-          ISocketMultiplexerJob *job = *jobCursor;
+      for (size_t i = 0; i < snapshot.size() && i < pfds.size(); ++i) {
+        const auto &entry = snapshot[i];
+        unsigned short revents = pfds[i].m_revents;
+        bool read = ((revents & int(IArchNetwork::PollEventMask::In)) != 0);
+        bool write = ((revents & int(IArchNetwork::PollEventMask::Out)) != 0);
+        bool error =
+            ((revents & (int(IArchNetwork::PollEventMask::Error) | int(IArchNetwork::PollEventMask::Invalid))) != 0);
 
-          // save job, if different
-          if (ISocketMultiplexerJob *newJob = job->run(read, write, error); newJob != job) {
-            Lock lock(m_mutex.get());
-            delete job;
-            *jobCursor = newJob;
-            m_update = true;
-          }
-          ++i;
+        // run job
+        ISocketMultiplexerJob *job = entry.job;
+        ISocketMultiplexerJob *newJob = job->run(read, write, error);
+
+        if (newJob != job) {
+          delete job;
+          updatedSnapshot.push_back({entry.socket, newJob});
+        } else {
+          updatedSnapshot.push_back(entry);
         }
-
-        // next job
-        jobCursor = nextCursor(cursor);
       }
-      deleteCursor(cursor);
-    }
 
-    // delete any removed socket jobs
-    for (auto i = m_socketJobMap.begin(); i != m_socketJobMap.end();) {
-      if (*(i->second) == nullptr) {
-        m_socketJobs.erase(i->second);
-        m_socketJobMap.erase(i++);
-        m_update = true;
-      } else {
-        ++i;
-      }
-    }
-
-    // unlock the job list
-    unlockJobList();
-  }
-}
-
-SocketMultiplexer::JobCursor SocketMultiplexer::newCursor()
-{
-  Lock lock(m_mutex.get());
-  return m_socketJobs.insert(m_socketJobs.begin(), m_cursorMark);
-}
-
-SocketMultiplexer::JobCursor SocketMultiplexer::nextCursor(JobCursor cursor)
-{
-  Lock lock(m_mutex.get());
-  auto j = m_socketJobs.end();
-  JobCursor i = cursor;
-  while (++i != m_socketJobs.end()) {
-    if (*i != m_cursorMark) {
-      // found a real job (as opposed to a cursor)
-      j = i;
-
-      // move our cursor just past the job
-      m_socketJobs.splice(++i, m_socketJobs, cursor);
-      break;
+      // update state under lock
+      updateJobState(updatedSnapshot);
+    } else {
+      // no status change — keep snapshot as-is
+      updateJobState(snapshot);
     }
   }
-  return j;
 }
 
-void SocketMultiplexer::deleteCursor(JobCursor cursor)
-{
-  Lock lock(m_mutex.get());
-  m_socketJobs.erase(cursor);
-}
+//
+// SocketMultiplexer singleton
+//
 
-void SocketMultiplexer::lockJobListLock()
+SocketMultiplexer *SocketMultiplexer::getInstance()
 {
-  Lock lock(m_mutex.get());
-
-  // wait for the lock on the lock
-  while (*m_jobListLockLocked) {
-    m_jobListLockLocked->wait();
+  static SocketMultiplexer *s_instance = nullptr;
+  if (s_instance == nullptr) {
+    s_instance = new SocketMultiplexer;
   }
-
-  // take ownership of the lock on the lock
-  *m_jobListLockLocked = true;
-  m_jobListLockLocker = new Thread(Thread::getCurrentThread());
-}
-
-void SocketMultiplexer::lockJobList()
-{
-  Lock lock(m_mutex.get());
-
-  // make sure we're the one that called lockJobListLock()
-  assert(*m_jobListLockLocker == Thread::getCurrentThread());
-
-  // wait for the job list lock
-  while (*m_jobListLock) {
-    m_jobListLock->wait();
-  }
-
-  // take ownership of the lock
-  *m_jobListLock = true;
-  m_jobListLocker = m_jobListLockLocker;
-  m_jobListLockLocker = nullptr;
-
-  // release the lock on the lock
-  *m_jobListLockLocked = false;
-  m_jobListLockLocked->broadcast();
-}
-
-void SocketMultiplexer::unlockJobList()
-{
-  Lock lock(m_mutex.get());
-
-  // make sure we're the one that called lockJobList()
-  assert(*m_jobListLocker == Thread::getCurrentThread());
-
-  // release the lock
-  delete m_jobListLocker;
-  m_jobListLocker = nullptr;
-  *m_jobListLock = false;
-  m_jobListLock->signal();
-
-  // set new jobs ready state
-  bool isReady = !m_socketJobMap.empty();
-  if (*m_jobsReady != isReady) {
-    *m_jobsReady = isReady;
-    m_jobsReady->signal();
-  }
+  return s_instance;
 }

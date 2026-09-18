@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <vector>
 
 template <class T> class CondVar;
 class Mutex;
@@ -49,55 +50,37 @@ public:
   //@}
 
 private:
-  // list of jobs.  we use a list so we can safely iterate over it
-  // while other threads modify it.
-  using SocketJobs = std::list<ISocketMultiplexerJob *>;
-  using JobCursor = SocketJobs::iterator;
-  using SocketJobMap = std::map<ISocket *, JobCursor>;
+  // Service job entry: pairs a socket key with its current job.
+  struct SocketJobEntry {
+    ISocket *socket = nullptr;
+    ISocketMultiplexerJob *job = nullptr;
+  };
 
-  // service sockets.  the service thread will only access m_sockets
-  // and m_update while m_pollable and m_polling are true.  all other
-  // threads must only modify these when m_pollable and m_polling are
-  // false.  only the service thread sets m_polling.
+  // Snapshot of job list for lock-free iteration in serviceThread.
+  using JobSnapshot = std::vector<SocketJobEntry>;
+
+  // Service sockets in a loop.
   [[noreturn]] void serviceThread(const void *);
 
-  // create, iterate, and destroy a cursor.  a cursor is used to
-  // safely iterate through the job list while other threads modify
-  // the list.  it works by inserting a dummy item in the list and
-  // moving that item through the list.  the dummy item will never
-  // be removed by other edits so an iterator pointing at the item
-  // remains valid until we remove the dummy item in deleteCursor().
-  // nextCursor() finds the next non-dummy item, moves our dummy
-  // item just past it, and returns an iterator for the non-dummy
-  // item.  all cursor calls lock the mutex for their duration.
-  JobCursor newCursor();
-  JobCursor nextCursor(JobCursor);
-  void deleteCursor(JobCursor);
+  // Build a snapshot of active jobs under lock, then unlock.
+  JobSnapshot buildJobSnapshot();
 
-  // lock out locking the job list.  this blocks if another thread
-  // has already locked out locking.  once it returns, only the
-  // calling thread will be able to lock the job list after any
-  // current lock is released.
-  void lockJobListLock();
-
-  // lock the job list.  this blocks if the job list is already
-  // locked.  the calling thread must have called requestJobLock.
-  void lockJobList();
-
-  // unlock the job list and the lock out on locking.
-  void unlockJobList();
+  // Update internal state after jobs have been executed.
+  void updateJobState(const JobSnapshot &snapshot);
 
 private:
   std::unique_ptr<Mutex> m_mutex;
   std::unique_ptr<Thread> m_thread;
-  bool m_update = false;
-  std::unique_ptr<CondVar<bool>> m_jobsReady;
-  std::unique_ptr<CondVar<bool>> m_jobListLock;
-  std::unique_ptr<CondVar<bool>> m_jobListLockLocked;
-  Thread *m_jobListLocker = nullptr;
-  Thread *m_jobListLockLocker = nullptr;
 
-  SocketJobs m_socketJobs = {};
-  SocketJobMap m_socketJobMap = {};
-  ISocketMultiplexerJob *m_cursorMark = nullptr;
+  // Condition variable: signaled when m_jobsReady changes or on shutdown.
+  std::unique_ptr<CondVar<bool>> m_jobsReady;
+
+  // Flat list of active jobs (no cursor markers).  m_mutex protects all access.
+  std::vector<SocketJobEntry> m_jobs;
+
+  // Pending removals: sockets to erase from m_jobs after execution.
+  std::vector<ISocket *> m_pendingRemovals;
+
+  // Flag indicating m_jobs has changed since last snapshot.
+  bool m_update = false;
 };
