@@ -40,6 +40,10 @@ target_link_libraries(
   Qt6::Widgets
   ${libs})
 
+# Set output name with version
+include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
+set_output_name_with_version(${target} SUFFIX "-core")
+
 install(
   TARGETS ${target}
   RUNTIME_DEPENDENCY_SET coreDeps
