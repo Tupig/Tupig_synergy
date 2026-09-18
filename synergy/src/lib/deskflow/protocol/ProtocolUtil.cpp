@@ -40,7 +40,7 @@ void writeInt(uint32_t Value, uint32_t Length, std::vector<uint8_t> &Buffer)
     Buffer.push_back(static_cast<uint8_t>(Value & 0xffU));
     break;
   default:
-    assert(0 && "invalid integer format length");
+    throw DeskflowException("Invalid integer format length");
     return;
   }
 }

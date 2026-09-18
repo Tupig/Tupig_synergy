@@ -1641,7 +1641,6 @@ int XWindowsScreen::ioErrorHandler(Display *)
   // mark the display as lost and notify the application so it can attempt
   // recovery or gracefully shut down.
   if (s_screen != nullptr) {
-    s_screen->m_displayLost = true;
     LOG_ERR("X11 display connection lost (ioErrorHandler fired)");
     s_screen->onError();
   }

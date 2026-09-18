@@ -21,6 +21,8 @@ static constexpr uint32_t kModifierMask = 0x1F;
 
 // Sensitive key combinations (modifier bitmask patterns)
 // Ctrl+Alt+Delete: Windows security screen
+// NOTE: kSensitiveCtrlAltDel and kSensitiveCtrlAltBksp share the same modifier
+// bitmask (Control|Alt) — they are differentiated by keyCode in isSensitiveCombination().
 static constexpr uint32_t kSensitiveCtrlAltDel = kModifierControl | kModifierAlt;
 // Cmd+Q: Force quit on macOS (Cmd maps to Super)
 static constexpr uint32_t kSensitiveCmdQ = kModifierSuper;
