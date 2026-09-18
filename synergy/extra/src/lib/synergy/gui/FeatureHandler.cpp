@@ -22,7 +22,6 @@
 #include "synergy/gui/SettingsMigration.h"
 #include "synergy/gui/SettingsScope.h"
 #include "synergy/gui/TestSettings.h"
-#include "synergy/gui/UpdateChannel.h"
 #include "synergy/gui/constants.h"
 #include "synergy/gui/styles.h"
 
@@ -102,8 +101,6 @@ void FeatureHandler::handleSettings(QDialog *parent) const
   if (parent == nullptr) {
     return;
   }
-
-  addUpdateChannelOption(parent);
 
   const auto &licenseHandler = LicenseHandler::instance();
   if (licenseHandler.isEnabled() && !licenseHandler.license().isSettingsScopeAvailable()) {
@@ -303,57 +300,4 @@ void FeatureHandler::addScopeTab(QDialog *parent) const
   });
 
   tabWidget->addTab(scopeTab, QObject::tr("Scope"));
-}
-
-void FeatureHandler::addUpdateChannelOption(QDialog *parent) const
-{
-  auto *autoUpdate = parent->findChild<QCheckBox *>(QStringLiteral("cbAutoUpdate"));
-  if (autoUpdate == nullptr) {
-    qWarning("update channel: no cbAutoUpdate in settings dialog, skipping");
-    return;
-  }
-
-  auto *page = autoUpdate->parentWidget();
-  auto *pageLayout = page ? qobject_cast<QBoxLayout *>(page->layout()) : nullptr;
-  const int checkboxIndex = pageLayout ? pageLayout->indexOf(autoUpdate) : -1;
-  if (checkboxIndex < 0) {
-    qWarning("update channel: unexpected update-checkbox layout, skipping");
-    return;
-  }
-
-  auto *row = new QHBoxLayout();
-  auto *label = new QLabel(QObject::tr("Update channel"), page);
-  auto *combo = new QComboBox(page);
-  combo->addItem(QObject::tr("Stable"), UpdateChannel::Stable);
-  combo->addItem(QObject::tr("Beta"), UpdateChannel::Beta);
-  combo->setCurrentIndex(combo->findData(UpdateChannel::current()));
-  label->setBuddy(combo);
-  row->setContentsMargins(22, 0, 0, 0);
-  row->addWidget(label);
-  row->addWidget(combo);
-  row->addStretch();
-  pageLayout->insertLayout(checkboxIndex + 1, row);
-
-  // The channel only affects the on-startup check, so mirror the checkbox's
-  // enabled state; the checkbox itself is disabled when settings aren't writable.
-  const auto syncEnabled = [label, combo](bool on) {
-    label->setEnabled(on);
-    combo->setEnabled(on);
-  };
-  syncEnabled(autoUpdate->isChecked() && autoUpdate->isEnabled());
-  QObject::connect(autoUpdate, &QCheckBox::toggled, combo, syncEnabled);
-
-  // The injected combo isn't part of the dialog's isModified() check, so changing
-  // it would never enable Save. Enable it directly on change, and persist on the
-  // dialog's accept() (not on change) so Cancel still discards.
-  auto *buttonBox = parent->findChild<QDialogButtonBox *>();
-  if (auto *saveButton = buttonBox ? buttonBox->button(QDialogButtonBox::Save) : nullptr) {
-    QObject::connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), saveButton, [saveButton]() {
-      saveButton->setEnabled(true);
-    });
-  }
-
-  QObject::connect(parent, &QDialog::accepted, combo, [combo]() {
-    UpdateChannel::setCurrent(combo->currentData().toString());
-  });
 }

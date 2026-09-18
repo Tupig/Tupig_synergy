@@ -148,9 +148,6 @@ std::optional<std::pair<QString, QVariant>> mapKey(const QString &oldKey, const 
   if (oldKey == "showCloseReminder") {
     return std::make_pair(Settings::Gui::CloseReminder, value);
   }
-  if (oldKey == "enableUpdateCheck") {
-    return std::make_pair(Settings::Gui::AutoUpdateCheck, value);
-  }
   return std::nullopt;
 }
 

@@ -22,7 +22,6 @@
 #include "synergy/gui/FeatureHandler.h"
 #include "synergy/gui/SettingsMigration.h"
 #include "synergy/gui/SettingsScope.h"
-#include "synergy/gui/UpdateChannel.h"
 #include "synergy/gui/dev_mode.h"
 #include "synergy/gui/license/LicenseHandler.h"
 
@@ -99,13 +98,6 @@ inline void onAbout(QDialog *parent)
   FeatureHandler::instance().handleAbout(parent);
   // License check removed - software runs without serial key
   // LicenseHandler::instance().handleAbout(parent);
-}
-
-inline void onVersionCheck(QString &versionUrl)
-{
-  // License check removed - software runs without serial key
-  // LicenseHandler::instance().handleVersionCheck(versionUrl);
-  synergy::gui::UpdateChannel::applyToVersionCheckUrl(versionUrl);
 }
 
 inline bool onCoreStart()
