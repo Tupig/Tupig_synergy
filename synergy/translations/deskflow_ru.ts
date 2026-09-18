@@ -711,15 +711,15 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>No thanks</source>
-        <translation>Нет, спасибо</translation>
+        <translation type="vanished">Нет, спасибо</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation>Проверить обновления</translation>
+        <translation type="vanished">Проверить обновления</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Проверять наличие обновлений при запуске %1?&lt;/p&gt;&lt;p&gt;Для проверки обновлений требуется интернет-соединение.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Проверять наличие обновлений при запуске %1?&lt;/p&gt;&lt;p&gt;Для проверки обновлений требуется интернет-соединение.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1128,7 +1128,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation>Проверять обновления при запуске</translation>
+        <translation type="vanished">Проверять обновления при запуске</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1366,7 +1366,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation>Доступна новая версия v%1</translation>
+        <translation type="vanished">Доступна новая версия v%1</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1374,7 +1374,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Update available</source>
-        <translation>Доступно обновление</translation>
+        <translation type="vanished">Доступно обновление</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

@@ -237,12 +237,12 @@ void Log::output(LogLevel::Level priority, const char *msg)
 
   std::scoped_lock lock{m_mutex};
 
-  for (const auto *outputter : m_alwaysOutputters) {
-    outputter->write(priority, msg);
+  for (auto *outputter : m_alwaysOutputters) {
+    outputter->write(priority, QString::fromUtf8(msg));
   }
 
-  for (const auto *outputter : m_outputters) {
-    if (!outputter->write(priority, msg)) {
+  for (auto *outputter : m_outputters) {
+    if (!outputter->write(priority, QString::fromUtf8(msg))) {
       break;
     }
   }

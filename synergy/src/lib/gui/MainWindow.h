@@ -14,7 +14,6 @@
 #include <QRegularExpression>
 #include <QSystemTrayIcon>
 
-#include "VersionChecker.h"
 #include "common/Constants.h"
 #include "config/ServerConfig.h"
 #include "gui/core/CoreProcess.h"
@@ -97,7 +96,6 @@ private:
   void clearSettings();
   void openAboutDialog();
   void openHelpUrl() const;
-  void openGetNewVersionUrl() const;
   void openSettings();
   void startCore();
   void stopCore();
@@ -164,7 +162,6 @@ private:
   inline static const auto m_guiSocketName = QString::fromUtf8(kGuiSocketName);
   inline static const auto m_nameRegEx = QRegularExpression(QStringLiteral("^[\\w\\-_\\.]{0,255}$"));
 
-  VersionChecker m_versionChecker;
   bool m_secureSocket = false;
   bool m_saveOnExit = true;
   bool m_clientErrorVisible = false;

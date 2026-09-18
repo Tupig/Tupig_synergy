@@ -80,16 +80,9 @@
           <widget class="QComboBox" name="comboLanguage"/>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbAutoUpdate">
-         <property name="text">
-          <string>Check for updates on startup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbPreventSleep">
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbPreventSleep">
          <property name="text">
           <string>Prevent this computer from going to sleep</string>
          </property>

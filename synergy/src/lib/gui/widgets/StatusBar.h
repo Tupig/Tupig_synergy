@@ -30,11 +30,9 @@ public:
   void setSecurityIcon(bool encrypted);
   void setSecurityLevel(const QString &securityLevel);
   void setBtnFingerprintVisible(bool visible);
-  void updateFound(const QString &version);
 
 Q_SIGNALS:
   void requestShowMyFingerprints();
-  void requestUpdateVersion();
 
 protected:
   void changeEvent(QEvent *e) override;
@@ -45,7 +43,6 @@ private:
   QPushButton *m_btnFingerprint = nullptr;
   QLabel *m_lblSecurityIcon = nullptr;
   QLabel *m_lblStatus = nullptr;
-  QPushButton *m_btnUpdate = nullptr;
   bool m_encrypted = false;
   QString m_securityLevel;
   int m_connectionInterval = -1;

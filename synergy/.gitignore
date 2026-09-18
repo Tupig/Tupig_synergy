@@ -48,3 +48,6 @@ CMakeFiles/*
 # Build artifacts
 /build_check
 
+# clangd compile database (local dev only, absolute paths)
+compile_commands.json
+

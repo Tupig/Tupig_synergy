@@ -18,7 +18,6 @@ StatusBar::StatusBar(QWidget *parent)
       m_btnFingerprint{new QPushButton(this)},
       m_lblSecurityIcon{new QLabel(this)},
       m_lblStatus{new QLabel(this)},
-      m_btnUpdate{new QPushButton(this)},
       m_retryTimer{new QTimer(this)}
 {
   static const auto btnHeight = height() - 2;
@@ -39,16 +38,6 @@ StatusBar::StatusBar(QWidget *parent)
 
   m_lblStatus->setText(tr("%1 is not running").arg(kAppName));
   insertPermanentWidget(2, m_lblStatus, 1);
-
-  m_btnUpdate->setObjectName(QStringLiteral("btnUpdate"));
-  m_btnUpdate->setVisible(false);
-  m_btnUpdate->setFlat(true);
-  m_btnUpdate->setLayoutDirection(Qt::RightToLeft);
-  m_btnUpdate->setIcon(QIcon::fromTheme(QStringLiteral("software-updates-release")));
-  m_btnUpdate->setFixedHeight(btnHeight);
-  m_btnUpdate->setIconSize(iconSize);
-  insertPermanentWidget(3, m_btnUpdate);
-  connect(m_btnUpdate, &QPushButton::clicked, this, &StatusBar::requestUpdateVersion);
 
   m_retryTimer->setInterval(1000);
   m_retryTimer->setSingleShot(false);
@@ -164,12 +153,6 @@ void StatusBar::setBtnFingerprintVisible(bool visible)
   m_btnFingerprint->setVisible(visible);
 }
 
-void StatusBar::updateFound(const QString &version)
-{
-  m_btnUpdate->setVisible(true);
-  m_btnUpdate->setToolTip(tr("A new version v%1 is available").arg(version));
-}
-
 void StatusBar::changeEvent(QEvent *e)
 {
   QStatusBar::changeEvent(e);
@@ -180,7 +163,6 @@ void StatusBar::changeEvent(QEvent *e)
 void StatusBar::updateText()
 {
   m_btnFingerprint->setToolTip(tr("View local fingerprint"));
-  m_btnUpdate->setText(tr("Update available"));
   setSecurityLevel(m_securityLevel);
 }
 

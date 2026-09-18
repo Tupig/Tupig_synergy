@@ -711,15 +711,15 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>No thanks</source>
-        <translation>아니요</translation>
+        <translation type="vanished">아니요</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation>업데이트 확인</translation>
+        <translation type="vanished">업데이트 확인</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;%1 시작 시 업데이트를 확인할까요?&lt;/p&gt;&lt;p&gt;업데이트 확인에는 인터넷 연결이 필요합니다.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;%1 시작 시 업데이트를 확인할까요?&lt;/p&gt;&lt;p&gt;업데이트 확인에는 인터넷 연결이 필요합니다.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1130,7 +1130,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation>시작 시 업데이트 확인</translation>
+        <translation type="vanished">시작 시 업데이트 확인</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1366,7 +1366,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation>새 버전(v%1)을 사용할 수 있습니다</translation>
+        <translation type="vanished">새 버전(v%1)을 사용할 수 있습니다</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1374,7 +1374,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Update available</source>
-        <translation>업데이트 사용 가능</translation>
+        <translation type="vanished">업데이트 사용 가능</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

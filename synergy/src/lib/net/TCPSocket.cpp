@@ -11,6 +11,7 @@
 #include "arch/ArchException.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
+#include "base/Stopwatch.h"
 #include "mt/Lock.h"
 #include "net/NetworkAddress.h"
 #include "net/SocketException.h"

@@ -10,8 +10,4 @@ add_library(client STATIC
   ServerProxy.h
 )
 
-target_link_libraries(client PUBLIC common)
-
-if(UNIX)
-  target_link_libraries(client PUBLIC app io)
-endif()
+target_link_libraries(client PUBLIC common app io)

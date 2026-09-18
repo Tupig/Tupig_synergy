@@ -711,15 +711,15 @@ Además, verifique que puede %1 el archivo de configuración del servidor: %2</t
     </message>
     <message>
         <source>No thanks</source>
-        <translation type="unfinished">No, gracias</translation>
+        <translation type="obsolete">No, gracias</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation type="unfinished">Buscar actualizaciones</translation>
+        <translation type="obsolete">Buscar actualizaciones</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;p&gt;¿Desea comprobar si hay actualizaciones cuando se inicie %1?&lt;/p&gt;&lt;p&gt;Para comprobar si hay actualizaciones se requiere una conexión a Internet.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;¿Desea comprobar si hay actualizaciones cuando se inicie %1?&lt;/p&gt;&lt;p&gt;Para comprobar si hay actualizaciones se requiere una conexión a Internet.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1130,7 +1130,7 @@ Al habilitar esta opción, se deshabilitará la interfaz gráfica de usuario (GU
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation type="unfinished">Buscar actualizaciones al iniciar</translation>
+        <translation type="obsolete">Buscar actualizaciones al iniciar</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1367,7 +1367,7 @@ Al habilitar esta opción, se deshabilitará la interfaz gráfica de usuario (GU
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation type="unfinished">Ya está disponible una nueva versión v%1</translation>
+        <translation type="obsolete">Ya está disponible una nueva versión v%1</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1375,7 +1375,7 @@ Al habilitar esta opción, se deshabilitará la interfaz gráfica de usuario (GU
     </message>
     <message>
         <source>Update available</source>
-        <translation type="unfinished">Actualización disponible</translation>
+        <translation type="obsolete">Actualización disponible</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

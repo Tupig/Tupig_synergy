@@ -713,15 +713,15 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>No thanks</source>
-        <translation>不要です</translation>
+        <translation type="vanished">不要です</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation>更新を確認する</translation>
+        <translation type="vanished">更新を確認する</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;%1 の起動時にソフトウェア更新を確認しますか？&lt;/p&gt;&lt;p&gt;更新の確認にはインターネット接続が必要です。&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;%1 の起動時にソフトウェア更新を確認しますか？&lt;/p&gt;&lt;p&gt;更新の確認にはインターネット接続が必要です。&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1132,7 +1132,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation>起動時にソフトウェア更新を確認する</translation>
+        <translation type="vanished">起動時にソフトウェア更新を確認する</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1368,7 +1368,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation>新しいバージョン(v%1)が利用できます</translation>
+        <translation type="vanished">新しいバージョン(v%1)が利用できます</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1376,7 +1376,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Update available</source>
-        <translation>ソフトウェア更新あり</translation>
+        <translation type="vanished">ソフトウェア更新あり</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

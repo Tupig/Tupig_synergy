@@ -711,15 +711,15 @@ Inoltre, verifica di poter %1 il file di configurazione del server: %2</translat
     </message>
     <message>
         <source>No thanks</source>
-        <translation>No, grazie</translation>
+        <translation type="vanished">No, grazie</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation>Controlla aggiornamenti</translation>
+        <translation type="vanished">Controlla aggiornamenti</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Vuoi controllare gli aggiornamenti all&apos;avvio di %1?&lt;/p&gt;&lt;p&gt;Il controllo degli aggiornamenti richiede una connessione Internet.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Vuoi controllare gli aggiornamenti all&apos;avvio di %1?&lt;/p&gt;&lt;p&gt;Il controllo degli aggiornamenti richiede una connessione Internet.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1130,7 +1130,7 @@ L&apos;abilitazione di questa impostazione disabiliterà l&apos;interfaccia graf
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation>Controlla aggiornamenti all&apos;avvio</translation>
+        <translation type="vanished">Controlla aggiornamenti all&apos;avvio</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1367,7 +1367,7 @@ L&apos;abilitazione di questa impostazione disabiliterà l&apos;interfaccia graf
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation>È disponibile una nuova versione v%1</translation>
+        <translation type="vanished">È disponibile una nuova versione v%1</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1375,7 +1375,7 @@ L&apos;abilitazione di questa impostazione disabiliterà l&apos;interfaccia graf
     </message>
     <message>
         <source>Update available</source>
-        <translation>Aggiornamento disponibile</translation>
+        <translation type="vanished">Aggiornamento disponibile</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

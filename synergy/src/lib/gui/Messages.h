@@ -31,8 +31,6 @@ bool showClearSettings(QWidget *parent);
 
 void showReadOnlySettings(QWidget *parent, const QString &systemSettingsPath);
 
-bool showUpdateCheckOption(QWidget *parent);
-
 bool showDaemonOffline(QWidget *parent);
 
 } // namespace deskflow::gui::messages

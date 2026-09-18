@@ -37,8 +37,6 @@ add_library(${target} STATIC
   StyleUtils.h
   TlsUtility.cpp
   TlsUtility.h
-  VersionChecker.cpp
-  VersionChecker.h
   config/Screen.cpp
   config/Screen.h
   config/ScreenConfig.cpp

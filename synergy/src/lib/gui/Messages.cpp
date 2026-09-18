@@ -228,24 +228,6 @@ void showReadOnlySettings(QWidget *parent, const QString &systemSettingsPath)
   QMessageBox::information(parent, title, message);
 }
 
-bool showUpdateCheckOption(QWidget *parent)
-{
-  QMessageBox message(parent);
-  message.addButton(QObject::tr("No thanks"), QMessageBox::RejectRole);
-  const auto checkButton = message.addButton(QObject::tr("Check for updates"), QMessageBox::AcceptRole);
-  message.setText(
-      QObject::tr(
-          "<p>Would you like to check for updates when %1 starts?</p>"
-          "<p>Checking for updates requires an Internet connection.</p>"
-          "<p>URL: <pre>%2</pre></p>"
-      )
-          .arg(kAppName, Settings::value(Settings::Gui::UpdateCheckUrl).toString())
-  );
-
-  message.exec();
-  return message.clickedButton() == checkButton;
-}
-
 bool showDaemonOffline(QWidget *parent)
 {
   QMessageBox message(parent);

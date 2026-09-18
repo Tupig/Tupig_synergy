@@ -713,15 +713,15 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>No thanks</source>
-        <translation>不，谢谢</translation>
+        <translation type="vanished">不，谢谢</translation>
     </message>
     <message>
         <source>Check for updates</source>
-        <translation>检查更新</translation>
+        <translation type="vanished">检查更新</translation>
     </message>
     <message>
         <source>&lt;p&gt;Would you like to check for updates when %1 starts?&lt;/p&gt;&lt;p&gt;Checking for updates requires an Internet connection.&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;您希望在 %1 启动时检查更新吗？&lt;/p&gt;&lt;p&gt;检查更新需要互联网连接。&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;您希望在 %1 启动时检查更新吗？&lt;/p&gt;&lt;p&gt;检查更新需要互联网连接。&lt;/p&gt;&lt;p&gt;URL: &lt;pre&gt;%2&lt;/pre&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Background service offline</source>
@@ -1132,7 +1132,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Check for updates on startup</source>
-        <translation>启动时检查更新</translation>
+        <translation type="vanished">启动时检查更新</translation>
     </message>
     <message>
         <source>Prevent this computer from going to sleep</source>
@@ -1368,7 +1368,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>A new version v%1 is available</source>
-        <translation>新版本 v%1 可用</translation>
+        <translation type="vanished">新版本 v%1 可用</translation>
     </message>
     <message>
         <source>View local fingerprint</source>
@@ -1376,7 +1376,7 @@ Enabling this setting will disable the server config GUI.</source>
     </message>
     <message>
         <source>Update available</source>
-        <translation>有可用更新</translation>
+        <translation type="vanished">有可用更新</translation>
     </message>
     <message>
         <source>%1 is connecting...</source>

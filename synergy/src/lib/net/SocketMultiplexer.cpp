@@ -127,7 +127,7 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
 
     // wait until there are jobs to handle
     {
-      Lock lock(m_mutex);
+      Lock lock(m_mutex.get());
       while (!(bool)*m_jobsReady) {
         m_jobsReady->wait();
       }
@@ -200,7 +200,7 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
 
           // save job, if different
           if (ISocketMultiplexerJob *newJob = job->run(read, write, error); newJob != job) {
-            Lock lock(m_mutex);
+            Lock lock(m_mutex.get());
             delete job;
             *jobCursor = newJob;
             m_update = true;
@@ -232,13 +232,13 @@ void SocketMultiplexer::removeSocket(ISocket *socket)
 
 SocketMultiplexer::JobCursor SocketMultiplexer::newCursor()
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
   return m_socketJobs.insert(m_socketJobs.begin(), m_cursorMark);
 }
 
 SocketMultiplexer::JobCursor SocketMultiplexer::nextCursor(JobCursor cursor)
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
   auto j = m_socketJobs.end();
   JobCursor i = cursor;
   while (++i != m_socketJobs.end()) {
@@ -256,13 +256,13 @@ SocketMultiplexer::JobCursor SocketMultiplexer::nextCursor(JobCursor cursor)
 
 void SocketMultiplexer::deleteCursor(JobCursor cursor)
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
   m_socketJobs.erase(cursor);
 }
 
 void SocketMultiplexer::lockJobListLock()
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
 
   // wait for the lock on the lock
   while (*m_jobListLockLocked) {
@@ -276,7 +276,7 @@ void SocketMultiplexer::lockJobListLock()
 
 void SocketMultiplexer::lockJobList()
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
 
   // make sure we're the one that called lockJobListLock()
   assert(*m_jobListLockLocker == Thread::getCurrentThread());
@@ -298,7 +298,7 @@ void SocketMultiplexer::lockJobList()
 
 void SocketMultiplexer::unlockJobList()
 {
-  Lock lock(m_mutex);
+  Lock lock(m_mutex.get());
 
   // make sure we're the one that called lockJobList()
   assert(*m_jobListLocker == Thread::getCurrentThread());

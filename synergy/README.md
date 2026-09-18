@@ -49,7 +49,8 @@ synergy/
 │       │   ├── macos/            # macOS实现
 │       │   └── linux/            # Linux实现（X11、Wayland、Portal）
 │       └── server/               # 服务端实现
-├── extra/                        # 扩展功能（GUI hooks）
+│   └── unittests/                # 单元测试
+├── extra/                        # 原版 Synergy 商业扩展（许可证代码，已禁用）及品牌/部署资源
 ├── cmake/                        # CMake配置
 ├── deploy/                       # 部署脚本
 │   ├── linux/
@@ -99,17 +100,17 @@ cmake --build build --config Release -j$(nproc)
 
 | 模块 | 说明 | 文件数 |
 |------|------|--------|
-| `arch` | 架构抽象层，提供跨平台的系统调用接口 | ~10 |
-| `base` | 基础工具库，事件队列、日志、字符串处理 | ~32 |
-| `client` | 客户端实现，处理与服务端的连接 | ~5 |
-| `common` | 公共定义，常量、枚举、配置 | ~16 |
-| `deskflow` | 核心逻辑，键鼠共享的主要实现 | ~59 |
-| `gui` | Qt GUI组件，用户界面 | ~33 |
-| `io` | IO流抽象 | ~8 |
-| `mt` | 多线程原语 | ~12 |
-| `net` | 网络通信，TCP/SSL | ~33 |
-| `platform` | 平台特定实现 | ~121 |
-| `server` | 服务端实现 | ~35 |
+| `arch` | 架构抽象层，提供跨平台的系统调用接口 | ~27 |
+| `base` | 基础工具库，事件队列、日志、字符串处理 | ~31 |
+| `client` | 客户端实现，处理与服务端的连接 | ~4 |
+| `common` | 公共定义，常量、枚举、配置 | ~13 |
+| `deskflow` | 核心逻辑，键鼠共享的主要实现 | ~72 |
+| `gui` | Qt GUI组件，用户界面 | ~94 |
+| `io` | IO流抽象 | ~7 |
+| `mt` | 多线程原语 | ~11 |
+| `net` | 网络通信，TCP/SSL | ~32 |
+| `platform` | 平台特定实现 | ~114 |
+| `server` | 服务端实现 | ~34 |
 
 ### 应用程序 (src/apps/)
 
@@ -123,9 +124,12 @@ cmake --build build --config Release -j$(nproc)
 
 本版本对原版 Synergy 进行了以下修改：
 
-1. **移除序列号验证** - `gui_hook.h` 中所有许可证检查钩子已被绕过
-2. **禁用许可证激活** - `LicenseHandler.cpp` 中所有强制执行方法已被禁用
-3. **保留核心功能** - 所有键鼠共享功能保持完整
+1. **移除序列号验证** - `extra/src/lib/synergy/hooks/gui_hook.h` 中所有许可证检查钩子已被绕过
+2. **禁用许可证激活** - `extra/src/lib/synergy/gui/license/LicenseHandler.cpp` 中所有强制执行方法已被禁用（直接返回成功）
+3. **删除自动更新检查** - 移除 `src/lib/gui/VersionChecker` 及相关菜单、状态栏入口
+4. **修复连接稳定性** - 调整 `EventQueue`、`Log`、`SocketMultiplexer`、`TCPSocket` 等网络与事件处理代码
+5. **品牌更名** - 更名为 TuPig Synergy，补充中文文档
+6. **保留核心功能** - 所有键鼠共享功能保持完整
 
 ## 技术栈
 

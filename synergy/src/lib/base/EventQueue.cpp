@@ -47,7 +47,7 @@ int EventQueue::loop()
 {
   m_buffer->init();
   {
-    Lock lock(m_readyMutex);
+    Lock lock(m_readyMutex.get());
     *m_readyCondVar = true;
     m_readyCondVar->signal();
     // drain pending events under the same lock that addEvent uses
@@ -197,7 +197,7 @@ void EventQueue::addEvent(Event &&event)
     Event::deleteData(event);
   } else {
     // hold m_readyMutex to prevent race with loop()'s pending drain
-    Lock lock(m_readyMutex);
+    Lock lock(m_readyMutex.get());
     if (!(*m_readyCondVar)) {
       m_pending.push(std::move(event));
     } else {
@@ -412,7 +412,7 @@ void *EventQueue::getSystemTarget()
 void EventQueue::waitForReady() const
 {
   double timeout = Arch::time() + 10;
-  Lock lock(m_readyMutex);
+  Lock lock(m_readyMutex.get());
 
   while (!m_readyCondVar->wait()) {
     if (Arch::time() > timeout) {
