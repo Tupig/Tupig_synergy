@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-18  
 > **当前分支**: `main`  
-> **最新 Commit**: `b160491df` (fix(net): 修复 Factory 中裸指针转 unique_ptr 的编译错误)  
-> **状态**: Phase 0+1 已完成，Phase 2 Step 1+2 已完成
+> **最新 Commit**: (待提交)  
+> **状态**: Phase 0+1 已完成，Phase 2 Step 1-3 已完成
 
 ---
 

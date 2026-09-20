@@ -92,6 +92,7 @@ graph TB
 - **Platform Abstraction / 平台抽象** — 统一接口屏蔽 Windows/macOS/Linux 差异
 - **Thread Safety / 线程安全** — 无锁队列、RAII 互斥锁、原子操作
 - **Security First / 安全优先** — TLS 1.3、证书绑定、常数时间比较
+- **Self-Contained Build / 自包含构建** — 所有依赖打包在仓库内，零配置构建
 
 </div>
 
@@ -99,33 +100,22 @@ graph TB
 
 ## 🚀 Quick Start / 快速开始
 
-### Prerequisites / 编译依赖
-
-| Platform / 平台 | Compiler / 编译器 | Build System / 构建系统 | Qt | Package Manager / 包管理器 |
-|---|---|---|---|---|
-| **Windows** | MSVC 2022 (v143) | Ninja + CMake | 6.7+ (vcpkg) | vcpkg |
-| **macOS** | Apple Clang 15+ | Ninja + CMake | 6.7+ (Homebrew) | Homebrew |
-| **Linux** | GCC 12+ / Clang 15+ | Ninja + CMake | 6.7+ (System) | apt/dnf/pacman |
-
-### Build Instructions / 编译步骤
+**零配置构建** — 所有依赖已包含在仓库中（`deps/vcpkg-cache/`），克隆即可编译。  
+**Zero-config build** — All dependencies bundled in repo (`deps/vcpkg-cache/`), clone and build.
 
 <details>
 <summary><b>🪟 Windows (PowerShell)</b></summary>
 
 ```powershell
-# 1. 安装 vcpkg (如未安装)
-git clone https://github.com/microsoft/vcpkg.git
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg integrate install
+# 1. 克隆仓库 (Git LFS 自动拉取依赖)
+git clone https://github.com/Tupig/TuPig_Product.git
+cd TuPig_Product
 
-# 2. 安装依赖
-.\vcpkg\vcpkg install qt6-openssl:x64-windows
-
-# 3. 配置与编译
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+# 2. 配置与编译 (无需安装任何依赖)
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 
-# 4. 运行
+# 3. 运行
 .\build\bin\synergy-core-1.21.2.exe    # 核心服务
 .\build\bin\synergy-1.21.2.exe         # GUI
 ```
@@ -136,15 +126,12 @@ cmake --build build --config Release
 <summary><b>🍎 macOS (Apple Silicon / Intel)</b></summary>
 
 ```bash
-# 1. 安装依赖
-brew install cmake ninja qt@6 openssl@3
+# 1. 克隆仓库
+git clone https://github.com/Tupig/TuPig_Product.git
+cd TuPig_Product
 
-# 2. 配置与编译 (Apple Silicon 原生)
-cmake -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_OSX_ARCHITECTURES=arm64 \
-  -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
-
+# 2. 配置与编译
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 
 # 3. 运行
@@ -158,31 +145,50 @@ cmake --build build --config Release
 <summary><b>🐧 Linux (Ubuntu/Debian/Fedora/Arch)</b></summary>
 
 ```bash
+# 1. 克隆仓库
+git clone https://github.com/Tupig/TuPig_Product.git
+cd TuPig_Product
+
+# 2. 安装系统库 (仅需基础 X11/GTK 库)
 # Ubuntu/Debian
-sudo apt update && sudo apt install -y \
-  cmake ninja-build g++ qt6-base-dev libssl-dev \
-  libx11-dev libxi-dev libxtst-dev libxinerama-dev \
-  libxrandr-dev libxkbcommon-dev libglib2.0-dev
-
+sudo apt install -y libx11-dev libxi-dev libxtst-dev libxinerama-dev libxrandr-dev libglib2.0-dev
 # Fedora
-sudo dnf install -y cmake ninja-build gcc-c++ qt6-qtbase-devel \
-  openssl-devel libX11-devel libXi-devel libXtst-devel \
-  libXinerama-devel libXrandr-devel libxkbcommon-devel glib2-devel
-
+sudo dnf install -y libX11-devel libXi-devel libXtst-devel libXinerama-devel libXrandr-devel glib2-devel
 # Arch
-sudo pacman -S cmake ninja gcc qt6-base openssl \
-  libx11 libxi libxtst libxinerama libxrandr libxkbcommon glib2
+sudo pacman -S libx11 libxi libxtst libxinerama libxrandr glib2
 
-# 配置与编译
+# 3. 配置与编译
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)
 
-# 运行
+# 4. 运行
 ./build/bin/synergy-core-1.21.2    # 核心服务
 ./build/bin/synergy-1.21.2         # GUI
 ```
 
 </details>
+
+---
+
+### Build Explanation / 构建原理
+
+```
+用户克隆仓库
+    ↓
+deps/vcpkg-cache/ (已包含 Qt6 + OpenSSL 预编译包)
+    ↓
+cmake 自动识别 (VCPKG_DEFAULT_BINARY_CACHE)
+    ↓
+编译完成，无外部下载
+```
+
+**依赖管理策略 / Dependency Strategy:**
+
+| Platform / 平台 | 依赖来源 | 说明 |
+|---|---|---|
+| **Windows** | `deps/vcpkg-cache/x64-windows/` | Qt6 + OpenSSL 预编译包 |
+| **macOS** | `deps/vcpkg-cache/arm64-osx/` | Qt6 + OpenSSL 预编译包 |
+| **Linux** | `deps/vcpkg-cache/x64-linux/` + 系统库 | Qt6/OpenSSL 预编译，X11 用系统库 |
 
 ---
 
@@ -195,6 +201,11 @@ cmake --build build --config Release -j$(nproc)
 synergy/
 ├── .github/                    # GitHub 工作流、模板、Dependabot
 ├── cmake/                      # CMake 模块与工具链文件
+├── deps/                       # 📦 预编译依赖 (Git LFS)
+│   └── vcpkg-cache/           # Qt6 + OpenSSL 预编译包
+│       ├── x64-windows/       # Windows x64
+│       ├── x64-linux/         # Linux x64
+│       └── arm64-osx/         # macOS ARM64
 ├── deploy/                     # 平台打包脚本
 │   ├── linux/                  # AppImage, DEB, RPM, Snap
 │   ├── mac/                    # DMG, PKG, 公证
