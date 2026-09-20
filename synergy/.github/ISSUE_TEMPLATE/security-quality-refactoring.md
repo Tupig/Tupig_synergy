@@ -35,24 +35,24 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **S-3** | P0 | 协议解析 `va_list` 无类型安全 | `ProtocolUtil.cpp` | ✅ 已修复 |
 | **S-4** | P0 | 输入事件注入无验证 | `KeyState.cpp` 等 | ✅ 已修复 |
 | **S-5** | P0 | X11 错误处理器导致崩溃 | `XWindowsScreen.cpp` | ✅ 已修复 |
-| **Q-1** | P1 | SocketMultiplexer 死锁风险 | `SocketMultiplexer.cpp` | ⬜ 待修复 |
-| **Q-2** | P1 | 4MB 栈上静态缓冲区 | `TCPSocket.cpp` | ⬜ 待修复 |
-| **Q-3** | P1 | 协议版本硬编码 | `ProtocolTypes.h` | ⬜ 待修复 |
+| **Q-1** | P1 | SocketMultiplexer 死锁风险 | `SocketMultiplexer.cpp` | ✅ 已修复 (Step 1) |
+| **Q-2** | P1 | 4MB 栈上静态缓冲区 | `TCPSocket.cpp` | ✅ 已确认 (栈缓冲4KB，输入限制1MB，StreamBuffer动态分配) |
+| **Q-3** | P1 | 协议版本硬编码 | `ProtocolTypes.h` | ✅ 已修复 (static const→constexpr) |
 | **Q-4** | P1 | X11 全局状态单例 | `XWindowsScreen.cpp` | ⬜ 待修复 |
 | **Q-5** | P1 | `assert` 作错误处理 | `ProtocolUtil.cpp` | ✅ 已修复 |
 | **Q-6** | P1 | 单测覆盖 <30% | 全核心模块 | ⬜ 待修复 |
 | **Q-7** | P1 | 静态分析/编译警告缺失 | 全项目 | ✅ 已修复 |
-| **P-1** | P2 | SocketMultiplexer 1秒轮询 | `SocketMultiplexer.cpp` | ⬜ 待修复 |
+| **P-1** | P2 | SocketMultiplexer 1秒轮询 | `SocketMultiplexer.cpp` | ✅ 已修复 (Step 1) |
 | **P-2** | P2 | 剪贴板全量内存拷贝 | `Clipboard.cpp` | ⬜ 待修复 |
 | **P-3** | P2 | 协议解析逐字节处理 | `ProtocolUtil.cpp` | ⬜ 待修复 |
 | **P-4** | P2 | Windows Hook 无条件加载 | `MSWindowsScreen.cpp` | ⬜ 待修复 |
 | **P-5** | P2 | 剪贴板格式转换器重复造轮子 | 30+ 文件 | ⬜ 待修复 |
 | **T-1** | P3 | C++17 → C++20 现代化 | 全局 | ⬜ 长期 |
 | **T-2** | P3 | Qt 信号槽旧语法 | GUI 模块 | ⬜ 待修复 |
-| **T-3** | P3 | Raw 指针手动内存管理 | 网络/协议层 | ⬜ 全程 |
+| **T-3** | P3 | Raw 指针手动内存管理 | 网络/协议层 | ✅ 已修复 (Step 2: unique_ptr 所有权模型) |
 | **T-4** | P3 | 平台层代码重复 | win32/linux/macos | ⬜ 待修复 |
 | **T-5** | P3 | 缺乏单元测试覆盖 | 核心模块 | ⬜ 全程 |
-| **T-6** | P3 | 构建系统碎片化 | vcpkg + 系统 Qt | ⬜ 待修复 |
+| **T-6** | P3 | 构建系统碎片化 | vcpkg + 系统 Qt | ✅ 已修复 (Qt6 已加入 vcpkg.json) |
 
 ---
 
@@ -199,6 +199,14 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-18 | S-3 完成：assert→错误码替换 | Sisyphus |
 | 2026-09-18 | S-4 完成：InputValidator 创建 | Sisyphus |
 | 2026-09-18 | S-5 完成：X11 优雅降级 | Sisyphus |
+| 2026-09-18 | Step 1 完成：SocketMultiplexer 并发重构 (修复 Q-1, P-1) | Sisyphus |
+| 2026-09-18 | Step 2 完成：QtNetwork 抽象层 + 双实现骨架 (修复 T-3) | Sisyphus |
+| 2026-09-18 | Step 3 完成：QtTcpTransport QTcpSocket 集成 | Sisyphus |
+| 2026-09-18 | Q-3 完成：协议版本 static const→constexpr | Sisyphus |
+| 2026-09-18 | T-6 完成：Qt6 加入 vcpkg.json，构建完全自动化 | Sisyphus |
+| 2026-09-20 | 工作区整理：删除空目录，移动已完成规划文档到 archive | Sisyphus |
+| 2026-09-20 | MCP 集成方案：完成 MCP 服务选型和集成设计文档 | Sisyphus |
+| 2026-09-20 | MCP 配置模板：创建 Claude Desktop 配置文件模板 | Sisyphus |
 
 ---
 
