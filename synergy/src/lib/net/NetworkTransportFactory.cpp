@@ -93,7 +93,7 @@ TransportType NetworkTransportFactory::getTransportType() const
 
 bool NetworkTransportFactory::isQtTransportAvailable()
 {
-  // TODO: Check if Qt Network module is available
-  // For now, return false until Step 3 implementation
-  return false;
+  // Qt Network 模块在构建时已链接（CMakeLists.txt 中 find_package(Network)）
+  // 运行时始终可用
+  return true;
 }

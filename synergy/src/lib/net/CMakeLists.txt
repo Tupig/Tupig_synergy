@@ -21,11 +21,18 @@ add_library(net STATIC
   IDataSocket.cpp
   IDataSocket.h
   IListenSocket.h
+  INetworkTransport.h
   ISocket.h
   ISocketFactory.h
   ISocketMultiplexerJob.h
+  LegacyNetworkTransport.cpp
+  LegacyNetworkTransport.h
   NetworkAddress.cpp
   NetworkAddress.h
+  NetworkTransportFactory.cpp
+  NetworkTransportFactory.h
+  QtNetworkTransport.cpp
+  QtNetworkTransport.h
   SecureListenSocket.cpp
   SecureListenSocket.h
   SecurityLevel.h

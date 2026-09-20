@@ -34,7 +34,7 @@
  *
  * @since Protocol version 1.0
  */
-static const int16_t kProtocolMajorVersion = 1;
+inline constexpr int16_t kProtocolMajorVersion = 1;
 
 /**
  * @brief Protocol minor version number
@@ -45,7 +45,7 @@ static const int16_t kProtocolMajorVersion = 1;
  * @note When incrementing the minor version, the Deskflow application version should also increment
  * @since Protocol version 1.0
  */
-static const int16_t kProtocolMinorVersion = 8;
+inline constexpr int16_t kProtocolMinorVersion = 8;
 
 /**
  * @brief Default TCP port for Deskflow connections
@@ -55,7 +55,7 @@ static const int16_t kProtocolMinorVersion = 8;
  *
  * @since Protocol version 1.0
  */
-static const uint16_t kDefaultPort = 24800;
+inline constexpr uint16_t kDefaultPort = 24800;
 
 /**
  * @brief Maximum length for client greeting message
@@ -65,7 +65,7 @@ static const uint16_t kDefaultPort = 24800;
  *
  * @since Protocol version 1.0
  */
-static const uint32_t kMaxHelloLength = 1024;
+inline constexpr uint32_t kMaxHelloLength = 1024;
 
 /**
  * @brief Keep-alive message interval in seconds
