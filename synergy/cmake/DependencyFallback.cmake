@@ -13,10 +13,3 @@ macro(find_qt_with_fallback)
   set(QT_VERSION_MAJOR 6)
   message(STATUS "Qt6: ${Qt6_VERSION}")
 endmacro()
-
-# OpenSSL 发现宏
-macro(find_openssl_with_fallback)
-  # vcpkg 模式: find_package 由 vcpkg toolchain 自动处理
-  find_package(OpenSSL 3.0 REQUIRED)
-  message(STATUS "OpenSSL: ${OpenSSL_VERSION}")
-endmacro()
