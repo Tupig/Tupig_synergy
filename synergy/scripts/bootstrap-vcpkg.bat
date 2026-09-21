@@ -1,58 +1,89 @@
 @echo off
-REM bootstrap-vcpkg.bat
-REM Clones vcpkg into vendor/vcpkg and bootstraps it.
-REM Idempotent: skips clone if vendor/vcpkg already exists.
+REM ============================================================================
+REM  scripts\bootstrap-vcpkg.bat
+REM
+REM  Clones and bootstraps the repository-local vcpkg into vendor\vcpkg.
+REM
+REM  Self-contained by design:
+REM    * no VCPKG_ROOT / no global vcpkg required
+REM    * the pinned baseline is read from ..\vcpkg.json (single source of truth)
+REM    * idempotent: safe to re-run
+REM
+REM  Compatible with both `cmd /c` and PowerShell invocation. ASCII-only on
+REM  purpose so console code pages cannot corrupt output or parsing.
+REM ============================================================================
 
 setlocal enabledelayedexpansion
 
-set "VCPKG_DIR=%~dp0..\vendor\vcpkg"
-set "VCPKG_REPO=https://github.com/microsoft/vcpkg.git"
-set "BASELINE=5f96cd15fd745122cf27e0524606d6c1efc5fd07"
+set "SCRIPT_DIR=%~dp0"
+set "REPO_ROOT=%SCRIPT_DIR%.."
+set "VCPKG_DIR=%REPO_ROOT%\vendor\vcpkg"
+set "MANIFEST=%REPO_ROOT%\vcpkg.json"
+set "VCPKG_REPO=https://github.com/microsoft/vcpkg"
 
 echo.
-echo === vcpkg Bootstrap ===
+echo === vcpkg bootstrap ===
 
-REM Check if vcpkg already exists
-if exist "%VCPKG_DIR%\bootstrap-vcpkg.bat" (
-    echo vcpkg already present at vendor\vcpkg
-    goto :checkout
-)
-
-REM Clone vcpkg
-echo Cloning vcpkg...
-git clone --depth 1 %VCPKG_REPO% "%VCPKG_DIR%"
+REM --- locate git -------------------------------------------------------------
+where git >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Failed to clone vcpkg
+    echo [ERROR] git not found in PATH.
+    echo         Install Git for Windows: https://git-scm.com/download/win
     exit /b 1
 )
 
-REM Fetch full history for baseline checkout
-echo Fetching full history for baseline checkout...
-cd /d "%VCPKG_DIR%"
-git fetch --depth 1 origin %BASELINE%
-if errorlevel 1 (
-    echo [ERROR] Failed to fetch baseline %BASELINE%
+REM --- read pinned baseline from vcpkg.json -----------------------------------
+set "BASELINE="
+for /f "tokens=2 delims=:," %%a in ('findstr /c:"builtin-baseline" "%MANIFEST%" 2^>nul') do set "BASELINE=%%a"
+if defined BASELINE set "BASELINE=%BASELINE: =%"
+if defined BASELINE set "BASELINE=%BASELINE:"=%"
+if not defined BASELINE (
+    echo [ERROR] "builtin-baseline" not found in vcpkg.json
     exit /b 1
 )
-git checkout %BASELINE%
+echo Baseline (from vcpkg.json): %BASELINE%
+
+REM --- clone if absent --------------------------------------------------------
+if not exist "%VCPKG_DIR%\.git" (
+    echo Cloning vcpkg ^(shallow^) into vendor\vcpkg ...
+    git clone --depth 1 "%VCPKG_REPO%" "%VCPKG_DIR%"
+    if errorlevel 1 (
+        echo [ERROR] git clone failed.
+        exit /b 1
+    )
+)
+
+REM --- make sure the pinned baseline commit is present ------------------------
+git -C "%VCPKG_DIR%" rev-parse --verify --quiet "%BASELINE%" >nul 2>&1
+if errorlevel 1 (
+    echo Fetching pinned baseline commit ...
+    git -C "%VCPKG_DIR%" fetch --depth 1 origin "%BASELINE%"
+    if errorlevel 1 (
+        echo [ERROR] Failed to fetch baseline %BASELINE%
+        exit /b 1
+    )
+)
+git -C "%VCPKG_DIR%" checkout --quiet "%BASELINE%"
 if errorlevel 1 (
     echo [ERROR] Failed to checkout baseline %BASELINE%
     exit /b 1
 )
 
-:checkout
-REM Bootstrap vcpkg
-echo Bootstrapping vcpkg...
-cd /d "%VCPKG_DIR%"
-call bootstrap-vcpkg.bat -disableMetrics
-if errorlevel 1 (
-    echo [ERROR] vcpkg bootstrap failed
-    exit /b 1
+REM --- bootstrap the vcpkg tool ----------------------------------------------
+if not exist "%VCPKG_DIR%\vcpkg.exe" (
+    echo Bootstrapping vcpkg tool ...
+    pushd "%VCPKG_DIR%"
+    call bootstrap-vcpkg.bat -disableMetrics
+    set "BOOTSTRAP_RC=!errorlevel!"
+    popd
+    if not "!BOOTSTRAP_RC!"=="0" (
+        echo [ERROR] vcpkg bootstrap failed.
+        exit /b 1
+    )
 )
 
+echo vcpkg ready: %VCPKG_DIR%
 echo.
-echo === vcpkg Ready ===
-echo Location: %VCPKG_DIR%
-echo Baseline: %BASELINE%
 
 endlocal
+exit /b 0

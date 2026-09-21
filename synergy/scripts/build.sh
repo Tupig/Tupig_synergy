@@ -1,49 +1,97 @@
 #!/usr/bin/env bash
-# TuPig Synergy — Linux/macOS 一键构建脚本
-# 用法: ./scripts/build.sh [debug|release]
-# 前置条件: cmake >= 3.24, ninja, vcpkg
+# ============================================================================
+#  scripts/build.sh
+#
+#  One-command build for Linux and macOS.
+#
+#  Usage:  ./scripts/build.sh [release|debug]        (default: release)
+#
+#  Self-contained by design:
+#    * bootstraps the repository-local vcpkg (no VCPKG_ROOT, no global vcpkg)
+#    * picks the platform preset from CMakePresets.json automatically
+#    * no environment variables need to be set by hand
+#
+#  ASCII-only messages on purpose.
+# ============================================================================
 
 set -euo pipefail
 
-BUILD_TYPE="${1:-release}"
-BUILD_TYPE_LOWER="$(echo "$BUILD_TYPE" | tr '[:upper:]' '[:lower:]')"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# 确保 VCPKG_ROOT 已设置
-if [ -z "${VCPKG_ROOT:-}" ]; then
-    if [ -d "$HOME/vcpkg" ]; then
-        export VCPKG_ROOT="$HOME/vcpkg"
-    elif [ -d "/usr/local/share/vcpkg" ]; then
-        export VCPKG_ROOT="/usr/local/share/vcpkg"
-    else
-        echo "[ERROR] VCPKG_ROOT not set and vcpkg not found."
-        echo "        Install: git clone https://github.com/microsoft/vcpkg.git && ./vcpkg/bootstrap-vcpkg.sh"
+# --- build type -------------------------------------------------------------
+BUILD_TYPE="$(printf '%s' "${1:-release}" | tr '[:upper:]' '[:lower:]')"
+case "${BUILD_TYPE}" in
+    release|debug) ;;
+    *)
+        echo "[ERROR] Unknown build type: ${1:-}"
+        echo "        Usage: scripts/build.sh [release|debug]"
         exit 1
-    fi
-fi
+        ;;
+esac
 
-echo "=== TuPig Synergy Build ==="
-echo "VCPKG_ROOT: $VCPKG_ROOT"
-echo "Build type: $BUILD_TYPE_LOWER"
+# --- platform preset --------------------------------------------------------
+case "$(uname -s)" in
+    Linux*)
+        PLATFORM="linux"
+        ;;
+    Darwin*)
+        PLATFORM="macos"
+        ;;
+    *)
+        echo "[ERROR] Unsupported platform: $(uname -s)"
+        echo "        Use scripts\\build.bat on Windows."
+        exit 1
+        ;;
+esac
 
-# 检查工具
-for cmd in cmake ninja; do
-    if ! command -v "$cmd" &>/dev/null; then
-        echo "[ERROR] $cmd not found. Install it first."
+PRESET="${PLATFORM}-${BUILD_TYPE}"
+
+echo
+echo "============================================"
+echo "  TuPig Synergy - build"
+echo "  Preset: ${PRESET}"
+echo "============================================"
+echo
+
+# --- required host tools ----------------------------------------------------
+for tool in git cmake ninja; do
+    if ! command -v "${tool}" >/dev/null 2>&1; then
+        echo "[ERROR] ${tool} not found in PATH."
+        case "${tool}" in
+            ninja)
+                echo "        Debian/Ubuntu: sudo apt install ninja-build"
+                echo "        macOS:         brew install ninja"
+                ;;
+            cmake)
+                echo "        Install CMake 3.24+ and re-run."
+                ;;
+        esac
         exit 1
     fi
 done
 
-# 配置
-echo ""
-echo "=== Configuring (cmake --preset $BUILD_TYPE_LOWER) ==="
-cmake --preset "$BUILD_TYPE_LOWER"
+if [ "${PLATFORM}" = "macos" ] && ! xcode-select -p >/dev/null 2>&1; then
+    echo "[ERROR] Xcode Command Line Tools not found. Run: xcode-select --install"
+    exit 1
+fi
 
-# 编译
-echo ""
-echo "=== Building ==="
-cmake --build --preset "$BUILD_TYPE_LOWER"
+# --- bootstrap vcpkg (repository-local) -------------------------------------
+"${SCRIPT_DIR}/bootstrap-vcpkg.sh"
 
-echo ""
+cd "${REPO_ROOT}"
+
+# --- configure (drives vcpkg manifest install) ------------------------------
+echo
+echo "=== Configure ==="
+cmake --preset "${PRESET}"
+
+# --- build ------------------------------------------------------------------
+echo
+echo "=== Build ==="
+cmake --build --preset "${PRESET}"
+
+echo
 echo "=== Build complete ==="
-echo "Output: build/bin/"
-ls -la build/bin/ 2>/dev/null || true
+echo "Output directory: build/bin"
+echo
