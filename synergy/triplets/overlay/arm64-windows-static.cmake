@@ -1,0 +1,7 @@
+# 静态链接 arm64 — /MT 运行时，适合独立分发
+set(VCPKG_TARGET_ARCHITECTURE arm64)
+set(VCPKG_CRT_LINKAGE static)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_C_FLAGS "${VCPKG_C_FLAGS} /MP")
+set(VCPKG_CXX_FLAGS "${VCPKG_CXX_FLAGS} /MP")

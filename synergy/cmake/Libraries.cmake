@@ -8,8 +8,10 @@ macro(configure_libs)
   if(UNIX)
     configure_unix_libs()
   elseif(WIN32)
+    # /MP for parallel compilation; /MT for static CRT (vcpkg x64-windows-static triplet).
+    # Do NOT add /MD here — it conflicts with vcpkg static triplets.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD /O2 /Ob2")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ob2")
     list(APPEND libs Wtsapi32 Userenv Wininet comsuppw Shlwapi version)
     add_definitions(
       /DWIN32
@@ -19,7 +21,9 @@ macro(configure_libs)
     )
   endif()
 
-  find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets Network)
+  # 使用回退机制查找 Qt
+  include(cmake/DependencyFallback.cmake)
+  find_qt_with_fallback()
 
   # RHEL 8.10 (the only Qt5 target) ships Qt 5.13 and OpenSSL 1.1.1, below the Qt 6.4 /
   # OpenSSL 3.0 floors the Qt6 build assumes.
@@ -27,8 +31,6 @@ macro(configure_libs)
     set(REQUIRED_QT_VERSION 5.13)
     set(REQUIRED_OPENSSL_VERSION 1.1.1)
   endif()
-
-  find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Core Widgets Network)
   if(UNIX AND NOT APPLE)
       find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS DBus Xml)
   endif()
@@ -45,11 +47,7 @@ macro(configure_libs)
 
   # Define the location of Qt deployment tool
   if(WIN32)
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND VCPKG_QT)
-      set(DEPLOY_TOOL windeployqt.debug.bat)
-    else()
-      set(DEPLOY_TOOL windeployqt)
-    endif()
+    set(DEPLOY_TOOL windeployqt)
   elseif(APPLE)
       set(DEPLOY_TOOL macdeployqt)
   endif()
