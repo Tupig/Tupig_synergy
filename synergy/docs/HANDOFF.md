@@ -1,6 +1,6 @@
 # HANDOFF — TuPig Synergy 代码库优化重构
 
-> **最后更新**: 2026-09-18  
+> **最后更新**: 2026-09-21  
 > **当前分支**: `main`  
 > **最新 Commit**: (待提交)  
 > **状态**: Phase 0+1 已完成，Phase 2 Step 1-3 已完成
@@ -118,6 +118,7 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | `.github/workflows/static-analysis.yml` | clang-tidy + cppcheck CI |
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
 | `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 23 项 Issue 追踪 |
+| `docs/consistency-audit.md` | 命名与身份一致性审计 (19 项 U-01~U-19) |
 | `docs/security.md` | 安全策略文档 |
 | `docs/phase2-qt-network-migration.md` | Phase 2 详细方案 (412 行) |
 | `docs/optimization-plan.md` | 总体优化计划书 (317 行) |

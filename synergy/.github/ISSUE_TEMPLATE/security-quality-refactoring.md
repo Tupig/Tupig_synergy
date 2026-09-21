@@ -4,7 +4,7 @@
 > **优先级**: P0  
 > **分支**: `refactor/security-baseline`  
 > **创建日期**: 2026-09-18  
-> **最后更新**: 2026-09-18  
+> **最后更新**: 2026-09-21  
 > **状态**: 🔄 进行中
 
 ---
@@ -53,6 +53,10 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **T-4** | P3 | 平台层代码重复 | win32/linux/macos | ⬜ 待修复 |
 | **T-5** | P3 | 缺乏单元测试覆盖 | 核心模块 | ⬜ 全程 |
 | **T-6** | P3 | 构建系统碎片化 | vcpkg + 系统 Qt | ✅ 已修复 (Qt6 已加入 vcpkg.json) |
+
+### 2.3 相关审计
+
+命名与身份一致性（产品标识、打包身份、文档、CI、i18n 命名）的独立审计见 [`docs/consistency-audit.md`](../../docs/consistency-audit.md)，共 19 项 `U-01` ～ `U-19`。两套编号体系相互独立，与本清单的 23 项不重叠。
 
 ---
 
@@ -207,6 +211,8 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-20 | 工作区整理：删除空目录，移动已完成规划文档到 archive | Sisyphus |
 | 2026-09-20 | MCP 集成方案：完成 MCP 服务选型和集成设计文档 | Sisyphus |
 | 2026-09-20 | MCP 配置模板：创建 Claude Desktop 配置文件模板 | Sisyphus |
+| 2026-09-20 | 脚本迁移：setup-deps.ps1 → setup-deps.bat，兼容 CMD 和 PowerShell | Sisyphus |
+| 2026-09-21 | 一致性审计：新增 docs/consistency-audit.md（19 项 U-01~U-19） | Cursor |
 
 ---
 
