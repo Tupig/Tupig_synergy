@@ -28,19 +28,18 @@ The following components are enabled by default:
 
 ### CMake Configuration Options
 
-| Option | Description | Default | Dependencies |
-|--------|-------------|---------|--------------|
-| `BUILD_USER_DOCS` | Build user-facing documentation | `DOXYGEN_FOUND` | Doxygen |
-| `BUILD_DEV_DOCS` | Build developer/API documentation | `OFF` | Doxygen |
-| `BUILD_INSTALLER` | Build platform installers | `ON` | Platform tools |
-| `BUILD_TESTS` | Build unit tests | `ON` | Qt Test |
-| `BUILD_X11_SUPPORT` | Build X11 backend (Linux/BSD) | `ON` | X11 libraries |
-| `BUILD_OSX_BUNDLE` | Build macOS .app bundle | `ON` | — |
-| `ENABLE_COVERAGE` | Enable code coverage reports | `OFF` | gcov/lcov |
-| `SKIP_BUILD_TESTS` | Skip tests during build | `OFF` | — |
-| `VCPKG_QT` | Use vcpkg for Qt (Windows only) | `OFF` | vcpkg |
-| `CLEAN_TRS` | Remove obsolete translation strings | `OFF` | — |
-| `APPLE_CODESIGN_DEV` | Apple Developer code-sign identity | unset | Xcode |
+| Option | Description | Default |
+|--------|-------------|---------|
+| `BUILD_GUI` | Build the Qt GUI | `ON` |
+| `BUILD_TESTS` | Build unit tests | `ON` |
+| `BUILD_INSTALLER` | Build platform installers | `ON` |
+| `BUILD_X11_SUPPORT` | Build X11 backend (Linux/BSD) | `ON` |
+| `BUILD_OSX_BUNDLE` | Build macOS `.app` bundle | `ON` |
+| `SKIP_BUILD_TESTS` | Skip tests during build | `OFF` |
+| `ENABLE_COVERAGE` | Enable code coverage reports | `OFF` |
+| `CLEAN_TRS` | Remove obsolete translation strings | `OFF` |
+| `SYNERGY_CORE_FLAVOR` | Build as "TuPig Synergy Core"; seeds headless defaults (GUI/tests/installer off) | `OFF` |
+| `APPLE_CODESIGN_DEV` | Apple Developer code-sign identity (cache variable, not an `option()`) | unset |
 
 **Basic Configuration Example:**
 
@@ -53,39 +52,21 @@ cmake --build build
 
 ### 🪟 Windows (MSVC + vcpkg)
 
-#### Option 1: System Qt (Recommended for Development)
+Dependencies are resolved by vcpkg in manifest mode. The repository-local vcpkg is bootstrapped for
+you, so there is no `VCPKG_ROOT` to configure.
 
-```powershell
-# 1. Install Qt 6.7+ via Qt Online Installer
-#    Select: MSVC 2022 64-bit, Qt 6.7+
+```bat
+REM One-time: install the host toolchain (run as Administrator)
+setup.bat
 
-# 2. Add to System PATH:
-#    C:\Qt\6.7.x\msvc2022_64\bin
-#    C:\Qt\6.7.x\msvc2022_64\lib\cmake
-
-# 3. Configure & Build
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
+REM Build (bootstraps vcpkg, configures, compiles)
+scripts\build.bat release
 ```
 
-#### Option 2: vcpkg-managed Qt (CI / Reproducible Builds)
+`scripts\build.bat` locates Visual Studio through `vswhere`, activates the MSVC x64 environment and
+then runs `cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`.
 
-```powershell
-# 1. Install vcpkg
-git clone https://github.com/microsoft/vcpkg.git
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg integrate install
-
-# 2. Configure with vcpkg toolchain
-cmake -S . -B build -G Ninja `
-  -DCMAKE_BUILD_TYPE=Release `
-  -DVCPKG_QT=ON `
-  -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
-
-cmake --build build --config Release
-```
-
-> ⚠️ **Note**: Do not mix system Qt and vcpkg Qt. Switching requires deleting `build/` and `vcpkg.json`.
+Output: `build\bin\Release\`.
 
 #### Windows Code Signing (Optional)
 
@@ -285,19 +266,18 @@ cmake --build build --target coverage
 
 ### CMake 配置选项
 
-| 选项 | 说明 | 默认值 | 依赖 |
-|------|------|--------|------|
-| `BUILD_USER_DOCS` | 编译用户文档 | `DOXYGEN_FOUND` | Doxygen |
-| `BUILD_DEV_DOCS` | 编译开发者/API 文档 | `OFF` | Doxygen |
-| `BUILD_INSTALLER` | 编译平台安装包 | `ON` | 平台工具 |
-| `BUILD_TESTS` | 编译单元测试 | `ON` | Qt Test |
-| `BUILD_X11_SUPPORT` | 编译 X11 后端 (Linux/BSD) | `ON` | X11 库 |
-| `BUILD_OSX_BUNDLE` | 编译 macOS .app 包 | `ON` | — |
-| `ENABLE_COVERAGE` | 启用代码覆盖率报告 | `OFF` | gcov/lcov |
-| `SKIP_BUILD_TESTS` | 跳过编译时测试 | `OFF` | — |
-| `VCPKG_QT` | 使用 vcpkg 管理 Qt (仅 Windows) | `OFF` | vcpkg |
-| `CLEAN_TRS` | 清理翻译文件中过时字符串 | `OFF` | — |
-| `APPLE_CODESIGN_DEV` | Apple 开发者代码签名身份 | 未设置 | Xcode |
+| 选项 | 说明 | 默认值 |
+|------|------|--------|
+| `BUILD_GUI` | 编译 Qt GUI | `ON` |
+| `BUILD_TESTS` | 编译单元测试 | `ON` |
+| `BUILD_INSTALLER` | 编译平台安装包 | `ON` |
+| `BUILD_X11_SUPPORT` | 编译 X11 后端 (Linux/BSD) | `ON` |
+| `BUILD_OSX_BUNDLE` | 编译 macOS `.app` 包 | `ON` |
+| `SKIP_BUILD_TESTS` | 跳过编译时测试 | `OFF` |
+| `ENABLE_COVERAGE` | 启用代码覆盖率报告 | `OFF` |
+| `CLEAN_TRS` | 清理翻译文件中过时字符串 | `OFF` |
+| `SYNERGY_CORE_FLAVOR` | 以 “TuPig Synergy Core” 构建；同时将 GUI/测试/安装包默认置为关闭（无界面构建） | `OFF` |
+| `APPLE_CODESIGN_DEV` | Apple 开发者代码签名身份（缓存变量，非 `option()`） | 未设置 |
 
 **基础配置示例：**
 
@@ -310,39 +290,20 @@ cmake --build build
 
 ### 🪟 Windows (MSVC + vcpkg)
 
-#### 方案一：系统 Qt（推荐用于开发）
+依赖由 vcpkg 清单模式解析，仓库内的 vcpkg 会自动引导，因此无需配置 `VCPKG_ROOT`。
 
-```powershell
-# 1. 通过 Qt 在线安装器安装 Qt 6.7+
-#    勾选：MSVC 2022 64-bit, Qt 6.7+
+```bat
+REM 一次性：安装宿主工具链（以管理员身份运行）
+setup.bat
 
-# 2. 添加到系统 PATH:
-#    C:\Qt\6.7.x\msvc2022_64\bin
-#    C:\Qt\6.7.x\msvc2022_64\lib\cmake
-
-# 3. 配置与编译
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
+REM 构建（自动引导 vcpkg、配置、编译）
+scripts\build.bat release
 ```
 
-#### 方案二：vcpkg 管理 Qt（CI / 可复现构建）
+`scripts\build.bat` 会通过 `vswhere` 定位 Visual Studio，激活 MSVC x64 环境，然后执行
+`cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`。
 
-```powershell
-# 1. 安装 vcpkg
-git clone https://github.com/microsoft/vcpkg.git
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg integrate install
-
-# 2. 使用 vcpkg 工具链配置
-cmake -S . -B build -G Ninja `
-  -DCMAKE_BUILD_TYPE=Release `
-  -DVCPKG_QT=ON `
-  -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
-
-cmake --build build --config Release
-```
-
-> ⚠️ **注意**：不要混用系统 Qt 和 vcpkg Qt。切换时需删除 `build/` 与 `vcpkg.json`。
+产物目录：`build\bin\Release\`。
 
 #### Windows 代码签名（可选）
 
@@ -520,41 +481,59 @@ cmake --build build --target coverage
 
 ---
 
-## CMake Presets / CMake 预设配置
+## Build Presets & Scripts / 构建预设与脚本
 
-项目提供 `CMakePresets.json` 与 `CMakeUserPresets.json`：
+### One-command build / 一键构建
 
-```json
-{
-  "version": 6,
-  "configurePresets": [
-    {
-      "name": "release",
-      "displayName": "Release Build",
-      "binaryDir": "${sourceDir}/build",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "debug",
-      "displayName": "Debug Build",
-      "binaryDir": "${sourceDir}/build-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    }
-  ]
-}
-```
+The repository is self-contained. Third-party dependencies (Qt, OpenSSL and their transitive
+dependencies) are managed by vcpkg in manifest mode, and the repository-local vcpkg is bootstrapped
+automatically — no `VCPKG_ROOT`, no global install, no manual environment variables.
 
-**Usage / 使用：**
+本仓库自包含。第三方依赖（Qt、OpenSSL 及其传递依赖）由 vcpkg 清单模式管理，仓库内的 vcpkg 自动引导
+—— 无需 `VCPKG_ROOT`、无需全局安装、无需手工设置环境变量。
+
+| Platform / 平台 | Command / 命令 |
+|---|---|
+| Windows | `scripts\build.bat [release\|debug]` |
+| Linux / macOS | `./scripts/build.sh [release\|debug]` |
+
+Both scripts call `scripts/bootstrap-vcpkg.{bat,sh}`, which clones the repository-local vcpkg into
+`vendor/vcpkg`, checks out the baseline pinned by `builtin-baseline` in `vcpkg.json`, and bootstraps
+the vcpkg tool. The baseline is the single source of truth and is read from `vcpkg.json`, not
+duplicated in the scripts.
+
+两个脚本都会调用 `scripts/bootstrap-vcpkg.{bat,sh}`：克隆仓库内 vcpkg 到 `vendor/vcpkg`，检出
+`vcpkg.json` 中 `builtin-baseline` 固定的版本，并引导 vcpkg 工具。baseline 是唯一真源，由脚本从
+`vcpkg.json` 读取，不在脚本里复制一份。
+
+> **Windows prerequisite / Windows 前置条件**: a C++ toolchain (Visual Studio 2022 Build Tools with
+> the "Desktop development with C++" workload), CMake 3.24+ and Git. Run `setup.bat` once to install
+> them. `scripts\build.bat` locates Visual Studio through `vswhere` and activates the MSVC environment
+> itself — do not hardcode install paths or pre-set `VCPKG_ROOT`.
+>
+> **Windows 前置条件**：C++ 工具链（含 "Desktop development with C++" 工作负载的 Visual Studio 2022
+> Build Tools）、CMake 3.24+ 与 Git。首次运行 `setup.bat` 安装。`scripts\build.bat` 会通过 `vswhere`
+> 自行定位 Visual Studio 并激活 MSVC 环境 —— 不要硬编码安装路径，也不要预设 `VCPKG_ROOT`。
+
+### Presets in `CMakePresets.json` / 预设清单
+
+| Preset | Purpose / 用途 |
+|---|---|
+| `windows-msvc`, `windows-msvc-release`, `windows-msvc-debug` | Windows x64, Visual Studio 2022, static triplet |
+| `linux`, `linux-release` | Linux x64, Ninja, static triplet |
+| `macos`, `macos-release` | macOS arm64, Ninja, static triplet |
+| `linux-asan-debug`, `linux-tsan-debug`, `linux-coverage-debug` | Linux diagnostics / Linux 诊断构建 |
 
 ```bash
 # List presets / 列出预设
 cmake --list-presets
 
-# Use preset / 使用预设
-cmake --preset=release
-cmake --build --preset=release
+# Configure and build directly (the scripts do both for you)
+# 直接配置与构建（脚本已代为完成这两步）
+cmake --preset windows-msvc-release
+cmake --build --preset windows-msvc-release
 ```
+
+> There is no `CMakeUserPresets.json` in this repository — it is git-ignored and was removed.
+>
+> 本仓库不包含 `CMakeUserPresets.json` —— 该文件已被忽略并移除。

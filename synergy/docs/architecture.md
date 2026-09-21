@@ -371,7 +371,10 @@ src/unittests/
 Windows lacks system package manager. Need consistent Qt, OpenSSL, libraries.
 
 #### Decision
-Use **vcpkg** with manifest mode (`vcpkg.json`). Default: system Qt, vcpkg for OpenSSL. Option `VCPKG_QT=ON` for full vcpkg.
+Use **vcpkg** in manifest mode (`vcpkg.json`), pinned by `builtin-baseline`. **All** third-party
+dependencies — Qt, OpenSSL and their transitive dependencies — come from vcpkg, statically linked so
+each platform produces a self-contained executable. The repository-local vcpkg checkout is
+bootstrapped by `scripts/bootstrap-vcpkg.{bat,sh}`; no system Qt is used.
 
 #### Consequences
 **Positive:**
@@ -798,7 +801,9 @@ src/unittests/
 Windows 缺系统包管理器。需要一致的 Qt、OpenSSL、库。
 
 #### 决策
-使用 **vcpkg** 清单模式 (`vcpkg.json`)。默认：系统 Qt，vcpkg 管理 OpenSSL。选项 `VCPKG_QT=ON` 全量 vcpkg。
+使用 **vcpkg** 清单模式 (`vcpkg.json`)，并通过 `builtin-baseline` 锁定版本。**全部**第三方依赖 ——
+Qt、OpenSSL 及其传递依赖 —— 均来自 vcpkg，且采用静态链接，使各平台产出独立可运行的可执行文件。
+仓库内的 vcpkg 检出由 `scripts/bootstrap-vcpkg.{bat,sh}` 引导；不使用系统 Qt。
 
 #### 后果
 **正面：**
