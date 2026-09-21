@@ -20,9 +20,9 @@
 
 The following components are enabled by default:
 
-- ✅ TuPig Synergy GUI Application (`deskflow-gui`)
-- ✅ TuPig Synergy Core Service (`deskflow-core`)
-- ✅ Daemon for Windows UAC handling (`deskflow-daemon`)
+- ✅ TuPig Synergy GUI Application (`synergy`)
+- ✅ TuPig Synergy Core Service (`synergy-core`)
+- ✅ Daemon for Windows UAC handling (`synergy-daemon`, Windows only)
 - ✅ Doxygen Documentation (if Doxygen installed)
 - ✅ Build-time Unit Tests (GoogleTest)
 
@@ -277,9 +277,9 @@ cmake --build build --target coverage
 
 ### 默认启用组件
 
-- ✅ TuPig Synergy GUI 程序 (`deskflow-gui`)
-- ✅ TuPig Synergy 核心服务 (`deskflow-core`)
-- ✅ Windows UAC 守护进程 (`deskflow-daemon`)
+- ✅ TuPig Synergy GUI 程序 (`synergy`)
+- ✅ TuPig Synergy 核心服务 (`synergy-core`)
+- ✅ Windows UAC 守护进程 (`synergy-daemon`，仅 Windows)
 - ✅ Doxygen 文档 (检测到 Doxygen 时)
 - ✅ 编译时单元测试 (GoogleTest)
 

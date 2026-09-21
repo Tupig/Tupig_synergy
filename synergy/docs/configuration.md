@@ -137,7 +137,7 @@ Complex nested structure for screen layout. See **Server Configuration** below.
 
 ### Server Configuration (Text Format)
 
-Used by `deskflow-core -c config.conf`. Generated from GUI's `[internalConfig]`.
+Used by `synergy-core -c config.conf`. Generated from GUI's `[internalConfig]`.
 
 #### Syntax
 
@@ -468,7 +468,7 @@ key=value
 
 ### 服务端配置 (文本格式)
 
-供 `deskflow-core -c config.conf` 使用。由 GUI 的 `[internalConfig]` 导出。
+供 `synergy-core -c config.conf` 使用。由 GUI 的 `[internalConfig]` 导出。
 
 #### 语法
 
