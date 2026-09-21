@@ -3,7 +3,10 @@
 # SPDX-FileCopyrightText: (C) 2009 - 2012 Nick Bolton
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.24)
+# Floor is 3.20 so RHEL/Rocky 8 can configure with its distro cmake (see
+# .github/actions/install-dependencies); the upper bound only selects policy
+# defaults. Do not raise the floor without checking CI's rhel targets.
+cmake_minimum_required(VERSION 3.20...3.24)
 
 # Link items by full path
 cmake_policy(SET CMP0003 NEW)

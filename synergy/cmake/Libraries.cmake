@@ -21,16 +21,10 @@ macro(configure_libs)
     )
   endif()
 
-  # 使用回退机制查找 Qt
+  # 使用回退机制查找 Qt（版本无关探测与 Qt5 版本下调均在宏内完成）
   include(${CMAKE_CURRENT_LIST_DIR}/DependencyFallback.cmake)
   find_qt_with_fallback()
 
-  # RHEL 8.10 (the only Qt5 target) ships Qt 5.13 and OpenSSL 1.1.1, below the Qt 6.4 /
-  # OpenSSL 3.0 floors the Qt6 build assumes.
-  if(QT_VERSION_MAJOR EQUAL 5)
-    set(REQUIRED_QT_VERSION 5.13)
-    set(REQUIRED_OPENSSL_VERSION 1.1.1)
-  endif()
   if(UNIX AND NOT APPLE)
       find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS DBus Xml)
   endif()
