@@ -85,6 +85,60 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "linux-asan",
+      "inherits": "linux",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=address"
+      }
+    },
+    {
+      "name": "linux-tsan",
+      "inherits": "linux",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
+        "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=thread"
+      }
+    },
+    {
+      "name": "linux-coverage",
+      "inherits": "linux",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
+        "CMAKE_CXX_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "CMAKE_SHARED_LINKER_FLAGS": "--coverage"
+      }
+    },
+    {
+      "name": "linux-asan-debug",
+      "inherits": "linux-asan",
+      "displayName": "Linux Debug + ASan",
+      "description": "AddressSanitizer build for memory error detection"
+    },
+    {
+      "name": "linux-tsan-debug",
+      "inherits": "linux-tsan",
+      "displayName": "Linux Debug + TSan",
+      "description": "ThreadSanitizer build for data race detection"
+    },
+    {
+      "name": "linux-coverage-debug",
+      "inherits": "linux-coverage",
+      "displayName": "Linux Debug + Coverage",
+      "description": "Code coverage build for test coverage analysis"
     }
   ],
   "buildPresets": [
@@ -103,6 +157,18 @@
     {
       "name": "macos-release",
       "configurePreset": "macos-release"
+    },
+    {
+      "name": "linux-asan-debug",
+      "configurePreset": "linux-asan-debug"
+    },
+    {
+      "name": "linux-tsan-debug",
+      "configurePreset": "linux-tsan-debug"
+    },
+    {
+      "name": "linux-coverage-debug",
+      "configurePreset": "linux-coverage-debug"
     }
   ]
 }
