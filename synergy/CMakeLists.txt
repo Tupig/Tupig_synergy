@@ -89,9 +89,18 @@ else()
   set(BUILD_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
-# MSVC: static CRT handled by vcpkg x64-windows-static triplet (/MT)
+# MSVC: static CRT (/MT) comes from the vcpkg x64-windows-static triplet, but
+# ArchMiscWindows::guardRuntimeVersion() still compares the running CRT against
+# REQUIRED_MSVC_RUNTIME_*, and Constants.h.in substitutes those into
+# kWindowsRuntimeMajor/Minor. Leaving them unset yields an empty initializer and
+# a hard compile error, so bind them here from the compiler toolset
+# (cl major 19 maps to CRT major 14; the minor matches, e.g. 19.44 -> 14.44).
 if(MSVC)
-  message(STATUS "MSVC: static CRT via vcpkg triplet")
+  set(REQUIRED_MSVC_RUNTIME_MAJOR 14)
+  if(CMAKE_CXX_COMPILER_VERSION MATCHES "^[0-9]+\\.([0-9]+)")
+    set(REQUIRED_MSVC_RUNTIME_MINOR "${CMAKE_MATCH_1}")
+  endif()
+  message(STATUS "MSVC runtime: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
 endif()
 
 # Debug visibility
