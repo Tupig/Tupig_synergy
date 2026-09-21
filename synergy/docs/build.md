@@ -522,7 +522,7 @@ duplicated in the scripts.
 | `windows-msvc`, `windows-msvc-release`, `windows-msvc-debug` | Windows x64, Visual Studio 2022, static triplet |
 | `linux`, `linux-release` | Linux x64, Ninja, static triplet |
 | `macos`, `macos-release` | macOS arm64, Ninja, static triplet |
-| `linux-asan-debug`, `linux-tsan-debug`, `linux-coverage-debug` | Linux diagnostics / Linux 诊断构建 |
+| `linux-asan-build`, `linux-tsan-build`, `linux-coverage-build` | Linux diagnostics (`RelWithDebInfo` + `-O1`) / Linux 诊断构建 |
 
 ```bash
 # List presets / 列出预设

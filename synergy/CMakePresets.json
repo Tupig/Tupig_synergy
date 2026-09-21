@@ -33,7 +33,7 @@
     {
       "name": "windows-msvc-release",
       "displayName": "Windows MSVC x64 Release",
-      "description": "Static-linked Release build for Windows (x64)",
+      "description": "Static-linked Release build for Windows (x64). Release is the only supported configuration: vcpkg dependencies are built Release-only.",
       "inherits": "windows-msvc",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -42,7 +42,7 @@
     {
       "name": "windows-msvc-debug",
       "displayName": "Windows MSVC x64 Debug",
-      "description": "Static-linked Debug build for Windows (x64)",
+      "description": "Debug build type for MSVC. NOTE: vcpkg dependencies are built Release-only (see triplets/overlay), so a Debug build cannot link them; build the Release configuration instead.",
       "inherits": "windows-msvc",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -91,9 +91,9 @@
       "inherits": "linux",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
-        "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "-fsanitize=address -fno-omit-frame-pointer -O1",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer -O1",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
         "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=address"
       }
@@ -103,9 +103,9 @@
       "inherits": "linux",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
-        "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer -O1",
+        "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer -O1",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
         "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=thread"
       }
@@ -115,7 +115,7 @@
       "inherits": "linux",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_C_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
         "CMAKE_CXX_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
         "CMAKE_EXE_LINKER_FLAGS": "--coverage",
@@ -123,32 +123,34 @@
       }
     },
     {
-      "name": "linux-asan-debug",
+      "name": "linux-asan-build",
       "inherits": "linux-asan",
-      "displayName": "Linux Debug + ASan",
-      "description": "AddressSanitizer build for memory error detection"
+      "displayName": "Linux RelWithDebInfo + ASan",
+      "description": "AddressSanitizer build (-O1) for memory error detection"
     },
     {
-      "name": "linux-tsan-debug",
+      "name": "linux-tsan-build",
       "inherits": "linux-tsan",
-      "displayName": "Linux Debug + TSan",
-      "description": "ThreadSanitizer build for data race detection"
+      "displayName": "Linux RelWithDebInfo + TSan",
+      "description": "ThreadSanitizer build (-O1) for data race detection"
     },
     {
-      "name": "linux-coverage-debug",
+      "name": "linux-coverage-build",
       "inherits": "linux-coverage",
-      "displayName": "Linux Debug + Coverage",
+      "displayName": "Linux RelWithDebInfo + Coverage",
       "description": "Code coverage build for test coverage analysis"
     }
   ],
   "buildPresets": [
     {
       "name": "windows-msvc-release",
-      "configurePreset": "windows-msvc-release"
+      "configurePreset": "windows-msvc-release",
+      "configuration": "Release"
     },
     {
       "name": "windows-msvc-debug",
-      "configurePreset": "windows-msvc-debug"
+      "configurePreset": "windows-msvc-debug",
+      "configuration": "Debug"
     },
     {
       "name": "linux-release",
@@ -159,16 +161,16 @@
       "configurePreset": "macos-release"
     },
     {
-      "name": "linux-asan-debug",
-      "configurePreset": "linux-asan-debug"
+      "name": "linux-asan-build",
+      "configurePreset": "linux-asan-build"
     },
     {
-      "name": "linux-tsan-debug",
-      "configurePreset": "linux-tsan-debug"
+      "name": "linux-tsan-build",
+      "configurePreset": "linux-tsan-build"
     },
     {
-      "name": "linux-coverage-debug",
-      "configurePreset": "linux-coverage-debug"
+      "name": "linux-coverage-build",
+      "configurePreset": "linux-coverage-build"
     }
   ]
 }
