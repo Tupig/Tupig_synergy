@@ -56,35 +56,46 @@ if errorlevel 1 (
 )
 
 REM --- locate Visual Studio ---------------------------------------------------
-set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-if not exist "%VSWHERE%" (
+REM vswhere.exe ships with the VS Installer, which is always a 32-bit tool, so it
+REM lives under the 32-bit Program Files. ProgramFiles(x86) is ABSENT in some
+REM environments (verified locally: it expands to nothing), therefore it must not
+REM be required -- fall back to the canonical literal location.
+REM The resolved path can contain "(x86)", so it is referenced via delayed
+REM expansion inside blocks: embedding it directly would terminate a FOR list or
+REM an IF block early and break parsing.
+set "VSWHERE="
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if not defined VSWHERE if exist "%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
+if not defined VSWHERE if exist "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+if not defined VSWHERE (
     echo [ERROR] vswhere.exe not found.
     echo         Visual Studio 2022 Build Tools are required.
     echo         Run setup.bat, or install "Desktop development with C++".
     exit /b 1
 )
+echo vswhere: "!VSWHERE!"
 
 set "VS_PATH="
-for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VS_PATH=%%i"
+for /f "usebackq tokens=*" %%i in (`"!VSWHERE!" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VS_PATH=%%i"
 if not defined VS_PATH (
     echo [ERROR] Visual Studio C++ toolset not found.
     echo         Install the "Desktop development with C++" workload, then re-run.
     exit /b 1
 )
-echo Visual Studio: %VS_PATH%
+echo Visual Studio: "!VS_PATH!"
 
 REM --- activate the MSVC environment ------------------------------------------
 REM Required: vcpkg resolves its Visual Studio instance from the VC environment
 REM variables (VCINSTALLDIR / VCToolsInstallDir). Without them vcpkg fails with
 REM "Could not locate a complete Visual Studio instance" on Build Tools
 REM installations whose instance metadata lacks an isComplete flag.
-set "VCVARSALL=%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat"
-if not exist "%VCVARSALL%" (
-    echo [ERROR] vcvarsall.bat not found under %VS_PATH%
+set "VCVARSALL=!VS_PATH!\VC\Auxiliary\Build\vcvarsall.bat"
+if not exist "!VCVARSALL!" (
+    echo [ERROR] vcvarsall.bat not found under "!VS_PATH!"
     exit /b 1
 )
 echo Activating MSVC x64 environment ...
-call "%VCVARSALL%" x64 >nul
+call "!VCVARSALL!" x64 >nul
 if errorlevel 1 (
     echo [ERROR] Failed to activate the MSVC environment.
     exit /b 1
