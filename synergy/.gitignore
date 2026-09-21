@@ -41,6 +41,7 @@ Thumbs.db
 # AI session files
 /.claude/
 /.omo/
+opencode.jsonc
 
 # Spell check (local only)
 aqtinstall.log
