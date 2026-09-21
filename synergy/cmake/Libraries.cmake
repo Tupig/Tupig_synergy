@@ -22,7 +22,7 @@ macro(configure_libs)
   endif()
 
   # 使用回退机制查找 Qt
-  include(cmake/DependencyFallback.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/DependencyFallback.cmake)
   find_qt_with_fallback()
 
   # RHEL 8.10 (the only Qt5 target) ships Qt 5.13 and OpenSSL 1.1.1, below the Qt 6.4 /
