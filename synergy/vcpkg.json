@@ -13,7 +13,6 @@
       "features": [ "tools" ]
     },
     "qtbase",
-    "qtdeclarative",
     "qtsvg",
     "qttools",
     "qttranslations"
