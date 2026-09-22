@@ -21,19 +21,12 @@
 
 namespace synergy::gui {
 
-const auto kUrlApi = "https://github.com/Tupig/TuPig_Product/tree/main/synergy";
 const auto kUrlWebsite = QStringLiteral("https://github.com/Tupig/TuPig_Product/tree/main/synergy");
-const auto kUrlSourceQuery = "utm_source=gui-s1";
 
 const auto kUrlGpl = QStringLiteral("https://www.gnu.org/licenses/old-licenses/gpl-2.0.html");
 // EULA 指向项目 README（包含许可信息）
 const auto kUrlEula = QString("%1#readme").arg(kUrlWebsite);
 
 const auto kLink = R"(<a href="%1" style="color: %2">%3</a>)";
-
-// 联系方式指向 GitHub Issues
-const auto kUrlContact = QString("%1/issues").arg(kUrlWebsite);
-// 讨论/社区指向 GitHub Discussions
-const auto kUrlAccount = QString("%1/discussions").arg(kUrlWebsite);
 
 } // namespace synergy::gui

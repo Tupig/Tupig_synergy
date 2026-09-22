@@ -15,9 +15,10 @@
 // notation (rdn), e.g. org.deskflow
 const auto kOrgDomain = QString::fromUtf8(kAppDomain);
 
-const auto kUrlSourceQuery = QStringLiteral("utm_source=gui-s1");
-const auto kUrlApp = QStringLiteral("https://%1").arg(kOrgDomain);
-const auto kUrlHelp = QStringLiteral("%1/help?%2").arg(kUrlApp, kUrlSourceQuery);
+// Destination for "Get help" / "Report bug" in the menu and for the
+// "report a bug" link shown in error dialogs. Both are handled by the project's
+// GitHub issue tracker.
+const auto kUrlHelp = QStringLiteral("https://github.com/Tupig/TuPig_Product/issues");
 
 #if defined(Q_OS_LINUX)
 const auto kUrlGnomeTrayFix = QStringLiteral("https://extensions.gnome.org/extension/615/appindicator-support/");
