@@ -99,6 +99,14 @@ endif()
 # a hard compile error, so bind them here from the compiler toolset
 # (cl major 19 maps to CRT major 14; the minor matches, e.g. 19.44 -> 14.44).
 if(MSVC)
+  # 运行库必须与 vcpkg 静态 triplet 一致。静态 triplet 的依赖用 /MT（静态 CRT）编译，
+  # 而 CMake 对 MSVC 的默认 CMAKE_MSVC_RUNTIME_LIBRARY 是 MultiThreaded...DLL（即 /MD），
+  # 二者混用会产生 LNK2038“RuntimeLibrary 不匹配”并导致链接失败。
+  # 注意：仅从 CMAKE_CXX_FLAGS_RELEASE 删除 /MD 不足以解决，因为该默认值仍会注入 /MD；
+  # 必须显式设置此变量（CMake 3.15+，本项目下限 3.20 已满足），且需在创建目标之前设置，
+  # 以便各子目录中的目标继承。
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
   set(REQUIRED_MSVC_RUNTIME_MAJOR 14)
   if(CMAKE_CXX_COMPILER_VERSION MATCHES "^[0-9]+\\.([0-9]+)")
     set(REQUIRED_MSVC_RUNTIME_MINOR "${CMAKE_MATCH_1}")
