@@ -8,9 +8,39 @@
 
 #include "common/I18N.h"
 #include "common/Settings.h"
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QSignalSpy>
+
+namespace {
+// Locate the directory holding the catalogues produced by the translations
+// sub-project.
+//
+// The executable's depth below the build root depends on the generator:
+// single-config generators (Ninja, Makefiles) place it at
+// <build>/src/unittests/common/<exe>, whereas multi-config generators
+// (Visual Studio, Xcode) insert a per-configuration directory, giving
+// <build>/src/unittests/common/<Config>/<exe>. Hardcoding either depth breaks
+// the other, so walk up from the executable and take the first translations
+// directory that actually holds generated catalogues.
+//
+// The search deliberately starts one level above applicationDirPath(), because
+// applicationDirPath()/translations is this test's own destination directory.
+QString findGeneratedTranslationsDir()
+{
+  QDir dir(QCoreApplication::applicationDirPath());
+  while (dir.cdUp()) {
+    const QString candidate = QStringLiteral("%1/translations").arg(dir.absolutePath());
+    const QDir translations(candidate);
+    if (translations.exists() &&
+        !translations.entryList({QStringLiteral("deskflow_*.qm")}, QDir::Files).isEmpty()) {
+      return candidate;
+    }
+  }
+  return {};
+}
+} // namespace
 
 void I18NTests::initTestCase()
 {
@@ -21,7 +51,6 @@ void I18NTests::initTestCase()
   Settings::setStateFile(m_stateFile);
 
   m_myTDir = QStringLiteral("%1/translations").arg(QCoreApplication::applicationDirPath());
-  const auto srcTDir = QStringLiteral("%1/../../../translations").arg(QCoreApplication::applicationDirPath());
 
   QDir dir;
   if (dir.exists(m_myTDir)) {
@@ -30,6 +59,13 @@ void I18NTests::initTestCase()
   }
 
   dir.mkdir(m_myTDir);
+
+  const auto srcTDir = findGeneratedTranslationsDir();
+  QVERIFY2(
+      !srcTDir.isEmpty(),
+      "generated translations directory not found; build the translations target first"
+  );
+
   dir.setPath(srcTDir);
   for (const auto &file : dir.entryList({"deskflow_*.qm"}, QDir::Files, QDir::Name)) {
     QFile::copy(QStringLiteral("%1/%2").arg(srcTDir, file), QStringLiteral("%1/%2").arg(m_myTDir, file));
