@@ -175,9 +175,14 @@ cmake --build build --config Release -j$(nproc)
 | Platform | Formats |
 |----------|---------|
 | **All** | TGZ, TBZ2, TXZ, TZST |
-| **Linux** | DEB, RPM, AppImage, Flatpak |
-| **macOS** | DMG (signed + notarized) |
-| **Windows** | MSI (WiX), NSIS, ZIP |
+| **Linux** | DEB or RPM (auto-selected from `/etc/os-release`) |
+| **macOS** | DMG (DragNDrop) |
+| **Windows** | 7Z (portable), MSI (WiX, see note) |
+
+> **Note**: AppImage and Flatpak are not implemented — no `appimage` reference
+> exists in `deploy/`, `extra/` or `.github/`. MSI generation additionally requires
+> accepting the WiX v7 OSMF EULA. See [delivery.md](delivery.md) for the full
+> per-platform matrix and constraints.
 
 ---
 
@@ -412,9 +417,11 @@ cmake --build build --config Release -j$(nproc)
 | 平台 | 格式 |
 |------|------|
 | **所有平台** | TGZ, TBZ2, TXZ, TZST |
-| **Linux** | DEB, RPM, AppImage, Flatpak |
-| **macOS** | DMG (签名 + 公证) |
-| **Windows** | MSI (WiX), NSIS, ZIP |
+| **Linux** | DEB 或 RPM（依 `/etc/os-release` 自动二选一） |
+| **macOS** | DMG (DragNDrop) |
+| **Windows** | 7Z（便携）、MSI (WiX，见说明) |
+
+> **说明**：AppImage 与 Flatpak **未实现** —— `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用。生成 MSI 另需接受 WiX v7 的 OSMF 许可协议。完整的各平台产物矩阵与限制见 [delivery.md](delivery.md)。
 
 ---
 

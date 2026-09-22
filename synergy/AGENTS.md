@@ -49,6 +49,22 @@ conflict instead of silently breaking the convention.
 - Do not add `/MD` alongside the static vcpkg triplet, and do not reintroduce per-machine vcpkg
   discovery (`VCPKG_ROOT`, `C:\Users\<user>\vcpkg`).
 
+### Delivery constraints — do not "fix" these
+
+`docs/delivery.md` is the authoritative matrix. The following are deliberate, not defects:
+
+- **`synergy-daemon.exe` must stay a separate process.** It runs as a Windows service (session 0) and
+  duplicates `winlogon.exe` / `logonui.exe` tokens to start the core on the secure desktop. Folding it
+  into the GUI would silently drop UAC-prompt and login-screen support.
+- **`synergy-core.exe` stays separate from the GUI.** The GUI launches it as a child process
+  (`CoreProcess.cpp`). Merging them is possible for desktop mode only.
+- **The portable package deliberately omits the daemon** (`deploy/windows/pre-cpack.cmake.in`); a
+  portable archive cannot register a service. Do not "restore" it.
+- **Executable names carry no version number** (`synergy` / `synergy-core` / `synergy-daemon`).
+  Versioned names break `Constants.h.in`'s `kCoreBinName`, the `.desktop` `Exec=`, and WiX component IDs.
+- **macOS ships a `.app` bundle inside a `.dmg`**, not a bare binary — signing and notarization require
+  the bundle layout.
+
 ### Modification workflow
 
 1. Propose the approach before changing code; prefer the smallest correct change.
@@ -57,7 +73,6 @@ conflict instead of silently breaking the convention.
 4. Keep `docs/HANDOFF.md` and the issue tracker in step with code changes.
 
 ### Known environment traps
-
 - `synergy/vendor/vcpkg` is a shallow clone; the pinned baseline commit must be present before CMake
   configures.
 - Deleting `vendor/` only costs a re-clone (~30 MB); dependency rebuild time is recovered by the vcpkg
@@ -107,6 +122,21 @@ conflict instead of silently breaking the convention.
   *"Could not locate a complete Visual Studio instance"*。`scripts/build.bat` 已自动处理，**不要删除**该步骤。
 - 不要在静态 vcpkg triplet 下追加 `/MD`，也不要再引入依赖机器的 vcpkg 查找方式（`VCPKG_ROOT`、
   `C:\Users\<user>\vcpkg`）。
+
+### 交付约束 —— 不要把这些当缺陷「修复」
+
+`docs/delivery.md` 是权威的产物矩阵。以下均为**有意设计**，不是缺陷：
+
+- **`synergy-daemon.exe` 必须保持独立进程。** 它以 Windows 服务（会话 0）运行，通过复制
+  `winlogon.exe` / `logonui.exe` 令牌把 core 启动到安全桌面。若合并进 GUI，会静默失去 UAC 提示与
+  登录界面支持。
+- **`synergy-core.exe` 与 GUI 保持分离。** GUI 以子进程方式启动它（`CoreProcess.cpp`）。仅在桌面
+  模式下才谈得上合并。
+- **便携包有意不含 daemon**（`deploy/windows/pre-cpack.cmake.in`）；便携归档无法注册服务。不要
+  「恢复」它。
+- **可执行文件名不带版本号**（`synergy` / `synergy-core` / `synergy-daemon`）。带版本号会破坏
+  `Constants.h.in` 的 `kCoreBinName`、`.desktop` 的 `Exec=` 以及 WiX 的组件 ID。
+- **macOS 交付的是 `.dmg` 内的 `.app` bundle**，而非裸二进制 —— 签名与公证都要求 bundle 结构。
 
 ### 改动流程
 

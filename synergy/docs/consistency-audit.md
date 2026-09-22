@@ -82,7 +82,7 @@ Evidence: `build/bin/Release/` now contains `synergy.exe`, `synergy-core.exe`, `
 
 The same file (`:17`) renames the icon to `com.tupig.synergy.png`, while the desktop entry declares `Icon=com.symless.synergy` (`com.symless.synergy.desktop:10`) — so the icon would not resolve even if it installed.
 
-**Impact**: Linux DEB/RPM/AppImage packaging fails or produces packages without a desktop entry.
+**Impact**: Linux DEB/RPM packaging fails or produces packages without a desktop entry.
 
 #### U-03 — Three coexisting product identities
 
@@ -273,7 +273,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 
 同一文件（`:17`）把图标重命名为 `com.tupig.synergy.png`，但桌面项里声明的是 `Icon=com.symless.synergy`（`com.symless.synergy.desktop:10`）—— 即使装上图标也解析不到。
 
-**影响**：Linux DEB/RPM/AppImage 打包失败，或产出缺少桌面项的包。
+**影响**：Linux DEB/RPM 打包失败，或产出缺少桌面项的包。
 
 #### U-03 — 三套产品身份并存
 

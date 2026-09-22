@@ -136,7 +136,7 @@ Just re-run `setup.bat` — it's idempotent and only installs what's missing.
 synergy/
 ├── cmake/                      # CMake modules
 ├── config/                     # Tool configs (SonarQube)
-├── deploy/                     # Platform packaging (AppImage, DMG, MSI)
+├── deploy/                     # Platform packaging (DEB/RPM, DMG, MSI/7Z)
 ├── docs/                       # Documentation
 ├── extra/                      # Branding, deploy resources
 ├── scripts/                    # Build scripts (build.bat, build.sh)
@@ -191,6 +191,8 @@ autoConnect = true
 | [protocol.md](docs/protocol.md) | Protocol Reference / 协议参考 (v1.8) |
 | [configuration.md](docs/configuration.md) | Configuration Reference / 配置参考 |
 | [architecture.md](docs/architecture.md) | Architecture Decision Records / 架构决策记录 |
+| [delivery.md](docs/delivery.md) | Delivery Matrix / 交付矩阵 (artifacts, self-containment, constraints) |
+| [consistency-audit.md](docs/consistency-audit.md) | Consistency Audit / 一致性审计 (U-01 ~ U-19) |
 | [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查 |
 | [security.md](docs/security.md) | Security Policy / 安全策略 |
 
