@@ -7,6 +7,8 @@
 #include "net/NetworkTransportFactory.h"
 
 #include "base/Log.h"
+#include "net/IDataSocket.h"
+#include "net/IListenSocket.h"
 #include "net/ISocketFactory.h"
 #include "net/LegacyNetworkTransport.h"
 #include "net/QtNetworkTransport.h"
