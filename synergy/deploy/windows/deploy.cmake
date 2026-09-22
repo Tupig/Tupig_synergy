@@ -7,7 +7,19 @@ set(MY_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ${CMAKE_INSTALL_LIBDIR})
-include(InstallRequiredSystemLibraries)
+
+# Only a dynamically linked CRT needs the VC++ redistributable copied next to
+# the binaries. This build uses the static CRT (/MT) via the vcpkg
+# x64-windows-static triplet, and the produced executables have no dependency on
+# msvcp140/vcruntime140/concrt140 at all (verified with dumpbin /DEPENDENTS).
+# Installing them anyway only bloats the portable package with unused files and
+# contradicts the "no external runtime required" goal, so skip it for /MT.
+if(CMAKE_MSVC_RUNTIME_LIBRARY MATCHES "DLL")
+  include(InstallRequiredSystemLibraries)
+else()
+  set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS "")
+  message(STATUS "Static CRT in use; not bundling the VC++ redistributable")
+endif()
 
 configure_file(${MY_DIR}/pre-cpack.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/pre-cpack.cmake @ONLY)
 set(CPACK_PRE_BUILD_SCRIPTS ${CMAKE_CURRENT_BINARY_DIR}/pre-cpack.cmake)
