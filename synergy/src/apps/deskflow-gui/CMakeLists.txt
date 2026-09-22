@@ -74,27 +74,32 @@ if(WIN32)
 
   set(QT_DEPENDS_DIR ${CMAKE_BINARY_DIR}/qt-depends)
 
-  add_custom_command(
-    TARGET ${target} POST_BUILD
-    COMMAND ${DEPLOYQT}
-      --no-compiler-runtime
-      --no-system-d3d-compiler
-      --no-opengl-sw
-      --no-quick-import
-      --dir "${QT_DEPENDS_DIR}"
-      --plugindir "${QT_DEPENDS_DIR}/plugins"
-      $<TARGET_FILE:${target}>
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-      ${QT_DEPENDS_DIR}
-      $<TARGET_FILE_DIR:${target}>
-  )
+  # windeployqt 仅对共享链接的 Qt 有意义（把 Qt 运行时拷贝到可执行文件旁）。静态 Qt 下
+  # DEPLOYQT 未定义（见 cmake/Libraries.cmake），此处必须跳过，否则会生成以
+  # TARGET_FILE 开头的无效命令并导致构建失败。
+  if(DEPLOYQT)
+    add_custom_command(
+      TARGET ${target} POST_BUILD
+      COMMAND ${DEPLOYQT}
+        --no-compiler-runtime
+        --no-system-d3d-compiler
+        --no-opengl-sw
+        --no-quick-import
+        --dir "${QT_DEPENDS_DIR}"
+        --plugindir "${QT_DEPENDS_DIR}/plugins"
+        $<TARGET_FILE:${target}>
+      COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        ${QT_DEPENDS_DIR}
+        $<TARGET_FILE_DIR:${target}>
+    )
 
-  install(
-    DIRECTORY ${QT_DEPENDS_DIR}/
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PATTERN "dx*.dll" EXCLUDE
-    PATTERN "icu*.dll" EXCLUDE
-  )
+    install(
+      DIRECTORY ${QT_DEPENDS_DIR}/
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      PATTERN "dx*.dll" EXCLUDE
+      PATTERN "icu*.dll" EXCLUDE
+    )
+  endif()
 
 elseif(APPLE)
   if (BUILD_OSX_BUNDLE)

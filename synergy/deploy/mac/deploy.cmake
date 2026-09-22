@@ -9,11 +9,17 @@ set(OSX_BUNDLE ${BUILD_OSX_BUNDLE})
 set(OS_STRING "macos-${BUILD_ARCHITECTURE}")
 
 if (OSX_BUNDLE)
-  install(CODE "execute_process(COMMAND
-    ${DEPLOYQT}
-    \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_PROPER_NAME}.app\"
-    -timestamp -codesign=-
-  )")
+  # macdeployqt 仅在 Qt 共享链接时需要（把 Qt 框架嵌入 .app）。静态 Qt 下 DEPLOYQT 未定义
+  # （见 cmake/Libraries.cmake），若不过滤会生成缺少可执行文件的 execute_process 而失败。
+  if(DEPLOYQT)
+    install(CODE "execute_process(COMMAND
+      ${DEPLOYQT}
+      \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_PROPER_NAME}.app\"
+      -timestamp -codesign=-
+    )")
+  else()
+    message(STATUS "macdeployqt not available (static Qt); skipping bundle deployment")
+  endif()
 
   # macdeployqt above only ad-hoc signs the staged bundle, and later install()
   # steps (e.g. LICENSE into Resources) would invalidate any signature applied
