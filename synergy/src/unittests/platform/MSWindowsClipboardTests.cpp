@@ -27,23 +27,31 @@ bool clipboardAccessible()
   CloseClipboard();
   return true;
 }
+
+// The clipboard is a shared global resource and can be taken away mid-run by
+// another process, so availability has to be re-checked at every open rather
+// than once per suite. Expanded inline (rather than wrapped in a function) so
+// that QSKIP/QFAIL return from the test function itself; inside a helper they
+// would only return from the helper and the test would carry on.
+#define REQUIRE_CLIPBOARD_OPEN(clipboard, time)                                                                        \
+  do {                                                                                                                 \
+    if (!(clipboard).open(time)) {                                                                                     \
+      if (!clipboardAccessible()) {                                                                                    \
+        QSKIP("the Windows clipboard is unavailable "                                                                  \
+              "(held by another process or blocked by the session)");                                                  \
+      }                                                                                                                \
+      QFAIL("MSWindowsClipboard::open() failed while the clipboard is accessible");                                    \
+    }                                                                                                                  \
+  } while (false)
 } // namespace
 
 void MSWindowsClipboardTests::initTestCase()
 {
   m_log.setFilter(LogLevel::Level::Verbose);
 
-  if (!clipboardAccessible()) {
-    QSKIP(
-        "cannot open the Windows clipboard from this process "
-        "(held by another process or blocked by the session); "
-        "skipping, as this says nothing about MSWindowsClipboard"
-    );
-  }
-
   MSWindowsClipboard clipboard(NULL);
 
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.empty());
 }
 
@@ -55,21 +63,21 @@ void MSWindowsClipboardTests::cleanupTestCase()
 void MSWindowsClipboardTests::emptyUnusedClipboard()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.emptyUnowned());
 }
 
 void MSWindowsClipboardTests::emptyOpenCalled()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.empty());
 }
 
 void MSWindowsClipboardTests::emptySingleFormat()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
 
   clipboard.add(IClipboard::Format::Text, m_testString);
   QVERIFY(clipboard.empty());
@@ -79,7 +87,7 @@ void MSWindowsClipboardTests::emptySingleFormat()
 void MSWindowsClipboardTests::addValue()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
 
   clipboard.add(IClipboard::Format::Text, m_testString);
   QCOMPARE(clipboard.get(IClipboard::Format::Text), m_testString);
@@ -90,7 +98,7 @@ void MSWindowsClipboardTests::replaceValue()
   using enum IClipboard::Format;
 
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
 
   clipboard.add(Text, m_testString);
   clipboard.add(Text, m_testString2);
@@ -101,20 +109,20 @@ void MSWindowsClipboardTests::replaceValue()
 void MSWindowsClipboardTests::openTimeIsOne()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(1));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 1);
 }
 
 void MSWindowsClipboardTests::closeIsOpen()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(1));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 1);
   clipboard.close();
 }
 
 void MSWindowsClipboardTests::getTimeOpenWithNoEmpty()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(1));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 1);
   // this behavior is different to that of Clipboard which only
   // returns the value passed into open(t) after empty() is called.
   QCOMPARE(clipboard.getTime(), 1);
@@ -123,7 +131,7 @@ void MSWindowsClipboardTests::getTimeOpenWithNoEmpty()
 void MSWindowsClipboardTests::getTimeOpenAndEmpty()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(1));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 1);
   QVERIFY(clipboard.empty());
   QCOMPARE(clipboard.getTime(), 1);
 }
@@ -131,7 +139,7 @@ void MSWindowsClipboardTests::getTimeOpenAndEmpty()
 void MSWindowsClipboardTests::has_withFormatAdded()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.empty());
 
   clipboard.add(IClipboard::Format::Text, m_testString);
@@ -141,7 +149,7 @@ void MSWindowsClipboardTests::has_withFormatAdded()
 void MSWindowsClipboardTests::has_withNoFormatAdded()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.empty());
   QCOMPARE(clipboard.get(IClipboard::Format::Text), "");
 }
@@ -149,7 +157,7 @@ void MSWindowsClipboardTests::has_withNoFormatAdded()
 void MSWindowsClipboardTests::getNonEmptyText()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.empty());
 
   clipboard.add(IClipboard::Format::Text, m_testString);
@@ -159,7 +167,7 @@ void MSWindowsClipboardTests::getNonEmptyText()
 void MSWindowsClipboardTests::isOwnedByDeskflow()
 {
   MSWindowsClipboard clipboard(NULL);
-  QVERIFY(clipboard.open(0));
+  REQUIRE_CLIPBOARD_OPEN(clipboard, 0);
   QVERIFY(clipboard.isOwnedByDeskflow());
 }
 
