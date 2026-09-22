@@ -61,6 +61,14 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
 )
 
+create_test(
+  NAME InputValidatorTests
+  DEPENDS app
+  LIBS arch base io ${extra_libs}
+  SOURCE InputValidatorTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+)
+
 if(BUILD_X11_SUPPORT)
   create_test(
     NAME X11LayoutParserTests

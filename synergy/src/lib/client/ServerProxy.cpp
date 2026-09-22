@@ -21,6 +21,7 @@
 #include "ipc/CoreIpc.h"
 #include "io/IStream.h"
 
+#include <chrono>
 #include <cstring>
 
 //
@@ -576,10 +577,24 @@ void ServerProxy::keyDown(uint16_t id, uint16_t mask, uint16_t button, const std
   flushCompressedMouse();
   setActiveServerLanguage(lang);
 
+  // Validate before the event reaches the platform layer: the server is a trust
+  // boundary, so treat what it sends as untrusted. A malformed mask is cleared
+  // rather than dropped - dropping would lose input. Rate limiting does drop,
+  // because accepting unbounded events lets a hostile peer flood the local
+  // machine; key releases are deliberately exempt (see keyUp).
+  auto cleanMask = static_cast<uint16_t>(InputValidator::sanitizeModifierMask(mask));
+  if (cleanMask != mask) {
+    LOG_WARN("cleared undefined modifier bits in key down mask 0x%04x -> 0x%04x", mask, cleanMask);
+  }
+
+  if (m_inputValidator.isRateLimited(static_cast<KeyID>(id), std::chrono::steady_clock::now())) {
+    return;
+  }
+
   // translate
   KeyID id2 = translateKey(static_cast<KeyID>(id));
-  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(mask));
-  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(mask))
+  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(cleanMask));
+  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(cleanMask))
     LOG_VERBOSE("key down translated to id=0x%08x, mask=0x%04x", id2, mask2);
 
   // forward
@@ -604,10 +619,20 @@ void ServerProxy::keyRepeat()
        id, mask, count, button, lang.c_str())
   );
 
+  // Sanitize and rate limit as for key down.
+  auto cleanMask = static_cast<uint16_t>(InputValidator::sanitizeModifierMask(mask));
+  if (cleanMask != mask) {
+    LOG_WARN("cleared undefined modifier bits in key repeat mask 0x%04x -> 0x%04x", mask, cleanMask);
+  }
+
+  if (m_inputValidator.isRateLimited(static_cast<KeyID>(id), std::chrono::steady_clock::now())) {
+    return;
+  }
+
   // translate
   KeyID id2 = translateKey(static_cast<KeyID>(id));
-  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(mask));
-  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(mask))
+  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(cleanMask));
+  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(cleanMask))
     LOG_VERBOSE("key repeat translated to id=0x%08x, mask=0x%04x", id2, mask2);
 
   // forward
@@ -626,10 +651,17 @@ void ServerProxy::keyUp()
   ProtocolUtil::readf(m_stream, kMsgDKeyUp + 4, &id, &mask, &button);
   LOG_VERBOSE("recv key up id=0x%08x, mask=0x%04x, button=0x%04x", id, mask, button);
 
+  // Sanitize, but never rate limit a key release: swallowing it would leave the
+  // local machine believing the key is still held down.
+  auto cleanMask = static_cast<uint16_t>(InputValidator::sanitizeModifierMask(mask));
+  if (cleanMask != mask) {
+    LOG_WARN("cleared undefined modifier bits in key up mask 0x%04x -> 0x%04x", mask, cleanMask);
+  }
+
   // translate
   KeyID id2 = translateKey(static_cast<KeyID>(id));
-  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(mask));
-  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(mask))
+  KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(cleanMask));
+  if (id2 != static_cast<KeyID>(id) || mask2 != static_cast<KeyModifierMask>(cleanMask))
     LOG_VERBOSE("key up translated to id=0x%08x, mask=0x%04x", id2, mask2);
 
   // forward
@@ -646,8 +678,16 @@ void ServerProxy::mouseDown()
   ProtocolUtil::readf(m_stream, kMsgDMouseDown + 4, &id);
   LOG_VERBOSE("recv mouse down id=%d", id);
 
+  // Logged, not rejected: the wire format allows ids from devices with more
+  // buttons than we enumerate, and MouseTypes.h shows the legal set is not a
+  // range (kButtonNone is 0; the X11 scroll wheel uses 254 and 255).
+  const auto button = static_cast<ButtonID>(id);
+  if (!InputValidator::isKnownButtonId(button)) {
+    LOG_VERBOSE("mouse down with unrecognised button id=%d", id);
+  }
+
   // forward
-  m_client->mouseDown(static_cast<ButtonID>(id));
+  m_client->mouseDown(button);
 }
 
 void ServerProxy::mouseUp()
@@ -660,8 +700,14 @@ void ServerProxy::mouseUp()
   ProtocolUtil::readf(m_stream, kMsgDMouseUp + 4, &id);
   LOG_VERBOSE("recv mouse up id=%d", id);
 
+  // Logged, not rejected - see mouseDown.
+  const auto button = static_cast<ButtonID>(id);
+  if (!InputValidator::isKnownButtonId(button)) {
+    LOG_VERBOSE("mouse up with unrecognised button id=%d", id);
+  }
+
   // forward
-  m_client->mouseUp(static_cast<ButtonID>(id));
+  m_client->mouseUp(button);
 }
 
 void ServerProxy::mouseMove()

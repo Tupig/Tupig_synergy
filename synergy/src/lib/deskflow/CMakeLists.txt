@@ -54,6 +54,8 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   input/KeyTypes.cpp
   input/KeyTypes.h
   input/MouseTypes.h
+  input/InputValidator.cpp
+  input/InputValidator.h
   input/KeyboardLayoutManager.cpp
   input/KeyboardLayoutManager.h
   input/IKeyState.cpp

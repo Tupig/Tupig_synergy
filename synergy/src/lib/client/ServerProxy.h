@@ -12,6 +12,7 @@
 #include "ClipboardTypes.h"
 #include "KeyTypes.h"
 #include "KeyboardLayoutManager.h"
+#include "deskflow/input/InputValidator.h"
 
 class Client;
 class ClientInfo;
@@ -105,6 +106,9 @@ private:
 
   Client *m_client = nullptr;
   deskflow::IStream *m_stream = nullptr;
+
+  //! Validates input arriving from the server before it reaches the platform layer.
+  InputValidator m_inputValidator;
 
   uint32_t m_seqNum = 0;
 

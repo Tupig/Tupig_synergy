@@ -6,83 +6,95 @@
 
 #pragma once
 
-#include <cstdint>
+#include "deskflow/input/KeyTypes.h"
+#include "deskflow/input/MouseTypes.h"
+
 #include <chrono>
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
-//! Input event validator for security hardening.
+//! Validation of input events arriving from the network.
 /*!
-Validates keyboard and mouse events received from the network before
-they are forwarded to the local platform layer. Enforces:
-- Range validation for key codes and button IDs
-- Rate limiting to prevent flooding attacks
-- Sensitive key combination interception
+A client applies whatever input the server sends it, so the server is a trust
+boundary: a compromised or spoofed server can push crafted keyboard and mouse
+events into the local platform layer. This class holds the checks applied to
+those events at the client's inbound path (see ServerProxy).
+
+Scope, and why it is narrower than it first appears:
+
+- Key and button *range* checks are structurally redundant. The wire format
+  carries a 16-bit key id and an 8-bit button id, so the storage types already
+  bound the range. The values that are easy to mistake for "out of range" are in
+  fact legal: kKeyNone is 0, and the X11 scroll wheel uses button ids 254 and
+  255 (see MouseTypes.h). Rejecting on a hand-written range is therefore more
+  likely to break real input than to stop an attack, so this class does not do it.
+
+- Modifier mask validation is meaningful: the set of defined bits is closed and
+  known (KeyTypes.h), so unknown bits genuinely indicate a malformed event.
+
+- Rate limiting is meaningful: it bounds how much input a hostile peer can force
+  the local machine to synthesise.
 */
 class InputValidator
 {
 public:
   InputValidator() = default;
 
-  //! Validate a key code is within acceptable range.
+  //! Check a modifier mask contains only defined bits.
   /*!
-  Key codes must be in range [1, 0xFFFF] to cover X11 keysyms,
-  Windows virtual keys, and macOS key codes.
-  \param keyCode the key code to validate
-  \return true if the key code is valid
-  */
-  static bool isValidKeyCode(uint32_t keyCode);
-
-  //! Validate a mouse button ID is within acceptable range.
-  /*!
-  Button IDs must be in range [1, 32] covering all standard mouse buttons.
-  \param buttonId the button ID to validate
-  \return true if the button ID is valid
-  */
-  static bool isValidButtonId(uint32_t buttonId);
-
-  //! Validate a modifier mask has only defined bits set.
-  /*!
-  Modifier masks use only bits 0-15 for standard modifier keys.
+  The defined bits are exactly those declared in KeyTypes.h. Anything else
+  cannot come from a well-behaved peer, so the event is malformed rather than
+  merely unusual.
   \param mask the modifier mask to validate
-  \return true if the modifier mask is valid
+  \return true if every set bit is a defined modifier
   */
-  static bool isValidModifierMask(uint32_t mask);
+  static bool isValidModifierMask(KeyModifierMask mask);
 
-  //! Detect dangerous key combinations that should be blocked.
+  //! Clear any bits outside the defined modifier set.
   /*!
-  Checks for platform-dangerous combinations like:
-  - Ctrl+Alt+Delete (Windows)
-  - Cmd+Q (macOS)
-  - Ctrl+Alt+Backspace (Linux X11)
-  Uses raw modifier bitmasks without platform-specific headers.
-  \param keyCode the key code
-  \param modifierMask the current modifier state
-  \return true if this combination should be blocked
+  Used to make a malformed mask safe without discarding the event. Dropping the
+  event instead would lose input, and dropping a key-up in particular would
+  leave the local machine with a key stuck down.
+  \param mask the modifier mask to sanitize
+  \return the mask with undefined bits removed
   */
-  static bool isSensitiveCombination(uint32_t keyCode, uint32_t modifierMask);
+  static KeyModifierMask sanitizeModifierMask(KeyModifierMask mask);
 
-  //! Check if an event would exceed the rate limit.
+  //! Check whether a button id is one this protocol defines.
   /*!
-  Uses a sliding window per key code. Old entries are cleaned up
-  automatically to prevent memory growth.
-  \param keyCode the key code being checked
+  For diagnostics only - callers must not drop events based on this. Button ids
+  beyond the documented set are accepted by the wire format and may legitimately
+  come from devices with more buttons than we know about, so an unrecognised id
+  is worth logging but not worth rejecting.
+  \param buttonId the button id to inspect
+  \return true if the id is one of the documented values
+  */
+  static bool isKnownButtonId(ButtonID buttonId);
+
+  //! Check whether an event would exceed the rate limit.
+  /*!
+  Uses a sliding one-second window per key. Old timestamps are dropped as the
+  window advances, so memory does not grow without bound.
+  \param keyCode the key being checked
   \param now current timestamp
-  \return true if the event should be dropped (rate limited)
+  \return true if the event should be dropped
   */
-  bool isRateLimited(uint32_t keyCode,
-                     std::chrono::steady_clock::time_point now);
+  bool isRateLimited(
+      KeyID keyCode, std::chrono::steady_clock::time_point now
+  );
 
-  //! Set the maximum events per second per key code.
+  //! Set the maximum events per second per key.
   void setMaxEventsPerSecond(uint32_t max);
 
   //! Get the current maximum events per second setting.
   [[nodiscard]] uint32_t maxEventsPerSecond() const;
 
 private:
+  //! Generous by design: this bounds flooding, not fast typing or key repeat.
   uint32_t m_maxEventsPerSecond = 1000;
 
-  // Sliding window timestamps per key code for rate limiting
-  std::unordered_map<uint32_t, std::vector<std::chrono::steady_clock::time_point>>
+  //! Sliding window timestamps per key for rate limiting.
+  std::unordered_map<KeyID, std::vector<std::chrono::steady_clock::time_point>>
       m_eventTimestamps;
 };
