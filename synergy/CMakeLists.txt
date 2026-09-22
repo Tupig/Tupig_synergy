@@ -92,6 +92,35 @@ else()
   set(BUILD_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 
+# 64-bit only, on all three platforms.
+#
+# The project ships 64-bit exclusively: every vcpkg triplet we maintain
+# (x64-windows-static, x64-linux, arm64-osx, x64-osx, arm64-windows-static) is
+# 64-bit, and no 32-bit dependency set exists. Reject a 32-bit configure here so
+# the failure is explicit, instead of surfacing later as confusing ABI or link
+# errors against mismatched binaries.
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(FATAL_ERROR
+    "64-bit target required, but the compiler produces ${CMAKE_SIZEOF_VOID_P}-byte pointers (32-bit). "
+    "Configure with a 64-bit toolchain and triplet, e.g. "
+    "-A x64 plus -DVCPKG_TARGET_TRIPLET=x64-windows-static on Windows, "
+    "-DVCPKG_TARGET_TRIPLET=x64-linux on Linux, arm64-osx/x64-osx on macOS."
+  )
+endif()
+
+# Keep BUILD_ARCHITECTURE to the 64-bit values the triplets actually provide.
+if(NOT BUILD_ARCHITECTURE MATCHES "^(x64|x86_64|arm64|aarch64)$")
+  message(FATAL_ERROR
+    "Unsupported architecture '${BUILD_ARCHITECTURE}'; this project builds 64-bit only "
+    "(x64/x86_64 or arm64/aarch64)."
+  )
+endif()
+
+# AddressSanitizer must be decided before the MSVC runtime block below, because
+# MSVC ASan requires the *dynamic* CRT (/MD) and therefore cannot be combined
+# with the static-CRT triplet used for release builds.
+option(SYNERGY_ENABLE_ASAN "Build with AddressSanitizer (requires a dynamic-CRT triplet)" OFF)
+
 # MSVC: static CRT (/MT) comes from the vcpkg x64-windows-static triplet, but
 # ArchMiscWindows::guardRuntimeVersion() still compares the running CRT against
 # REQUIRED_MSVC_RUNTIME_*, and Constants.h.in substitutes those into
@@ -99,19 +128,123 @@ endif()
 # a hard compile error, so bind them here from the compiler toolset
 # (cl major 19 maps to CRT major 14; the minor matches, e.g. 19.44 -> 14.44).
 if(MSVC)
-  # 运行库必须与 vcpkg 静态 triplet 一致。静态 triplet 的依赖用 /MT（静态 CRT）编译，
-  # 而 CMake 对 MSVC 的默认 CMAKE_MSVC_RUNTIME_LIBRARY 是 MultiThreaded...DLL（即 /MD），
-  # 二者混用会产生 LNK2038“RuntimeLibrary 不匹配”并导致链接失败。
-  # 注意：仅从 CMAKE_CXX_FLAGS_RELEASE 删除 /MD 不足以解决，因为该默认值仍会注入 /MD；
-  # 必须显式设置此变量（CMake 3.15+，本项目下限 3.20 已满足），且需在创建目标之前设置，
-  # 以便各子目录中的目标继承。
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  # 运行库必须与 vcpkg triplet 一致，否则出现 LNK2038 “RuntimeLibrary 不匹配”：
+  # 静态 triplet（x64-windows-static）的依赖用 /MT，动态 triplet（x64-windows）用 /MD。
+  # CMake 对 MSVC 的默认值是 MultiThreaded...DLL，因此：
+  #   - Release（静态 triplet）必须显式改为 MultiThreaded，仅从 CMAKE_CXX_FLAGS_RELEASE
+  #     删除 /MD 无效，因为该默认值仍会注入 /MD；
+  #   - ASan 构建必须保留动态 CRT —— MSVC ASan 的运行库是 clang_rt.asan_dynamic-*.dll，
+  #     不支持 /MT，故此时不能改用静态 CRT。
+  # 此变量需在创建目标之前设置，以便各子目录中的目标继承。
+  if(SYNERGY_ENABLE_ASAN)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    message(STATUS "ASan enabled: using dynamic CRT (/MD) as required by MSVC AddressSanitizer")
+  else()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif()
 
   set(REQUIRED_MSVC_RUNTIME_MAJOR 14)
   if(CMAKE_CXX_COMPILER_VERSION MATCHES "^[0-9]+\\.([0-9]+)")
     set(REQUIRED_MSVC_RUNTIME_MINOR "${CMAKE_MATCH_1}")
   endif()
   message(STATUS "MSVC runtime: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
+endif()
+
+# ---------------------------------------------------------------------------
+# Optimization and hardening
+# ---------------------------------------------------------------------------
+# Assembled here so the flags apply tree-wide; project() has already run, which
+# check_ipo_supported() requires.
+
+include(CheckIPOSupported)
+
+option(SYNERGY_ENABLE_LTO "Enable link-time optimization (IPO/LTO) in release builds" ON)
+option(SYNERGY_ENABLE_AVX2 "Target AVX2 on x86-64; requires Haswell (2013) or newer" ON)
+option(SYNERGY_ENABLE_HARDENING "Enable control-flow guard and extra security checks" ON)
+
+# ASan and LTO instrument/transform at different stages and do not compose
+# reliably, so an ASan build forces LTO off rather than producing misleading
+# reports.
+if(SYNERGY_ENABLE_ASAN)
+  set(SYNERGY_ENABLE_LTO OFF)
+  message(STATUS "ASan enabled: link-time optimization disabled")
+endif()
+
+# x86-64 (as opposed to arm64): both are 64-bit, but only x86-64 has AVX2.
+set(_synergy_arch_x86_64 FALSE)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "[Aa][Rr][Mm]64")
+  set(_synergy_arch_x86_64 TRUE)
+endif()
+
+if(SYNERGY_ENABLE_LTO)
+  check_ipo_supported(RESULT _synergy_ipo_ok OUTPUT _synergy_ipo_msg LANGUAGES C CXX)
+  if(_synergy_ipo_ok)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    message(STATUS "Link-time optimization enabled for release builds")
+  else()
+    message(WARNING "Link-time optimization unsupported by this toolchain, leaving it off: ${_synergy_ipo_msg}")
+  endif()
+endif()
+
+if(MSVC)
+  # /Gw (whole-program data) and /Gy (function-level COMDATs) are what give LTO
+  # something to work with; without them the link-time pass has little to inline
+  # or discard.
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Gw /Gy")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Gw /Gy")
+
+  if(SYNERGY_ENABLE_AVX2)
+    if(_synergy_arch_x86_64)
+      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /arch:AVX2")
+      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /arch:AVX2")
+      message(STATUS "AVX2 code generation enabled (/arch:AVX2); needs Haswell (2013) or newer")
+    else()
+      message(STATUS "AVX2 requested but the target is not x86-64; /arch:AVX2 not applied")
+    endif()
+  endif()
+
+  if(SYNERGY_ENABLE_HARDENING)
+    # /guard:cf instruments indirect calls and validates them at runtime, which
+    # blunts control-flow hijacking after a memory-corruption bug; it needs the
+    # matching linker flag. /sdl adds extra security checks and promotes some
+    # security-relevant warnings to errors. /GS (stack cookies) is on by default.
+    add_compile_options(/guard:cf /sdl)
+    add_link_options(/guard:cf)
+    message(STATUS "Hardening enabled: /guard:cf /sdl")
+  endif()
+
+  if(SYNERGY_ENABLE_ASAN)
+    # MSVC's AddressSanitizer instruments heap/stack/globals of this code;
+    # dependencies need not be instrumented, but they must share the dynamic CRT.
+    add_compile_options(/fsanitize=address /Zi)
+    add_link_options(/fsanitize=address)
+    message(STATUS "Hardening enabled: /fsanitize=address")
+  endif()
+else()
+  # Toolchain hardening that mainstream distributions ship by default.
+  add_compile_options(-fstack-protector-strong)
+  if(SYNERGY_ENABLE_HARDENING)
+    add_link_options(-Wl,-z,relro,-z,now)
+  endif()
+  if(NOT APPLE)
+    add_compile_options(-fPIE)
+    add_link_options(-pie)
+    if(SYNERGY_ENABLE_AVX2 AND _synergy_arch_x86_64)
+      add_compile_options(-march=x86-64-v3)
+      message(STATUS "AVX2-class code generation enabled (-march=x86-64-v3)")
+    endif()
+    # _FORTIFY_SOURCE needs optimization and is incompatible with sanitizers, so
+    # it is scoped to release builds and omitted when ASan is on.
+    if(NOT SYNERGY_ENABLE_ASAN)
+      add_compile_options("$<$<CONFIG:Release>:-D_FORTIFY_SOURCE=2>")
+    endif()
+  endif()
+
+  if(SYNERGY_ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=address)
+    message(STATUS "Hardening enabled: -fsanitize=address")
+  endif()
 endif()
 
 # Debug visibility

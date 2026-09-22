@@ -40,6 +40,22 @@
       }
     },
     {
+      "name": "windows-msvc-asan",
+      "displayName": "Windows MSVC x64 + AddressSanitizer",
+      "description": "AddressSanitizer build for memory-error hunting. Uses the dynamic-CRT triplet (x64-windows) because MSVC ASan requires /MD and therefore cannot use the static release triplet.",
+      "inherits": "vcpkg-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "SYNERGY_ENABLE_ASAN": "ON"
+      }
+    },
+    {
       "name": "windows-msvc-debug",
       "displayName": "Windows MSVC x64 Debug",
       "description": "Debug build type for MSVC. NOTE: vcpkg dependencies are built Release-only (see triplets/overlay), so a Debug build cannot link them; build the Release configuration instead.",
@@ -92,10 +108,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_C_FLAGS": "-fsanitize=address -fno-omit-frame-pointer -O1",
-        "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer -O1",
-        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address",
-        "CMAKE_SHARED_LINKER_FLAGS": "-fsanitize=address"
+        "SYNERGY_ENABLE_ASAN": "ON",
+        "SYNERGY_ENABLE_AVX2": "OFF"
       }
     },
     {
@@ -104,6 +118,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "SYNERGY_ENABLE_LTO": "OFF",
+        "SYNERGY_ENABLE_AVX2": "OFF",
         "CMAKE_C_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer -O1",
         "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer -O1",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
@@ -116,6 +132,7 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "SYNERGY_ENABLE_LTO": "OFF",
         "CMAKE_C_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
         "CMAKE_CXX_FLAGS": "--coverage -fprofile-arcs -ftest-coverage",
         "CMAKE_EXE_LINKER_FLAGS": "--coverage",
@@ -151,6 +168,11 @@
       "name": "windows-msvc-debug",
       "configurePreset": "windows-msvc-debug",
       "configuration": "Debug"
+    },
+    {
+      "name": "windows-msvc-asan",
+      "configurePreset": "windows-msvc-asan",
+      "configuration": "RelWithDebInfo"
     },
     {
       "name": "linux-release",
