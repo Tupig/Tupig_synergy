@@ -712,6 +712,10 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>&lt;p&gt;以下のファイルへの書き込み権限がないため、設定は読み取り専用です:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="vanished">不要です</translation>
     </message>
@@ -737,7 +741,7 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;%1 バックグラウンドサービス(デーモン)が検出できませんでした。&lt;/p&gt;&lt;p&gt;バックグラウンドサービスは %1 がUACプロンプトとログイン画面で動作するために必要です。&lt;/p&gt;&lt;p&gt;もしバックグラウンドサービスが不要で意図的に停止したのであれば、この機能を無効化することで利用を止めることができます。&lt;/p&gt;&lt;p&gt;もし意図的に止めたのでなければ、何か問題があるかもしれません。再試行するか、%1 サービスをWindowsのサービス設定から再起動してみてください。&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;%1 バックグラウンドサービス(デーモン)が検出できませんでした。&lt;/p&gt;&lt;p&gt;バックグラウンドサービスは %1 がUACプロンプトとログイン画面で動作するために必要です。&lt;/p&gt;&lt;p&gt;もしバックグラウンドサービスが不要で意図的に停止したのであれば、この機能を無効化することで利用を止めることができます。&lt;/p&gt;&lt;p&gt;もし意図的に止めたのでなければ、何か問題があるかもしれません。再試行するか、%1 サービスをWindowsのサービス設定から再起動してみてください。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>

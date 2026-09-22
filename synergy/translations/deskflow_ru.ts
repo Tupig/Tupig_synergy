@@ -710,6 +710,10 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>&lt;p&gt;Настройки доступны только для чтения, так как у вас есть доступ только на чтение к файлу:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="vanished">Нет, спасибо</translation>
     </message>
@@ -735,7 +739,7 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Возникла проблема с поиском фоновой службы (демона) %1.&lt;/p&gt;&lt;p&gt;Эта служба позволяет %1 работать с запросами UAC и на экране входа.&lt;/p&gt;&lt;p&gt;Если вы не хотите использовать службу, вы можете отключить эту функцию.&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Возникла проблема с поиском фоновой службы (демона) %1.&lt;/p&gt;&lt;p&gt;Эта служба позволяет %1 работать с запросами UAC и на экране входа.&lt;/p&gt;&lt;p&gt;Если вы не хотите использовать службу, вы можете отключить эту функцию.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>

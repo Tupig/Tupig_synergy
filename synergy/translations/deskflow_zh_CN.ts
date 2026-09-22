@@ -712,6 +712,10 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>&lt;p&gt;设置是只读的，因为您对该文件只有读取权限：&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;查找 %1 后台服务（守护进程）时出现问题。&lt;/p&gt;&lt;p&gt;%1 需要后台服务来与 UAC 提示和登录屏幕配合工作。&lt;/p&gt;&lt;p&gt;若 %1 已安装，则服务可能已停止。请从 Windows 服务程序中重启“%1”，然后点击“重试”。&lt;/p&gt;&lt;p&gt;若服务从未安装，请用 %1 的安装程序安装，或手工将“synergy-daemon.exe”注册为 Windows 服务。&lt;/p&gt;&lt;p&gt;若你不想使用后台服务，请点击“禁用”，%1 将不再使用它。&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="vanished">不，谢谢</translation>
     </message>
@@ -737,7 +741,7 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;查找 %1 后台服务（守护进程）时出现问题。&lt;/p&gt;&lt;p&gt;%1 需要后台服务来与 UAC 提示和登录屏幕配合工作。&lt;/p&gt;&lt;p&gt;如果您不想使用后台服务并已将其停止，可以通过禁用此功能来阻止使用它。&lt;/p&gt;&lt;p&gt;如果您并非有意停止后台服务，则可能存在问题。请重试，或尝试从 Windows 服务程序中重启 %1 服务。&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;查找 %1 后台服务（守护进程）时出现问题。&lt;/p&gt;&lt;p&gt;%1 需要后台服务来与 UAC 提示和登录屏幕配合工作。&lt;/p&gt;&lt;p&gt;如果您不想使用后台服务并已将其停止，可以通过禁用此功能来阻止使用它。&lt;/p&gt;&lt;p&gt;如果您并非有意停止后台服务，则可能存在问题。请重试，或尝试从 Windows 服务程序中重启 %1 服务。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>

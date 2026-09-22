@@ -710,6 +710,10 @@ Además, verifique que puede %1 el archivo de configuración del servidor: %2</t
         <translation type="unfinished">&lt;p&gt;Las configuraciones son de solo lectura porque solo tiene acceso de lectura al archivo:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="obsolete">No, gracias</translation>
     </message>
@@ -735,7 +739,7 @@ Además, verifique que puede %1 el archivo de configuración del servidor: %2</t
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;p&gt;Hubo un problema al encontrar el servicio en segundo plano %1 (daemon).&lt;/p&gt;&lt;p&gt;El servicio en segundo plano hace que %1 funcione con los avisos de UAC y la pantalla de inicio de sesión.&lt;/p&gt;&lt;p&gt;Si no desea usar el servicio en segundo plano y lo detuvo intencionalmente, puede evitar su uso deshabilitando esta función.&lt;/p&gt;&lt;p&gt;Si no detuvo el servicio en segundo plano intencionalmente, es posible que haya un problema. Vuelva a intentarlo o reinicie el servicio %1 desde el programa de servicios de Windows.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;Hubo un problema al encontrar el servicio en segundo plano %1 (daemon).&lt;/p&gt;&lt;p&gt;El servicio en segundo plano hace que %1 funcione con los avisos de UAC y la pantalla de inicio de sesión.&lt;/p&gt;&lt;p&gt;Si no desea usar el servicio en segundo plano y lo detuvo intencionalmente, puede evitar su uso deshabilitando esta función.&lt;/p&gt;&lt;p&gt;Si no detuvo el servicio en segundo plano intencionalmente, es posible que haya un problema. Vuelva a intentarlo o reinicie el servicio %1 desde el programa de servicios de Windows.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>

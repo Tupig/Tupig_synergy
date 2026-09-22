@@ -710,6 +710,10 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>&lt;p&gt;다음 파일에 대한 쓰기 권한이 없어 설정이 읽기 전용입니다:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="vanished">아니요</translation>
     </message>
@@ -735,7 +739,7 @@ Additionally, check you are able to %1 the server config file: %2</source>
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;%1 백그라운드 서비스(daemon)를 찾는 중 문제가 발생했습니다.&lt;/p&gt;&lt;p&gt;백그라운드 서비스는 %1이(가) UAC 프롬프트 및 로그인 화면에서 동작됩니다.&lt;/p&gt;&lt;p&gt;백그라운드 서비스를 사용하지 않으려고 의도적으로 중지한 경우, 이 기능을 비활성화하여 사용을 막을 수 있습니다.&lt;/p&gt;&lt;p&gt;의도적으로 중지한 것이 아니라면 서비스에 문제가 있을 수 있습니다. 재시도하거나 Windows 서비스 관리 프로그램에서 %1 서비스를 재시작해 보세요.&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;%1 백그라운드 서비스(daemon)를 찾는 중 문제가 발생했습니다.&lt;/p&gt;&lt;p&gt;백그라운드 서비스는 %1이(가) UAC 프롬프트 및 로그인 화면에서 동작됩니다.&lt;/p&gt;&lt;p&gt;백그라운드 서비스를 사용하지 않으려고 의도적으로 중지한 경우, 이 기능을 비활성화하여 사용을 막을 수 있습니다.&lt;/p&gt;&lt;p&gt;의도적으로 중지한 것이 아니라면 서비스에 문제가 있을 수 있습니다. 재시도하거나 Windows 서비스 관리 프로그램에서 %1 서비스를 재시작해 보세요.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>

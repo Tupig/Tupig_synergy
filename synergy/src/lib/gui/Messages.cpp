@@ -242,10 +242,12 @@ bool showDaemonOffline(QWidget *parent)
       QObject::tr(
           "<p>There was a problem finding the %1 background service (daemon).</p>"
           "<p>The background service makes %1 work with UAC prompts and the login screen.</p>"
-          "<p>If don't want to use the background service and intentionally stopped it, "
-          "you can prevent it's use by disabling this feature.</p>"
-          "<p>If you did not stop the background service intentionally, there may be a problem with it. "
-          "Please retry or try restarting the %1 service from the Windows services program.</p>"
+          "<p>If %1 is installed, the service may have stopped. Restart \"%1\" from the "
+          "Windows services program, then press Retry.</p>"
+          "<p>If the service was never installed, install %1 using its installer, or register "
+          "\"synergy-daemon.exe\" as a Windows service manually.</p>"
+          "<p>If you do not want to use the background service, press Disable to stop %1 from "
+          "using it.</p>"
       )
           .arg(kAppName)
   );

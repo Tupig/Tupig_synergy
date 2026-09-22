@@ -710,6 +710,10 @@ Inoltre, verifica di poter %1 il file di configurazione del server: %2</translat
         <translation>&lt;p&gt;Le impostazioni sono di sola lettura perché hai solo accesso in lettura al file:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;</translation>
     </message>
     <message>
+        <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If %1 is installed, the service may have stopped. Restart &quot;%1&quot; from the Windows services program, then press Retry.&lt;/p&gt;&lt;p&gt;If the service was never installed, install %1 using its installer, or register &quot;synergy-daemon.exe&quot; as a Windows service manually.&lt;/p&gt;&lt;p&gt;If you do not want to use the background service, press Disable to stop %1 from using it.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>No thanks</source>
         <translation type="vanished">No, grazie</translation>
     </message>
@@ -735,7 +739,7 @@ Inoltre, verifica di poter %1 il file di configurazione del server: %2</translat
     </message>
     <message>
         <source>&lt;p&gt;There was a problem finding the %1 background service (daemon).&lt;/p&gt;&lt;p&gt;The background service makes %1 work with UAC prompts and the login screen.&lt;/p&gt;&lt;p&gt;If don&apos;t want to use the background service and intentionally stopped it, you can prevent it&apos;s use by disabling this feature.&lt;/p&gt;&lt;p&gt;If you did not stop the background service intentionally, there may be a problem with it. Please retry or try restarting the %1 service from the Windows services program.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Si è verificato un problema durante la ricerca del servizio in background %1 (daemon).&lt;/p&gt;&lt;p&gt;Il servizio in background consente a %1 di funzionare con i prompt UAC e la schermata di accesso.&lt;/p&gt;&lt;p&gt;Se non desideri utilizzare il servizio in background e lo hai interrotto intenzionalmente, puoi impedirne l&apos;uso disabilitando questa funzionalità.&lt;/p&gt;&lt;p&gt;Se non hai interrotto intenzionalmente il servizio in background, potrebbe esserci un problema. Riprova o prova a riavviare il servizio %1 dal programma dei servizi di Windows.&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Si è verificato un problema durante la ricerca del servizio in background %1 (daemon).&lt;/p&gt;&lt;p&gt;Il servizio in background consente a %1 di funzionare con i prompt UAC e la schermata di accesso.&lt;/p&gt;&lt;p&gt;Se non desideri utilizzare il servizio in background e lo hai interrotto intenzionalmente, puoi impedirne l&apos;uso disabilitando questa funzionalità.&lt;/p&gt;&lt;p&gt;Se non hai interrotto intenzionalmente il servizio in background, potrebbe esserci un problema. Riprova o prova a riavviare il servizio %1 dal programma dei servizi di Windows.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>failed to read key from certificate file: %1</source>
