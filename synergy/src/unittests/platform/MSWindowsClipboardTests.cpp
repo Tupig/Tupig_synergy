@@ -10,9 +10,36 @@
 
 #include "MSWindowsClipboard.h"
 
+#include <windows.h>
+
+namespace {
+// The Windows clipboard is a single global resource: if another process holds it
+// open, or the session blocks access to it, every OpenClipboard() call fails
+// with ERROR_ACCESS_DENIED (5) no matter which code performs the call. Probing
+// with the raw Win32 API therefore separates "this environment forbids
+// clipboard access" from "MSWindowsClipboard is broken", letting the suite skip
+// the former instead of reporting a failure that says nothing about this code.
+bool clipboardAccessible()
+{
+  if (OpenClipboard(nullptr) == FALSE) {
+    return false;
+  }
+  CloseClipboard();
+  return true;
+}
+} // namespace
+
 void MSWindowsClipboardTests::initTestCase()
 {
   m_log.setFilter(LogLevel::Level::Verbose);
+
+  if (!clipboardAccessible()) {
+    QSKIP(
+        "cannot open the Windows clipboard from this process "
+        "(held by another process or blocked by the session); "
+        "skipping, as this says nothing about MSWindowsClipboard"
+    );
+  }
 
   MSWindowsClipboard clipboard(NULL);
 
