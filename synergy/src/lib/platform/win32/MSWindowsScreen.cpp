@@ -200,6 +200,25 @@ void MSWindowsScreen::enable()
 
 void MSWindowsScreen::disable()
 {
+  // Idempotent: the matching enable() may already have been undone.
+  //
+  // Screen::~Screen() disables the platform screen (guarded by its own m_enabled)
+  // and then deletes it, and ~MSWindowsScreen() calls disable() unconditionally.
+  // Without this guard a normal shutdown therefore reaches the body below twice,
+  // which re-runs every teardown step: desks->disable(), the hook mode, key state,
+  // the fix timer, and RemoveClipboardFormatListener(). The repeated clipboard
+  // removal is the visible symptom - removing a listener that is no longer
+  // registered fails with ERROR_INVALID_PARAMETER (87), logging a warning that
+  // suggests a clipboard problem where there is none. The other repeated calls
+  // happen to be tolerant, but they are just as unintended.
+  //
+  // Every resource released below is also released by the destructor or is
+  // already null-safe, so returning early loses no cleanup.
+  if (!m_isEnabled) {
+    LOG_DEBUG("screen already disabled, skipping");
+    return;
+  }
+
   LOG_DEBUG("disabling %s screen", m_isPrimary ? "primary" : "secondary");
   m_isEnabled = false;
 
