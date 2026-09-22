@@ -13,9 +13,14 @@
 
 //! Interface for architecture dependent daemonizing
 /*!
-This interface defines the operations required by deskflow for installing
-uninstalling daeamons and daemonizing a process.  Each architecture must
-implement this interface.
+This interface defines the operations required by deskflow to run as a daemon.
+Each architecture must implement this interface.
+
+Note: installing and uninstalling the daemon used to be part of this interface and
+is no longer. Nothing in this codebase registers or removes the platform service —
+on Windows the Service Control Manager passes the service name to the process at
+startup, and registration is performed externally (the MSI declares ServiceInstall
+for synergy-daemon.exe; see docs/troubleshooting.md for manual registration).
 */
 class IArchDaemon
 {

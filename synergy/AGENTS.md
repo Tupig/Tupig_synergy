@@ -64,6 +64,11 @@ conflict instead of silently breaking the convention.
   Versioned names break `Constants.h.in`'s `kCoreBinName`, the `.desktop` `Exec=`, and WiX component IDs.
 - **macOS ships a `.app` bundle inside a `.dmg`**, not a bare binary — signing and notarization require
   the bundle layout.
+- **Nothing in this codebase registers the Windows service, and that is deliberate.**
+  `synergy-daemon.exe` cannot install itself: there is no `--install-service` option and no
+  `CreateService` call. The MSI provides registration via `ServiceInstall`. Do not implement a
+  self-install option to satisfy older documentation — `docs/troubleshooting.md` documents the real
+  (MSI or `sc create`) procedures.
 
 ### Modification workflow
 
@@ -137,6 +142,10 @@ conflict instead of silently breaking the convention.
 - **可执行文件名不带版本号**（`synergy` / `synergy-core` / `synergy-daemon`）。带版本号会破坏
   `Constants.h.in` 的 `kCoreBinName`、`.desktop` 的 `Exec=` 以及 WiX 的组件 ID。
 - **macOS 交付的是 `.dmg` 内的 `.app` bundle**，而非裸二进制 —— 签名与公证都要求 bundle 结构。
+- **本代码库中没有任何地方注册 Windows 服务，这是有意为之。**
+  `synergy-daemon.exe` 无法自行安装：既无 `--install-service` 选项，也无 `CreateService` 调用。
+  服务注册由 MSI 通过 `ServiceInstall` 提供。不要为了让旧文档「成真」而去实现自安装选项 ——
+  `docs/troubleshooting.md` 记录的是真实做法（MSI 或 `sc create`）。
 
 ### 改动流程
 

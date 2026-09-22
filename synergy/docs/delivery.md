@@ -21,12 +21,27 @@ two of the requirements below cannot be satisfied simultaneously on every platfo
 | Platform | Generator | Artifact | Self-contained | Verified |
 |---|---|---|---|---|
 | Windows | CPack `7Z` | `synergy_<ver>_windows_x64-portable.7z` | Yes | **Yes** (built, packaged, tested) |
-| Windows | CPack `WIX` | `.msi` | Yes | **No** — blocked by an external licence gate |
+| Windows | CPack `WIX` | `.msi` | Yes | **Built and inspected** — see below |
 | macOS | CPack `DragNDrop` | `.dmg` containing `TuPig Synergy.app` | Yes | **No** — no macOS machine available |
 | Linux | CPack `DEB` / `RPM` | `.deb` / `.rpm` | Needs system libs | **No** — no Linux machine available |
 
 `deploy/linux/deploy.cmake` picks `DEB` or `RPM` from `/etc/os-release`, so a given
 build host produces one of the two, not both.
+
+**MSI status.** WiX v7 refuses to run until its Open Source Maintenance Fee EULA is
+accepted (`WIX7015`). After running `wix.exe eula accept wix7` once, the MSI builds.
+The Free-or-Fee terms exempt projects under US$10,000 annual revenue, but acceptance is
+a licensing decision for the project owner, not something a build script should do
+implicitly. The produced MSI was inspected with the Windows Installer database API:
+
+- `File` table: `synergy.exe`, `synergy-core.exe`, `synergy-daemon.exe`, 7 translation
+  catalogues, `LICENSE`, `LICENSE_EXCEPTION`.
+- `ServiceInstall`: name and display name `TuPig Synergy`, `StartType=2` (auto), with the
+  secure-desktop description.
+- `ServiceControl`: event `163` = install + uninstall + start + stop, i.e. the service is
+  started on install and stopped and removed on uninstall.
+
+An actual installation was **not** performed, since that modifies the host machine.
 
 ### Self-containment: what is actually achieved
 
@@ -76,10 +91,13 @@ No `appimage` reference exists anywhere in `deploy/`, `extra/` or `.github/`; on
 has been corrected. AppImage would satisfy "one self-contained file" on Linux if
 implemented, and it is the recommended path if that goal is prioritised.
 
-**5. The MSI build is gated by an external licence.**
-`wix.exe` v7 fails with `WIX7015: You must accept the Open Source Maintenance Fee
-(OSMF) EULA`. This is a third-party licensing step that must be accepted by the
-project owner; it is unrelated to this codebase.
+**5. UAC / login-screen support requires a registered Windows service.**
+`synergy-daemon.exe` runs as a service (session 0) and duplicates `winlogon.exe` /
+`logonui.exe` tokens to start the core on the secure desktop. Nothing in this codebase
+registers that service — there is no `--install-service` option and no `CreateService`
+call — so it must come from the MSI (which declares `ServiceInstall`) or a manual
+`sc create`. See `docs/troubleshooting.md`. The portable package intentionally omits the
+daemon, so portable builds cannot offer this capability at all.
 
 ### How to produce each artifact
 
@@ -130,11 +148,21 @@ them — including the DEB/RPM and DMG artifacts listed above.
 | 平台 | 生成器 | 产物 | 自包含 | 已验证 |
 |---|---|---|---|---|
 | Windows | CPack `7Z` | `synergy_<ver>_windows_x64-portable.7z` | 是 | **是**（构建、打包、测试均通过） |
-| Windows | CPack `WIX` | `.msi` | 是 | **否** —— 被外部许可门槛阻断 |
+| Windows | CPack `WIX` | `.msi` | 是 | **已构建并检查** —— 见下 |
 | macOS | CPack `DragNDrop` | 含 `TuPig Synergy.app` 的 `.dmg` | 是 | **否** —— 无 macOS 机器 |
 | Linux | CPack `DEB` / `RPM` | `.deb` / `.rpm` | 需系统库 | **否** —— 无 Linux 机器 |
 
 `deploy/linux/deploy.cmake` 依据 `/etc/os-release` 在 `DEB` 与 `RPM` 之间二选一，因此单次构建只产出其中一种，而非两者。
+
+**MSI 状态**：WiX v7 在未接受其开源维护费（OSMF）EULA 前拒绝运行（`WIX7015`）。一次性执行
+`wix.exe eula accept wix7` 后 MSI 即可构建。其免费条款豁免年收入低于 1 万美元的项目，但接受与否
+属于项目所有者的许可决策，不应由构建脚本擅自代劳。产出的 MSI 已用 Windows Installer 数据库 API 检查：
+
+- `File` 表：`synergy.exe`、`synergy-core.exe`、`synergy-daemon.exe`、7 个翻译目录、`LICENSE`、`LICENSE_EXCEPTION`。
+- `ServiceInstall`：名称与显示名均为 `TuPig Synergy`，`StartType=2`（自动），描述为安全桌面用途。
+- `ServiceControl`：事件 `163` = 安装 + 卸载 + 启动 + 停止，即安装时启动服务、卸载时停止并删除。
+
+**未执行实际安装**，因为那会改动本机系统。
 
 ### 自包含：实际达成的程度
 
@@ -165,8 +193,11 @@ daemon 以 Windows **服务**形式运行（会话 0），通过复制 `winlogon
 **4. Linux AppImage 未实现。**
 `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用，实际只产出 `DEB` 与 `RPM`。任何声称支持 AppImage 的文档均为过时描述，已更正。若优先考虑该目标，AppImage 是在 Linux 上实现「单一自包含文件」的推荐路径。
 
-**5. MSI 构建被外部许可阻断。**
-`wix.exe` v7 报 `WIX7015: You must accept the Open Source Maintenance Fee (OSMF) EULA`。这属于第三方许可步骤，须由项目所有者接受，与本代码库无关。
+**5. UAC / 登录界面支持需要一个已注册的 Windows 服务。**
+`synergy-daemon.exe` 以服务身份运行（会话 0），通过复制 `winlogon.exe` / `logonui.exe` 的令牌把
+core 启动到安全桌面。本代码库中没有任何地方注册该服务 —— 既无 `--install-service` 选项，也无
+`CreateService` 调用 —— 因此必须由 MSI（其声明了 `ServiceInstall`）或手工 `sc create` 完成。
+详见 `docs/troubleshooting.md`。便携包有意不含 daemon，故便携构建完全无法提供该能力。
 
 ### 如何产出各产物
 

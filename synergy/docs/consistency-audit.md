@@ -45,6 +45,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-17 | P3 | Naming | Four different product display names | Open |
 | U-18 | P3 | Naming | `deskflow` / `synergy` boundary plus a fragile i18n coupling | Open |
 | U-19 | P3 | Naming | Overlay layout and test placement are inconsistent | Open |
+| U-20 | P2 | Docs | Documented CLI option `--install-service` does not exist | **Fixed** |
 
 Already fixed in this session: stale binary names in `README.md`, `setup.bat`, `docs/build.md`, `docs/configuration.md` and `src/apps/res/manpage.txt` (commit `baa5afe76`, branch `cursor/docs-fix-binary-names`).
 
@@ -187,6 +188,28 @@ The chain is currently consistent, so translations load correctly. But renaming 
 - The overlay uses two layouts: `extra/src/apps/res/` (mirrors `apps/res`) and `extra/src/lib/synergy/gui/` (carries a product-name directory).
 - Test placement is inconsistent for the same platform: `X11LayoutParserTests` sits in `src/unittests/deskflow/` while `XWindowsClipboardTests` sits in `src/unittests/platform/`.
 
+#### U-20 — Documented CLI option does not exist
+
+**Severity**: P2 · **Verification**: code search (no build required)
+
+**Fixed.**
+
+`docs/troubleshooting.md` told users to run `synergy-core --install-service` when service mode
+fails. That option does not exist: the core's only options are `CoreArgs.h`'s `help` / `version` /
+`new-instance` / `settings`, and `rg` finds no `install-service` anywhere under `src/`.
+
+This is worse than a cosmetic doc error, because it hides the fact that **nothing in the codebase
+can register the Windows service** — there is no `CreateService` call, and `IArchDaemon.h` declares
+only `daemonize()` and `commandLine()` (its class comment still claimed install/uninstall support).
+Following the documented command just fails, leaving the user unable to obtain UAC-prompt or
+login-screen support.
+
+**Resolution**: replaced the bogus command with the two mechanisms that actually work — the MSI
+(which declares `ServiceInstall` for `synergy-daemon.exe`) and manual `sc create` — in
+`docs/troubleshooting.md`, in both languages. Corrected the stale comment on `IArchDaemon`. Recorded
+the constraint in `AGENTS.md` and `docs/delivery.md` so a future agent does not implement a
+self-install option merely to make the old documentation true.
+
 ### Verified consistent (not defects)
 
 These were checked and are **not** problems — recorded so a future audit does not re-open them:
@@ -238,6 +261,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-17 | P3 | 命名 | 四个不同的产品显示名 | 待处理 |
 | U-18 | P3 | 命名 | `deskflow` / `synergy` 边界，以及一个脆弱的 i18n 耦合 | 待处理 |
 | U-19 | P3 | 命名 | overlay 目录结构与测试归属不一致 | 待处理 |
+| U-20 | P2 | 文档 | 文档中的 CLI 选项 `--install-service` 并不存在 | **已修复** |
 
 本次已修复：`README.md`、`setup.bat`、`docs/build.md`、`docs/configuration.md`、`src/apps/res/manpage.txt` 中过时的产物文件名（提交 `baa5afe76`，分支 `cursor/docs-fix-binary-names`）。
 
@@ -377,6 +401,25 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 - overlay 用了两种布局：`extra/src/apps/res/`（镜像 `apps/res`）与 `extra/src/lib/synergy/gui/`（带产品名目录）。
 - 同一平台的测试归属不一致：`X11LayoutParserTests` 在 `src/unittests/deskflow/`，而 `XWindowsClipboardTests` 在 `src/unittests/platform/`。
+
+#### U-20 — 文档中的 CLI 选项并不存在
+
+**级别**: P2 · **验证**: 代码检索（无需构建）
+
+**已修复。**
+
+`docs/troubleshooting.md` 在「服务模式失败」时让用户执行 `synergy-core --install-service`，但该选项
+并不存在：core 的选项只有 `CoreArgs.h` 中的 `help` / `version` / `new-instance` / `settings`，且
+在 `src/` 下检索 `install-service` 无任何命中。
+
+这比表面上的文档错误更严重 —— 它掩盖了一个事实：**本代码库无法注册 Windows 服务**。代码中没有
+`CreateService` 调用，`IArchDaemon.h` 也只声明了 `daemonize()` 与 `commandLine()`（其类注释却仍称
+支持安装/卸载）。照文档执行只会得到失败，用户因此拿不到 UAC 提示与登录界面支持。
+
+**修法**：在 `docs/troubleshooting.md` 中把无效命令替换为**真正可行的两条途径** —— MSI（为
+`synergy-daemon.exe` 声明了 `ServiceInstall`）与手工 `sc create`，中英双语；修正 `IArchDaemon` 的
+过时注释；并把该约束记入 `AGENTS.md` 与 `docs/delivery.md`，以免后续 agent 为了让旧文档「成真」
+而贸然实现自安装选项。
 
 ### 已核实一致（不是缺陷）
 

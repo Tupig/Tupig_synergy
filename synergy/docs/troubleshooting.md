@@ -175,8 +175,8 @@ tccutil reset InputMonitoring
 
 | Issue | Solution |
 |-------|----------|
-| **UAC prompts not captured** | Run `synergy-daemon.exe` elevated; check `[daemon] elevate=true` |
-| **Service mode fails** | Install as service: `synergy-core --install-service` |
+| **UAC prompts / login screen not captured** | The daemon must be registered as a Windows service — see [Register the daemon service](#register-the-daemon-service-windows) |
+| **Service mode fails** | Same; the binaries cannot self-install the service, so it must come from the MSI or a manual `sc create` |
 | **Antivirus blocks** | Add exclusion for `synergy-core.exe`, `synergy-daemon.exe` |
 | **High DPI scaling** | Set DPI awareness in manifest; per-monitor v2 |
 | **Port already in use** | `netstat -ano | findstr :24800`, kill PID |
@@ -190,6 +190,44 @@ Get-Service -Name "TuPig Synergy"
 # View logs
 Get-WinEvent -LogName Application -ProviderName "TuPig Synergy" -MaxEvents 50
 ```
+
+<a id="register-the-daemon-service-windows"></a>
+**Register the daemon service (Windows)**
+
+UAC-prompt and login-screen support requires `synergy-daemon.exe` to run as a Windows
+service: from session 0 it duplicates the token of `winlogon.exe` / `logonui.exe` to
+start the core on the secure desktop. A user-session process cannot do this, so the
+capability is unavailable until the service is registered.
+
+The executables **cannot register themselves** — there is no `--install-service`
+option and no `CreateService` call anywhere in the sources. Registration therefore
+comes from one of:
+
+1. **The MSI (recommended).** It declares `ServiceInstall` for `synergy-daemon.exe`
+   with `Start="auto"`, plus `ServiceControl` to start the service on install and
+   stop and delete it on uninstall. Installing the MSI is all that is required.
+2. **Manual registration**, as Administrator:
+
+```bat
+sc create "TuPig Synergy" binPath= "<install dir>\synergy-daemon.exe" start= auto ^
+   DisplayName= "TuPig Synergy"
+sc description "TuPig Synergy" "Runs the Core process on secure desktops (UAC prompts, login screen, etc)."
+sc start "TuPig Synergy"
+```
+
+To remove it:
+
+```bat
+sc stop "TuPig Synergy"
+sc delete "TuPig Synergy"
+```
+
+> The service name is not hardcoded in the daemon — the Service Control Manager passes
+> it in at startup — so any name pointing at the right binary works. The MSI happens to
+> use `TuPig Synergy` (the project's proper name), which is what the commands above use.
+>
+> The **portable** 7Z package deliberately omits the daemon, so portable builds cannot
+> provide UAC/login-screen support at all. Use the MSI for that.
 
 ---
 
@@ -461,8 +499,8 @@ tccutil reset InputMonitoring
 
 | 问题 | 解决方案 |
 |------|----------|
-| **UAC 提示未捕获** | 以管理员运行 `synergy-daemon.exe`；检查 `[daemon] elevate=true` |
-| **服务模式失败** | 安装服务：`synergy-core --install-service` |
+| **UAC 提示 / 登录界面未捕获** | daemon 必须注册为 Windows 服务 —— 见 [注册守护服务](#注册守护服务-windows) |
+| **服务模式失败** | 同上；可执行文件无法自行安装服务，必须由 MSI 或手工 `sc create` 完成 |
 | **杀毒软件拦截** | 加白 `synergy-core.exe`, `synergy-daemon.exe` |
 | **高 DPI 缩放** | 清单设 DPI 感知；逐显示器 v2 |
 | **端口被占用** | `netstat -ano | findstr :24800`，结束 PID |
@@ -476,6 +514,39 @@ Get-Service -Name "TuPig Synergy"
 # 查看日志
 Get-WinEvent -LogName Application -ProviderName "TuPig Synergy" -MaxEvents 50
 ```
+
+<a id="注册守护服务-windows"></a>
+**注册守护服务（Windows）**
+
+UAC 提示与登录界面支持要求 `synergy-daemon.exe` 以 Windows 服务身份运行：它在会话 0 中复制
+`winlogon.exe` / `logonui.exe` 的令牌，才能把 core 启动到安全桌面。用户会话中的进程无法做到
+这一点，因此在服务注册完成之前，该能力不可用。
+
+可执行文件**无法自行注册服务** —— 代码中不存在 `--install-service` 选项，也没有任何
+`CreateService` 调用。因此注册只有两种来源：
+
+1. **MSI（推荐）**：它为 `synergy-daemon.exe` 声明了 `ServiceInstall`（`Start="auto"`），
+   并配 `ServiceControl` 在安装时启动服务、卸载时停止并删除服务。装完 MSI 即可。
+2. **手工注册**（需管理员权限）：
+
+```bat
+sc create "TuPig Synergy" binPath= "<安装目录>\synergy-daemon.exe" start= auto ^
+   DisplayName= "TuPig Synergy"
+sc description "TuPig Synergy" "Runs the Core process on secure desktops (UAC prompts, login screen, etc)."
+sc start "TuPig Synergy"
+```
+
+移除服务：
+
+```bat
+sc stop "TuPig Synergy"
+sc delete "TuPig Synergy"
+```
+
+> 服务名在 daemon 中并未硬编码 —— 由服务控制管理器在启动时传入 —— 因此任何指向正确可执行
+> 文件的名称都可用。MSI 使用的是 `TuPig Synergy`（项目正式名），上文命令即沿用该名称。
+>
+> **便携版** 7Z 包有意不含 daemon，因此便携构建完全无法提供 UAC/登录界面支持。该能力请用 MSI。
 
 ---
 
