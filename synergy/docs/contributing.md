@@ -208,9 +208,8 @@ void initializeCriticalSubsystem() {
 
 | Test Type | Location | Command |
 |-----------|----------|---------|
-| **Unit Tests** | `src/unittests/` | `ctest -R "Unit"` |
-| **Integration Tests** | `src/integtests/` | `ctest -R "Integration"` |
-| **Protocol Tests** | `src/unittests/protocol/` | `ctest -R "Protocol"` |
+| **Unit Tests** | `src/unittests/` (`base`, `common`, `deskflow`, `gui`, `net`, `platform`, `server`) | `ctest --test-dir build/src/unittests -C Release` |
+| **Single suite** | one of the directories above | `ctest --test-dir build/src/unittests -C Release -R <SuiteName>` |
 
 ```cpp
 // Example test structure
@@ -461,9 +460,8 @@ void initializeCriticalSubsystem() {
 
 | 测试类型 | 位置 | 命令 |
 |----------|------|------|
-| **单元测试** | `src/unittests/` | `ctest -R "Unit"` |
-| **集成测试** | `src/integtests/` | `ctest -R "Integration"` |
-| **协议测试** | `src/unittests/protocol/` | `ctest -R "Protocol"` |
+| **单元测试** | `src/unittests/`（`base`、`common`、`deskflow`、`gui`、`net`、`platform`、`server`） | `ctest --test-dir build/src/unittests -C Release` |
+| **单个套件** | 上述任一子目录 | `ctest --test-dir build/src/unittests -C Release -R <套件名>` |
 
 ```cpp
 // 测试结构示例

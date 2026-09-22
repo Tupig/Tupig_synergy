@@ -95,7 +95,7 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
 - **回滚策略**: 3 级 (代码级 revert / 运行时 `USE_LEGACY_NETWORK=1` / CMake `LEGACY_NETWORK` 选项)
-- **文档**: `docs/phase2-qt-network-migration.md`
+- **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；方案已落地 Step 1-2，剩余步骤见第 5 节
 
 ---
 
@@ -107,8 +107,10 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | `src/lib/net/SecureSocket.cpp` | S-1 | `verifyCertificateCallback` (行 68-108) |
 | `src/lib/deskflow/protocol/ProtocolTypes.h` | S-2 | `MessageSizeLimit` 枚举 (行 125-166) |
 | `src/lib/deskflow/protocol/ProtocolUtil.cpp` | S-3 | 15 处 assert→throw |
-| `src/lib/deskflow/input/InputValidator.h` | S-4 | 新文件，88 行 |
-| `src/lib/deskflow/input/InputValidator.cpp` | S-4 | 新文件，112 行 |
+| `src/lib/deskflow/input/InputValidator.h` | S-4 | 校验器（已接入客户端入站路径） |
+| `src/lib/deskflow/input/InputValidator.cpp` | S-4 | 同上 |
+| `src/lib/client/ServerProxy.cpp` | S-4 | 入站按键事件接入校验 (keyDown/keyRepeat/keyUp) |
+| `src/unittests/deskflow/InputValidatorTests.cpp` | S-4 | 新增单元测试 |
 | `src/lib/platform/linux/XWindowsScreen.h` | S-5 | `m_displayLost` 成员 (行 252) |
 | `src/lib/platform/linux/XWindowsScreen.cpp` | S-5 | `ioErrorHandler` + 守卫 (行 1638-1651) |
 
@@ -119,10 +121,9 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
 | `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 23 项 Issue 追踪 |
 | `docs/consistency-audit.md` | 命名与身份一致性审计 (19 项 U-01~U-19) |
+| `docs/delivery.md` | 交付矩阵（产物、自包含程度、结构性约束） |
 | `docs/security.md` | 安全策略文档 |
-| `docs/phase2-qt-network-migration.md` | Phase 2 详细方案 (412 行) |
-| `docs/optimization-plan.md` | 总体优化计划书 (317 行) |
-| `HANDOFF.md` | 本文件 — 会话交接文档 |
+| `docs/HANDOFF.md` | 本文件 — 会话交接文档 |
 
 ### 4.3 Phase 2 涉及文件
 | 文件 | 用途 | 操作 | 状态 |

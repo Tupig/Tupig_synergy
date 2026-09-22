@@ -33,7 +33,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **S-1** | P0 | TLS 证书验证被禁用 | `SecureSocket.cpp` | ✅ 已修复 |
 | **S-2** | P0 | 协议消息长度限制过大 | `ProtocolTypes.h` | ✅ 已修复 |
 | **S-3** | P0 | 协议解析 `va_list` 无类型安全 | `ProtocolUtil.cpp` | ✅ 已修复 |
-| **S-4** | P0 | 输入事件注入无验证 | `KeyState.cpp` 等 | ✅ 已修复 |
+| **S-4** | P0 | 输入事件注入无验证 | `ServerProxy.cpp` | ✅ 已修复（校验器原先只创建未接入，现已真正接入客户端入站路径并补测试） |
 | **S-5** | P0 | X11 错误处理器导致崩溃 | `XWindowsScreen.cpp` | ✅ 已修复 |
 | **Q-1** | P1 | SocketMultiplexer 死锁风险 | `SocketMultiplexer.cpp` | ✅ 已修复 (Step 1) |
 | **Q-2** | P1 | 4MB 栈上静态缓冲区 | `TCPSocket.cpp` | ✅ 已确认 (栈缓冲4KB，输入限制1MB，StreamBuffer动态分配) |
@@ -213,6 +213,8 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-20 | MCP 配置模板：创建 Claude Desktop 配置文件模板 | Sisyphus |
 | 2026-09-20 | 脚本迁移：setup-deps.ps1 → setup-deps.bat，兼容 CMD 和 PowerShell | Sisyphus |
 | 2026-09-21 | 一致性审计：新增 docs/consistency-audit.md（19 项 U-01~U-19） | Cursor |
+| 2026-09-22 | S-4 修正：校验器原先只创建未接入，实际未生效；已接入 ServerProxy 入站路径（keyDown/keyRepeat/keyUp）并新增 InputValidatorTests | Cursor |
+| 2026-09-22 | 质量：MSWindowsScreen::disable() 改为幂等，消除一次 enable 对应两次 disable 导致的重复清理与误导性告警 | Cursor |
 
 ---
 

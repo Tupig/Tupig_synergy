@@ -33,8 +33,7 @@ SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = [
-   "deploy/mac/dmg-background.tiff"
- , "deploy/mac/dmg-volume.icns"
+   "deploy/mac/dmg-volume.icns"
  , "deploy/linux/org.deskflow.deskflow.png"
  , "deploy/windows/wix-banner.png"
  , "deploy/windows/wix-dialog.png"
