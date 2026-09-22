@@ -44,6 +44,7 @@
       "displayName": "Windows MSVC x64 + AddressSanitizer",
       "description": "AddressSanitizer build for memory-error hunting. Uses the dynamic-CRT triplet (x64-windows) because MSVC ASan requires /MD and therefore cannot use the static release triplet.",
       "inherits": "vcpkg-base",
+      "binaryDir": "${sourceDir}/build-asan",
       "generator": "Visual Studio 17 2022",
       "architecture": {
         "value": "x64",
@@ -106,6 +107,7 @@
       "name": "linux-asan",
       "inherits": "linux",
       "hidden": true,
+      "binaryDir": "${sourceDir}/build-linux-asan",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "SYNERGY_ENABLE_ASAN": "ON",
@@ -116,6 +118,7 @@
       "name": "linux-tsan",
       "inherits": "linux",
       "hidden": true,
+      "binaryDir": "${sourceDir}/build-linux-tsan",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "SYNERGY_ENABLE_LTO": "OFF",
@@ -130,6 +133,7 @@
       "name": "linux-coverage",
       "inherits": "linux",
       "hidden": true,
+      "binaryDir": "${sourceDir}/build-linux-coverage",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "SYNERGY_ENABLE_LTO": "OFF",

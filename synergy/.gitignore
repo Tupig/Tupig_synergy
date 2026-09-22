@@ -4,7 +4,11 @@
 # SPDX-License-Identifier: MIT
 
 # Build output
+# The presets deliberately give special builds their own directory (build-asan,
+# build-linux-asan, build-linux-tsan, build-linux-coverage) so that configuring
+# one cannot clobber another's cache; all of them are covered here.
 /build/
+/build-*/
 /dist/
 /tmp/
 /vcpkg_installed/

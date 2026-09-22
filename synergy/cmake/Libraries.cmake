@@ -72,7 +72,16 @@ macro(configure_libs)
     endif()
   endif()
 
-  # Define the location of Qt deployment tool
+  # Qt 部署工具（windeployqt / macdeployqt）的用途是把 Qt 共享运行时拷贝到可执行文件旁，
+  # 因此只在 Qt 为共享链接时才相关。
+  #
+  # 重要：vcpkg 的 qtbase 端口**不提供该工具的二进制** —— 实测动态与静态 triplet 下都只有
+  # qmake 的 windeployqt.prf，没有 windeployqt.exe。因此这里不能把它当作配置阶段的硬性条件，
+  # 否则动态 triplet（如 ASan 构建所用的 x64-windows）会直接配置失败。
+  #
+  # 缺失时降级为警告：共享构建仍可编译运行（运行时需能找到 Qt DLL，例如把
+  # vcpkg_installed/<triplet>/bin 加入 PATH）；仅当确实要“打包”共享版产物时才需要该工具，
+  # 届时自行提供（如使用官方 Qt 安装包中的 windeployqt）。
   set(DEPLOY_TOOL "")
   if(WIN32)
     set(DEPLOY_TOOL windeployqt)
@@ -83,7 +92,11 @@ macro(configure_libs)
   if(DEPLOY_TOOL AND QT_IS_SHARED)
     find_program(DEPLOYQT ${DEPLOY_TOOL})
     if(DEPLOYQT STREQUAL "DEPLOYQT-NOTFOUND")
-      message(FATAL_ERROR "Unable to locate the Qt Deploy Tool: \"${DEPLOY_TOOL}\"")
+      message(WARNING
+        "${DEPLOY_TOOL} not found; the Qt runtime will not be copied next to the binaries. "
+        "vcpkg does not ship this tool, so this is expected. Add "
+        "vcpkg_installed/<triplet>/bin to PATH when running, or supply the tool if packaging."
+      )
     endif()
   elseif(DEPLOY_TOOL)
     message(STATUS "Qt is linked statically; ${DEPLOY_TOOL} is not required and is not provided by vcpkg")
