@@ -63,7 +63,12 @@ install(
 )
 
 if(WIN32)
-  set_target_properties(${target} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT")
+  # 注意：此处曾设置 LINK_FLAGS "/NODEFAULTLIB:LIBCMT"。该标志让链接器忽略静态 CRT，
+  # 在早期使用 /MD（动态 CRT）时用于避免 CRT 冲突；但本项目改用 /MT 静态 CRT
+  # （见根 CMakeLists.txt 的 CMAKE_MSVC_RUNTIME_LIBRARY 与 vcpkg 静态 triplet）后，
+  # libcmt 正是运行库来源，排除它会导致 GUI 目标出现数千个未解析的 CRT 符号
+  # （__acrt_iob_func、_CxxThrowException、operator new/delete、atexit 等）。
+  # 已移除该标志。
 
   install(RUNTIME_DEPENDENCY_SET guiDeps
     ${WIN32_RUNTIME_DEPENDENCY_SET_ARGS}
