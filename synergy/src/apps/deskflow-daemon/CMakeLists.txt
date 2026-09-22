@@ -35,7 +35,7 @@ if(WIN32)
 
   # Set output name with version
   include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
-  set_output_name_with_version(${target} SUFFIX "-daemon")
+  set_output_name(${target} SUFFIX "-daemon")
 
   install(
     TARGETS ${target}

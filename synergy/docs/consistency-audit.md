@@ -26,7 +26,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 
 | ID | Severity | Area | Finding | Status |
 |---|---|---|---|---|
-| U-01 | P0 | Runtime / build | Versioned output names vs unversioned references | Open |
+| U-01 | P0 | Runtime / build | Versioned output names vs unversioned references | **Fixed** (see below) |
 | U-02 | P0 | Packaging (Linux) | Install source paths use an identity that has no files | Open |
 | U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | Open |
 | U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | Open |
@@ -69,6 +69,12 @@ Already fixed in this session: stale binary names in `README.md`, `setup.bat`, `
 No unversioned alias or symlink is produced anywhere (no `create_symlink` in the tree; the versioned `OUTPUT_NAME` is the only one set). `CoreProcess.cpp:108` fails its existence check and logs `core server binary does not exist`.
 
 **Impact**: the GUI may not be able to launch the core; the Linux launcher points at a missing file; the CI packaging probe fails.
+
+**Resolution (2026-09-22)**: confirmed empirically once a build succeeded, and the failure was worse than predicted — it also broke packaging outright. `deploy/windows/wix-patch.xml.in` keys its WiX fragments on the component IDs CPack derives from the installed file names (`CM_CP_synergy_core.exe`, `CM_CP_synergy_daemon.exe`), so `package` aborted with *"Some XML patch fragments did not have matching IDs"*.
+
+Fixed by dropping the version from executable names: `set_output_name_with_version()` became `set_output_name()` (`extra/cmake/Synergy.cmake`) and now sets `synergy` / `synergy-core` / `synergy-daemon`, matching every consumer listed above. The version remains available via `--version`, the binary version resource, and package file names.
+
+Evidence: `build/bin/Release/` now contains `synergy.exe`, `synergy-core.exe`, `synergy-daemon.exe`; the portable package contains the same unversioned names. The WiX failure that blocked packaging — *"Some XML patch fragments did not have matching IDs"* — is gone; `package` now proceeds past the patch stage and only stops at an unrelated external constraint (the installed WiX v7 requires accepting its OSMF EULA).
 
 #### U-02 — Linux install source paths resolve to a non-existent identity
 
@@ -213,7 +219,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 
 | ID | 级别 | 范围 | 结论 | 状态 |
 |---|---|---|---|---|
-| U-01 | P0 | 运行时 / 构建 | 产物名带版本号，引用处不带 | 待处理 |
+| U-01 | P0 | 运行时 / 构建 | 产物名带版本号，引用处不带 | **已修复**（见下） |
 | U-02 | P0 | 打包 (Linux) | 安装源路径指向一个没有文件的身份 | 待处理 |
 | U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | 待处理 |
 | U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | 待处理 |
@@ -256,6 +262,10 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 全仓库没有任何地方生成无版本别名或软链（没有 `create_symlink`，唯一的 `OUTPUT_NAME` 设置点就是那个加版本号的函数）。`CoreProcess.cpp:108` 的存在性检查会失败并打印 `core server binary does not exist`。
 
 **影响**：GUI 可能无法启动 core；Linux 启动器指向不存在的文件；CI 打包校验失败。
+
+**已修复（2026-09-22）**：构建成功后被实证确认，且后果比预估更严重 —— 它还直接导致**打包失败**。`deploy/windows/wix-patch.xml.in` 以 CPack 依据安装后文件名推导的组件 ID 作为 WiX 片段键（`CM_CP_synergy_core.exe`、`CM_CP_synergy_daemon.exe`），因此 `package` 直接中止并报 *“Some XML patch fragments did not have matching IDs”*。
+
+修法：去掉可执行文件名中的版本号。`set_output_name_with_version()` 改为 `set_output_name()`（`extra/cmake/Synergy.cmake`），产出 `synergy` / `synergy-core` / `synergy-daemon`，与上表全部引用方一致。版本信息未丢失：仍由 `--version`、二进制版本资源与安装包文件名承载。
 
 #### U-02 — Linux 安装源路径指向不存在的身份
 

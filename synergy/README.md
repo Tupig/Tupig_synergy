@@ -107,9 +107,9 @@ cmake --preset windows-msvc-release
 cmake --build build --config Release
 ```
 
-Output (VS multi-config): `build\bin\Release\synergy-1.21.2.exe` (GUI),
-`build\bin\Release\synergy-core-1.21.2.exe` (core),
-`build\bin\Release\synergy-daemon-1.21.2.exe` (Windows daemon)
+Output (VS multi-config): `build\bin\Release\synergy.exe` (GUI),
+`build\bin\Release\synergy-core.exe` (core),
+`build\bin\Release\synergy-daemon.exe` (Windows daemon)
 
 ### Prerequisites (auto-installed by setup.bat)
 

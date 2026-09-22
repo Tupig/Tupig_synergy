@@ -89,8 +89,8 @@ cmake -S . -B build -G Ninja \
 cmake --build build --config Release
 
 # 3. Run
-./build/bin/synergy-core-1.21.2    # Core service
-./build/bin/synergy-1.21.2         # GUI
+./build/bin/synergy-core    # Core service
+./build/bin/synergy         # GUI
 ```
 
 #### macOS Code Signing (Development)
@@ -155,8 +155,8 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)
 
 # Run
-./build/bin/synergy-core-1.21.2    # Core service
-./build/bin/synergy-1.21.2         # GUI
+./build/bin/synergy-core    # Core service
+./build/bin/synergy         # GUI
 ```
 
 ---
@@ -326,8 +326,8 @@ cmake -S . -B build -G Ninja \
 cmake --build build --config Release
 
 # 3. 运行
-./build/bin/synergy-core-1.21.2    # 核心服务
-./build/bin/synergy-1.21.2         # GUI
+./build/bin/synergy-core    # 核心服务
+./build/bin/synergy         # GUI
 ```
 
 #### macOS 代码签名（开发用）
@@ -392,8 +392,8 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)
 
 # 运行
-./build/bin/synergy-core-1.21.2    # 核心服务
-./build/bin/synergy-1.21.2         # GUI
+./build/bin/synergy-core    # 核心服务
+./build/bin/synergy         # GUI
 ```
 
 ---

@@ -104,29 +104,30 @@ if(SYNERGY_VERSION_RELEASE OR SYNERGY_VERSION_SNAPSHOT)
   add_compile_definitions(SYNERGY_ENABLE_ACTIVATION)
 endif()
 
-# Function to set output name with version for executables
-# Usage: set_output_name_with_version(<target> [SUFFIX <suffix>])
-# Example: set_output_name_with_version(synergy-core SUFFIX "-core")
-function(set_output_name_with_version TARGET)
+# Function to set the output name of an executable.
+# Usage: set_output_name(<target> [SUFFIX <suffix>])
+# Example: set_output_name(synergy-core SUFFIX "-core")   -> synergy-core(.exe)
+#
+# The name deliberately carries NO version number. Versioned binaries
+# (synergy-core-1.21.2.exe) broke several consumers that identify these files by
+# their exact, unversioned names:
+#   * Constants.h.in sets kCoreBinName/kDaemonBinName to "synergy-core"/"synergy-daemon",
+#     which the GUI and daemon use to locate and launch the core, and which
+#     MSWindowsWatchdog matches against running processes;
+#   * extra/deploy/linux/com.symless.synergy.desktop declares Exec=synergy;
+#   * deploy/windows/wix-patch.xml.in keys WiX fragments on the component IDs
+#     derived from the installed file names, so packaging failed outright;
+#   * CI probes and signs build/bin/synergy-core.exe.
+# The version is not lost: it is reported by --version, embedded in the binary's
+# version resource, and still included in package file names.
+function(set_output_name TARGET)
   cmake_parse_arguments(ARG "" "SUFFIX" "" ${ARGN})
-  
-  # Get the base project name (synergy)
-  set(_base_name ${CMAKE_PROJECT_NAME})
-  
-  # Get the version string (without dev/snapshot suffix for cleaner filenames)
-  set(_version "${SYNERGY_VERSION_MAJOR}.${SYNERGY_VERSION_MINOR}.${SYNERGY_VERSION_PATCH}")
-  
-  # Build the output name: synergy-<suffix>-<version>
-  if(ARG_SUFFIX)
-    set(_output_name "${_base_name}${ARG_SUFFIX}-${_version}")
-  else()
-    set(_output_name "${_base_name}-${_version}")
-  endif()
-  
-  # Set the OUTPUT_NAME property for the target
+
+  set(_output_name "${CMAKE_PROJECT_NAME}${ARG_SUFFIX}")
+
   set_target_properties(${TARGET} PROPERTIES
     OUTPUT_NAME ${_output_name}
   )
-  
+
   message(STATUS "Set output name for ${TARGET}: ${_output_name}")
 endfunction()
