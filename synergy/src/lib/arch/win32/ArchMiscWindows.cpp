@@ -409,9 +409,11 @@ HMODULE ArchMiscWindows::findLoadedModule(std::array<const char *, 2> moduleName
     abort();
   }
 
-  std::string loadedModuleName;
+  std::array<char, MAX_PATH> loadedModuleName;
   for (size_t i = 0; i < (cbNeeded / sizeof(HMODULE)); ++i) {
-    if (!GetModuleBaseNameA(hProcess, hModules[i], loadedModuleName.data(), sizeof(loadedModuleName))) {
+    if (!GetModuleBaseNameA(
+            hProcess, hModules[i], loadedModuleName.data(), static_cast<DWORD>(loadedModuleName.size())
+        )) {
       LOG_WARN("could not get base name of loaded module %d", i);
       continue;
     }
@@ -443,6 +445,18 @@ HMODULE ArchMiscWindows::findLoadedModule(std::array<const char *, 2> moduleName
 // requirements for the current Qt version we support.
 void ArchMiscWindows::guardRuntimeVersion() // NOSONAR - `noreturn` is not available
 {
+  // The check below verifies the *installed* MSVC runtime DLL, because
+  // Microsoft permits running a binary against an older, nominally
+  // ABI-compatible runtime DLL than the one it was compiled with, which has
+  // caused real ABI bugs (see the comment above). That premise only holds for a
+  // dynamically linked CRT (/MD): with a statically linked CRT (/MT, as used by
+  // the vcpkg static triplets) the runtime is baked into this binary and
+  // therefore always matches the compiler, so there is no redistributable to
+  // locate or version-check. MSVC defines _DLL only for /MD and /MDd.
+#if !defined(_DLL)
+  MS_LOG_DEBUG("static C runtime in use, skipping MSVC runtime version guard");
+  return;
+#else
   auto hModule = findLoadedModule({"vcruntime140.dll", "vcruntime140d.dll"});
   if (hModule == nullptr) {
     errorMessageBox("Failed to find MSVC runtime DLL.");
@@ -500,6 +514,7 @@ void ArchMiscWindows::guardRuntimeVersion() // NOSONAR - `noreturn` is not avail
     MessageBoxA(nullptr, message.c_str(), "Dependency Error", MB_ICONERROR | MB_OK);
     exit(1);
   }
+#endif
 }
 
 bool ArchMiscWindows::isProcessElevated()
