@@ -40,6 +40,27 @@ function(create_test)
   endif()
   add_test(NAME ${m_NAME} COMMAND $<TARGET_FILE:${m_NAME}> WORKING_DIRECTORY ${m_WORKING_DIRECTORY})
   set_tests_properties(${m_NAME} PROPERTIES DEPENDS ${m_DEPENDS})
+
+  # GUI tests need the Qt platform plugin at run time. A statically linked Qt
+  # bakes the plugin into the binary, but a shared Qt (e.g. the dynamic triplet
+  # used by the ASan preset) loads qwindows.dll from disk, and Qt then aborts
+  # with "Could not find the Qt platform plugin \"windows\"" -- which surfaces as
+  # exit code 0xc0000409 and looks like a crash rather than a configuration
+  # problem. Point Qt at the vcpkg plugin directory so `ctest` works without the
+  # caller having to set anything up.
+  #
+  # Note QT_QPA_PLATFORM_PLUGIN_PATH must name the platforms directory itself,
+  # not its parent: Qt looks for the plugin directly inside that path.
+  if(WIN32 AND QT_IS_SHARED)
+    set(_synergy_qt_platforms
+      "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/Qt6/plugins/platforms")
+    if(EXISTS "${_synergy_qt_platforms}")
+      set_tests_properties(${m_NAME} PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM_PLUGIN_PATH=${_synergy_qt_platforms}")
+    endif()
+    unset(_synergy_qt_platforms)
+  endif()
+
   set_property(GLOBAL APPEND PROPERTY ${CMAKE_PROJECT_NAME}_tests ${m_NAME})
 
   if(ENABLE_COVERAGE)

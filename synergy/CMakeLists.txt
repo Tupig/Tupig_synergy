@@ -216,8 +216,11 @@ if(MSVC)
   if(SYNERGY_ENABLE_ASAN)
     # MSVC's AddressSanitizer instruments heap/stack/globals of this code;
     # dependencies need not be instrumented, but they must share the dynamic CRT.
+    # /fsanitize=address is a compiler option only: cl records the request in the
+    # object files and link.exe then pulls in the ASan runtime on its own
+    # (/INFERASANLIBS). Passing it to the linker is not just unnecessary, link.exe
+    # reports LNK4044 "unrecognized option" and ignores it.
     add_compile_options(/fsanitize=address /Zi)
-    add_link_options(/fsanitize=address)
     message(STATUS "Hardening enabled: /fsanitize=address")
   endif()
 else()
@@ -300,6 +303,31 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(extra)
+
+# Deploy the generated translation catalogues next to the executables.
+#
+# I18N looks for them in <applicationDirPath>/translations first. That holds for
+# an installed tree (CMAKE_INSTALL_I18N_DIR puts them beside the binaries), but
+# not for a plain build tree, where the catalogues live in
+# <build>/translations while the binaries are in <build>/bin/<config>. Without
+# this copy a freshly built binary reports "initial language: en" even on a
+# Chinese system.
+#
+# Deliberately an always-run ALL target rather than a POST_BUILD step: POST_BUILD
+# only fires when its target relinks, so the catalogues would silently go stale
+# (or be missing entirely) on incremental builds.
+if(BUILD_GUI AND TARGET synergy AND SYNERGY_TRANSLATION_FILES)
+  add_custom_target(deploy_translations ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+      "$<TARGET_FILE_DIR:synergy>/translations"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      ${SYNERGY_TRANSLATION_FILES}
+      "$<TARGET_FILE_DIR:synergy>/translations"
+    DEPENDS synergy app_translations
+    COMMENT "Deploying translations next to the executables"
+    VERBATIM
+  )
+endif()
 
 option(BUILD_INSTALLER "Build installer" ON)
 if(BUILD_INSTALLER)

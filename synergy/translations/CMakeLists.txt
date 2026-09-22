@@ -27,6 +27,12 @@ qt_create_translation(TRS ${CMAKE_SOURCE_DIR}/src ${filename}_en.ts OPTIONS -plu
 # Other languages contain the full set of strings.
 qt_create_translation(TRS ${CMAKE_SOURCE_DIR}/src ${translations} OPTIONS ${TR_OPTIONS})
 
+# Expose the generated catalogues to the parent scope so the top-level build can
+# deploy them next to the executables. Without this the binaries look for
+# <appDir>/translations, find nothing in a plain build tree, and fall back to
+# English even on a non-English system.
+set(SYNERGY_TRANSLATION_FILES ${TRS} PARENT_SCOPE)
+
 #ensure that the targets are built always
 add_custom_target(app_translations ALL DEPENDS ${TRS})
 
