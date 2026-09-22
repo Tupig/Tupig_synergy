@@ -44,11 +44,13 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 REM Refresh PATH
-set "PATH=%PATH%;C:\Program Files\CMake\bin"
+REM Derive from %ProgramFiles% rather than a literal "C:\..." so this still
+REM works when the system drive is not C:.
+set "PATH=%PATH%;%ProgramFiles%\CMake\bin"
 where cmake >nul 2>&1
 if %errorlevel% neq 0 (
     echo [WARNING] CMake installed but not in PATH. Please restart terminal.
-    echo Manual path: C:\Program Files\CMake\bin
+    echo Manual path: %ProgramFiles%\CMake\bin
 )
 echo [OK] CMake installed
 echo.
@@ -99,8 +101,8 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-REM Refresh PATH
-set "PATH=%PATH%;C:\Program Files\Git\cmd"
+REM Refresh PATH (see the CMake step for why %ProgramFiles% and not a literal path)
+set "PATH=%PATH%;%ProgramFiles%\Git\cmd"
 echo [OK] Git installed
 echo.
 
