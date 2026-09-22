@@ -764,6 +764,90 @@ Inoltre, verifica di poter %1 il file di configurazione del server: %2</translat
         <source>%1 is already running</source>
         <translation>%1 è già in esecuzione</translation>
     </message>
+    <message>
+        <source>Test</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trigger fatal error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trigger critical error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unite every computer on your desk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TuPig Synergy is based on the original Synergy by Chris Schoeneman and the Deskflow project. Thanks to our contributors and the open source projects TuPig Synergy builds on, including Qt, OpenSSL, and many others.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>End User License Agreement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>License: GNU GPL Version 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TuPig Synergy is a trademark of TuPig</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(not yet created)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose where %1 stores its settings. Changes take effect when %1 restarts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings apply only to your user account on this computer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All users</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings apply to every user on this computer. Requires administrator privileges.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings updated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, please contact us.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot switch to &apos;All users&apos; scope</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;%1 can&apos;t write to &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;&lt;p&gt;The &apos;All users&apos; scope requires administrator privileges. Run %1 as administrator/root to change settings here.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restart required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Settings scope changes take effect when %1 restarts.&lt;/p&gt;&lt;p&gt;Quit %1 now? You&apos;ll need to launch it again from your applications menu.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ScreenSettingsDialog</name>

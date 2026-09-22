@@ -766,6 +766,90 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <source>%1 is already running</source>
         <translation>%1 已经在运行中</translation>
     </message>
+    <message>
+        <source>Test</source>
+        <translation>测试</translation>
+    </message>
+    <message>
+        <source>Trigger fatal error</source>
+        <translation>触发致命错误</translation>
+    </message>
+    <message>
+        <source>Trigger critical error</source>
+        <translation>触发严重错误</translation>
+    </message>
+    <message>
+        <source>Unite every computer on your desk</source>
+        <translation>让桌面上的每台电脑协同如一</translation>
+    </message>
+    <message>
+        <source>TuPig Synergy is based on the original Synergy by Chris Schoeneman and the Deskflow project. Thanks to our contributors and the open source projects TuPig Synergy builds on, including Qt, OpenSSL, and many others.</source>
+        <translation>TuPig Synergy 基于 Chris Schoeneman 的原始 Synergy 与 Deskflow 项目。感谢所有贡献者，以及 TuPig Synergy 所依托的开源项目，包括 Qt、OpenSSL 等。</translation>
+    </message>
+    <message>
+        <source>End User License Agreement</source>
+        <translation>最终用户许可协议</translation>
+    </message>
+    <message>
+        <source>License: GNU GPL Version 2</source>
+        <translation>许可证：GNU GPL 第 2 版</translation>
+    </message>
+    <message>
+        <source>TuPig Synergy is a trademark of TuPig</source>
+        <translation>TuPig Synergy 是 TuPig 的商标</translation>
+    </message>
+    <message>
+        <source>(not yet created)</source>
+        <translation>（尚未创建）</translation>
+    </message>
+    <message>
+        <source>Choose where %1 stores its settings. Changes take effect when %1 restarts.</source>
+        <translation>选择 %1 存储设置的位置。更改将在 %1 重启后生效。</translation>
+    </message>
+    <message>
+        <source>Current user</source>
+        <translation>当前用户</translation>
+    </message>
+    <message>
+        <source>Settings apply only to your user account on this computer.</source>
+        <translation>设置仅对您在本机上的用户账户生效。</translation>
+    </message>
+    <message>
+        <source>All users</source>
+        <translation>所有用户</translation>
+    </message>
+    <message>
+        <source>Settings apply to every user on this computer. Requires administrator privileges.</source>
+        <translation>设置对本机上的所有用户生效。需要管理员权限。</translation>
+    </message>
+    <message>
+        <source>Scope</source>
+        <translation>范围</translation>
+    </message>
+    <message>
+        <source>Settings updated</source>
+        <translation>设置已更新</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, please contact us.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;我们已将您的设置迁移到此版本 Synergy 使用的新格式。&lt;/p&gt;&lt;p&gt;原有设置已备份至：&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;如有任何异常，请与我们联系。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Cannot switch to &apos;All users&apos; scope</source>
+        <translation>无法切换到“所有用户”范围</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;%1 can&apos;t write to &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;&lt;p&gt;The &apos;All users&apos; scope requires administrator privileges. Run %1 as administrator/root to change settings here.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;%1 无法写入 &lt;code&gt;%2&lt;/code&gt;。&lt;/p&gt;&lt;p&gt;“所有用户”范围需要管理员权限。请以管理员/root 身份运行 %1 来修改此处的设置。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Restart required</source>
+        <translation>需要重启</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Settings scope changes take effect when %1 restarts.&lt;/p&gt;&lt;p&gt;Quit %1 now? You&apos;ll need to launch it again from your applications menu.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;设置范围更改将在 %1 重启后生效。&lt;/p&gt;&lt;p&gt;现在退出 %1 吗？之后需要从应用程序菜单重新启动它。&lt;/p&gt;</translation>
+    </message>
 </context>
 <context>
     <name>ScreenSettingsDialog</name>
