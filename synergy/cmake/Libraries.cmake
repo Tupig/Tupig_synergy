@@ -2,6 +2,19 @@
 # SPDX-FileCopyrightText: (C) 2024 Symless Ltd
 # SPDX-License-Identifier: MIT
 
+# 依赖发现模块。
+#
+# 必须在文件作用域 include，不能放进下面的宏里：configure_libs 是 macro，宏在其调用点
+# （根 CMakeLists.txt）展开，此时 CMAKE_CURRENT_LIST_DIR 指向的是调用方所在目录（仓库
+# 根），宏内用 ${CMAKE_CURRENT_LIST_DIR} 会解析到 cmake/DependencyFallback.cmake 之外
+# 的位置并导致 configure 失败。放在文件作用域时，CMAKE_CURRENT_LIST_DIR 正确指向本文件
+# 所在的 cmake/ 目录。
+#
+# 注意：本文件第 80 行上游既有的 include(cmake/CodeCoverage.cmake) 依赖同样机制，但它靠
+# 「相对仓库根目录」恰好解析正确；若日后 configure_libs 改由子目录调用，两处都需改为
+# 文件作用域或使用 CMAKE_CURRENT_FUNCTION_LIST_DIR。
+include("${CMAKE_CURRENT_LIST_DIR}/DependencyFallback.cmake")
+
 macro(configure_libs)
 
   set(libs)
@@ -22,7 +35,6 @@ macro(configure_libs)
   endif()
 
   # 使用回退机制查找 Qt（版本无关探测与 Qt5 版本下调均在宏内完成）
-  include(${CMAKE_CURRENT_LIST_DIR}/DependencyFallback.cmake)
   find_qt_with_fallback()
 
   if(UNIX AND NOT APPLE)
@@ -39,20 +51,44 @@ macro(configure_libs)
     endforeach()
   endif()
 
+  # Qt 部署工具（windeployqt / macdeployqt）的用途是把 Qt 共享运行时拷贝到可执行文件旁，
+  # 因此只在 Qt 为共享链接时才需要。本项目用 vcpkg 静态 triplet（目标是单产物独立运行），
+  # 不存在可拷贝的共享运行时；且 vcpkg 的 qtbase 端口不安装该工具 —— 实测动态与静态
+  # triplet 下都只有 qmake 的 windeployqt.prf，没有 windeployqt.exe。故按 Qt 链接形态判断：
+  # 共享时缺失仍报错（保留原有保护），静态时跳过。
+  #
+  # 判据来自 Qt6::Core 导入目标：共享构建在 Windows 上带 IMPORTED_IMPLIB（.lib 导入库），
+  # 静态构建不带；类 Unix 平台上共享构建的 IMPORTED_LOCATION 以 .so/.dylib 结尾。
+  set(QT_IS_SHARED FALSE)
+  if(TARGET Qt${QT_VERSION_MAJOR}::Core)
+    get_target_property(_qt_imported_implib Qt${QT_VERSION_MAJOR}::Core IMPORTED_IMPLIB)
+    if(_qt_imported_implib)
+      set(QT_IS_SHARED TRUE)
+    else()
+      get_target_property(_qt_imported_location Qt${QT_VERSION_MAJOR}::Core IMPORTED_LOCATION)
+      if(_qt_imported_location MATCHES "\\.(so|dylib)(\\.|$)")
+        set(QT_IS_SHARED TRUE)
+      endif()
+    endif()
+  endif()
+
   # Define the location of Qt deployment tool
+  set(DEPLOY_TOOL "")
   if(WIN32)
     set(DEPLOY_TOOL windeployqt)
   elseif(APPLE)
-      set(DEPLOY_TOOL macdeployqt)
+    set(DEPLOY_TOOL macdeployqt)
   endif()
 
-  if (WIN32 OR APPLE)
+  if(DEPLOY_TOOL AND QT_IS_SHARED)
     find_program(DEPLOYQT ${DEPLOY_TOOL})
     if(DEPLOYQT STREQUAL "DEPLOYQT-NOTFOUND")
       message(FATAL_ERROR "Unable to locate the Qt Deploy Tool: \"${DEPLOY_TOOL}\"")
     endif()
-    unset(DEPLOY_TOOL)
+  elseif(DEPLOY_TOOL)
+    message(STATUS "Qt is linked statically; ${DEPLOY_TOOL} is not required and is not provided by vcpkg")
   endif()
+  unset(DEPLOY_TOOL)
 
   set(CMAKE_AUTOMOC ON)
   set(CMAKE_AUTOUIC ON)
