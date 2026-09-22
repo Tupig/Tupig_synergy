@@ -45,7 +45,9 @@ std::vector<std::string> AppUtilUnix::getKeyboardLayoutList()
   std::vector<std::string> layoutLangCodes;
 
 #if WINAPI_XWINDOWS
-  // Check /usr/local first used on bsd and some systems
+  // First existing path wins. Linux keeps xkb under /usr/share; the BSD variants
+  // that follow ship it under /usr/local (FreeBSD, DragonFlyBSD) or a versioned
+  // /usr/X11R<n> prefix (NetBSD, OpenBSD).
   std::vector<std::string> evdev_candidate = {
       "/usr/share/X11/xkb/rules/evdev.xml",       // Linux
       "/usr/local/share/X11/xkb/rules/evdev.xml", // FreeBSD, DragonFlyBSD

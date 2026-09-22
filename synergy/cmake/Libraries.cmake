@@ -221,7 +221,11 @@ endmacro()
 #
 macro(configure_xorg_libs)
 
-  # Set include dir for BSD-derived systems
+  # Runs on every X11 platform, not only BSD: the BSDs and some Linux setups keep
+  # X11 headers under /usr/local, which GNUInstallDirs does not add to the search
+  # path. Note this assigns rather than appends, so a caller-supplied
+  # CMAKE_REQUIRED_INCLUDES is shadowed; Linux still resolves normally through the
+  # compiler's own default paths.
   set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
 
   set(XKBlib "X11/Xlib.h;X11/XKBlib.h")
@@ -243,8 +247,8 @@ macro(configure_xorg_libs)
     message(FATAL_ERROR "Missing header: " ${XKBlib})
   endif()
 
-  # Set library path and -L flag for BSD-derived systems.
-  # On our FreeBSD CI, `link_directories` is also needed for some reason.
+  # Same story for the library search path. On the FreeBSD CI, `link_directories`
+  # is additionally required for this to be honoured.
   set(CMAKE_LIBRARY_PATH "/usr/local/lib")
   set(CMAKE_REQUIRED_FLAGS "-L${CMAKE_LIBRARY_PATH}")
   link_directories(${CMAKE_LIBRARY_PATH})
