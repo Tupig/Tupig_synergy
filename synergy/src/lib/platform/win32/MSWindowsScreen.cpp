@@ -24,6 +24,7 @@
 #include "ScreenException.h"
 #include "MSWindowsClipboard.h"
 #include "MSWindowsDesks.h"
+#include "MSWindowsDropTarget.h"
 #include "MSWindowsEventQueueBuffer.h"
 #include "MSWindowsKeyState.h"
 #include "MSWindowsScreenSaver.h"
@@ -119,7 +120,22 @@ MSWindowsScreen::MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *eve
     }
 
     OleInitialize(0);
+
+    // Register for file drops on the (normally invisible) screen window so a
+    // CF_HDROP drag that hits it is captured through the tested parser.
+    m_dropTarget = new MSWindowsDropTarget();
+    const HRESULT dropHr = RegisterDragDrop(m_window, m_dropTarget);
+    if (FAILED(dropHr)) {
+      LOG_ERR("RegisterDragDrop failed: 0x%08lx", dropHr);
+      m_dropTarget->Release();
+      m_dropTarget = nullptr;
+    }
   } catch (...) {
+    if (m_dropTarget != nullptr) {
+      RevokeDragDrop(m_window);
+      m_dropTarget->Release();
+      m_dropTarget = nullptr;
+    }
     delete m_keyState;
     delete m_desks;
     delete m_screensaver;
@@ -148,12 +164,38 @@ MSWindowsScreen::~MSWindowsScreen()
   delete m_keyState;
   delete m_desks;
   delete m_screensaver;
+
+  if (m_dropTarget != nullptr) {
+    RevokeDragDrop(m_window);
+    m_dropTarget->Release();
+    m_dropTarget = nullptr;
+  }
+
   destroyWindow(m_window);
   destroyClass(m_class);
 
   OleUninitialize();
 
   s_screen = nullptr;
+}
+
+const std::vector<std::string> &MSWindowsScreen::draggingPaths() const
+{
+  static const std::vector<std::string> kEmpty;
+  if (m_dropTarget == nullptr) {
+    return kEmpty;
+  }
+  return m_dropTarget->draggingPaths();
+}
+
+std::vector<std::string> MSWindowsScreen::takeDraggingPaths()
+{
+  if (m_dropTarget == nullptr) {
+    return {};
+  }
+  std::vector<std::string> paths = m_dropTarget->draggingPaths();
+  m_dropTarget->clearDraggingPaths();
+  return paths;
 }
 
 void MSWindowsScreen::init(HINSTANCE windowInstance)

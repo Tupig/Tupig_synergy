@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -31,6 +32,17 @@ class MSWindowsScreen : public PlatformScreen
 public:
   MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *events, bool enableLangSync = false);
   ~MSWindowsScreen() override;
+
+  //! Paths captured by the OLE drop target, if any.
+  /*!
+  Empty until a CF_HDROP drag has entered or been dropped on our window. The
+  Escape-to-cancel capture hack that used to fill this is not restored: callers
+  must not assume a cross-screen drag automatically populates it.
+  */
+  [[nodiscard]] const std::vector<std::string> &draggingPaths() const;
+
+  //! Take and clear the captured paths (for a one-shot outbound transfer).
+  std::vector<std::string> takeDraggingPaths();
 
   //! @name manipulators
   //@{
@@ -303,6 +315,9 @@ private:
   HWND m_window = nullptr;
   DWORD m_clipboardSequenceNumber = 0;
   bool m_ownClipboard = false;
+
+  // OLE drop target registered on m_window (file drag capture).
+  MSWindowsDropTarget *m_dropTarget = nullptr;
 
   // one desk per desktop and a cond var to communicate with it
   MSWindowsDesks *m_desks = nullptr;

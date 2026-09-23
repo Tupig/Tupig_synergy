@@ -62,6 +62,8 @@ if(WIN32)
     win32/MSWindowsWatchdog.h
     win32/Win32DropData.cpp
     win32/Win32DropData.h
+    win32/MSWindowsDropTarget.cpp
+    win32/MSWindowsDropTarget.h
   )
 elseif(APPLE)
   set(PLATFORM_SOURCES
@@ -188,6 +190,11 @@ target_include_directories(platform PUBLIC
 )
 
 target_link_libraries(platform client ${libs})
+
+if(WIN32)
+  # RegisterDragDrop / IDropTarget / OleInitialize
+  target_link_libraries(platform ole32 shell32)
+endif()
 
 if(UNIX)
   target_link_libraries(
