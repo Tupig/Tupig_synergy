@@ -4,9 +4,9 @@
         <file>image/logo-light.png</file>
         <file alias="icons/synergy-dark/index.theme">synergy-dark.theme</file>
         <file alias="icons/synergy-light/index.theme">synergy-light.theme</file>
-        <file alias="icons/synergy-dark/apps/64/com.symless.synergy.svg">synergy.svg</file>
-        <file alias="icons/synergy-dark/apps/64/com.symless.synergy-symbolic.svg">synergy-symbolic-dark.svg</file>
-        <file alias="icons/synergy-light/apps/64/com.symless.synergy.svg">synergy.svg</file>
-        <file alias="icons/synergy-light/apps/64/com.symless.synergy-symbolic.svg">synergy-symbolic-light.svg</file>
+        <file alias="icons/synergy-dark/apps/64/com.tupig.synergy.svg">synergy.svg</file>
+        <file alias="icons/synergy-dark/apps/64/com.tupig.synergy-symbolic.svg">synergy-symbolic-dark.svg</file>
+        <file alias="icons/synergy-light/apps/64/com.tupig.synergy.svg">synergy.svg</file>
+        <file alias="icons/synergy-light/apps/64/com.tupig.synergy-symbolic.svg">synergy-symbolic-light.svg</file>
     </qresource>
 </RCC>

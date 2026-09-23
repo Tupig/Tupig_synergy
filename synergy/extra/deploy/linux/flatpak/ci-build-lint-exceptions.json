@@ -1,5 +1,5 @@
 {
-    "com.symless.synergy": [
+    "com.tupig.synergy": [
         "metainfo-missing-screenshots",
         "appstream-screenshots-not-mirrored-in-ostree"
     ]

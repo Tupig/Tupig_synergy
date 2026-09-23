@@ -39,7 +39,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | ID | Severity | Area | Finding | Status |
 |---|---|---|---|---|
 | U-01 | P0 | Runtime / build | Versioned output names vs unversioned references | **Fixed** (see below) |
-| U-02 | P0 | Packaging (Linux) | Install source paths use an identity that has no files | Open |
+| U-02 | P0 | Packaging (Linux) | Install source paths use an identity that has no files | **Fixed** |
 | U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | Open |
 | U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | **Fixed** |
 | U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
@@ -97,15 +97,40 @@ The same file (`:17`) renames the icon to `com.tupig.synergy.png`, while the des
 
 **Impact**: Linux DEB/RPM packaging fails or produces packages without a desktop entry.
 
+**Resolution (2026-09-23)**: aligned on `com.tupig.synergy`, the identity
+`CMAKE_PROJECT_REV_FQDN` already declared and the one every install path asks for.
+Renamed `com.symless.synergy.{desktop,metainfo.xml}` → `com.tupig.synergy.*`, the
+flatpak manifest `com.symless.synergy.yml` → `com.tupig.synergy.yml`, and the
+matching `flatpak-builder-lint` invocations in CI. Also updated the identifiers
+*inside* those files — `<id>`, `<launchable>`, `<provides><id>` and the desktop
+`Icon=` key — plus the flatpak lint-exceptions key.
+
+That last part turned out to fix a second, user-visible defect that had nothing to
+do with packaging. `MainWindow.cpp` sets the window and tray icon with
+`QIcon::fromTheme(kRevFqdnName)`, and `kRevFqdnName` is `com.tupig.synergy`; but
+`extra/src/apps/res/synergy.qrc` published the app icon under the alias
+`com.symless.synergy.svg`. The lookup therefore never matched the icon compiled
+into the binary and silently fell back to a generic one. Renaming the four qrc
+aliases makes the name the code asks for the name the resource provides.
+
+*Not* changed here: the vendor attribution inside those files (`<developer
+id="com.symless">`, "Synergy App Ltd", the upstream homepage) and the display name
+`Synergy`. Those are U-10 and U-17, which are separate decisions.
+
 #### U-03 — Three coexisting product identities
 
 | Identity | Where it appears | Role |
 |---|---|---|
 | `org.deskflow.deskflow` | `deploy/linux/*.desktop`, `.metainfo.xml`, `.png`; `deploy/linux/flatpak/org.deskflow.deskflow.yml`; `src/apps/res/deskflow.qrc` (`icons/deskflow-{dark,light}/`, `apps/64/org.deskflow.deskflow.svg`) | Upstream; CI no longer uses it |
-| `com.symless.synergy` | `extra/deploy/linux/*`; `extra/deploy/linux/flatpak/com.symless.synergy.yml`; `.github/workflows/ci.yml:678,681,687`; `extra/src/apps/res/synergy.qrc:7-10` | **Upstream commercial vendor** — but it is the identity CI actually builds |
-| `com.tupig.synergy` | `extra/cmake/Synergy.cmake:10` | Used by `deploy/linux/deploy.cmake` install paths and by macOS `BUNDLE_GUI_IDENTIFIER` (`src/apps/deskflow-gui/CMakeLists.txt:24`) |
+| `com.symless.synergy` | no longer used for anything that is built (see U-02) | Was the identity CI built; now reduced to vendor attribution (U-10) |
+| `com.tupig.synergy` | `extra/cmake/Synergy.cmake:10`; `extra/deploy/linux/*`; `extra/deploy/linux/flatpak/com.tupig.synergy.yml`; `extra/src/apps/res/synergy.qrc`; `extra/src/lib/synergy/gui/` | Used by Linux install paths, the flatpak app-id, the icon theme lookup and macOS `BUNDLE_GUI_IDENTIFIER` (`src/apps/deskflow-gui/CMakeLists.txt:24`) |
 
 **Impact**: macOS and Linux ship different application identities; the Linux install path asks for one identity while only files for another exist.
+
+**Progress (2026-09-23)**: the Linux/build identity is now consistent on
+`com.tupig.synergy` (U-02). `org.deskflow.deskflow` remains in the upstream
+`deploy/linux/` tree, which CI no longer builds. Aligning that too, and deciding
+what to do with the upstream `deploy/linux/` copies, is still open.
 
 **Decision needed**: which identity is canonical, then align the other two.
 
@@ -280,7 +305,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | ID | 级别 | 范围 | 结论 | 状态 |
 |---|---|---|---|---|
 | U-01 | P0 | 运行时 / 构建 | 产物名带版本号，引用处不带 | **已修复**（见下） |
-| U-02 | P0 | 打包 (Linux) | 安装源路径指向一个没有文件的身份 | 待处理 |
+| U-02 | P0 | 打包 (Linux) | 安装源路径指向一个没有文件的身份 | **已修复** |
 | U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | 待处理 |
 | U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | **已修复** |
 | U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |

@@ -683,16 +683,16 @@ jobs:
       - run: git config --global protocol.file.allow always
 
       - name: Lint appsteam
-        run: flatpak-builder-lint appstream extra/deploy/linux/com.symless.synergy.metainfo.xml
+        run: flatpak-builder-lint appstream extra/deploy/linux/com.tupig.synergy.metainfo.xml
 
       - name: Lint manifest
-        run: flatpak-builder-lint manifest extra/deploy/linux/flatpak/com.symless.synergy.yml
+        run: flatpak-builder-lint manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
 
       - name: Build
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_linux_${{ matrix.flatpak.arch }}.flatpak
-          manifest-path: extra/deploy/linux/flatpak/com.symless.synergy.yml
+          manifest-path: extra/deploy/linux/flatpak/com.tupig.synergy.yml
           cache-key: flatpak-builder-${{matrix.flatpak.arch}}-2.0
           arch: ${{matrix.flatpak.arch}}
           upload-artifact: false

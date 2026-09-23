@@ -114,7 +114,7 @@ endif()
 #   * Constants.h.in sets kCoreBinName/kDaemonBinName to "synergy-core"/"synergy-daemon",
 #     which the GUI and daemon use to locate and launch the core, and which
 #     MSWindowsWatchdog matches against running processes;
-#   * extra/deploy/linux/com.symless.synergy.desktop declares Exec=synergy;
+#   * extra/deploy/linux/com.tupig.synergy.desktop declares Exec=synergy;
 #   * deploy/windows/wix-patch.xml.in keys WiX fragments on the component IDs
 #     derived from the installed file names, so packaging failed outright;
 #   * CI probes and signs build/bin/synergy-core.exe.

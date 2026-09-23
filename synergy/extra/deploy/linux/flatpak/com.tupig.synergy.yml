@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 # Synergy-branded Flatpak manifest. Lives under extra/ so the build identifies
-# itself to the Flatpak runtime as Synergy (com.symless.synergy), not Deskflow.
+# itself to the Flatpak runtime by the project's own reverse-DNS id
+# (com.tupig.synergy, matching CMAKE_PROJECT_REV_FQDN), not Deskflow's.
 # The build modules (Jinja2, libei, libportal) are unchanged from the
 # upstream manifest at deploy/linux/flatpak/org.deskflow.deskflow.yml — only
 # the brand surface (app-id, command, the project module's source path) differs.
@@ -10,7 +11,7 @@
 # Source path is relative to this file's location, so it's one ../ deeper than
 # the upstream manifest's: extra/deploy/linux/flatpak → ../../../../ = repo root.
 
-app-id: com.symless.synergy
+app-id: com.tupig.synergy
 runtime: org.kde.Platform
 runtime-version: "6.10"
 sdk: org.kde.Sdk
