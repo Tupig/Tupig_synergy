@@ -7,25 +7,31 @@ on:
   pull_request:
     paths:
       - '.github/workflows/sonarcloud-analysis.yml'
-      - 'sonar-project.properties'
-      - 'cmake/Libraries.cmake'
-      - 'CMakeLists.txt'
-      - 'src/**'
-      - '!src/res/**'
-      - '!src/unittests/**'
+      - 'synergy/config/sonar-project.properties'
+      - 'synergy/cmake/Libraries.cmake'
+      - 'synergy/CMakeLists.txt'
+      - 'synergy/src/**'
+      - '!synergy/src/apps/res/**'
+      - '!synergy/src/unittests/**'
   push:
-    branches: [master]
+    branches: [main]
     paths:
-      - '.github/workflows/codeql-analysis.yml'
-      - 'cmake/Libraries.cmake'
-      - 'CMakeLists.txt'
-      - 'src/**'
-      - '!src/res/**'
-      - '!src/unittests/**'
+      - '.github/workflows/sonarcloud-analysis.yml'
+      - 'synergy/config/sonar-project.properties'
+      - 'synergy/cmake/Libraries.cmake'
+      - 'synergy/CMakeLists.txt'
+      - 'synergy/src/**'
+      - '!synergy/src/apps/res/**'
+      - '!synergy/src/unittests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+# See ci.yml for why the work is anchored in the `synergy/` subdirectory.
+defaults:
+  run:
+    working-directory: synergy
 
 jobs:
   sonar:
@@ -93,7 +99,13 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8
         with:
+          # The scanner looks for sonar-project.properties in the project base
+          # directory, but this repository keeps tool configs under config/, so the
+          # path has to be given explicitly. Without it the project key, source
+          # roots and compile-commands path are silently ignored and the scan
+          # reports on defaults instead.
           args: >
+            -Dproject.settings=config/sonar-project.properties
             -Dsonar.coverageReportPaths=${{ steps.coverage-paths.outputs.csv }}
             -Dsonar.cfamily.threads=${{ env.CPU_CORE_COUNT }}
         env:

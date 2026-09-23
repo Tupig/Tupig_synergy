@@ -5,6 +5,18 @@
 > **Last updated / 最后更新**: 2026-09-21
 > **Scope / 范围**: Cross-cutting naming + identity consistency / 跨模块命名与身份一致性
 > **Related / 相关**: `docs/HANDOFF.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
+>
+> **Note on `.github/` paths (2026-09-23)**: the `.github` directory was moved from
+> `synergy/.github` to the **repository root**, because GitHub only reads
+> `<repo-root>/.github/workflows` and therefore never ran any of this project's CI.
+> Every `.github/...` path cited below is now relative to the repository root, and
+> the line numbers in `ci.yml` / `action.yml` citations have shifted as a result.
+> Treat those citations as pointers to the file, not to an exact line.
+>
+> **关于 `.github/` 路径（2026-09-23）**：`.github` 目录已从 `synergy/.github` 移到
+> **仓库根**，原因是 GitHub 只读取 `<仓库根>/.github/workflows`，导致本项目的 CI 从未
+> 运行。以下所有 `.github/...` 路径现均相对仓库根；相关 `ci.yml` / `action.yml` 的行号
+> 也因之发生偏移。请把这些引用当作「指向该文件」的线索，而非精确行号。
 
 ---
 
@@ -65,7 +77,7 @@ Already fixed in this session: stale binary names in `README.md`, `setup.bat`, `
 | `src/lib/platform/win32/MSWindowsWatchdog.cpp:39` | compares to `kCoreBinNameW` | same |
 | `Constants.h.in:15` | `synergy-daemon` | `synergy-daemon-1.21.2` |
 | `extra/deploy/linux/com.symless.synergy.desktop:9` | `Exec=synergy` | `synergy-1.21.2` |
-| `.github/actions/test-package/action.yml:20,25,44` | probes `synergy-core` | same |
+| `.github/actions/test-package/action.yml`（仓库根下） | probes `synergy-core` | same |
 
 No unversioned alias or symlink is produced anywhere (no `create_symlink` in the tree; the versioned `OUTPUT_NAME` is the only one set). `CoreProcess.cpp:108` fails its existence check and logs `core server binary does not exist`.
 

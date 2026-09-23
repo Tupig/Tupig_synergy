@@ -9,6 +9,8 @@ runs:
       id: unit-tests
       env:
         QT_QPA_PLATFORM: offscreen
+      # Relative to the project directory, not the repository root.
+      working-directory: synergy
       run: |
         ctest --test-dir "build/src/unittests" --output-on-failure
       shell: bash

@@ -14,6 +14,9 @@ runs:
   steps:
     - id: compute
       shell: bash
+      # The project lives in the `synergy/` subdirectory of the repository, and the
+      # paths below (extra/cmake/..., build/) are relative to it.
+      working-directory: synergy
       run: |
         # Container jobs bind-mount the workspace owned by the host user while
         # running as root, so git rejects it as dubious-owned and the SHA lookup

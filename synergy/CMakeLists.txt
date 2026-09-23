@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 # Floor is 3.20 so RHEL/Rocky 8 can configure with its distro cmake (see
-# .github/actions/install-dependencies); the upper bound only selects policy
+# ../.github/actions/install-dependencies); the upper bound only selects policy
 # defaults. Do not raise the floor without checking CI's rhel targets.
 cmake_minimum_required(VERSION 3.20...3.24)
 

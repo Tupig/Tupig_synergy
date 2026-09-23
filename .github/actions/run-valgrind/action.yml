@@ -19,6 +19,8 @@ runs:
       id: run
       env:
         QT_QPA_PLATFORM: offscreen
+      # Relative to the project directory, not the repository root.
+      working-directory: synergy
       run: |
         valgrind \
         --leak-check=full \
@@ -32,6 +34,7 @@ runs:
 
     - name: Parse output
       id: parse
+      working-directory: synergy
       run: |
         echo "summary<<EOF" >> $GITHUB_OUTPUT
         echo "$(grep -A 2 "HEAP SUMMARY:" valgrind.log)" >> $GITHUB_OUTPUT

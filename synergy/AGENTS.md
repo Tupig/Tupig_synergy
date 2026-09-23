@@ -3,7 +3,7 @@
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
 > 本文件是本仓库对**所有 AI 协作代理与贡献者**的统一约束。与 `docs/HANDOFF.md`（会话交接）、
-> `docs/consistency-audit.md`（一致性审计）、`.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
+> `docs/consistency-audit.md`（一致性审计）、`../.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
 > （问题追踪）配套使用。
 >
 > This file defines the binding rules for **all AI agents and contributors** working in this

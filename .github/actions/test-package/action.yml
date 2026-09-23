@@ -13,11 +13,15 @@ runs:
   steps:
     - name: Test package
       shell: bash
+      # Paths below are relative to the project directory, not the repository root.
+      working-directory: synergy
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
           dmg=$(ls build/synergy[-_]*.dmg | head -1)
           echo "Y" | hdiutil attach "$dmg" -nobrowse -mountpoint /tmp/synergy-dmg
-          /tmp/synergy-dmg/Synergy.app/Contents/MacOS/synergy-core --version
+          # The bundle is named after CMAKE_PROJECT_PROPER_NAME ("TuPig Synergy"),
+          # so the older "Synergy.app" probe could never exist.
+          "/tmp/synergy-dmg/TuPig Synergy.app/Contents/MacOS/synergy-core" --version
           hdiutil detach /tmp/synergy-dmg
 
         elif [ "$RUNNER_OS" == "Windows" ]; then

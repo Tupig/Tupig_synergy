@@ -5,11 +5,11 @@
 > GitHub looks for a contributing guide at this path, so this file exists to point
 > at the real one. The full guide — development workflow, code standards, review
 > process, release process and upstream sync — lives in
-> [`docs/contributing.md`](../docs/contributing.md); only that copy is maintained.
+> [`synergy/docs/contributing.md`](../synergy/docs/contributing.md); only that copy is maintained.
 >
 > GitHub 会在本路径查找贡献指南，因此本文件的作用是**指向真正的指南**。完整内容
 > —— 开发工作流、代码规范、审查流程、发布流程与上游同步 —— 位于
-> [`docs/contributing.md`](../docs/contributing.md)，仅维护那一份。
+> [`synergy/docs/contributing.md`](../synergy/docs/contributing.md)，仅维护那一份。
 
 ---
 
@@ -18,7 +18,7 @@
 Thank you for your interest in TuPig Synergy! Bug reports, feature requests,
 documentation improvements, code and translations are all welcome.
 
-Please read [`docs/contributing.md`](../docs/contributing.md) before opening an
+Please read [`synergy/docs/contributing.md`](../synergy/docs/contributing.md) before opening an
 issue or a pull request. It covers:
 
 - quick start and development workflow
@@ -34,7 +34,7 @@ Reporting:
 |---|---|
 | Bugs | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
 | Ideas and questions | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
-| Security vulnerabilities | [docs/security.md](../docs/security.md) — **not** public issues |
+| Security vulnerabilities | [synergy/docs/security.md](../synergy/docs/security.md) — **not** public issues |
 
 ---
 
@@ -43,7 +43,7 @@ Reporting:
 感谢您对 TuPig Synergy 的关注！错误报告、功能建议、文档改进、代码与翻译都欢迎。
 
 在提交 issue 或 pull request 之前，请先阅读
-[`docs/contributing.md`](../docs/contributing.md)。其中涵盖：
+[`synergy/docs/contributing.md`](../synergy/docs/contributing.md)。其中涵盖：
 
 - 快速开始与开发工作流
 - 代码规范与 Pull Request 检查清单
@@ -58,4 +58,4 @@ Reporting:
 |---|---|
 | Bug | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
 | 想法与提问 | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
-| 安全漏洞 | [docs/security.md](../docs/security.md) —— **不要**用公开 issue |
+| 安全漏洞 | [synergy/docs/security.md](../synergy/docs/security.md) —— **不要**用公开 issue |

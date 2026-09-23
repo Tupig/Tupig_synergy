@@ -8,8 +8,7 @@ SPDX-PackageDownloadLocation = "https://github.com/Tupig/TuPig_Product"
 
 [[annotations]]
 path = [
-   ".github/**"
- , ".clang-format"
+   ".clang-format"
  , ".editorconfig"
  , ".gitattributes"
  , ".gitignore"

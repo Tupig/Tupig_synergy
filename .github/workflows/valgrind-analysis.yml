@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   workflow_call:
 
+# See ci.yml for why the work is anchored in the `synergy/` subdirectory.
+defaults:
+  run:
+    working-directory: synergy
+
 jobs:
   valgrind-analysis:
     runs-on: ubuntu-latest

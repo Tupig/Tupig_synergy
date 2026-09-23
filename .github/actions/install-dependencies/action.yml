@@ -108,7 +108,7 @@ runs:
       with:
         version: ${{inputs.qt-version}}
         cache: true
-        cache-key-prefix: ${{matrix.target.os}}-${{inputs.qt-version}}
+        cache-key-prefix: ${{matrix.target.name}}-${{inputs.qt-version}}
 
     - name: Build and cache vcpkg
       if: ${{ runner.os == 'Windows' }}
@@ -130,7 +130,7 @@ runs:
             C:/ProgramData/chocolatey/bin/
             C:/ProgramData/chocolatey/lib/doxygen.install
             C:/Program*/doxygen/
-        key: cache-chocolatey${{ matrix.config.arch }}-doxygen
+        key: cache-chocolatey${{ matrix.target.arch }}-doxygen
 
     - name: Install doxygen (windows)
       if: ((runner.os == 'Windows') && (steps.cache-choco.outputs.cache-hit != 'true'))

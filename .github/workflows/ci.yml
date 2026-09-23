@@ -56,6 +56,14 @@ env:
   SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
   SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
+# The project lives in the `synergy/` subdirectory of a repository whose root also
+# holds unrelated content, so every `run` step below has to be anchored there. This
+# was implicit before - the workflows used to sit inside `synergy/`, where GitHub
+# never discovered them. Keep this in step with any move of the project directory.
+defaults:
+  run:
+    working-directory: synergy
+
 jobs:
   # Quality gate to allow PR merge, used in the branch protection rules.
   ci-passed:
@@ -269,7 +277,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-macos:
     needs: [lint-clang, get-version]
@@ -422,7 +430,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-linux:
     needs: [lint-clang, get-version]
@@ -646,7 +654,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-flatpak:
     needs: [lint-clang, get-version]
@@ -696,7 +704,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
-          path: ${{github.workspace}}/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
+          path: ${{github.workspace}}/synergy/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
 
   # Upload all packages that built to AWS S3 for distribution. Runs after the
   # build jobs on push/dispatch/release events (PRs skipped, no secrets), and
