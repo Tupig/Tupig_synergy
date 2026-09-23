@@ -10,7 +10,12 @@ pkgdesc="@CMAKE_PROJECT_DESCRIPTION@"
 url="@CMAKE_PROJECT_HOMEPAGE_URL@"
 arch=('x86_64' 'aarch64')
 license=(LicenseRef-GPL-2.0-only-WITH-OpenSSL-Exception)
-conflicts=('synergy-git' 'synergy-1.6' 'synergy1-bin' 'synergy2-bin' 'synergy3-bin' 'synergy3-beta-bin' 'synergy3-stable-bin' 'barrier' 'barrier-git' 'barrier-headless' 'barrier-headless-git' 'input-leap' 'input-leap-git' 'input-leap-headless-git' 'input-leap-headless' 'waynergy' 'waynergy-git' 'qsynergy' 'slim-synergy' 'quicksynergy' 'deskflow')
+# Conflicts with everything else that provides the same command, so a stray
+# install cannot fight over /usr/bin/synergy. The package must NOT list itself:
+# `pkgname` is `${_basename}-git`, so including 'synergy-git' here made pacman
+# refuse its own package with a self-conflict. `provides` below is what tells
+# pacman the command it satisfies, not this list.
+conflicts=('synergy' 'synergy-1.6' 'synergy1-bin' 'synergy2-bin' 'synergy3-bin' 'synergy3-beta-bin' 'synergy3-stable-bin' 'barrier' 'barrier-git' 'barrier-headless' 'barrier-headless-git' 'input-leap' 'input-leap-git' 'input-leap-headless-git' 'input-leap-headless' 'waynergy' 'waynergy-git' 'qsynergy' 'slim-synergy' 'quicksynergy' 'deskflow')
 provides=("$_basename")
 depends=(
   gcc-libs

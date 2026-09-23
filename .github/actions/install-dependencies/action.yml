@@ -139,10 +139,10 @@ runs:
 
     - name: Install Wix
       if: ${{ runner.os == 'Windows' }}
+      shell: cmd
       run: |
         dotnet tool install --global wix --version 5.0.2
         wix extension add --global WixToolset.UI.wixext/5.0.2
         wix extension add --global WixToolset.Util.wixext/5.0.2
         wix extension add --global WixToolset.Firewall.wixext/5.0.2
-      shell: pwsh
 

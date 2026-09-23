@@ -3,13 +3,13 @@ REM setup.bat
 REM One-click environment setup for TuPig Synergy.
 REM Installs CMake, MSVC Build Tools, Git via winget, then bootstraps vcpkg.
 REM Must be run as Administrator.
-REM Pure cmd batch — no PowerShell.
+REM Pure cmd batch - no PowerShell.
 
 setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   TuPig Synergy — Environment Setup
+echo   TuPig Synergy - Environment Setup
 echo ========================================
 echo.
 

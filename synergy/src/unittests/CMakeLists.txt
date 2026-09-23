@@ -93,16 +93,30 @@ endif()
 #Store all test that should be run post build in the property
 get_property(PROJECT_TESTS GLOBAL PROPERTY ${CMAKE_PROJECT_NAME}_tests)
 
+# The GUI target is named after the project: "TuPig Synergy" on Apple (the bundle
+# name) and "synergy" elsewhere - see src/apps/deskflow-gui/CMakeLists.txt:6-9.
+# This used to read "Deskflow"/"deskflow", which is not a target in this tree, so
+# the DEPENDS below named a file with no rule to make it and the build broke as
+# soon as SKIP_BUILD_TESTS was turned off - which is exactly what
+# extra/cmake/Synergy.cmake tells people to do.
 if(APPLE)
-  set(guiApp Deskflow)
+  set(guiApp ${CMAKE_PROJECT_PROPER_NAME})
 else()
-  set(guiApp deskflow)
+  set(guiApp ${CMAKE_PROJECT_NAME})
 endif()
 
 option(SKIP_BUILD_TESTS "Skip build time test" OFF)
 
 if(NOT SKIP_BUILD_TESTS)
-  add_custom_target(run_tests ALL DEPENDS ${PROJECT_TESTS} ${guiApp})
+  set(run_tests_deps ${PROJECT_TESTS})
+
+  # Only pull the GUI in when it is actually built; a GUI-less configuration has
+  # no such target and would fail here for the same reason as above.
+  if(BUILD_GUI)
+    list(APPEND run_tests_deps ${guiApp})
+  endif()
+
+  add_custom_target(run_tests ALL DEPENDS ${run_tests_deps})
   add_custom_command (
     TARGET run_tests
     POST_BUILD

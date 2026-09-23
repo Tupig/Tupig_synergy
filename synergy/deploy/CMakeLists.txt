@@ -33,10 +33,13 @@ else()
   message(STATUS "UNKNOWN System: ${CMAKE_SYSTEM_NAME}")
 endif()
 
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PACKAGE_VERSION_LABEL}-${OS_STRING}")
-
-# Synergy overlay: rewrite CPACK_PACKAGE_FILE_NAME to the release-templates scheme
-# (synergy_<version>_<os>_<arch>); kept in extra/ since upstream won't adopt it.
+# CPACK_PACKAGE_FILE_NAME is set only by the overlay below. An upstream-style
+# `"${CMAKE_PROJECT_NAME}-${PACKAGE_VERSION_LABEL}-${OS_STRING}"` assignment used to
+# sit here, but PackageFileName.cmake overwrites it unconditionally (its `_os` is
+# always non-empty on the three supported platforms), so that line - and the
+# OS_STRING/CN_STRING work feeding it in the per-platform scripts - had no effect.
+# Removed rather than left in place: a dead assignment reads like the naming scheme
+# still comes from here.
 include(${CMAKE_SOURCE_DIR}/extra/deploy/PackageFileName.cmake)
 
 message(STATUS "Package Basename: ${CPACK_PACKAGE_FILE_NAME}")

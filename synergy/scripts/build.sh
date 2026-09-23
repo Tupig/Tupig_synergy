@@ -4,7 +4,14 @@
 #
 #  One-command build for Linux and macOS.
 #
-#  Usage:  ./scripts/build.sh [release|debug]        (default: release)
+#  Usage:  ./scripts/build.sh [release]              (default: release)
+#
+#  Only Release is offered. Every vcpkg overlay triplet in this repository sets
+#  VCPKG_BUILD_TYPE release (see triplets/overlay), so a Debug build configures
+#  and compiles but cannot link the dependencies - offering it here would only
+#  produce a confusing link failure. For an instrumented or non-optimised build
+#  use the diagnostics presets (linux-asan / linux-tsan / linux-coverage) via
+#  cmake --preset directly.
 #
 #  Self-contained by design:
 #    * bootstraps the repository-local vcpkg (no VCPKG_ROOT, no global vcpkg)
@@ -22,10 +29,17 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # --- build type -------------------------------------------------------------
 BUILD_TYPE="$(printf '%s' "${1:-release}" | tr '[:upper:]' '[:lower:]')"
 case "${BUILD_TYPE}" in
-    release|debug) ;;
+    release) ;;
+    debug)
+        echo "[ERROR] A Debug build cannot link this project's dependencies."
+        echo "        Every overlay triplet sets VCPKG_BUILD_TYPE release, so only"
+        echo "        Release dependencies are available."
+        echo "        Use 'release', or a diagnostics preset such as linux-asan."
+        exit 1
+        ;;
     *)
         echo "[ERROR] Unknown build type: ${1:-}"
-        echo "        Usage: scripts/build.sh [release|debug]"
+        echo "        Usage: scripts/build.sh [release]"
         exit 1
         ;;
 esac

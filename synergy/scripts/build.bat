@@ -4,7 +4,13 @@ REM  scripts\build.bat
 REM
 REM  One-command Windows build for TuPig Synergy.
 REM
-REM  Usage:  scripts\build.bat [release|debug]        (default: release)
+REM  Usage:  scripts\build.bat [release]             (default: release)
+REM
+REM  Only Release is offered. Every vcpkg overlay triplet in this repository sets
+REM  VCPKG_BUILD_TYPE release (see triplets\overlay), so a Debug build configures
+REM  and compiles but cannot link the dependencies - offering it here would only
+REM  produce a confusing link failure. CMakePresets.json carries a
+REM  windows-msvc-debug preset if you supply your own Debug dependencies.
 REM
 REM  Self-contained by design:
 REM    * bootstraps the repository-local vcpkg (no VCPKG_ROOT, no global vcpkg)
@@ -24,10 +30,16 @@ REM --- build type -------------------------------------------------------------
 set "BUILD_TYPE=%~1"
 if "%BUILD_TYPE%"=="" set "BUILD_TYPE=release"
 if /i "%BUILD_TYPE%"=="release" set "BUILD_TYPE=release"
-if /i "%BUILD_TYPE%"=="debug"   set "BUILD_TYPE=debug"
-if /i not "%BUILD_TYPE%"=="release" if /i not "%BUILD_TYPE%"=="debug" (
+if /i "%BUILD_TYPE%"=="debug" (
+    echo [ERROR] A Debug build cannot link this project's dependencies.
+    echo         Every overlay triplet sets VCPKG_BUILD_TYPE release, so only
+    echo         Release dependencies are available.
+    echo         Use: scripts\build.bat release
+    exit /b 1
+)
+if /i not "%BUILD_TYPE%"=="release" (
     echo [ERROR] Unknown build type: %~1
-    echo         Usage: scripts\build.bat [release^|debug]
+    echo         Usage: scripts\build.bat [release]
     exit /b 1
 )
 

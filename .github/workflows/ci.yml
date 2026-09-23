@@ -174,8 +174,10 @@ jobs:
           vcpkg-triplet: ${{ matrix.target.vcpkg-triplet }}
 
       - name: Update Windows Paths
-        shell: pwsh
-        run: echo "C:\Program Files\doxygen\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: cmd
+        run: |
+          set "DOXYGEN_BIN=C:\Program Files\doxygen\bin"
+          echo %DOXYGEN_BIN%>>"%GITHUB_PATH%"
 
       - name: Configure
         run: ${{ env.CMAKE_CONFIGURE }} -G Ninja ${{ steps.get-deps.outputs.vcpkg-cmake-config }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }}
@@ -191,14 +193,8 @@ jobs:
       # with a single OTP, then restores them in-place before the package step.
       - name: Stage binaries for signing
         if: env.SYNERGY_VERSION_RELEASE == 'true'
-        shell: pwsh
-        run: |
-          $stageIn = "$env:RUNNER_TEMP\sign-stage\in"
-          $stageOut = "$env:RUNNER_TEMP\sign-stage\out"
-          New-Item -ItemType Directory -Force -Path $stageIn, $stageOut | Out-Null
-          $exes = Get-ChildItem build/bin/*.exe | Where-Object { $_.Name -notmatch 'test' }
-          if (-not $exes) { throw "no binaries found in build/bin to sign" }
-          foreach ($exe in $exes) { Copy-Item $exe.FullName "$stageIn\$($exe.Name)" -Force }
+        shell: cmd
+        run: scripts\ci-windows-signing.bat stage
 
       - name: Sign inner binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true'
@@ -219,15 +215,8 @@ jobs:
 
       - name: Restore + verify signed binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true'
-        shell: pwsh
-        run: |
-          Get-ChildItem "$env:RUNNER_TEMP\sign-stage\out\*.exe" | ForEach-Object {
-            $dst = "build/bin/$($_.Name)"
-            Copy-Item $_.FullName $dst -Force
-            $sig = Get-AuthenticodeSignature $dst
-            if ($sig.Status -ne 'Valid') { throw "signature check failed on $dst (Status: $($sig.Status))" }
-            Write-Host "OK: $dst signed by $($sig.SignerCertificate.Subject)"
-          }
+        shell: cmd
+        run: scripts\ci-windows-signing.bat restore
 
       - name: Package
         shell: bash
@@ -236,11 +225,8 @@ jobs:
       - name: Locate MSI
         if: env.SYNERGY_VERSION_RELEASE == 'true'
         id: locate-msi
-        shell: pwsh
-        run: |
-          $msi = (Get-ChildItem build/*.msi | Select-Object -First 1).FullName
-          if (-not $msi) { throw "no MSI found in build/" }
-          "path=$msi" | Out-File $env:GITHUB_OUTPUT -Append
+        shell: cmd
+        run: scripts\ci-windows-signing.bat locate-msi
 
       - name: Sign MSI
         if: env.SYNERGY_VERSION_RELEASE == 'true'
@@ -260,11 +246,10 @@ jobs:
 
       - name: Verify MSI is signed
         if: env.SYNERGY_VERSION_RELEASE == 'true'
-        shell: pwsh
-        run: |
-          $sig = Get-AuthenticodeSignature "${{ steps.locate-msi.outputs.path }}"
-          if ($sig.Status -ne 'Valid') { throw "MSI not signed (Status: $($sig.Status))" }
-          Write-Host "OK: MSI signed by $($sig.SignerCertificate.Subject)"
+        shell: cmd
+        env:
+          MSI_PATH: ${{ steps.locate-msi.outputs.path }}
+        run: scripts\ci-windows-signing.bat verify-msi
 
       - name: Tests
         uses: ./.github/actions/run-tests
@@ -534,7 +519,7 @@ jobs:
             runs-on: ubuntu-latest
             container: archlinux:latest
             like: "arch"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_DEV_DOCS=ON"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
 
           - name: "ubuntu-24.04-x86_64"
             runs-on: ubuntu-latest

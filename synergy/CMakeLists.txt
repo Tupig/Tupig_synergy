@@ -31,16 +31,26 @@ set(DESKFLOW_VERSION_MINOR ${SYNERGY_VERSION_MINOR})
 set(DESKFLOW_VERSION_PATCH ${SYNERGY_VERSION_PATCH})
 set(DESKFLOW_VERSION_TWEAK 0)
 
-# Git short SHA
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
-  find_package(Git)
-  if(GIT_FOUND)
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse --short=8 HEAD
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-      OUTPUT_VARIABLE GIT_SHA_SHORT
-      ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+# Git short SHA.
+#
+# The repository root is the PARENT of this CMakeLists - the project lives in a
+# subdirectory of a repository that also holds unrelated content. A bare
+# `EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git` test is therefore false in every real
+# clone, which silently left GIT_SHA_SHORT empty: VersionInfo.h's kVersionGitSha
+# compiled to "", and snapshot builds lost the commit from their display version.
+# Ask git itself instead, and treat a failure as "not a checkout" rather than as
+# an error.
+find_package(Git QUIET)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short=8 HEAD
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE GIT_SHA_SHORT
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE GIT_SHA_RESULT
+  )
+  if(NOT GIT_SHA_RESULT EQUAL 0)
+    set(GIT_SHA_SHORT "")
   endif()
 endif()
 

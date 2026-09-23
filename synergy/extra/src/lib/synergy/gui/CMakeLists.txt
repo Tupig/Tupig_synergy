@@ -24,12 +24,13 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 file(GLOB_RECURSE sources *.cpp)
-file(GLOB_RECURSE headers *.h)
 file(GLOB_RECURSE ui_files *.ui)
 
-if(ADD_HEADERS_TO_SOURCES)
-  list(APPEND sources ${headers})
-endif()
+# Headers are deliberately not listed: CMake does not need them to build a static
+# library, and AUTOMOC finds Q_OBJECT headers on its own. An
+# `if(ADD_HEADERS_TO_SOURCES)` branch used to guard a header glob here, but nothing
+# in the tree ever defined that variable, so the branch could not run and the glob
+# was unused.
 
 add_library(${target} STATIC ${sources} ${ui_files} ${qrc_file})
 
