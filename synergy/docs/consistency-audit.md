@@ -40,7 +40,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 |---|---|---|---|---|
 | U-01 | P0 | Runtime / build | Versioned output names vs unversioned references | **Fixed** (see below) |
 | U-02 | P0 | Packaging (Linux) | Install source paths use an identity that has no files | **Fixed** |
-| U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | Open |
+| U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | **Fixed** |
 | U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | **Fixed** |
 | U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
 | U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | **Fixed** |
@@ -122,18 +122,28 @@ id="com.symless">`, "Synergy App Ltd", the upstream homepage) and the display na
 
 | Identity | Where it appears | Role |
 |---|---|---|
-| `org.deskflow.deskflow` | `deploy/linux/*.desktop`, `.metainfo.xml`, `.png`; `deploy/linux/flatpak/org.deskflow.deskflow.yml`; `src/apps/res/deskflow.qrc` (`icons/deskflow-{dark,light}/`, `apps/64/org.deskflow.deskflow.svg`) | Upstream; CI no longer uses it |
+| `org.deskflow.deskflow` | `src/apps/res/deskflow.qrc` (`icons/deskflow-{dark,light}/`, `apps/64/org.deskflow.deskflow.svg`) | Upstream; packaging copies removed 2026-09-23 (see resolution) |
 | `com.symless.synergy` | no longer used for anything that is built (see U-02) | Was the identity CI built; now reduced to vendor attribution (U-10) |
 | `com.tupig.synergy` | `extra/cmake/Synergy.cmake:10`; `extra/deploy/linux/*`; `extra/deploy/linux/flatpak/com.tupig.synergy.yml`; `extra/src/apps/res/synergy.qrc`; `extra/src/lib/synergy/gui/` | Used by Linux install paths, the flatpak app-id, the icon theme lookup and macOS `BUNDLE_GUI_IDENTIFIER` (`src/apps/deskflow-gui/CMakeLists.txt:24`) |
 
 **Impact**: macOS and Linux ship different application identities; the Linux install path asks for one identity while only files for another exist.
 
-**Progress (2026-09-23)**: the Linux/build identity is now consistent on
-`com.tupig.synergy` (U-02). `org.deskflow.deskflow` remains in the upstream
-`deploy/linux/` tree, which CI no longer builds. Aligning that too, and deciding
-what to do with the upstream `deploy/linux/` copies, is still open.
-
-**Decision needed**: which identity is canonical, then align the other two.
+**Resolution (2026-09-23)**: canonical identity confirmed as `com.tupig.synergy`
+(the approval from A-01/A-02/U-02 session). The four upstream packaging copies
+were deleted — `deploy/linux/org.deskflow.deskflow.{desktop,metainfo.xml,png}`
+and `deploy/linux/flatpak/org.deskflow.deskflow.yml` — together with their
+orphan lint companion `deploy/linux/flatpak/ci-build-lint-exceptions.json`,
+whose only key was the deleted manifest's `org.deskflow.deskflow` app-id (CI
+actually lints `extra/deploy/linux/flatpak/ci-build-lint-exceptions.json`,
+which keeps working). The live files `deploy/linux/deploy.cmake` and
+`deploy/linux/arch/PKGBUILD.in` stay (both SPDX-headered, both wired). Updated
+`REUSE.toml` (three entries for the deleted paths removed), `docs/build.md`
+(Flatpak-manifest mentions now name only `extra/`), and the upstream-path
+comment in `extra/deploy/linux/flatpak/com.tupig.synergy.yml`. Verified with
+`rg 'org\.deskflow|deploy/linux/flatpak'`: remaining hits are only this ledger,
+the point-in-time snapshot `audit-2026-09-23.md`, `src/apps/res/deskflow.qrc`
+icon assets (out of scope — U-07) and the flatpak yml comment recording the
+deletion. Icon themes (U-07) and stale comments (U-08) remain separate items.
 
 #### U-04 — macOS bundle icon filename does not exist
 
@@ -143,7 +153,7 @@ On `APPLE`, `target = CMAKE_PROJECT_PROPER_NAME` = `"TuPig Synergy"` (`src/apps/
 
 #### U-05 — Dead macOS plist templates
 
-`extra/deploy/mac/bundle/Contents/Info.plist.in` and `PkgInfo.in` reference `@DESKFLOW_APP_NAME@`, `@DESKFLOW_APP_ID@`, `@DESKFLOW_MAC_BUNDLE_CODE@`, `@DESKFLOW_VERSION@` and `@DESKFLOW_BUILD_YEAR@`. Nothing in the tree sets those variables (the upstream changelog recorded in `deploy/linux/org.deskflow.deskflow.metainfo.xml:346-355` notes they were removed). No `configure_file` references this template either — the GUI uses `src/apps/res/deskflow.plist.in` (`src/apps/deskflow-gui/CMakeLists.txt:30`). `Info.plist.in:27` also still carries the upstream commercial copyright line.
+`extra/deploy/mac/bundle/Contents/Info.plist.in` and `PkgInfo.in` reference `@DESKFLOW_APP_NAME@`, `@DESKFLOW_APP_ID@`, `@DESKFLOW_MAC_BUNDLE_CODE@`, `@DESKFLOW_VERSION@` and `@DESKFLOW_BUILD_YEAR@`. Nothing in the tree sets those variables (the upstream changelog recorded in `deploy/linux/org.deskflow.deskflow.metainfo.xml:346-355` — since deleted with U-03 — notes they were removed). No `configure_file` references this template either — the GUI uses `src/apps/res/deskflow.plist.in` (`src/apps/deskflow-gui/CMakeLists.txt:30`). `Info.plist.in:27` also still carries the upstream commercial copyright line.
 
 **Resolution (2026-09-23)**: both templates deleted, along with the rest of the never-wired `dmgbuild` mechanism they belonged to (`dmgbuild/settings.py`, `Resources/Background.tiff`, `Resources/Volume.icns`). Verified beforehand that no `configure_file` and no build script referenced any of them. `deploy/mac/deploy.cmake` is the one live macOS packaging path.
 
@@ -372,7 +382,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 |---|---|---|---|---|
 | U-01 | P0 | 运行时 / 构建 | 产物名带版本号，引用处不带 | **已修复**（见下） |
 | U-02 | P0 | 打包 (Linux) | 安装源路径指向一个没有文件的身份 | **已修复** |
-| U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | 待处理 |
+| U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | **已修复** |
 | U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | **已修复** |
 | U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |
 | U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | **已修复** |
@@ -432,13 +442,24 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 
 | 身份 | 出现位置 | 角色 |
 |---|---|---|
-| `org.deskflow.deskflow` | `deploy/linux/*.desktop`、`.metainfo.xml`、`.png`；`deploy/linux/flatpak/org.deskflow.deskflow.yml`；`src/apps/res/deskflow.qrc`（`icons/deskflow-{dark,light}/`、`apps/64/org.deskflow.deskflow.svg`） | 上游；CI 已不再使用 |
-| `com.symless.synergy` | `extra/deploy/linux/*`；`extra/deploy/linux/flatpak/com.symless.synergy.yml`；`.github/workflows/ci.yml:678,681,687`；`extra/src/apps/res/synergy.qrc:7-10` | **上游商业厂商** —— 但 CI 实际构建的就是它 |
-| `com.tupig.synergy` | `extra/cmake/Synergy.cmake:10` | 被 `deploy/linux/deploy.cmake` 的安装路径和 macOS `BUNDLE_GUI_IDENTIFIER`（`src/apps/deskflow-gui/CMakeLists.txt:24`）使用 |
+| `org.deskflow.deskflow` | `src/apps/res/deskflow.qrc`（`icons/deskflow-{dark,light}/`、`apps/64/org.deskflow.deskflow.svg`） | 上游；打包副本已于 2026-09-23 删除（见下方决议） |
+| `com.symless.synergy` | 已不用于任何构建产物（见 U-02） | 曾是 CI 构建的身份；现仅剩厂商署名（U-10） |
+| `com.tupig.synergy` | `extra/cmake/Synergy.cmake:10`；`extra/deploy/linux/*`；`extra/deploy/linux/flatpak/com.tupig.synergy.yml`；`extra/src/apps/res/synergy.qrc`；`extra/src/lib/synergy/gui/` | 被 Linux 安装路径、flatpak app-id、图标主题查找与 macOS `BUNDLE_GUI_IDENTIFIER`（`src/apps/deskflow-gui/CMakeLists.txt:24`）使用 |
 
 **影响**：macOS 与 Linux 发布出不同的应用身份；Linux 安装路径要的身份与磁盘上存在的文件不是同一个。
 
-**需要决策**：哪个身份是权威，再让另外两个对齐。
+**决议（2026-09-23）**：权威身份定为 `com.tupig.synergy`。已删除 4 个上游打包副本 ——
+`deploy/linux/org.deskflow.deskflow.{desktop,metainfo.xml,png}` 与
+`deploy/linux/flatpak/org.deskflow.deskflow.yml`，连同其孤儿 lint 伴随文件
+`deploy/linux/flatpak/ci-build-lint-exceptions.json`（唯一 key 即被删清单的
+`org.deskflow.deskflow` app-id；CI 实际 lint 的
+`extra/deploy/linux/flatpak/ci-build-lint-exceptions.json` 不受影响）。
+活文件 `deploy/linux/deploy.cmake`、`deploy/linux/arch/PKGBUILD.in` 保留（均带
+SPDX 头且被构建引用）。同步更新 `REUSE.toml`（移除 3 条已删路径）、`docs/build.md`
+（Flatpak 清单提及现仅指向 `extra/`）及 `extra/deploy/linux/flatpak/com.tupig.synergy.yml`
+的上游路径注释。`rg 'org\.deskflow|deploy/linux/flatpak'` 复核：剩余命中仅限本台账、
+时点快照 `audit-2026-09-23.md`、`src/apps/res/deskflow.qrc` 图标资源（U-07 范围外）与
+记录本次删除的 flatpak yml 注释。图标主题（U-07）与陈旧注释（U-08）仍为独立未决项。
 
 #### U-04 — macOS Bundle 图标文件名不存在
 
@@ -446,7 +467,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 
 #### U-05 — macOS 死模板
 
-`extra/deploy/mac/bundle/Contents/Info.plist.in` 与 `PkgInfo.in` 引用 `@DESKFLOW_APP_NAME@`、`@DESKFLOW_APP_ID@`、`@DESKFLOW_MAC_BUNDLE_CODE@`、`@DESKFLOW_VERSION@`、`@DESKFLOW_BUILD_YEAR@`。全仓库没有任何地方定义这些变量（`deploy/linux/org.deskflow.deskflow.metainfo.xml:346-355` 记录的上游 changelog 说明它们已被删除）。也没有任何 `configure_file` 引用该模板 —— GUI 用的是 `src/apps/res/deskflow.plist.in`（`src/apps/deskflow-gui/CMakeLists.txt:30`）。`Info.plist.in:27` 还留着上游商业厂商的版权行。
+`extra/deploy/mac/bundle/Contents/Info.plist.in` 与 `PkgInfo.in` 引用 `@DESKFLOW_APP_NAME@`、`@DESKFLOW_APP_ID@`、`@DESKFLOW_MAC_BUNDLE_CODE@`、`@DESKFLOW_VERSION@`、`@DESKFLOW_BUILD_YEAR@`。全仓库没有任何地方定义这些变量（该上游 changelog 记录于 `deploy/linux/org.deskflow.deskflow.metainfo.xml:346-355` —— 该文件已随 U-03 删除 —— 说明它们已被删除）。也没有任何 `configure_file` 引用该模板 —— GUI 用的是 `src/apps/res/deskflow.plist.in`（`src/apps/deskflow-gui/CMakeLists.txt:30`）。`Info.plist.in:27` 还留着上游商业厂商的版权行。
 
 #### U-06 — PKGBUILD 与自己冲突
 

@@ -4,12 +4,13 @@
 # Synergy-branded Flatpak manifest. Lives under extra/ so the build identifies
 # itself to the Flatpak runtime by the project's own reverse-DNS id
 # (com.tupig.synergy, matching CMAKE_PROJECT_REV_FQDN), not Deskflow's.
-# The build modules (Jinja2, libei, libportal) are unchanged from the
-# upstream manifest at deploy/linux/flatpak/org.deskflow.deskflow.yml — only
-# the brand surface (app-id, command, the project module's source path) differs.
+# The build modules (Jinja2, libei, libportal) come from the former upstream
+# manifest (deploy/linux/flatpak/org.deskflow.deskflow.yml, deleted with U-03);
+# only the brand surface (app-id, command, the project module's source path)
+# differs.
 #
-# Source path is relative to this file's location, so it's one ../ deeper than
-# the upstream manifest's: extra/deploy/linux/flatpak → ../../../../ = repo root.
+# Source path is relative to this file's location: extra/deploy/linux/flatpak
+# -> ../../../../ = repo root (one ../ deeper than the deleted upstream copy).
 
 app-id: com.tupig.synergy
 runtime: org.kde.Platform

@@ -238,6 +238,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-23 | 全面审计（4 轮）：新增 A-01～A-11 清单（§2.4），完整报告落盘 `synergy/docs/audit-2026-09-23.md`；U 计数修正 19→21；修复 §2.3 失效相对链接（A-11） | opencode |
 | 2026-09-23 | 待补登：09-23 已合入提交（U-02/U-04~U-07/U-12/U-20 修复、CRT 按 triplet 解析、`.github` 迁仓库根、签名 .bat 化等 15+ 笔）——即 A-04 剩余部分 | opencode |
 | 2026-09-23 | A-09 关闭：原未提交 WIP 已随 `fe1f4fe37`（Windows IDropTarget）、`91960506f`（Outbound 发送）、`e922e1639`（macOS 路径读取）提交，`git status --porcelain` 仅剩本文档与审计报告 | opencode |
+| 2026-09-23 | U-03 关闭：删除 org.deskflow 打包残留 4 文件（`deploy/linux/org.deskflow.{desktop,metainfo.xml,png}`、`flatpak/org.deskflow.deskflow.yml`）及孤儿 lint 伴随 json（唯一 key 即被删清单 app-id）；REUSE.toml/build.md/flatpak yml 注释同步，身份统一 `com.tupig.synergy` | opencode |
 
 ---
 
