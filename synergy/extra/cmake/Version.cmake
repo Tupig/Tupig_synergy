@@ -4,6 +4,7 @@
 # Synergy version: single source of truth, shared between the build (root
 # CMakeLists.txt → Synergy.cmake) and CI (SaveVersion.cmake run via cmake -P).
 # Bump these constants to release a new version.
+# Keep vcpkg.json "version-string" equal to MAJOR.MINOR.PATCH (CI checks this).
 set(SYNERGY_VERSION_MAJOR 1)
 set(SYNERGY_VERSION_MINOR 21)
 set(SYNERGY_VERSION_PATCH 2)

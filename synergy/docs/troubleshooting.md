@@ -317,7 +317,7 @@ checkPeerFingerprints = false  # for self-signed
 
 **Minimal bug report template:**
 ```markdown
-**OS/Version**: Windows 11 23H2 / TuPig Synergy 1.21.2
+**OS/Version**: Windows 11 23H2 / TuPig Synergy (see `extra/cmake/Version.cmake`)
 **Role**: Server (Desktop) ↔ Client (Laptop)
 **Config**: [paste relevant config sections]
 **Logs**: [attach synergy-debug.log]
@@ -636,7 +636,7 @@ checkPeerFingerprints = false  # 自签名时
 
 **最小 Bug 报告模板：**
 ```markdown
-**OS/版本**: Windows 11 23H2 / TuPig Synergy 1.21.2
+**OS/版本**: Windows 11 23H2 / TuPig Synergy（见 `extra/cmake/Version.cmake`）
 **角色**: 服务端(台式机) ↔ 客户端(笔记本)
 **配置**: [粘贴相关配置节]
 **日志**: [附件 synergy-debug.log]

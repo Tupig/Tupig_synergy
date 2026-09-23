@@ -124,6 +124,9 @@ jobs:
         id: get-version
         uses: ./.github/actions/get-version
 
+      - name: Check vcpkg version matches Version.cmake
+        run: python3 scripts/check-version-consistency.py
+
   build-windows:
     needs: [lint-clang, get-version]
     if: ${{ inputs.platform == '' || inputs.platform == 'windows' }}

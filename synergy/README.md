@@ -207,8 +207,8 @@ autoConnect = true
 
 <div align="center">
 
-本项目遵循 **GNU General Public License v2.0** — 详见 [LICENSE](LICENSE)  
-This project is licensed under the **GNU General Public License v2.0** — see [LICENSE](LICENSE)
+本项目遵循 **GPL-2.0-only WITH LicenseRef-OpenSSL-Exception** — 详见 [LICENSE](LICENSE) 与 [LICENSES/LicenseRef-OpenSSL-Exception.txt](LICENSES/LicenseRef-OpenSSL-Exception.txt)  
+This project is licensed under **GPL-2.0-only WITH LicenseRef-OpenSSL-Exception** — see [LICENSE](LICENSE) and [LICENSES/LicenseRef-OpenSSL-Exception.txt](LICENSES/LicenseRef-OpenSSL-Exception.txt)
 
 </div>
 

@@ -7,7 +7,7 @@
 
 #include "net/IDataSocket.h"
 
-#include <assert.h>
+#include "net/SocketException.h"
 
 //
 // IDataSocket
@@ -15,13 +15,12 @@
 
 void IDataSocket::close()
 {
-  // this is here to work around a VC++6 bug.  see the header file.
-  assert(0 && "bad call");
+  // Default bodies exist so the class can be used as a concrete base on old
+  // compilers; calling them means a derived class failed to override.
+  throw SocketException(QStringLiteral("IDataSocket::close called on abstract base"));
 }
 
 void *IDataSocket::getEventTarget() const
 {
-  // this is here to work around a VC++6 bug.  see the header file.
-  assert(0 && "bad call");
-  return nullptr;
+  throw SocketException(QStringLiteral("IDataSocket::getEventTarget called on abstract base"));
 }

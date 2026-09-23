@@ -5,7 +5,7 @@
   "builtin-baseline": "5f96cd15fd745122cf27e0524606d6c1efc5fd07",
   "description": "Cross-platform keyboard and mouse sharing utility",
   "homepage": "https://github.com/Tupig/TuPig_Product",
-  "license": "GPL-2.0-only",
+  "license": "GPL-2.0-only WITH LicenseRef-OpenSSL-Exception",
   "supports": "x64 | arm64",
   "dependencies": [
     {

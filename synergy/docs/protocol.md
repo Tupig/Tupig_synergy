@@ -35,7 +35,7 @@ The TuPig Synergy protocol enables keyboard and mouse sharing between multiple c
 | 1.7 | 2021 | Secure input notifications |
 | 1.8 | 2025 | Language synchronization |
 
-**Current**: v1.8 (TuPig Synergy 1.21.2)
+**Current**: v1.8 (product version from `extra/cmake/Version.cmake`)
 
 ---
 
@@ -252,7 +252,7 @@ TuPig Synergy 协议实现多台计算机间通过 TCP/IP 共享键盘和鼠标�
 | 1.7 | 2021 | 安全输入通知 |
 | 1.8 | 2025 | 语言同步 |
 
-**当前版本**：v1.8 (TuPig Synergy 1.21.2)
+**当前版本**：v1.8（产品版本见 `extra/cmake/Version.cmake`）
 
 ---
 

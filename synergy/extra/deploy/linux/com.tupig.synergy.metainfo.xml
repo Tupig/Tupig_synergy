@@ -6,8 +6,8 @@
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-2.0-only</project_license>
 	<name>Synergy</name>
-	<developer id="com.symless">
-		<name>Synergy App Ltd</name>
+	<developer id="com.tupig">
+		<name>TuPig</name>
 	</developer>
 	<summary>Share one keyboard and mouse between computers</summary>
 	<description>
@@ -17,7 +17,7 @@
 		</p>
 	</description>
 	<launchable type="desktop-id">com.tupig.synergy.desktop</launchable>
-	<url type="homepage">https://symless.com/synergy</url>
+	<url type="homepage">https://github.com/Tupig/TuPig_Product</url>
 	<provides>
 		<id>com.tupig.synergy.desktop</id>
 	</provides>
@@ -35,7 +35,7 @@
 	</branding>
 	<content_rating type="oars-1.0" />
 	<releases>
-		<release version="1.21.0" date="2026-06-02" urgency="medium">
+		<release version="1.21.2" date="2026-09-23" urgency="medium">
 			<description>
 				<p>
 					This release folds a large number of upstream improvements into Synergy from Deskflow,
