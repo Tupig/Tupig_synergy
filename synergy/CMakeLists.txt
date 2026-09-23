@@ -126,38 +126,94 @@ if(NOT BUILD_ARCHITECTURE MATCHES "^(x64|x86_64|arm64|aarch64)$")
   )
 endif()
 
-# AddressSanitizer must be decided before the MSVC runtime block below, because
-# MSVC ASan requires the *dynamic* CRT (/MD) and therefore cannot be combined
-# with the static-CRT triplet used for release builds.
+# AddressSanitizer. MSVC's ASan runtime (clang_rt.asan_dynamic-*.dll) cannot link
+# against a static CRT, so an ASan build needs a dynamic-CRT triplet - see the
+# runtime block below, which enforces that.
 option(SYNERGY_ENABLE_ASAN "Build with AddressSanitizer (requires a dynamic-CRT triplet)" OFF)
 
-# MSVC: static CRT (/MT) comes from the vcpkg x64-windows-static triplet, but
-# ArchMiscWindows::guardRuntimeVersion() still compares the running CRT against
-# REQUIRED_MSVC_RUNTIME_*, and Constants.h.in substitutes those into
-# kWindowsRuntimeMajor/Minor. Leaving them unset yields an empty initializer and
-# a hard compile error, so bind them here from the compiler toolset
-# (cl major 19 maps to CRT major 14; the minor matches, e.g. 19.44 -> 14.44).
+# MSVC: the CRT must match the vcpkg triplet's linkage (/MT with a static
+# triplet's dependencies, /MD with a dynamic one) or the link fails with
+# LNK2038 "RuntimeLibrary mismatch". It is not enough to leave the choice to
+# vcpkg: its buildsystems/vcpkg.cmake only includes the platform toolchain when
+# VCPKG_CHAINLOAD_TOOLCHAIN_FILE is set (scripts/buildsystems/vcpkg.cmake:209)
+# and never defaults that variable, so the Windows toolchain - the file that
+# would derive CMAKE_MSVC_RUNTIME_LIBRARY from VCPKG_CRT_LINKAGE - does not run
+# on a plain Windows configure. Measured: with a static triplet and no override
+# here, CMake's own default (/MD) is used and the build cannot link.
+#
+# So the linkage is resolved here from the triplet, preferring the most
+# authoritative source available, and the outcome is reported so a surprise is
+# visible in the configure log. The ASan option below depends on this block.
 if(MSVC)
-  # 运行库必须与 vcpkg triplet 一致，否则出现 LNK2038 “RuntimeLibrary 不匹配”：
-  # 静态 triplet（x64-windows-static）的依赖用 /MT，动态 triplet（x64-windows）用 /MD。
-  # CMake 对 MSVC 的默认值是 MultiThreaded...DLL，因此：
-  #   - Release（静态 triplet）必须显式改为 MultiThreaded，仅从 CMAKE_CXX_FLAGS_RELEASE
-  #     删除 /MD 无效，因为该默认值仍会注入 /MD；
-  #   - ASan 构建必须保留动态 CRT —— MSVC ASan 的运行库是 clang_rt.asan_dynamic-*.dll，
-  #     不支持 /MT，故此时不能改用静态 CRT。
-  # 此变量需在创建目标之前设置，以便各子目录中的目标继承。
-  if(SYNERGY_ENABLE_ASAN)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    message(STATUS "ASan enabled: using dynamic CRT (/MD) as required by MSVC AddressSanitizer")
-  else()
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  set(_vcpkg_crt_linkage "${VCPKG_CRT_LINKAGE}")
+  set(_crt_linkage_source "VCPKG_CRT_LINKAGE")
+
+  if(NOT _vcpkg_crt_linkage)
+    # Look for the triplet file: overlay directories first (that is vcpkg's own
+    # search order), then the checkout's builtin triplets.
+    set(_crt_triplet_dirs ${VCPKG_OVERLAY_TRIPLETS})
+    if(CMAKE_TOOLCHAIN_FILE)
+      get_filename_component(_vcpkg_root "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)   # .../scripts/buildsystems
+      get_filename_component(_vcpkg_root "${_vcpkg_root}" DIRECTORY)            # .../scripts
+      get_filename_component(_vcpkg_root "${_vcpkg_root}" DIRECTORY)            # .../<vcpkg>
+      list(APPEND _crt_triplet_dirs "${_vcpkg_root}/triplets")
+    endif()
+
+    foreach(_dir IN LISTS _crt_triplet_dirs)
+      set(_triplet_file "${_dir}/${VCPKG_TARGET_TRIPLET}.cmake")
+      if(EXISTS "${_triplet_file}")
+        file(STRINGS "${_triplet_file}" _crt_setting REGEX "VCPKG_CRT_LINKAGE")
+        string(REGEX MATCH "(static|dynamic)" _vcpkg_crt_linkage "${_crt_setting}")
+        if(_vcpkg_crt_linkage)
+          set(_crt_linkage_source "${_triplet_file}")
+          break()
+        endif()
+      endif()
+    endforeach()
   endif()
 
+  if(NOT _vcpkg_crt_linkage)
+    # Last resort: vcpkg's naming convention. Its "-static" suffix means both
+    # static libraries and a static CRT, which is what every triplet in
+    # triplets/overlay uses; anything else is dynamic.
+    if(VCPKG_TARGET_TRIPLET MATCHES "-static$")
+      set(_vcpkg_crt_linkage "static")
+    else()
+      set(_vcpkg_crt_linkage "dynamic")
+    endif()
+    set(_crt_linkage_source "the '-static' triplet naming convention")
+  endif()
+
+  if(_vcpkg_crt_linkage STREQUAL "static")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set(_crt_form "/MT")
+  else()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    set(_crt_form "/MD")
+  endif()
+  message(STATUS "MSVC runtime: ${_crt_form} (${_vcpkg_crt_linkage} CRT, from ${_crt_linkage_source})")
+
+  # ASan genuinely constrains the CRT: clang_rt.asan_dynamic-*.dll cannot link
+  # against a static CRT. Now that the linkage is known, reject the impossible
+  # combination here instead of leaving a puzzling link error.
+  if(SYNERGY_ENABLE_ASAN AND _vcpkg_crt_linkage STREQUAL "static")
+    message(FATAL_ERROR
+      "MSVC AddressSanitizer requires a dynamic-CRT triplet, but triplet "
+      "'${VCPKG_TARGET_TRIPLET}' uses a static CRT (/MT). Configure with a dynamic "
+      "triplet - the windows-msvc-asan preset uses x64-windows."
+    )
+  endif()
+
+  # ArchMiscWindows::guardRuntimeVersion() compares the running CRT against
+  # REQUIRED_MSVC_RUNTIME_*, and Constants.h.in substitutes those into
+  # kWindowsRuntimeMajor/Minor. Leaving them unset yields an empty initializer
+  # and a hard compile error, so bind them here from the compiler toolset
+  # (cl major 19 maps to CRT major 14; the minor matches, e.g. 19.44 -> 14.44).
   set(REQUIRED_MSVC_RUNTIME_MAJOR 14)
   if(CMAKE_CXX_COMPILER_VERSION MATCHES "^[0-9]+\\.([0-9]+)")
     set(REQUIRED_MSVC_RUNTIME_MINOR "${CMAKE_MATCH_1}")
   endif()
-  message(STATUS "MSVC runtime: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
+  message(STATUS "MSVC runtime version: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
 endif()
 
 # ---------------------------------------------------------------------------
