@@ -60,6 +60,8 @@ if(WIN32)
     win32/MSWindowsSession.h
     win32/MSWindowsWatchdog.cpp
     win32/MSWindowsWatchdog.h
+    win32/Win32DropData.cpp
+    win32/Win32DropData.h
   )
 elseif(APPLE)
   set(PLATFORM_SOURCES
