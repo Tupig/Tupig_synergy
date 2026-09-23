@@ -27,6 +27,17 @@ private Q_SLOTS:
   void rateLimitWindowSlides();
   void rateLimitIsPerKey();
   void setMaxEventsPerSecondRejectsZero();
+  void blockedCombinationsDefaultToEmpty();
+  void blockedCombinationMatchesExactKeyAndModifiers();
+  void blockedCombinationToleratesLockModifiers();
+  void blockedCombinationDoesNotMatchWrongModifiers();
+  void blockedCombinationIgnoresUnrelatedKeys();
+  void blockedCombinationWithZeroMaskBlocksKeyAlone();
+  void parseBlockedCombinationAcceptsHexAndDecimal();
+  void parseBlockedCombinationAcceptsMissingMask();
+  void parseBlockedCombinationSkipsMalformedEntries();
+  void parseBlockedCombinationRejectsUndefinedModifierBits();
+  void parseBlockedCombinationKeepsValidEntriesAroundBadOnes();
 
 private:
   Log m_log;

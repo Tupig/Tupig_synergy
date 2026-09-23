@@ -97,6 +97,7 @@ public:
     inline static const auto Certificate = QStringLiteral("security/certificate");
     inline static const auto KeySize = QStringLiteral("security/keySize");
     inline static const auto TlsEnabled = QStringLiteral("security/tlsEnabled");
+    inline static const auto BlockedKeyCombos = QStringLiteral("security/blockedKeyCombos");
   };
   struct Server
   {
@@ -234,6 +235,7 @@ private:
     , Settings::Security::CheckPeers
     , Settings::Security::KeySize
     , Settings::Security::TlsEnabled
+    , Settings::Security::BlockedKeyCombos
     , Settings::Server::ClipboardSize
     , Settings::Server::ExternalConfig
     , Settings::Server::ExternalConfigFile

@@ -161,4 +161,121 @@ void InputValidatorTests::setMaxEventsPerSecondRejectsZero()
   QCOMPARE(validator.maxEventsPerSecond(), static_cast<uint32_t>(10));
 }
 
+void InputValidatorTests::blockedCombinationsDefaultToEmpty()
+{
+  // The whole point of the opt-in design: a fresh validator must intercept
+  // nothing, so Ctrl+Alt+Del keeps reaching the OS and UAC still works.
+  InputValidator validator;
+
+  QCOMPARE(validator.blockedCombinationCount(), static_cast<size_t>(0));
+  QVERIFY(!validator.isBlockedCombination(kKeyDelete, KeyModifierControl | KeyModifierAlt));
+}
+
+void InputValidatorTests::blockedCombinationMatchesExactKeyAndModifiers()
+{
+  InputValidator validator;
+  validator.setBlockedCombinations({{kKeyDelete, KeyModifierControl | KeyModifierAlt}});
+
+  QCOMPARE(validator.blockedCombinationCount(), static_cast<size_t>(1));
+  QVERIFY(validator.isBlockedCombination(kKeyDelete, KeyModifierControl | KeyModifierAlt));
+}
+
+void InputValidatorTests::blockedCombinationToleratesLockModifiers()
+{
+  // CapsLock/NumLock are held for reasons unrelated to the combination, so a
+  // user who has them on must not silently lose the block.
+  InputValidator validator;
+  validator.setBlockedCombinations({{kKeyDelete, KeyModifierControl | KeyModifierAlt}});
+
+  QVERIFY(validator.isBlockedCombination(
+      kKeyDelete, KeyModifierControl | KeyModifierAlt | KeyModifierCapsLock
+  ));
+}
+
+void InputValidatorTests::blockedCombinationDoesNotMatchWrongModifiers()
+{
+  InputValidator validator;
+  validator.setBlockedCombinations({{kKeyDelete, KeyModifierControl | KeyModifierAlt}});
+
+  // Only one of the two required modifiers held: must not match.
+  QVERIFY(!validator.isBlockedCombination(kKeyDelete, KeyModifierControl));
+  QVERIFY(!validator.isBlockedCombination(kKeyDelete, KeyModifierAlt));
+  QVERIFY(!validator.isBlockedCombination(kKeyDelete, 0));
+}
+
+void InputValidatorTests::blockedCombinationIgnoresUnrelatedKeys()
+{
+  InputValidator validator;
+  validator.setBlockedCombinations({{kKeyDelete, KeyModifierControl | KeyModifierAlt}});
+
+  QVERIFY(!validator.isBlockedCombination(kKeyBackSpace, KeyModifierControl | KeyModifierAlt));
+}
+
+void InputValidatorTests::blockedCombinationWithZeroMaskBlocksKeyAlone()
+{
+  // An omitted mask means "this key whatever the modifiers are", which is how a
+  // user blocks a key outright.
+  InputValidator validator;
+  validator.setBlockedCombinations({{kKeySuper_L, 0}});
+
+  QVERIFY(validator.isBlockedCombination(kKeySuper_L, 0));
+  QVERIFY(validator.isBlockedCombination(kKeySuper_L, KeyModifierShift));
+  QVERIFY(!validator.isBlockedCombination(kKeyDelete, KeyModifierShift));
+}
+
+void InputValidatorTests::parseBlockedCombinationAcceptsHexAndDecimal()
+{
+  const auto combinations = InputValidator::parseBlockedCombinations({"0xEFFF:0x0005", "67:5"});
+
+  QCOMPARE(combinations.size(), static_cast<size_t>(2));
+  QCOMPARE(combinations[0].key, static_cast<KeyID>(0xEFFF));
+  QCOMPARE(combinations[0].mask, static_cast<KeyModifierMask>(0x0005));
+  QCOMPARE(combinations[1].key, static_cast<KeyID>(67));
+  QCOMPARE(combinations[1].mask, static_cast<KeyModifierMask>(5));
+}
+
+void InputValidatorTests::parseBlockedCombinationAcceptsMissingMask()
+{
+  const auto combinations = InputValidator::parseBlockedCombinations({"0xEFFF"});
+
+  QCOMPARE(combinations.size(), static_cast<size_t>(1));
+  QCOMPARE(combinations[0].key, static_cast<KeyID>(0xEFFF));
+  QCOMPARE(combinations[0].mask, static_cast<KeyModifierMask>(0));
+}
+
+void InputValidatorTests::parseBlockedCombinationSkipsMalformedEntries()
+{
+  // Fail safe: nothing in this list is usable, so nothing may be blocked.
+  const auto combinations = InputValidator::parseBlockedCombinations({
+      "",
+      "   ",
+      "not-a-number",
+      ":",
+      "0x1:0x2:0x3",
+      "0x10000:0",
+      "0x1:0x8000",
+  });
+
+  QCOMPARE(combinations.size(), static_cast<size_t>(0));
+}
+
+void InputValidatorTests::parseBlockedCombinationRejectsUndefinedModifierBits()
+{
+  // 0x8000 is not a modifier in KeyTypes.h; accepting it would create a
+  // combination that can never match, hiding a typo from the user.
+  const auto combinations = InputValidator::parseBlockedCombinations({"0x1:0x8000"});
+
+  QCOMPARE(combinations.size(), static_cast<size_t>(0));
+}
+
+void InputValidatorTests::parseBlockedCombinationKeepsValidEntriesAroundBadOnes()
+{
+  const auto combinations =
+      InputValidator::parseBlockedCombinations({"0xEFFF:0x5", "garbage", "0x0041:0x1"});
+
+  QCOMPARE(combinations.size(), static_cast<size_t>(2));
+  QCOMPARE(combinations[0].key, static_cast<KeyID>(0xEFFF));
+  QCOMPARE(combinations[1].key, static_cast<KeyID>(0x0041));
+}
+
 QTEST_MAIN(InputValidatorTests)

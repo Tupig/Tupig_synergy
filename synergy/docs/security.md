@@ -30,16 +30,25 @@ If you discover a security vulnerability within TuPig Synergy, please send an em
 - Keyboard and mouse events are validated before being processed
 - Rate limiting prevents flooding attacks
 - Modifier masks are checked against the defined bit set, and undefined bits are cleared
+- Key combinations can be intercepted, but only those listed in
+  `security/blockedKeyCombos` — the list is **empty by default**
 
 > Key and button *ranges* are deliberately not re-checked: the wire format already
 > bounds them, and several legal values look "out of range" (key id 0, X11 scroll
-> buttons 254/255), so a hand-written range check would drop real input. There is
-> also **no** interception of dangerous key combinations — `Ctrl+Alt+Del` has to
-> reach the OS to keep secure attention sequence (SAS) forwarding working.
+> buttons 254/255), so a hand-written range check would drop real input.
+>
+> Combination interception is opt-in because the interesting combinations are the
+> ones the OS needs to see. Blocking `Ctrl+Alt+Del` on Windows stops UAC prompts
+> and the login screen from responding, so it is never blocked unless you ask for
+> it; doing so logs a warning at startup. Entries are written as `key[:mask]`
+> (`0xEFFF:0x0005` is Ctrl+Alt+Delete); a malformed entry is skipped with a
+> warning rather than failing open into blocking something unintended.
 
-键盘和鼠标事件在处理前会进行验证。频率限制防止洪泛攻击。修饰键掩码会对照已定义的位集合校验，未定义的位会被清除。
+键盘和鼠标事件在处理前会进行验证。频率限制防止洪泛攻击。修饰键掩码会对照已定义的位集合校验，未定义的位会被清除。键组合可被拦截，但**仅限** `security/blockedKeyCombos` 中列出的项 —— 该列表**默认为空**。
 
-> 键码与按键的**范围****不**做重复校验：线路格式本身已限定其范围，且若干合法值看起来像"越界"（键码 0、X11 滚轮键 254/255），手写范围检查反而会丢弃真实输入。另外**不**拦截危险组合键 —— `Ctrl+Alt+Del` 必须能到达操作系统，否则安全注意序列（SAS）转发会失效。
+> 键码与按键的**范围****不**做重复校验：线路格式本身已限定其范围，且若干合法值看起来像"越界"（键码 0、X11 滚轮键 254/255），手写范围检查反而会丢弃真实输入。
+>
+> 组合键拦截采用**显式启用**的设计，因为值得拦截的组合恰恰是操作系统需要看到的那些。在 Windows 上拦截 `Ctrl+Alt+Del` 会导致 UAC 提示与登录界面无响应，因此除非你主动要求，否则永不拦截；一旦配置，启动时会记录警告。条目格式为 `key[:mask]`（`0xEFFF:0x0005` 即 Ctrl+Alt+Delete）；格式错误的条目会被跳过并告警，而不会"失败开放"成拦截了意料之外的组合。
 
 ### Protocol Security / 协议安全
 

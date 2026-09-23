@@ -18,11 +18,14 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
+#include "common/Settings.h"
 #include "ipc/CoreIpc.h"
 #include "io/IStream.h"
 
 #include <chrono>
 #include <cstring>
+#include <string>
+#include <vector>
 
 //
 // ServerProxy
@@ -47,6 +50,20 @@ ServerProxy::ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue 
   m_events->addHandler(EventTypes::ClipboardSending, this, [this](const auto &e) {
     ClipboardChunk::send(m_stream, e.getDataObject());
   });
+
+  // Opt-in interception of key combinations. Empty unless the user lists some,
+  // so nothing is intercepted by default (see InputValidator).
+  const auto blocked = Settings::value(Settings::Security::BlockedKeyCombos).toStringList();
+  if (!blocked.isEmpty()) {
+    std::vector<std::string> entries;
+    entries.reserve(static_cast<size_t>(blocked.size()));
+    for (const auto &entry : blocked) {
+      entries.push_back(entry.toStdString());
+    }
+
+    m_inputValidator.setBlockedCombinations(InputValidator::parseBlockedCombinations(entries));
+    LOG_INFO("blocked key combinations configured: %zu", m_inputValidator.blockedCombinationCount());
+  }
 
   // send heartbeat
   setKeepAliveRate(kKeepAliveRate);
@@ -591,6 +608,15 @@ void ServerProxy::keyDown(uint16_t id, uint16_t mask, uint16_t button, const std
     return;
   }
 
+  // Opt-in interception, checked after sanitizing so the mask tested is the one
+  // that would actually be applied. Nothing is configured by default.
+  if (m_inputValidator.isBlockedCombination(
+          static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask)
+      )) {
+    LOG_INFO("key down id=0x%04x mask=0x%04x blocked by configuration", id, cleanMask);
+    return;
+  }
+
   // translate
   KeyID id2 = translateKey(static_cast<KeyID>(id));
   KeyModifierMask mask2 = translateModifierMask(static_cast<KeyModifierMask>(cleanMask));
@@ -626,6 +652,15 @@ void ServerProxy::keyRepeat()
   }
 
   if (m_inputValidator.isRateLimited(static_cast<KeyID>(id), std::chrono::steady_clock::now())) {
+    return;
+  }
+
+  // Blocked repeats are dropped for the same reason as blocked presses: the key
+  // never reached the local machine, so repeating it would be inconsistent.
+  if (m_inputValidator.isBlockedCombination(
+          static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask)
+      )) {
+    LOG_INFO("key repeat id=0x%04x mask=0x%04x blocked by configuration", id, cleanMask);
     return;
   }
 
