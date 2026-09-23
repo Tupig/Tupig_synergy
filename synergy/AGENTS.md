@@ -68,7 +68,7 @@ from source, which is hours of CI time per leg, while the manifest remains the s
 release builds and for every local build. The exception carries three requirements:
 
 1. The CI Qt version must be **>= the project floor** (`REQUIRED_QT_VERSION` in `CMakeLists.txt`,
-   currently 6.4.0, with a 5.13 fallback for RHEL 8). CI currently pins 6.9.3 / 6.10.3 / 6.11.1.
+   currently 6.7.0, with a 5.13 fallback for RHEL 8). CI currently pins 6.9.3 / 6.10.3 / 6.11.1.
    When bumping it, re-check the floor rather than assuming.
 2. CI's Qt is **shared**, whereas the manifest builds Qt **static**. So CI does not exercise the
    static-Qt path that releases ship. Treat a green CI as evidence about *logic*, not about the
@@ -171,7 +171,7 @@ release builds and for every local build. The exception carries three requiremen
 因此 CI 的 Qt **不来自** `vcpkg.json`。这是有意为之：vcpkg 从源码构建 Qt，每条 CI 腿要数小时，而
 manifest 仍是发布构建与所有本地构建的唯一真源。该例外附带三项要求：
 
-1. CI 所用 Qt 版本必须 **≥ 项目下限**（`CMakeLists.txt` 的 `REQUIRED_QT_VERSION`，当前 6.4.0，
+1. CI 所用 Qt 版本必须 **≥ 项目下限**（`CMakeLists.txt` 的 `REQUIRED_QT_VERSION`，当前 6.7.0，
    RHEL 8 回退 5.13）。CI 现固定为 6.9.3 / 6.10.3 / 6.11.1。**升级时须重新核对该下限**，不要凭假设。
 2. CI 的 Qt 是**共享**的，而 manifest 构建的是**静态** Qt。因此 CI **并未覆盖**发布所用的静态 Qt 路径。
    把 CI 绿灯当作**逻辑**上的证据，而非静态链接模型的证据；后者由本地 `scripts/build.bat release` 覆盖。
