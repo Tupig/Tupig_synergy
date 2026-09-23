@@ -221,6 +221,14 @@ public:
   */
   void fileChunkSending(uint8_t mark, char *data, size_t dataSize);
 
+  //! Send local files to every secondary client (DDRG then DFTR).
+  /*!
+  Reads fileTransfer settings, inspects the paths, and streams through
+  FileTransferOutbound. Empty or disabled selections are no-ops.
+  \return total content bytes streamed
+  */
+  uint64_t sendLocalFiles(const std::vector<std::string> &paths);
+
   //@}
 
 private:

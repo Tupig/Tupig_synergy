@@ -42,7 +42,13 @@ public:
   [[nodiscard]] const std::vector<std::string> &draggingPaths() const;
 
   //! Take and clear the captured paths (for a one-shot outbound transfer).
-  std::vector<std::string> takeDraggingPaths();
+  /*!
+  When the left button is down, briefly offers the OLE drop window under the
+  cursor and pumps messages so DragEnter can populate the path list. Does not
+  synthesise Escape or mouse-up (the capture technique upstream removed as
+  unreliable). Returns whatever the drop target holds afterwards.
+  */
+  std::vector<std::string> takeDraggingPaths() override;
 
   //! @name manipulators
   //@{
@@ -151,7 +157,11 @@ private:
   ATOM createDeskWindowClass(bool isPrimary) const;
   void destroyClass(ATOM windowClass) const;
   HWND createWindow(ATOM windowClass, const wchar_t *name) const;
+  HWND createDropWindow(ATOM windowClass) const;
   void destroyWindow(HWND) const;
+
+  //! Offer the drop window under the cursor and pump messages briefly.
+  void offerDropWindowAtCursor();
 
   // convenience function to send events
 public: // HACK
@@ -316,7 +326,9 @@ private:
   DWORD m_clipboardSequenceNumber = 0;
   bool m_ownClipboard = false;
 
-  // OLE drop target registered on m_window (file drag capture).
+  // OLE drop target registered on m_dropWindow (file drag capture).
+  HWND m_dropWindow = nullptr;
+  static constexpr int m_dropWindowSize = 20;
   MSWindowsDropTarget *m_dropTarget = nullptr;
 
   // one desk per desktop and a cond var to communicate with it

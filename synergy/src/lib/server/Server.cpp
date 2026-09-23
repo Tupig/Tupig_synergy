@@ -25,6 +25,9 @@
 #include "server/ClientProxyUnknown.h"
 #include "server/PrimaryClient.h"
 
+#include "deskflow/protocol/FileTransferOutbound.h"
+#include "common/Settings.h"
+
 #ifdef _WIN32
 #include <algorithm>
 #include <array>
@@ -324,6 +327,31 @@ void Server::fileChunkSending(uint8_t mark, char *data, size_t dataSize)
   }
 }
 
+uint64_t Server::sendLocalFiles(const std::vector<std::string> &paths)
+{
+  FileTransferOutbound::Options options;
+  options.enabled = Settings::value(Settings::FileTransfer::Enabled).toBool();
+
+  if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
+    options.maxFileSize = maxMb * 1024 * 1024;
+  }
+  if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
+    options.maxFileCount = static_cast<size_t>(maxCount);
+  }
+
+  FileTransferSender::Emitter emitter;
+  emitter.dragInfo = [this](uint32_t fileCount, const std::string &names) {
+    sendDragInfo(fileCount, names.data(), names.size());
+  };
+  emitter.chunk = [this](uint8_t mark, const std::string &payload) {
+    // fileChunkSending takes a mutable pointer; the callee only reads it.
+    auto copy = payload;
+    fileChunkSending(mark, copy.data(), copy.size());
+  };
+
+  return FileTransferOutbound::sendPaths(paths, options, emitter);
+}
+
 void Server::sendConnectedClientsIpc() const
 {
   const auto primaryName = getName(m_primaryClient);
@@ -463,11 +491,26 @@ void Server::switchScreen(BaseClientProxy *dst, int32_t x, int32_t y, bool forSc
   // since that's a waste of time we skip that and just warp the
   // mouse.
   if (m_active != dst) {
+    // Capture any in-progress file drag before leave() warps the cursor away
+    // from the drop target window (Windows). Other platforms return empty.
+    std::vector<std::string> outboundFiles;
+    if (m_active == m_primaryClient) {
+      outboundFiles = m_screen->takeDraggingPaths();
+    }
+
     // leave active screen
     if (!m_active->leave()) {
       // cannot leave screen
       LOG_WARN("can't leave screen");
       return;
+    }
+
+    if (!outboundFiles.empty()) {
+      const auto bytes = sendLocalFiles(outboundFiles);
+      LOG_INFO(
+          "sent drag-and-drop transfer: %zu path(s), %llu byte(s)", outboundFiles.size(),
+          static_cast<unsigned long long>(bytes)
+      );
     }
 
     // update the primary client's clipboards if we're leaving the

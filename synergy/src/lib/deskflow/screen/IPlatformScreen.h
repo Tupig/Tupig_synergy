@@ -15,6 +15,9 @@
 #include "ISecondaryScreen.h"
 #include "OptionTypes.h"
 
+#include <string>
+#include <vector>
+
 class IClipboard;
 
 //! Screen interface
@@ -144,6 +147,17 @@ public:
   Return true iff this screen is a primary screen.
   */
   virtual bool isPrimary() const = 0;
+
+  //! Take paths captured by an in-progress file drag, if any.
+  /*!
+  Default is empty. Windows overrides this to return CF_HDROP paths collected by
+  the OLE drop target; other platforms keep the default until they have a
+  verified capture path.
+  */
+  virtual std::vector<std::string> takeDraggingPaths()
+  {
+    return {};
+  }
 
   //@}
   // IKeyState overrides

@@ -121,21 +121,28 @@ MSWindowsScreen::MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *eve
 
     OleInitialize(0);
 
-    // Register for file drops on the (normally invisible) screen window so a
-    // CF_HDROP drag that hits it is captured through the tested parser.
+    // Separate drop window: the main window is 1x1 and unsuitable as an OLE
+    // target. RegisterDragDrop requires OleInitialize first.
+    m_dropWindow = createDropWindow(m_class);
     m_dropTarget = new MSWindowsDropTarget();
-    const HRESULT dropHr = RegisterDragDrop(m_window, m_dropTarget);
+    const HRESULT dropHr = RegisterDragDrop(m_dropWindow, m_dropTarget);
     if (FAILED(dropHr)) {
       LOG_ERR("RegisterDragDrop failed: 0x%08lx", dropHr);
       m_dropTarget->Release();
       m_dropTarget = nullptr;
+      destroyWindow(m_dropWindow);
+      m_dropWindow = nullptr;
     }
   } catch (...) {
     if (m_dropTarget != nullptr) {
-      RevokeDragDrop(m_window);
+      if (m_dropWindow != nullptr) {
+        RevokeDragDrop(m_dropWindow);
+      }
       m_dropTarget->Release();
       m_dropTarget = nullptr;
     }
+    destroyWindow(m_dropWindow);
+    m_dropWindow = nullptr;
     delete m_keyState;
     delete m_desks;
     delete m_screensaver;
@@ -166,10 +173,14 @@ MSWindowsScreen::~MSWindowsScreen()
   delete m_screensaver;
 
   if (m_dropTarget != nullptr) {
-    RevokeDragDrop(m_window);
+    if (m_dropWindow != nullptr) {
+      RevokeDragDrop(m_dropWindow);
+    }
     m_dropTarget->Release();
     m_dropTarget = nullptr;
   }
+  destroyWindow(m_dropWindow);
+  m_dropWindow = nullptr;
 
   destroyWindow(m_window);
   destroyClass(m_class);
@@ -193,9 +204,53 @@ std::vector<std::string> MSWindowsScreen::takeDraggingPaths()
   if (m_dropTarget == nullptr) {
     return {};
   }
+
+  // When the user is holding the left button (typical Explorer drag), offer the
+  // drop window under the cursor so DragEnter can fire before leave() warps away.
+  if (m_buttons[kButtonLeft]) {
+    offerDropWindowAtCursor();
+  }
+
   std::vector<std::string> paths = m_dropTarget->draggingPaths();
   m_dropTarget->clearDraggingPaths();
   return paths;
+}
+
+void MSWindowsScreen::offerDropWindowAtCursor()
+{
+  if (m_dropWindow == nullptr || m_dropTarget == nullptr) {
+    return;
+  }
+
+  POINT pt{};
+  if (!::GetCursorPos(&pt)) {
+    return;
+  }
+
+  const int half = m_dropWindowSize / 2;
+  const int x = (pt.x - half) < 0 ? 0 : (pt.x - half);
+  const int y = (pt.y - half) < 0 ? 0 : (pt.y - half);
+
+  ::SetWindowPos(
+      m_dropWindow, HWND_TOPMOST, x, y, m_dropWindowSize, m_dropWindowSize, SWP_SHOWWINDOW | SWP_NOACTIVATE
+  );
+
+  // Let OLE deliver DragEnter while the cursor is over our window. No Escape or
+  // fake mouse-up: those were the unreliable bits upstream removed.
+  const DWORD deadline = ::GetTickCount() + 200;
+  while (::GetTickCount() < deadline) {
+    MSG msg;
+    while (::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+      ::TranslateMessage(&msg);
+      ::DispatchMessageW(&msg);
+    }
+    if (!m_dropTarget->draggingPaths().empty()) {
+      break;
+    }
+    ::Sleep(10);
+  }
+
+  ::ShowWindow(m_dropWindow, SW_HIDE);
 }
 
 void MSWindowsScreen::init(HINSTANCE windowInstance)
@@ -863,6 +918,19 @@ HWND MSWindowsScreen::createWindow(ATOM windowClass, const wchar_t *name) const
   );
   if (window == nullptr) {
     LOG_ERR("failed to create window: %d", GetLastError());
+    throw ScreenOpenFailureException();
+  }
+  return window;
+}
+
+HWND MSWindowsScreen::createDropWindow(ATOM windowClass) const
+{
+  HWND window = CreateWindowExW(
+      WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_ACCEPTFILES | WS_EX_TOOLWINDOW, MAKEINTATOM(windowClass), L"DropWindow",
+      WS_POPUP, 0, 0, m_dropWindowSize, m_dropWindowSize, nullptr, nullptr, s_windowInstance, nullptr
+  );
+  if (window == nullptr) {
+    LOG_ERR("failed to create drop window: %d", GetLastError());
     throw ScreenOpenFailureException();
   }
   return window;

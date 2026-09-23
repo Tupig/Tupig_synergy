@@ -65,6 +65,8 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   protocol/Chunk.h
   protocol/FileChunk.cpp
   protocol/FileChunk.h
+  protocol/FileTransferOutbound.cpp
+  protocol/FileTransferOutbound.h
   protocol/FileTransferPath.cpp
   protocol/FileTransferPath.h
   protocol/FileTransferReceiver.cpp

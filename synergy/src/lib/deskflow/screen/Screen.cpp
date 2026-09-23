@@ -8,7 +8,9 @@
 #include "Screen.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
+#include "common/Settings.h"
 #include "IPlatformScreen.h"
+#include "MouseTypes.h"
 
 #include <QProcess>
 
@@ -355,9 +357,20 @@ bool Screen::isOnScreen() const
   return m_entered;
 }
 
+std::vector<std::string> Screen::takeDraggingPaths()
+{
+  return m_screen->takeDraggingPaths();
+}
+
 bool Screen::isLockedToScreen() const
 {
   if (uint32_t buttonID = 0; m_screen->isAnyMouseButtonDown(buttonID)) {
+    // File transfer needs the cursor to leave while the left button is held
+    // (Explorer-style drag). Other buttons still lock, matching the pre-5365e34
+    // behaviour when drag-drop was enabled.
+    if (buttonID == kButtonLeft && Settings::value(Settings::FileTransfer::Enabled).toBool()) {
+      return false;
+    }
     LOG_DEBUG("locked by mouse buttonID: %d", buttonID);
     return true;
   }

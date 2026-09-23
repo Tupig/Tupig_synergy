@@ -14,6 +14,7 @@
 #include "OptionTypes.h"
 
 #include <string>
+#include <vector>
 
 class IClipboard;
 class IPlatformScreen;
@@ -227,6 +228,9 @@ public:
   Returns true iff the cursor is on the screen.
   */
   bool isOnScreen() const;
+
+  //! Take paths from an in-progress file drag, if the platform captured any.
+  std::vector<std::string> takeDraggingPaths();
 
   //! Get screen lock state
   /*!
