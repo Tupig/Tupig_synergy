@@ -300,6 +300,30 @@ void Server::getClients(std::vector<std::string> &list) const
   }
 }
 
+void Server::sendDragInfo(uint32_t fileCount, const char *info, size_t size)
+{
+  for (const auto &[name, client] : m_clients) {
+    // The primary is where the drag started, so there is nothing to announce to
+    // it; its own implementation is a deliberate no-op for the same reason.
+    if (client->isPrimary()) {
+      continue;
+    }
+
+    client->sendDragInfo(fileCount, info, size);
+  }
+}
+
+void Server::fileChunkSending(uint8_t mark, char *data, size_t dataSize)
+{
+  for (const auto &[name, client] : m_clients) {
+    if (client->isPrimary()) {
+      continue;
+    }
+
+    client->fileChunkSending(mark, data, dataSize);
+  }
+}
+
 void Server::sendConnectedClientsIpc() const
 {
   const auto primaryName = getName(m_primaryClient);

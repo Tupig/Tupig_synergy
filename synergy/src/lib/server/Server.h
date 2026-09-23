@@ -200,6 +200,27 @@ public:
   void sendConnectedClientsIpc() const;
   size_t getMaximumClipboardSizeBytes() const;
 
+  //! Tell every client that a file drag has started
+  /*!
+  Named after the protocol message rather than after the drag, to match the
+  existing per-version proxy methods it forwards to (BaseClientProxy).
+  Clients speaking protocol 1.5 or later send it on; older ones ignore it and
+  log that fact (ClientProxy1_0::sendDragInfo). The primary is skipped: it is
+  where the drag originates, so it has nothing to be told.
+  \param fileCount number of files being dragged
+  \param info NUL-separated file names
+  \param size length of \p info in bytes
+  */
+  void sendDragInfo(uint32_t fileCount, const char *info, size_t size);
+
+  //! Send one file-transfer chunk to every client
+  /*!
+  \param mark ChunkType value saying what \p data carries
+  \param data payload; ownership stays with the caller
+  \param dataSize length of \p data in bytes
+  */
+  void fileChunkSending(uint8_t mark, char *data, size_t dataSize);
+
   //@}
 
 private:

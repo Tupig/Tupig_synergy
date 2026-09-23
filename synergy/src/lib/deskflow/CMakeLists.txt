@@ -67,6 +67,12 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   protocol/FileChunk.h
   protocol/FileTransferPath.cpp
   protocol/FileTransferPath.h
+  protocol/FileTransferReceiver.cpp
+  protocol/FileTransferReceiver.h
+  protocol/FileTransferSender.cpp
+  protocol/FileTransferSender.h
+  protocol/FileTransferSource.cpp
+  protocol/FileTransferSource.h
   protocol/OptionTypes.h
   protocol/PacketStreamFilter.cpp
   protocol/PacketStreamFilter.h
