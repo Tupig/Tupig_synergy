@@ -69,6 +69,22 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
 )
 
+create_test(
+  NAME FileChunkTests
+  DEPENDS app
+  LIBS arch base io ${extra_libs}
+  SOURCE FileChunkTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+)
+
+create_test(
+  NAME FileTransferPathTests
+  DEPENDS app
+  LIBS arch base io ${extra_libs}
+  SOURCE FileTransferPathTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+)
+
 if(BUILD_X11_SUPPORT)
   create_test(
     NAME X11LayoutParserTests
