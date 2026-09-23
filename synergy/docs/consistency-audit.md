@@ -135,9 +135,16 @@ Directories are derived from `kAppName` (`TuPig Synergy`) while file names insid
 
 | Format | Files |
 |---|---|
-| Sectioned (`## English` + `## 中文`) | `build.md`, `configuration.md`, `troubleshooting.md`, `architecture.md`, `protocol.md`, `contributing.md` |
-| Inline per-heading, Chinese first | `security.md`, `mcp-integration.md` |
-| Chinese only, no English | `FORK.md`, `HANDOFF.md` |
+| Sectioned (`## English` + `## 中文`) | `build.md`, `configuration.md`, `troubleshooting.md`, `architecture.md`, `protocol.md`, `contributing.md`, `delivery.md`, `consistency-audit.md`, `mcp-integration.md` |
+| Inline per-heading, Chinese first | `security.md` (mostly, see below) |
+| Chinese only, no English | `FORK.md`, `HANDOFF.md`, `.github/CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` |
+| English only, no Chinese | `.github/pull_request_template.md` |
+
+**Fixed 2026-09-23**: `mcp-integration.md` was Chinese-only prose behind bilingual
+headings; it is now sectioned like the rest. `security.md` was converted from the
+inline pattern to sectioned. `.github/CODE_OF_CONDUCT.md` gained a Chinese section
+(upstream English body kept unedited). The remaining Chinese-only files above are
+inherited or session-scoped documents and were left as they are.
 
 `docs/build.md:523` also has a `## CMake Presets` section that sits after the Chinese section, outside the bilingual structure, and is Chinese-only.
 

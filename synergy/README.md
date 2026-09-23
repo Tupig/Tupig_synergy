@@ -107,26 +107,27 @@ cmake --preset windows-msvc-release
 cmake --build build --config Release
 ```
 
-Output (VS multi-config): `build\bin\Release\synergy.exe` (GUI),
-`build\bin\Release\synergy-core.exe` (core),
-`build\bin\Release\synergy-daemon.exe` (Windows daemon)
+Output (VS multi-config) / 产物（VS 多配置）: `build\bin\Release\synergy.exe` (GUI / 图形界面),
+`build\bin\Release\synergy-core.exe` (core / 核心),
+`build\bin\Release\synergy-daemon.exe` (Windows daemon / Windows 守护进程)
 
-### Prerequisites (auto-installed by setup.bat)
+### Prerequisites (auto-installed by setup.bat) / 前置依赖（由 setup.bat 自动安装）
 
-| Requirement | Windows | macOS | Linux |
+| Requirement / 依赖 | Windows | macOS | Linux |
 |---|---|---|---|
-| **CMake 3.24+** | `setup.bat` installs | `brew install cmake` | `sudo apt install cmake` |
-| **Ninja** | Included with VS Build Tools | `brew install ninja` | `sudo apt install ninja-build` |
-| **vcpkg** | `setup.bat` bootstraps | `brew install vcpkg` | manual bootstrap |
-| **MSVC Build Tools** | `setup.bat` installs | — | — |
-| **"Desktop development with C++"** | Select in VS Installer | — | — |
+| **CMake 3.24+** | `setup.bat` installs / 自动安装 | `brew install cmake` | `sudo apt install cmake` |
+| **Ninja** | Included with VS Build Tools / 随 VS 构建工具附带 | `brew install ninja` | `sudo apt install ninja-build` |
+| **vcpkg** | `setup.bat` bootstraps / 自动引导 | `brew install vcpkg` | manual bootstrap / 手工引导 |
+| **MSVC Build Tools** | `setup.bat` installs / 自动安装 | — | — |
+| **"Desktop development with C++"** | Select in VS Installer / 在 VS 安装器中勾选 | — | — |
 
-> **Note for MSVC**: When `setup.bat` installs Build Tools, the Visual Studio Installer will open.  
-> You **must** select the **"Desktop development with C++"** workload before clicking Install.
+> **Note for MSVC / MSVC 注意**：当 `setup.bat` 安装构建工具时会弹出 Visual Studio 安装器，
+> 在点击安装前**必须**勾选 **"使用 C++ 的桌面开发"** 工作负载。
 
-### Switching Machines
+### Switching Machines / 更换机器
 
 Just re-run `setup.bat` — it's idempotent and only installs what's missing.
+重新运行 `setup.bat` 即可 —— 它可重复执行，仅安装缺失的部分。
 
 ---
 
@@ -226,7 +227,7 @@ This project is licensed under the **GNU General Public License v2.0** — see [
 
 <div align="center">
 
-### ⭐ If you find this project useful, please consider giving it a star!
+### ⭐ If you find this project useful, please consider giving it a star! / 如果这个项目对你有帮助，欢迎点个 Star！
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Tupig/TuPig_Product&type=Date&theme=dark)](https://star-history.com/#Tupig/TuPig_Product&Date)
 
