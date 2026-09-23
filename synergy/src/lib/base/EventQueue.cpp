@@ -16,6 +16,9 @@
 #include "mt/Lock.h"
 #include "mt/Mutex.h"
 
+#include <QCoreApplication>
+#include <QEventLoop>
+
 #include <stdexcept>
 
 // interrupt handler.  this just adds a quit event to the queue.
@@ -124,6 +127,25 @@ bool EventQueue::processEvent(Event &event, double timeout, Stopwatch &timer)
     if (double timerTimeout = getNextTimerTimeout();
         timeout < 0.0 || (timerTimeout >= 0.0 && timerTimeout < timeLeft)) {
       timeLeft = timerTimeout;
+    }
+
+    // Pump Qt so QTcpSocket / QSslSocket signals fire when the Qt network
+    // path is in use (Phase 2). Cap the wait so we return to processEvents
+    // frequently enough without spinning.
+    constexpr double kQtPumpSlice = 0.01; // 10 ms
+    if (QCoreApplication::instance() != nullptr) {
+      double slice = kQtPumpSlice;
+      if (timeLeft >= 0.0 && timeLeft < slice) {
+        slice = timeLeft;
+      }
+      if (slice < 0.0) {
+        slice = 0.0;
+      }
+      const int ms = static_cast<int>(slice * 1000.0);
+      QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
+      if (timeLeft < 0.0 || timeLeft > kQtPumpSlice) {
+        timeLeft = kQtPumpSlice;
+      }
     }
 
     // wait for an event
