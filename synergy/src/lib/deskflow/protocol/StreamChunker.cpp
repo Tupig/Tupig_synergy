@@ -10,8 +10,31 @@
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "ClipboardChunk.h"
+#include "ProtocolTypes.h"
 
-static const size_t g_chunkSize = 512 * 1024; // 512kb
+//! Clipboard payload size per chunk.
+/*!
+Bounded by the receiver, not chosen here: ProtocolUtil::readBytes() rejects any
+length-prefixed string larger than MessageSizeLimit::ClipboardChunk, and the
+rejection surfaces as a BadClientException, i.e. a protocol error that drops the
+connection. A chunk above that ceiling therefore does not degrade gracefully, so
+the two must not drift apart. This was previously 512 KB, which is 8x the ceiling
+and broke clipboard sync for any payload over 64 KB; ProtocolTypes.h's comment
+meanwhile claimed 32 KB. Deriving the value from the protocol constant keeps a
+single source of truth.
+*/
+static const size_t g_chunkSize =
+    static_cast<size_t>(MessageSizeLimit::ClipboardChunk);
+
+static_assert(
+    g_chunkSize <= static_cast<size_t>(MessageSizeLimit::ClipboardChunk),
+    "clipboard chunk size must fit the receiver's length-prefixed string limit"
+);
+
+size_t StreamChunker::chunkSize()
+{
+  return g_chunkSize;
+}
 
 void StreamChunker::sendClipboard(
     const std::string_view &data, size_t size, ClipboardID id, uint32_t sequence, IEventQueue *events, void *eventTarget

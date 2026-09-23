@@ -20,6 +20,9 @@ private Q_SLOTS:
   void assembleAllowsDataAtExpectedSizeAndLimit();
   void assembleRejectsDataBeyondExpectedSize();
   void assembleRejectsExpectedSizeBeyondLimit();
+  void assembleAcceptsChunkAtStringLengthLimit();
+  void assembleRejectsChunkBeyondStringLengthLimit();
+  void sendChunkSizeFitsReceiverLimit();
 
 private:
   Log m_log;

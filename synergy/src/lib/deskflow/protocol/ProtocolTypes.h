@@ -175,7 +175,11 @@ enum class MessageSizeLimit : uint32_t
  * Such messages are not parsed and cause connection termination.
  * This prevents memory exhaustion attacks.
  *
- * @note Clipboard messages are separately limited to 32KB chunks
+ * @note Clipboard and file chunks using the %s format specifier are separately
+ * limited to PROTOCOL_MAX_STRING_LENGTH (= MessageSizeLimit::ClipboardChunk) by
+ * ProtocolUtil::readBytes(). A larger chunk is rejected as a protocol error,
+ * which drops the connection rather than degrading gracefully, so senders must
+ * stay within it (see StreamChunker).
  * @since Protocol version 1.0
  */
 static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH =

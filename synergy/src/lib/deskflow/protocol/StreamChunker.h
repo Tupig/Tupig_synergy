@@ -19,4 +19,12 @@ public:
       const std::string_view &data, size_t size, ClipboardID id, uint32_t sequence, IEventQueue *events,
       void *eventTarget
   );
+
+  //! Payload bytes carried by one clipboard chunk.
+  /*!
+  Must stay within what the receiver's length-prefixed string reader accepts
+  (MessageSizeLimit::ClipboardChunk); a larger chunk is rejected as a protocol
+  error and drops the connection.
+  */
+  static size_t chunkSize();
 };

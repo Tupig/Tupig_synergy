@@ -10,11 +10,14 @@
 #include "ClipboardChunk.h"
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "StreamChunker.h"
+#include "deskflow/core/DeskflowException.h"
 #include "io/IStream.h"
 
 #include <algorithm>
 #include <cstring>
 #include <deque>
+#include <string>
 
 namespace {
 
@@ -283,6 +286,84 @@ void ClipboardChunksTests::assembleRejectsExpectedSizeBeyondLimit()
   QVERIFY(cached.empty());
   QCOMPARE(ClipboardChunk::getExpectedSize(state), static_cast<size_t>(0));
   QVERIFY(!state.active);
+}
+
+void ClipboardChunksTests::assembleAcceptsChunkAtStringLengthLimit()
+{
+  using limits = MessageSizeLimit;
+  const auto atLimit = static_cast<size_t>(limits::ClipboardChunk);
+
+  MemoryStream stream;
+  stream.push(encodeClipboardMsg(0, 7, ChunkType::DataStart, std::to_string(atLimit)));
+  stream.push(encodeClipboardMsg(0, 7, ChunkType::DataChunk, std::string(atLimit, 'A')));
+
+  std::string cached;
+  ClipboardID id = kClipboardEnd;
+  uint32_t seq = 0;
+  ClipboardChunkAssemblyState state;
+
+  // A payload exactly at the ceiling must still go through, or the limit would
+  // be off by one for every sender that fills chunks to capacity.
+  QCOMPARE(
+      ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::Started
+  );
+  QCOMPARE(
+      ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::InProgress
+  );
+  QCOMPARE(cached.size(), atLimit);
+}
+
+void ClipboardChunksTests::assembleRejectsChunkBeyondStringLengthLimit()
+{
+  using limits = MessageSizeLimit;
+  const auto atLimit = static_cast<size_t>(limits::ClipboardChunk);
+  const auto beyond = atLimit + 1;
+
+  MemoryStream stream;
+  stream.push(encodeClipboardMsg(0, 7, ChunkType::DataStart, std::to_string(beyond)));
+  stream.push(encodeClipboardMsg(0, 7, ChunkType::DataChunk, std::string(beyond, 'A')));
+
+  std::string cached;
+  ClipboardID id = kClipboardEnd;
+  uint32_t seq = 0;
+  ClipboardChunkAssemblyState state;
+
+  QCOMPARE(
+      ClipboardChunk::assemble(&stream, cached, id, seq, state, beyond * 2), TransferState::Started
+  );
+
+  // ProtocolUtil::readBytes() throws BadClientException for a length-prefixed
+  // string above MessageSizeLimit::ClipboardChunk, and readf() only converts
+  // IOException/bad_alloc into a false return - so this deliberately escapes
+  // assemble() rather than coming back as TransferState::Error. The contract is
+  // that the caller catches BadClientException and treats it as a protocol
+  // error: both ServerProxy::handleData and ClientProxy1_0::parseMessage do
+  // exactly that and disconnect. Pinned here because a sender emitting larger
+  // chunks depends on it (see StreamChunker).
+  bool threw = false;
+  try {
+    ClipboardChunk::assemble(&stream, cached, id, seq, state, beyond * 2);
+  } catch (const BadClientException &) {
+    threw = true;
+  }
+
+  QVERIFY(threw);
+
+  // state.active stays true: the throw escapes before assemble()'s internal
+  // reset(), so no cleanup runs. That is acceptable only because every caller
+  // catches BadClientException and tears the connection down; it would be a leak
+  // if a caller were to swallow the exception and keep assembling.
+}
+
+void ClipboardChunksTests::sendChunkSizeFitsReceiverLimit()
+{
+  // Regression guard for the drift that broke large clipboards: StreamChunker
+  // used to emit 512 KB chunks while the receiver refused anything over 64 KB,
+  // so copying a large payload disconnected the session.
+  QVERIFY(StreamChunker::chunkSize() > 0);
+  QVERIFY(
+      StreamChunker::chunkSize() <= static_cast<size_t>(MessageSizeLimit::ClipboardChunk)
+  );
 }
 
 QTEST_MAIN(ClipboardChunksTests)
