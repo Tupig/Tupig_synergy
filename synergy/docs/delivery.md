@@ -113,6 +113,26 @@ daemon, so portable builds cannot offer this capability at all.
 
 Enable with `fileTransfer/enabled=true` and a non-empty `fileTransfer/dropDirectory`.
 
+### Manual cross-screen drag checklist (Windows)
+
+Two machines on the same LAN; one primary (server), one client. Build from the
+same commit. On both sides set `fileTransfer/enabled=true` and a writable
+`fileTransfer/dropDirectory`.
+
+1. **Primary → client (IDropTarget capture)**  
+   On the primary, drag files from Explorer toward the shared edge until the
+   cursor jumps to the client. Confirm the client drop directory receives the
+   files (names sanitized; no overwrite of existing files).
+2. **Client → Explorer (IDropSource)**  
+   After a receive completes, Synergy starts an OLE drag under the cursor.
+   Drop into a local Explorer window and confirm the files appear.
+3. **Cancel / Escape** during the OLE drag must not crash either side.
+4. **Negative**: with `fileTransfer/enabled=false`, leaving the primary with
+   LMB held must not send files.
+
+Record OS builds, Synergy version (`synergy-core --version`), and pass/fail in
+the issue tracker or a short note under `docs/HANDOFF.md`.
+
 ### How to produce each artifact
 
 ```bat
@@ -226,6 +246,21 @@ core 启动到安全桌面。本代码库中没有任何地方注册该服务 �
 | Linux XDND / Wayland DnD | **未实现**（上游亦从未实现） | 不适用 |
 
 需设置 `fileTransfer/enabled=true` 且 `fileTransfer/dropDirectory` 非空。
+
+### 跨屏拖拽人工验证清单（Windows）
+
+两台同局域网机器；一台主屏（服务端），一台客户端；同一提交构建。两端均设置
+`fileTransfer/enabled=true` 与可写的 `fileTransfer/dropDirectory`。
+
+1. **主屏 → 客户端（IDropTarget 捕获）**  
+   在主屏从资源管理器拖文件到共享边缘，直到光标跳到客户端。确认客户端落盘目录
+   收到文件（文件名已净化；不覆盖已有文件）。
+2. **客户端 → 本机资源管理器（IDropSource）**  
+   接收完成后 Synergy 在光标下发起 OLE 拖拽。投放到本机资源管理器并确认文件出现。
+3. **拖拽中按 Escape / 取消** 任一侧不得崩溃。
+4. **反例**：`fileTransfer/enabled=false` 时，按住左键离开主屏不得发送文件。
+
+将 OS、`synergy-core --version`、通过/失败记入问题追踪或 `docs/HANDOFF.md`。
 
 ### 如何产出各产物
 

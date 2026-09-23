@@ -11,17 +11,16 @@ set(CMAKE_PROJECT_REV_FQDN "com.tupig.synergy")
 set(CMAKE_PROJECT_DOMAIN "tupig.com")
 set(CMAKE_PROJECT_HOMEPAGE_URL "https://tupig.com")
 
-# Display brand. "TuPig Synergy 1" is the default user-facing name (window title,
-# About dialog). When building as the Core, flip to "TuPig Synergy Core" so the 
-# same codebase ships under a different product label.
-# Distinct from CMAKE_PROJECT_PROPER_NAME, which stays "TuPig Synergy" so config
-# and data paths (~/.config/TuPig Synergy/, TuPig Synergy.conf) and Windows
-# global object names match the product brand (spaces included by design).
+# Display brand. Window title / About use SYNERGY_DISPLAY_NAME.
+# Default matches CMAKE_PROJECT_PROPER_NAME ("TuPig Synergy") so the UI and
+# Linux desktop entry agree (U-17). Core flavor keeps a distinct headless label.
+# Paths stay on CMAKE_PROJECT_PROPER_NAME (U-09 by design: dirs with spaces,
+# file names use kAppId "synergy").
 option(SYNERGY_CORE_FLAVOR "Build as TuPig Synergy Core" OFF)
 if(SYNERGY_CORE_FLAVOR)
   set(SYNERGY_DISPLAY_NAME "TuPig Synergy Core")
 else()
-  set(SYNERGY_DISPLAY_NAME "TuPig Synergy 1")
+  set(SYNERGY_DISPLAY_NAME "TuPig Synergy")
 endif()
 add_compile_definitions(SYNERGY_DISPLAY_NAME="${SYNERGY_DISPLAY_NAME}")
 

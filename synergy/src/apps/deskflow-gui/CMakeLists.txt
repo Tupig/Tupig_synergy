@@ -38,7 +38,6 @@ endif()
 
 add_executable(${target} WIN32 MACOSX_BUNDLE
   ${platform_extra}
-  ../res/deskflow.qrc
   ${CMAKE_SOURCE_DIR}/extra/src/apps/res/synergy.qrc
   ${filename}.cpp
 )

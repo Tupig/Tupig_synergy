@@ -44,9 +44,9 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | **Fixed** |
 | U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
 | U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | **Fixed** |
-| U-07 | P2 | Runtime (icons) | Two icon themes compiled into the same binary | Open |
+| U-07 | P2 | Runtime (icons) | Two icon themes compiled into the same binary | **Fixed** (D1: synergy theme only; deskflow SVGs aliased) |
 | U-08 | P3 | Comments | Three comments contradict the code | **Fixed** |
-| U-09 | P3 | Runtime (paths) | Directory names and file names use different app identifiers | Open |
+| U-09 | P3 | Runtime (paths) | Directory names and file names use different app identifiers | **By design** (documented) |
 | U-10 | P3 | Packaging | Vendor / copyright strings still name the upstream commercial vendor | **Fixed** |
 | U-11 | P1 | Docs | Three bilingual formats coexist; two docs have no English | **Fixed** |
 | U-12 | P1 | Docs | Stale references: presets, a deleted file, moved docs | **Fixed** |
@@ -54,9 +54,9 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-14 | P2 | Docs | `HANDOFF.md` has drifted from reality | **Fixed** (aligned 2026-09-23 with A-03) |
 | U-15 | P2 | Docs | Licence description disagrees across four files | **Fixed** |
 | U-16 | P2 | CI | CI enforces unversioned binary names and the upstream vendor identity | **Fixed** (narrowed; see below) |
-| U-17 | P3 | Naming | Four different product display names | Open |
-| U-18 | P3 | Naming | `deskflow` / `synergy` boundary plus a fragile i18n coupling | Open |
-| U-19 | P3 | Naming | Overlay layout and test placement are inconsistent | Open |
+| U-17 | P3 | Naming | Four different product display names | **Fixed** (canonical `TuPig Synergy`) |
+| U-18 | P3 | Naming | `deskflow` / `synergy` boundary plus a fragile i18n coupling | **Fixed** (hardened; deskflow names kept) |
+| U-19 | P3 | Naming | Overlay layout and test placement are inconsistent | **By design** (documented) |
 | U-20 | P2 | Docs | Documented CLI option `--install-service` does not exist | **Fixed** |
 | U-21 | P2 | Docs / feature scope | Linux drag-and-drop described as restorable; it was never implemented | Recorded |
 
@@ -392,9 +392,9 @@ future change reintroduces versioned `OUTPUT_NAME`.
 | U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | **已修复** |
 | U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |
 | U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | **已修复** |
-| U-07 | P2 | 运行时 (图标) | 两套图标主题编进同一个二进制 | 待处理 |
+| U-07 | P2 | 运行时 (图标) | 两套图标主题编进同一个二进制 | **已修复**（D1：仅 synergy 主题；deskflow SVG 别名） |
 | U-08 | P3 | 注释 | 三处注释与代码相反 | **已修复** |
-| U-09 | P3 | 运行时 (路径) | 目录名与文件名用了不同的应用标识 | 待处理 |
+| U-09 | P3 | 运行时 (路径) | 目录名与文件名用了不同的应用标识 | **有意设计**（已文档化） |
 | U-10 | P3 | 打包 | 供应商/版权字样仍指上游商业厂商 | **已修复** |
 | U-11 | P1 | 文档 | 三种双语格式并存；两份文档没有英文 | **已修复** |
 | U-12 | P1 | 文档 | 过时引用：预设、已删除文件、已移动文档 | **已修复** |
@@ -402,9 +402,9 @@ future change reintroduces versioned `OUTPUT_NAME`.
 | U-14 | P2 | 文档 | `HANDOFF.md` 与实际状态脱节 | **已修复**（2026-09-23 与 A-03 一并对齐） |
 | U-15 | P2 | 文档 | 许可描述在四个文件里不一致 | **已修复** |
 | U-16 | P2 | CI | CI 强制无版本产物名与上游厂商身份 | **已修复**（身份）；追踪文档错放目录仍作备注 |
-| U-17 | P3 | 命名 | 四个不同的产品显示名 | 待处理 |
-| U-18 | P3 | 命名 | `deskflow` / `synergy` 边界，以及一个脆弱的 i18n 耦合 | 待处理 |
-| U-19 | P3 | 命名 | overlay 目录结构与测试归属不一致 | 待处理 |
+| U-17 | P3 | 命名 | 四个不同的产品显示名 | **已修复**（统一为 `TuPig Synergy`） |
+| U-18 | P3 | 命名 | `deskflow` / `synergy` 边界，以及一个脆弱的 i18n 耦合 | **已修复**（加固；保留 deskflow 内部名） |
+| U-19 | P3 | 命名 | overlay 目录结构与测试归属不一致 | **有意设计**（已文档化） |
 | U-20 | P2 | 文档 | 文档中的 CLI 选项 `--install-service` 并不存在 | **已修复** |
 | U-21 | P2 | 文档 / 功能范围 | 文档称 Linux 拖拽可恢复；实际从未实现 | 已记录 |
 

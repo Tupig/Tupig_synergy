@@ -5,7 +5,7 @@
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=Synergy
+Name=TuPig Synergy
 Comment=Share one keyboard and mouse between computers
 Exec=synergy
 Icon=com.tupig.synergy

@@ -6,6 +6,7 @@
 
 #include "I18NTests.h"
 
+#include "common/Constants.h"
 #include "common/I18N.h"
 #include "common/Settings.h"
 #include <QCoreApplication>
@@ -34,7 +35,7 @@ QString findGeneratedTranslationsDir()
     const QString candidate = QStringLiteral("%1/translations").arg(dir.absolutePath());
     const QDir translations(candidate);
     if (translations.exists() &&
-        !translations.entryList({QStringLiteral("deskflow_*.qm")}, QDir::Files).isEmpty()) {
+        !translations.entryList({QStringLiteral("%1_*.qm").arg(kUpstreamId)}, QDir::Files).isEmpty()) {
       return candidate;
     }
   }
@@ -67,7 +68,8 @@ void I18NTests::initTestCase()
   );
 
   dir.setPath(srcTDir);
-  for (const auto &file : dir.entryList({"deskflow_*.qm"}, QDir::Files, QDir::Name)) {
+  const QString filter = QStringLiteral("%1_*.qm").arg(kUpstreamId);
+  for (const auto &file : dir.entryList({filter}, QDir::Files, QDir::Name)) {
     QFile::copy(QStringLiteral("%1/%2").arg(srcTDir, file), QStringLiteral("%1/%2").arg(m_myTDir, file));
     QVERIFY(QFile::exists(QStringLiteral("%1/%2").arg(m_myTDir, file)));
   }

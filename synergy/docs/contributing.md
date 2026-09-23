@@ -296,6 +296,25 @@ Notes:
 - Before large-scale cleanups (for example migrating `mt/` to `std`), assess the
   effect on the merge surface.
 
+#### Overlay layout and internal `deskflow` names (U-18 / U-19)
+
+Two overlay layouts are **intentional**:
+
+| Layout | Path | Why |
+|---|---|---|
+| Path-mirror | `extra/src/apps/res/` | Assets sit beside upstream `src/apps/res/` |
+| Product namespace | `extra/src/lib/synergy/` | Include as `synergy/...` without editing upstream CMake |
+
+Do not relocate `extra/src/lib/synergy/` to `extra/src/lib/gui/` — that breaks includes and the reason for the overlay.
+
+Internal trees (`src/lib/deskflow/`, `src/apps/deskflow-*`, `translations/deskflow_*.ts`, `kUpstreamId`) stay named `deskflow` so subtree merges stay tractable. The i18n triple (`UPSTREAM_PROJECT_NAME` → `.ts` filename → `kUpstreamId` filter) must move together; renaming one site alone silently disables translations.
+
+Unit tests follow the **library under test**, not the OS: e.g. `X11LayoutParserTests` lives under `unittests/deskflow/` because the SUT is `src/lib/deskflow/unix/`, while `XWindowsClipboardTests` lives under `unittests/platform/`.
+
+#### Config directory vs file names (U-09)
+
+By design: directories use `kAppName` (`TuPig Synergy`, spaces included) while log/settings file basenames use `kAppId` (`synergy`). Unifying them would force a settings migration; leave as-is unless a product decision revisits it.
+
 ---
 
 ### Community & Support
@@ -598,6 +617,29 @@ git merge -Xsubtree=synergy upstream/master
 - 对上游文件的修改越小，未来合并冲突越少；新功能优先加在新文件/目录。
 - `git replace` 不改变 commit hash，可随时 `git replace -d ad2c280` 撤销。
 - 若要做大范围清理（如 `mt/` → `std` 迁移），请评估对合并冲突面的影响。
+
+#### Overlay 布局与内部 `deskflow` 名（U-18 / U-19）
+
+两种 overlay 布局是**有意设计**：
+
+| 布局 | 路径 | 原因 |
+|---|---|---|
+| 路径镜像 | `extra/src/apps/res/` | 资源紧挨上游 `src/apps/res/` |
+| 产品命名空间 | `extra/src/lib/synergy/` | 以 `synergy/...` 包含，不改上游 CMake |
+
+不要把 `extra/src/lib/synergy/` 挪到 `extra/src/lib/gui/`。
+
+内部树（`src/lib/deskflow/`、`src/apps/deskflow-*`、`translations/deskflow_*.ts`、`kUpstreamId`）
+继续用 `deskflow`，以便 subtree 合并。i18n 三元组（`UPSTREAM_PROJECT_NAME` → `.ts` 文件名 →
+`kUpstreamId` 过滤）必须一起改；只改一处会静默关掉翻译。
+
+单测跟**被测库**走、不跟 OS：例如 `X11LayoutParserTests` 在 `unittests/deskflow/`（SUT 是
+`src/lib/deskflow/unix/`），`XWindowsClipboardTests` 在 `unittests/platform/`。
+
+#### 配置目录 vs 文件名（U-09）
+
+有意设计：目录用 `kAppName`（`TuPig Synergy`，含空格），日志/设置文件基名用 `kAppId`
+（`synergy`）。统一二者需要设置迁移，除非产品决策重开，否则保持现状。
 
 ---
 

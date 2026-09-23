@@ -4,7 +4,11 @@ set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM 1)
 option(CLEAN_TRS "Clean obsolete translations from tr files" OFF)
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS LinguistTools)
 
-set(filename "deskflow")
+# Keep in lockstep with kUpstreamId / I18N filters (U-18). Value is captured in
+# the root CMakeLists.txt as UPSTREAM_PROJECT_NAME before Synergy.cmake renames
+# the project - today that is "deskflow". Renaming .ts files without updating
+# those two sites silently disables translations.
+set(filename "${UPSTREAM_PROJECT_NAME}")
 
 # To add a new language Add 639 shortname
 set (translations
