@@ -80,15 +80,27 @@ bool FileTransferReceiver::onDragInfo(deskflow::IStream *stream)
   // A new announce starts a new drag: drop anything left from the previous one.
   reset();
 
+  // Parse first, always. The message body must be consumed whether or not this
+  // side acts on it - leaving the payload in the stream would desynchronise every
+  // later message, which is far worse than ignoring a transfer.
+  uint32_t announcedCount = 0;
+  std::string payload;
+  if (!ProtocolUtil::readf(stream, kMsgDDragInfo + 4, &announcedCount, &payload)) {
+    LOG_ERR("file transfer: unreadable drag announce");
+    return false;
+  }
+
   if (!m_options.enabled) {
     LOG_DEBUG("file transfer: disabled, ignoring drag announce");
     return false;
   }
 
-  uint32_t announcedCount = 0;
-  std::string payload;
-  if (!ProtocolUtil::readf(stream, kMsgDDragInfo + 4, &announcedCount, &payload)) {
-    LOG_ERR("file transfer: unreadable drag announce");
+  // With no directory configured there is nowhere safe to put the files. Guarding
+  // here as well as at write time keeps the two from drifting - and an empty path
+  // joined with a name yields a RELATIVE path, which would silently land in the
+  // process working directory.
+  if (m_options.dropDirectory.empty()) {
+    LOG_ERR("file transfer: no drop directory configured, refusing the whole drag");
     return false;
   }
 
@@ -132,11 +144,15 @@ bool FileTransferReceiver::onDragInfo(deskflow::IStream *stream)
 
 TransferState FileTransferReceiver::onFileChunk(deskflow::IStream *stream)
 {
+  // assemble() reads the message body, so it runs even when disabled: the body has
+  // to come out of the stream either way or the next message is read as garbage.
+  const auto result = FileChunk::assemble(stream, m_buffer, m_state, m_options.maxFileSize);
+
   if (!m_options.enabled) {
+    m_buffer.clear();
+    m_buffer.shrink_to_fit();
     return TransferState::Error;
   }
-
-  const auto result = FileChunk::assemble(stream, m_buffer, m_state, m_options.maxFileSize);
 
   switch (result) {
   case TransferState::Started:
@@ -170,6 +186,15 @@ void FileTransferReceiver::writeCurrentFile()
 {
   const auto content = std::move(m_buffer);
   m_buffer.clear();
+
+  // Second guard, alongside the one in onDragInfo: writing with an empty drop
+  // directory would resolve to a relative path and escape into the working
+  // directory rather than fail.
+  if (m_options.dropDirectory.empty()) {
+    LOG_ERR("file transfer: no drop directory configured, discarding received content");
+    ++m_refused;
+    return;
+  }
 
   if (m_nextName >= m_acceptedNames.size()) {
     // More transfers than announced names: the peer is not following the protocol.

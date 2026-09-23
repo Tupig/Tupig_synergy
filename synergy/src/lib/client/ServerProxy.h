@@ -13,6 +13,9 @@
 #include "KeyTypes.h"
 #include "KeyboardLayoutManager.h"
 #include "deskflow/input/InputValidator.h"
+#include "deskflow/protocol/FileTransferReceiver.h"
+
+#include <memory>
 
 class Client;
 class ClientInfo;
@@ -101,6 +104,11 @@ private:
   void setServerLanguages();
   void setActiveServerLanguage(const std::string_view &language);
 
+  //! Consume a `DDRG` announce from the server.
+  void dragInfo();
+  //! Consume one `DFTR` chunk from the server.
+  void fileChunk();
+
 private:
   using MessageParser = ConnectionResult (ServerProxy::*)(const uint8_t *);
 
@@ -133,4 +141,11 @@ private:
   ClipboardChunkAssemblyState m_clipboardChunkState;
   bool m_isUserNotifiedAboutLayoutSyncError = false;
   deskflow::KeyboardLayoutManager m_layoutManager;
+
+  //! Receives drag-and-drop files, subject to the fileTransfer settings.
+  /*!
+  Always constructed, even when the feature is off: the receiver is also what
+  consumes the message body, and leaving it unread would desynchronise the stream.
+  */
+  std::unique_ptr<FileTransferReceiver> m_fileTransferReceiver;
 };

@@ -86,6 +86,14 @@ create_test(
 )
 
 create_test(
+  NAME FileTransferReceiverTests
+  DEPENDS app
+  LIBS arch base io ${extra_libs}
+  SOURCE FileTransferReceiverTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+)
+
+create_test(
   NAME FileTransferSourceTests
   DEPENDS app
   LIBS arch base io ${extra_libs}

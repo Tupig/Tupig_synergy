@@ -107,6 +107,15 @@ public:
     inline static const auto Protocol = QStringLiteral("server/protocol");
     inline static const auto XdpRestoreToken = QStringLiteral("server/xdpRestoreToken");
   };
+  struct FileTransfer
+  {
+    /// Off by default: accepting files pushed over the network means writing
+    /// bytes the peer chose onto this machine, so it is opt-in.
+    inline static const auto Enabled = QStringLiteral("fileTransfer/enabled");
+    inline static const auto DropDirectory = QStringLiteral("fileTransfer/dropDirectory");
+    inline static const auto MaxFileSizeMb = QStringLiteral("fileTransfer/maxFileSizeMb");
+    inline static const auto MaxFileCount = QStringLiteral("fileTransfer/maxFileCount");
+  };
 
   // Enums types used in settings
   // The use of enum classes is not use for these
@@ -241,6 +250,10 @@ private:
     , Settings::Server::ExternalConfigFile
     , Settings::Server::Protocol
     , Settings::Server::XdpRestoreToken
+    , Settings::FileTransfer::Enabled
+    , Settings::FileTransfer::DropDirectory
+    , Settings::FileTransfer::MaxFileSizeMb
+    , Settings::FileTransfer::MaxFileCount
   };
 
   // When checking the default values this list contains the ones that default to false.
@@ -260,6 +273,7 @@ private:
     , Settings::Client::InvertXScroll
     , Settings::Log::ToFile
     , Settings::Log::GuiDebug
+    , Settings::FileTransfer::Enabled
   };
 
   // When checking the default values this list contains the ones that default to true.

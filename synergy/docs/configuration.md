@@ -128,6 +128,24 @@ Comments start with `#` or `;`. Only non-default values are written.
 | `tlsEnabled` | bool | `true` | Enable TLS encryption |
 | `blockedKeyCombos` | list | empty | Key combinations to intercept, as `key[:mask]` (e.g. `0xEFFF:0x0005`). Empty blocks nothing |
 
+#### `[fileTransfer]` — Drag-and-drop file transfer
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `enabled` | bool | `false` | Accept files pushed from the server |
+| `dropDirectory` | path | — | Where accepted files are written; empty refuses every transfer |
+| `maxFileSizeMb` | int | `64` | Largest single file accepted |
+| `maxFileCount` | int | `32` | Largest number of files accepted in one drag |
+
+> **Off by default.** Enabling this lets the server write files onto this machine,
+> so it is opt-in. When on, every name is reduced to a single safe file name —
+> traversal (`../`), absolute paths, drive letters, control characters, Windows
+> reserved device names and over-long names are refused rather than adjusted, and
+> the content is discarded rather than written under a substitute name. Writes are
+> staged and renamed, and an existing file is never overwritten (a `name (1).ext`
+> variant is used instead). Declared sizes, the file count and the running total
+> are all bounded.
+
 #### `[server]` — Server Mode
 
 | Key | Type | Default | Description |
@@ -465,6 +483,21 @@ key=value
 | `keySize` | int | `2048` | `2048` 或 `4096` |
 | `tlsEnabled` | bool | `true` | 启用 TLS 加密 |
 | `blockedKeyCombos` | list | 空 | 要拦截的键组合，格式 `key[:mask]`（如 `0xEFFF:0x0005`）。为空则不拦截任何组合 |
+
+#### `[fileTransfer]` — 拖拽文件传输
+
+| 键 | 类型 | 默认值 | 说明 |
+|-----|------|--------|------|
+| `enabled` | bool | `false` | 是否接受服务端推送的文件 |
+| `dropDirectory` | path | — | 接收文件的落盘目录；为空则拒绝所有传输 |
+| `maxFileSizeMb` | int | `64` | 单个文件大小上限 |
+| `maxFileCount` | int | `32` | 单次拖拽的文件数上限 |
+
+> **默认关闭。** 启用后服务端可向本机写入文件，故采用显式启用。开启时，每个文件名
+> 都会被归约为单一安全文件名 —— 路径穿越（`../`）、绝对路径、盘符、控制字符、
+> Windows 保留设备名与过长名一律**拒绝**而非就地修正，其内容也被丢弃，不会以替换名
+> 写入。写入先落暂存文件再改名，且**从不覆盖**已有文件（改用 `name (1).ext`）。
+> 声明大小、文件数与累计总量均受限。
 
 #### `[server]` — 服务端模式
 

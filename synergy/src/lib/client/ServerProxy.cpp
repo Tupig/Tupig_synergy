@@ -65,6 +65,28 @@ ServerProxy::ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue 
     LOG_INFO("blocked key combinations configured: %zu", m_inputValidator.blockedCombinationCount());
   }
 
+  // File transfer is off unless the user turns it on and names a drop directory:
+  // it means writing bytes chosen by the peer onto this machine.
+  {
+    FileTransferReceiver::Options options;
+    options.enabled = Settings::value(Settings::FileTransfer::Enabled).toBool();
+    options.dropDirectory = Settings::value(Settings::FileTransfer::DropDirectory).toString().toStdString();
+
+    if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
+      options.maxFileSize = maxMb * 1024 * 1024;
+    }
+    if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
+      options.maxFileCount = static_cast<size_t>(maxCount);
+    }
+
+    m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);
+    LOG_DEBUG(
+        "file transfer: enabled=%d, drop directory \"%s\"",
+        options.enabled ? 1 : 0,
+        options.dropDirectory.c_str()
+    );
+  }
+
   // send heartbeat
   setKeepAliveRate(kKeepAliveRate);
 }
@@ -228,6 +250,14 @@ ServerProxy::ConnectionResult ServerProxy::parseMessage(const uint8_t *code)
 
   if (memcmp(code, kMsgDMouseMove, 4) == 0) {
     mouseMove();
+  }
+
+  else if (memcmp(code, kMsgDDragInfo, 4) == 0) {
+    dragInfo();
+  }
+
+  else if (memcmp(code, kMsgDFileTransfer, 4) == 0) {
+    fileChunk();
   }
 
   else if (memcmp(code, kMsgDMouseRelMove, 4) == 0) {
@@ -912,6 +942,37 @@ void ServerProxy::secureInputNotification()
   std::string app;
   ProtocolUtil::readf(m_stream, kMsgDSecureInputNotification + 4, &app);
   LOG_INFO("application \"%s\" is blocking the keyboard", app.c_str());
+}
+
+void ServerProxy::dragInfo()
+{
+  if (m_fileTransferReceiver != nullptr && m_fileTransferReceiver->onDragInfo(m_stream)) {
+    LOG_INFO(
+        "file transfer: server is offering %zu file(s)", m_fileTransferReceiver->acceptedNames().size()
+    );
+  }
+}
+
+void ServerProxy::fileChunk()
+{
+  if (m_fileTransferReceiver == nullptr) {
+    // Should not happen: the receiver is also what drains the message body, so
+    // without it the stream would go out of step.
+    LOG_ERR("file transfer: no receiver to hand the chunk to");
+    return;
+  }
+
+  switch (m_fileTransferReceiver->onFileChunk(m_stream)) {
+  case TransferState::Finished:
+    LOG_INFO("file transfer: received a file");
+    break;
+  case TransferState::Error:
+    LOG_WARN("file transfer: the server sent a chunk this client rejected");
+    break;
+  case TransferState::Started:
+  case TransferState::InProgress:
+    break;
+  }
 }
 
 void ServerProxy::setServerLanguages()
