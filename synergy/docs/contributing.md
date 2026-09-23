@@ -96,7 +96,7 @@ Closes #42
 |--------|----------|---------------|
 | **C++ Version** | C++20 | Enforced by CMake |
 | **Formatting** | ClangFormat (Google-based) | `.clang-format` |
-| **CMake Style** | Modern CMake 3.24+ | `cmake-format` |
+| **CMake Style** | Modern CMake 3.25+ | `cmake-format` |
 | **Static Analysis** | Clang-Tidy, Cppcheck | CI Pipeline |
 | **Testing** | GoogleTest, >80% coverage | `ctest` |
 | **Commit Hooks** | Pre-commit (format, lint) | `.pre-commit-config.yaml` |
@@ -406,7 +406,7 @@ Closes #42
 |------|------|-----------|
 | **C++ 版本** | C++20 | CMake 强制要求 |
 | **格式化** | ClangFormat (基于 Google) | `.clang-format` |
-| **CMake 风格** | Modern CMake 3.24+ | `cmake-format` |
+| **CMake 风格** | Modern CMake 3.25+ | `cmake-format` |
 | **静态分析** | Clang-Tidy, Cppcheck | CI 流水线 |
 | **测试** | GoogleTest, 覆盖率 >80% | `ctest` |
 | **提交钩子** | Pre-commit (格式化、检查) | `.pre-commit-config.yaml` |

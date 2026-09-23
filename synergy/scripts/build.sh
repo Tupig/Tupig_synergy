@@ -78,7 +78,7 @@ for tool in git cmake ninja; do
                 echo "        macOS:         brew install ninja"
                 ;;
             cmake)
-                echo "        Install CMake 3.24+ and re-run."
+                echo "        Install CMake 3.25+ and re-run."
                 ;;
         esac
         exit 1

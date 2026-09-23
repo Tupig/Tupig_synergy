@@ -12,7 +12,7 @@
 ### 1.1 项目概述
 - **项目**: TuPig Synergy — 基于 Synergy/Deskflow 的跨平台键鼠共享工具
 - **仓库**: `https://github.com/Tupig/TuPig_Product/tree/main/synergy`
-- **技术栈**: C++20, CMake 3.24+, Qt 6.7+, OpenSSL 3.0+
+- **技术栈**: C++20, CMake 3.25+, Qt 6.7+, OpenSSL 3.0+
 - **版本**: 1.21.2
 - **平台**: Windows / macOS / Linux
 
@@ -71,7 +71,7 @@
 ### 全面审计 ✅ (2026-09-23)
 - [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付），报告落盘 `docs/audit-2026-09-23.md`
 - [x] 新发现 A-01～A-11 登记至 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` §2.4；U 计数修正为 21 项
-- [ ] 待整改：P1 = A-01/A-02/A-03/U-03；A-09 已关闭（WIP 已随 `fe1f4fe37`/`91960506f`/`e922e1639` 提交）；计划详见审计报告「整改计划」节
+- [ ] 待整改：P1 = A-02/A-03/U-03；A-01 已修复（3.25 统一声明）；A-09 已关闭（WIP 已随 `fe1f4fe37`/`91960506f`/`e922e1639` 提交）；计划详见审计报告「整改计划」节
 
 ### main 分支提交记录 (最新 6 个)
 ```

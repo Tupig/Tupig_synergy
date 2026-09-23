@@ -63,7 +63,7 @@ if errorlevel 1 (
 where cmake >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] cmake not found in PATH.
-    echo         Run setup.bat once to install the toolchain, or install CMake 3.24+.
+    echo         Run setup.bat once to install the toolchain, or install CMake 3.25+.
     exit /b 1
 )
 

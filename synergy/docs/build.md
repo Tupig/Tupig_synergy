@@ -10,7 +10,7 @@
 
 | Component | Minimum Version | Notes |
 |-----------|----------------|-------|
-| **CMake** | 3.24+ | Modern CMake required |
+| **CMake** | 3.25+ | Modern CMake required |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/crypto support |
 | **libportal** | 0.9.1+ | Linux/BSD only (Wayland portal) |
@@ -257,7 +257,7 @@ cmake --build build --target coverage
 
 | 组件 | 最低版本 | 说明 |
 |------|----------|------|
-| **CMake** | 3.24+ | 需要现代 CMake 特性 |
+| **CMake** | 3.25+ | 需要现代 CMake 特性 |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/加密支持 |
 | **libportal** | 0.9.1+ | 仅 Linux/BSD (Wayland Portal) |
@@ -516,12 +516,12 @@ duplicated in the scripts.
 `vcpkg.json` 读取，不在脚本里复制一份。
 
 > **Windows prerequisite / Windows 前置条件**: a C++ toolchain (Visual Studio 2022 Build Tools with
-> the "Desktop development with C++" workload), CMake 3.24+ and Git. Run `setup.bat` once to install
+> the "Desktop development with C++" workload), CMake 3.25+ and Git. Run `setup.bat` once to install
 > them. `scripts\build.bat` locates Visual Studio through `vswhere` and activates the MSVC environment
 > itself — do not hardcode install paths or pre-set `VCPKG_ROOT`.
 >
 > **Windows 前置条件**：C++ 工具链（含 "Desktop development with C++" 工作负载的 Visual Studio 2022
-> Build Tools）、CMake 3.24+ 与 Git。首次运行 `setup.bat` 安装。`scripts\build.bat` 会通过 `vswhere`
+> Build Tools）、CMake 3.25+ 与 Git。首次运行 `setup.bat` 安装。`scripts\build.bat` 会通过 `vswhere`
 > 自行定位 Visual Studio 并激活 MSVC 环境 —— 不要硬编码安装路径，也不要预设 `VCPKG_ROOT`。
 
 ### Presets in `CMakePresets.json` / 预设清单

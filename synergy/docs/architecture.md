@@ -74,7 +74,7 @@ Adopt **Qt 6** (minimum 6.7) as the sole GUI framework.
 
 ---
 
-### ADR-0002: CMake 3.24+ as Build System
+### ADR-0002: CMake 3.25+ as Build System
 
 **Status**: Accepted
 **Date**: 2024-01-15
@@ -90,7 +90,7 @@ Need build system supporting:
 - Cross-compilation
 
 #### Decision
-Standardize on **CMake 3.24+** with presets (`CMakePresets.json`).
+Standardize on **CMake 3.25+** with presets (`CMakePresets.json`).
 
 #### Consequences
 **Positive:**
@@ -518,7 +518,7 @@ Each file: English first, Chinese second, shared diagrams/tables.
 
 ---
 
-### ADR-0002: CMake 3.24+ 作为构建系统
+### ADR-0002: CMake 3.25+ 作为构建系统
 
 **状态**: 已接受
 **日期**: 2024-01-15
@@ -534,7 +534,7 @@ Each file: English first, Chinese second, shared diagrams/tables.
 - 交叉编译
 
 #### 决策
-标准化使用 **CMake 3.24+**，配合预设 (`CMakePresets.json`)。
+标准化使用 **CMake 3.25+**，配合预设 (`CMakePresets.json`)。
 
 #### 后果
 **正面：**

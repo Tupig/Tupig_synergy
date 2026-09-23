@@ -20,7 +20,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-0EA5E9?style=flat-square)
 ![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat-square&logo=c%2B%2B)
 ![Qt](https://img.shields.io/badge/Qt-6.7%2B-41CD52?style=flat-square&logo=qt)
-![CMake](https://img.shields.io/badge/CMake-3.24%2B-064F8C?style=flat-square&logo=cmake)
+![CMake](https://img.shields.io/badge/CMake-3.25%2B-064F8C?style=flat-square&logo=cmake)
 
 </div>
 
@@ -71,7 +71,7 @@ graph TB
     subgraph "External Dependencies / 外部依赖"
         QT[Qt 6.7+]
         SSL[OpenSSL 3.0+]
-        CMAKE[CMake 3.24+]
+        CMAKE[CMake 3.25+]
     end
 
     GUI --> APP
@@ -115,7 +115,7 @@ Output (VS multi-config) / 产物（VS 多配置）: `build\bin\Release\synergy.
 
 | Requirement / 依赖 | Windows | macOS | Linux |
 |---|---|---|---|
-| **CMake 3.24+** | `setup.bat` installs / 自动安装 | `brew install cmake` | `sudo apt install cmake` |
+| **CMake 3.25+** | `setup.bat` installs / 自动安装 | `brew install cmake` | `sudo apt install cmake` |
 | **Ninja** | Included with VS Build Tools / 随 VS 构建工具附带 | `brew install ninja` | `sudo apt install ninja-build` |
 | **vcpkg** | `setup.bat` bootstraps / 自动引导 | `brew install vcpkg` | manual bootstrap / 手工引导 |
 | **MSVC Build Tools** | `setup.bat` installs / 自动安装 | — | — |
