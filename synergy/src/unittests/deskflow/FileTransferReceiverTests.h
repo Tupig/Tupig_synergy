@@ -47,6 +47,7 @@ private Q_SLOTS:
 
   // Disk behaviour
   void neverOverwritesAnExistingFile();
+  void duplicateNamesInOneDragDoNotOverwriteEachOther();
   void writesNothingOutsideTheDropDirectory();
   void refusesWhenDropDirectoryIsUnset();
 

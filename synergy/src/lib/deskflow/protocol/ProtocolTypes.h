@@ -1070,21 +1070,29 @@ extern const char *const kMsgDSetOptions;
  * - `$2`: Data (string) - Content depends on mark
  *
  * **Transfer Marks**:
- * - `1` (kDataStart): Data contains file size (8 bytes)
+ * - `1` (kDataStart): Data is the file size, as a **decimal string** (so `4096`
+ *   arrives as the four bytes `"4096"`). Not an 8-byte integer - the `%s` field
+ *   carries text, and FileChunk::start encodes it with std::to_string while
+ *   FileChunk::assemble parses it with std::from_chars.
  * - `2` (kDataChunk): Data contains file content chunk
  * - `3` (kDataEnd): Transfer complete (data may be empty)
+ *
+ * Each chunk payload must fit the `%s` transport ceiling
+ * (PROTOCOL_MAX_STRING_LENGTH). Oversized chunks are not merely slow:
+ * ProtocolUtil::readBytes() throws BadClientException, which the dispatchers
+ * treat as a protocol error and drop the connection.
  *
  * **Example Transfer Sequence**:
  *
  * Send 4096 bytes
  * ```
- * "DFTR\x01\x00\x00\x00\x00\x00\x00\x10\x00"
- * "DFTR\x02[1024 bytes of file data]"
- * "DFTR\x02[1024 bytes of file data]"
- * "DFTR\x02[1024 bytes of file data]"
- * "DFTR\x02[1024 bytes of file data]"
- * "DFTR\x03"
+ * "DFTR\x01" "4096"      # mark=1, declared size as decimal text
+ * "DFTR\x02[16384 bytes of file data]"
+ * "DFTR\x02[16384 bytes of file data]"
+ * "DFTR\x03"             # mark=3, empty payload
  * ```
+ * (A `%s` payload is length-prefixed by ProtocolUtil; the quotes above delimit it
+ * for readability only.)
  *
  * **Protocol Flow**:
  * 1. Sender initiates with kDataStart containing total file size

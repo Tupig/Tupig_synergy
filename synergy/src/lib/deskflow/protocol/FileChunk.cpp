@@ -211,6 +211,22 @@ void FileChunk::send(deskflow::IStream *stream, void *chunk)
   const auto mark = static_cast<uint32_t>(static_cast<uint8_t>(buffer[0]));
   std::string payload(&buffer[1], fileChunk->m_dataSize);
 
+  // Last line of defence on the chunk ceiling. A payload above the transport limit
+  // is not merely slow: ProtocolUtil::readBytes() throws BadClientException on the
+  // receiving side, and its dispatchers treat that as a protocol error and drop the
+  // whole connection. Refusing here turns a dropped session into one failed file,
+  // which is the difference between "the transfer did not work" and "sharing
+  // stopped". Callers should chunk through splitIntoFileChunks() instead of
+  // hitting this.
+  if (payload.size() > g_chunkSize) {
+    LOG_ERR(
+        "refusing to send a file chunk of %zu bytes: the transport limit is %zu "
+        "(chunk the content with splitIntoFileChunks())",
+        payload.size(), g_chunkSize
+    );
+    return;
+  }
+
   ProtocolUtil::writef(stream, kMsgDFileTransfer, mark, &payload);
 }
 

@@ -109,8 +109,12 @@ std::string FileTransferPath::joinUnderDirectory(const std::string &directory, c
 
 std::string FileTransferPath::joinNames(const std::vector<std::string> &names)
 {
-  // Each name is written NUL-terminated, so the payload ends with a separator
-  // and a splitter recovers exactly the names that went in.
+  // Each name is written NUL-terminated, so the payload ends with a separator.
+  // Note this is not a perfect round-trip: splitNames() drops empty segments, so
+  // an empty name disappears. That is deliberate - an empty segment is never a
+  // file to act on - but it means a caller must not derive the announced count by
+  // splitting the payload it just built, or the two can disagree by the number of
+  // empty names.
   std::string payload;
   for (const auto &name : names) {
     payload.append(name);

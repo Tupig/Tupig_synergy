@@ -14,6 +14,7 @@ class FileChunkTests : public QObject
 private Q_SLOTS:
   void initTestCase();
   void chunkSizeFitsTransportLimit();
+  void sendRefusesPayloadAboveTransportLimit();
   void splitProducesNoChunksForEmptyInput();
   void splitProducesSingleChunkWhenUnderLimit();
   void splitHonoursChunkSizeAndPreservesBytes();

@@ -237,6 +237,32 @@ void FileChunkTests::chunkSizeFitsTransportLimit()
   QVERIFY(FileChunk::chunkSize() <= static_cast<size_t>(PROTOCOL_MAX_STRING_LENGTH));
 }
 
+void FileChunkTests::sendRefusesPayloadAboveTransportLimit()
+{
+  // A caller that builds a chunk from an arbitrary size - rather than chunking
+  // through splitIntoFileChunks() - must not be able to put an over-long `%s` on
+  // the wire: the receiver throws BadClientException and its dispatcher drops the
+  // whole connection, so one bad file would take sharing down with it.
+  const std::string oversize(FileChunk::chunkSize() + 1, 'x');
+
+  BufferWriteStream stream;
+  FileChunk *chunk = FileChunk::data(oversize);
+  FileChunk::send(&stream, chunk);
+  delete chunk;
+
+  QVERIFY(stream.str().empty());
+
+  // At the limit it must still go through, or the check would be off by one and
+  // break every full-size chunk.
+  const std::string atLimit(FileChunk::chunkSize(), 'y');
+  BufferWriteStream okStream;
+  FileChunk *ok = FileChunk::data(atLimit);
+  FileChunk::send(&okStream, ok);
+  delete ok;
+
+  QVERIFY(!okStream.str().empty());
+}
+
 void FileChunkTests::splitProducesNoChunksForEmptyInput()
 {
   QVERIFY(splitIntoFileChunks("").empty());

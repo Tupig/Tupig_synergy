@@ -473,6 +473,32 @@ void FileTransferReceiverTests::neverOverwritesAnExistingFile()
   QCOMPARE(dropped("note (1).txt"), QByteArray("incoming"));
 }
 
+void FileTransferReceiverTests::duplicateNamesInOneDragDoNotOverwriteEachOther()
+{
+  // The protocol carries no name per content message - the Nth transfer is paired
+  // with the Nth announced name. Two files with the same base name in one drag must
+  // therefore both survive; picking a unique path is what keeps the second from
+  // destroying the first. (An earlier concern was that a case-insensitive
+  // filesystem could turn this into a silent overwrite.)
+  feedAnnounce({"photo.jpg", "photo.jpg"});
+  QCOMPARE(m_receiver->acceptedNames().size(), static_cast<size_t>(2));
+
+  feedChunk(ChunkType::DataStart, "5");
+  feedChunk(ChunkType::DataChunk, "first");
+  feedChunk(ChunkType::DataEnd, "");
+
+  feedChunk(ChunkType::DataStart, "6");
+  feedChunk(ChunkType::DataChunk, "second");
+  feedChunk(ChunkType::DataEnd, "");
+
+  QCOMPARE(m_receiver->writtenFiles().size(), static_cast<size_t>(2));
+  QCOMPARE(dropped("photo.jpg"), QByteArray("first"));
+  QCOMPARE(dropped("photo (1).jpg"), QByteArray("second"));
+
+  // Both must be present, and they must be different files.
+  QVERIFY(m_receiver->writtenFiles().at(0) != m_receiver->writtenFiles().at(1));
+}
+
 void FileTransferReceiverTests::writesNothingOutsideTheDropDirectory()
 {
   // A grab-bag of hostile names, then a legitimate transfer: whatever is refused
