@@ -43,7 +43,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | Open |
 | U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | **Fixed** |
 | U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
-| U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | Open |
+| U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | **Fixed** |
 | U-07 | P2 | Runtime (icons) | Two icon themes compiled into the same binary | Open |
 | U-08 | P3 | Comments | Three comments contradict the code | Open |
 | U-09 | P3 | Runtime (paths) | Directory names and file names use different app identifiers | Open |
@@ -58,6 +58,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-18 | P3 | Naming | `deskflow` / `synergy` boundary plus a fragile i18n coupling | Open |
 | U-19 | P3 | Naming | Overlay layout and test placement are inconsistent | Open |
 | U-20 | P2 | Docs | Documented CLI option `--install-service` does not exist | **Fixed** |
+| U-21 | P2 | Docs / feature scope | Linux drag-and-drop described as restorable; it was never implemented | Recorded |
 
 Already fixed in this session: stale binary names in `README.md`, `setup.bat`, `docs/build.md`, `docs/configuration.md` and `src/apps/res/manpage.txt` (commit `baa5afe76`, branch `cursor/docs-fix-binary-names`).
 
@@ -150,9 +151,13 @@ On `APPLE`, `target = CMAKE_PROJECT_PROPER_NAME` = `"TuPig Synergy"` (`src/apps/
 
 `deploy/linux/arch/PKGBUILD.in:5-6` derives `pkgname=synergy-git` from `CMAKE_PROJECT_NAME`, but the `conflicts` array at `:13` still begins with `'synergy-git'` and ends with `'deskflow'`. The rebrand changed `_basename` without cleaning the list.
 
+**Resolution (2026-09-23)**: `'synergy-git'` removed from `conflicts`; `'synergy'` was added in its place, since the built package now provides the `synergy` command and must not coexist with something else that does. Verified the reasoning: `conflicts` names *other* packages this one cannot live alongside, so listing its own `pkgname` made pacman refuse its own artifact. The `deskflow` entry is intentional and stays.
+
 #### U-07 — Two icon themes compiled into the same binary
 
-The GUI links both `../res/deskflow.qrc` and `extra/src/apps/res/synergy.qrc` (`src/apps/deskflow-gui/CMakeLists.txt:41-42`). The first ships `icons/deskflow-{dark,light}/` with the app icon named `org.deskflow.deskflow.svg`; the second ships `icons/synergy-{dark,light}/` (theme names `synergy-dark` / `synergy-light`) with the app icon named `com.symless.synergy.svg` (`extra/src/apps/res/synergy.qrc:5-10`). Two theme names and two app-icon identifiers coexist.
+The GUI links both `../res/deskflow.qrc` and `extra/src/apps/res/synergy.qrc` (`src/apps/deskflow-gui/CMakeLists.txt:41-42`). The first ships `icons/deskflow-{dark,light}/` with the app icon named `org.deskflow.deskflow.svg`; the second ships `icons/synergy-{dark,light}/` (theme names `synergy-dark` / `synergy-light`) with the app icon named `com.tupig.synergy.svg`. Two theme names and two app-icon identifiers coexist.
+
+**Partly addressed (2026-09-23)**: the second theme's app-icon identifier is now `com.tupig.synergy` (was `com.symless.synergy`), which is what `QIcon::fromTheme(kRevFqdnName)` asks for — see U-02. The two-themes-coexisting half of this item is still open; the upstream `deskflow-{dark,light}` theme is still linked in.
 
 #### U-08 — Comments that contradict the code
 
@@ -272,8 +277,69 @@ login-screen support.
 the constraint in `AGENTS.md` and `docs/delivery.md` so a future agent does not implement a
 self-install option merely to make the old documentation true.
 
-### Verified consistent (not defects)
+#### U-21 — Linux drag-and-drop was never implemented (scope assumption corrected)
 
+**Severity**: P2 · **Verification**: git history, read locally without network
+
+The drag-and-drop file transfer work was planned around "restore the upstream implementation on
+all three platforms", and Linux was described as "XDND / Wayland DnD". Checking the history shows
+that premise is wrong for Linux.
+
+`5365e34f0` — *"feat: remove drag and drop support, its broken on all platforms"*, 2025-05-08 —
+is the commit that removed it. It is **upstream, not this fork**: `git merge-base --is-ancestor
+5365e34f0 8ed7a3ef` succeeds, where `8ed7a3ef` is the fork point recorded in
+`docs/contributing.md`. Its deletions are:
+
+```
+D  src/lib/deskflow/DragInformation.cpp    D  src/lib/platform/MSWindowsDropTarget.cpp
+D  src/lib/deskflow/DragInformation.h      D  src/lib/platform/MSWindowsDropTarget.h
+D  src/lib/deskflow/DropHelper.cpp         D  src/lib/platform/OSXDragSimulator.m
+D  src/lib/deskflow/DropHelper.h           D  src/lib/platform/OSXDragView.h
+D  src/lib/deskflow/FileChunk.cpp          D  src/lib/platform/OSXDragView.m
+D  src/lib/deskflow/FileChunk.h
+```
+
+Only Windows and macOS plus the shared core. Three independent checks confirm Linux was never
+covered:
+
+- `git show --name-status 5365e34f0` lists **no** Linux or X11 file.
+- `git grep -i 'xdnd\|drag' 5365e34f0^ -- src/lib/platform/XWindowsScreen.cpp XWindowsScreen.h`
+  returns **nothing** (run with the blobs local, so this is not a promisor failure).
+- `git ls-tree -r --name-only 5365e34f0^` filtered for drag/drop shows exactly the ten files above.
+
+The removed `ArgParser.cpp` hunk even logged *"ignoring --enable-drag-drop, not supported on
+linux."* under `WINAPI_XWINDOWS`.
+
+**Consequence for planning**: Windows (OLE `IDropSource`/`IDropTarget`) and macOS
+(`NSPasteboard`/`NSDragPboard`) have upstream code to port; **Linux has nothing to port** — XDND /
+Wayland DnD would be new development, and this project has no Linux machine to verify it on. The
+agreed scope is therefore Windows + macOS, with Linux recorded as not implemented rather than
+implied to be nearly done.
+
+**Retrieval is offline-capable on this clone** — the pre-removal blobs are in the local object
+store, so no fetch is needed:
+
+```
+git show 5365e34f0^:src/lib/platform/MSWindowsDropTarget.cpp
+git show 5365e34f0^:src/lib/platform/OSXDragView.m
+git show 5365e34f0^:src/lib/platform/OSXDragSimulator.m
+```
+
+**Three mandatory adaptations**, none of which is a verbatim re-apply:
+
+1. The old `FileChunk` API is gone: `kStart`/`kNotFinish`/`kFinish`/`kError` and
+   `assemble(stream, cached, size) -> int` were replaced by `TransferState` and
+   `ChunkType::DataStart/DataChunk/DataEnd` (`protocol/ProtocolTypes.h`).
+2. The old sender chunked at 512 KiB. Today the `%s` transport ceiling is 64 KiB
+   (`PROTOCOL_MAX_STRING_LENGTH`) and exceeding it is not slow but fatal — the receiver throws
+   `BadClientException` and the dispatcher drops the connection. Ported code must use
+   `FileChunk::chunkSize()`; this is the same class of drift fixed in `49444783b`.
+3. The old `DDRG` payload was `path,size,path,size,…`. The current encoder sends NUL-separated
+   **base names only** (`FileTransferPath::joinNames`). That is a deliberate security improvement —
+   a peer should not be handed local paths — so the platform layer must call the new encoder rather
+   than `DragInformation`.
+
+### Verified consistent (not defects)
 These were checked and are **not** problems — recorded so a future audit does not re-open them:
 
 - **Translation loading**: `.ts` names, the `kUpstreamId` filter and `I18NTests` all agree (U-18 explains why).
@@ -309,7 +375,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | 待处理 |
 | U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | **已修复** |
 | U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |
-| U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | 待处理 |
+| U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | **已修复** |
 | U-07 | P2 | 运行时 (图标) | 两套图标主题编进同一个二进制 | 待处理 |
 | U-08 | P3 | 注释 | 三处注释与代码相反 | 待处理 |
 | U-09 | P3 | 运行时 (路径) | 目录名与文件名用了不同的应用标识 | 待处理 |
@@ -324,6 +390,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-18 | P3 | 命名 | `deskflow` / `synergy` 边界，以及一个脆弱的 i18n 耦合 | 待处理 |
 | U-19 | P3 | 命名 | overlay 目录结构与测试归属不一致 | 待处理 |
 | U-20 | P2 | 文档 | 文档中的 CLI 选项 `--install-service` 并不存在 | **已修复** |
+| U-21 | P2 | 文档 / 功能范围 | 文档称 Linux 拖拽可恢复；实际从未实现 | 已记录 |
 
 本次已修复：`README.md`、`setup.bat`、`docs/build.md`、`docs/configuration.md`、`src/apps/res/manpage.txt` 中过时的产物文件名（提交 `baa5afe76`，分支 `cursor/docs-fix-binary-names`）。
 
@@ -384,10 +451,12 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 #### U-06 — PKGBUILD 与自己冲突
 
 `deploy/linux/arch/PKGBUILD.in:5-6` 由 `CMAKE_PROJECT_NAME` 得出 `pkgname=synergy-git`，但 `:13` 的 `conflicts` 数组第一个元素仍是 `'synergy-git'`，末尾还留着 `'deskflow'`。rebrand 改了 `_basename` 却没清理这个列表。
+**已修复（2026-09-23）**：已从 `conflicts` 移除 `'synergy-git'`，并代之以 `'synergy'`，因为该包现在提供 `synergy` 命令，不能与另一个提供者共存。理由已核实：`conflicts` 列的是「本包无法共存的**其他**包」，把自己的 `pkgname` 列进去会让 pacman 拒绝自己产出的包。`deskflow` 一条是有意的，保留。
 
 #### U-07 — 两套图标主题编进同一个二进制
 
-GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`src/apps/deskflow-gui/CMakeLists.txt:41-42`）。前者带 `icons/deskflow-{dark,light}/`，app 图标名为 `org.deskflow.deskflow.svg`；后者带 `icons/synergy-{dark,light}/`（主题名 `synergy-dark` / `synergy-light`），app 图标名为 `com.symless.synergy.svg`（`extra/src/apps/res/synergy.qrc:5-10`）。两套主题名与两种 app 图标标识并存。
+GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`src/apps/deskflow-gui/CMakeLists.txt:41-42`）。前者带 `icons/deskflow-{dark,light}/`，app 图标名为 `org.deskflow.deskflow.svg`；后者带 `icons/synergy-{dark,light}/`（主题名 `synergy-dark` / `synergy-light`），app 图标名为 `com.tupig.synergy.svg`。两套主题名与两种 app 图标标识并存。
+**部分处理（2026-09-23）**：第二套主题的图标标识已改为 `com.tupig.synergy`（原为 `com.symless.synergy`），即 `QIcon::fromTheme(kRevFqdnName)` 实际请求的名字，见 U-02。本条目「两套主题并存」的另一半仍未处理：上游 `deskflow-{dark,light}` 主题仍被链接进来。
 
 #### U-08 — 与代码相反的注释
 
@@ -498,6 +567,61 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 `synergy-daemon.exe` 声明了 `ServiceInstall`）与手工 `sc create`，中英双语；修正 `IArchDaemon` 的
 过时注释；并把该约束记入 `AGENTS.md` 与 `docs/delivery.md`，以免后续 agent 为了让旧文档「成真」
 而贸然实现自安装选项。
+
+#### U-21 — Linux 拖拽从未实现（范围前提被更正）
+
+**级别**: P2 · **验证**: git 历史，本地读取，无需联网
+
+文件拖拽传输的工作原是按「三端都恢复上游实现」规划的，并把 Linux 描述为「XDND / Wayland
+DnD」。核查历史后确认：**这一前提对 Linux 不成立**。
+
+`5365e34f0` —— *"feat: remove drag and drop support, its broken on all platforms"*，2025-05-08
+—— 就是移除它的那个提交。它属于**上游，不是本 fork**：`git merge-base --is-ancestor 5365e34f0
+8ed7a3ef` 成立，而 `8ed7a3ef` 正是 `docs/contributing.md` 记录的 fork 基点。其删除清单为：
+
+```
+D  src/lib/deskflow/DragInformation.cpp    D  src/lib/platform/MSWindowsDropTarget.cpp
+D  src/lib/deskflow/DragInformation.h      D  src/lib/platform/MSWindowsDropTarget.h
+D  src/lib/deskflow/DropHelper.cpp         D  src/lib/platform/OSXDragSimulator.m
+D  src/lib/deskflow/DropHelper.h           D  src/lib/platform/OSXDragView.h
+D  src/lib/deskflow/FileChunk.cpp          D  src/lib/platform/OSXDragView.m
+D  src/lib/deskflow/FileChunk.h
+```
+
+只有 Windows 与 macOS 以及共享核心。三项独立检查都指向「Linux 从来未被覆盖」：
+
+- `git show --name-status 5365e34f0` 未列出任何 Linux / X11 文件。
+- `git grep -i 'xdnd\|drag' 5365e34f0^ -- src/lib/platform/XWindowsScreen.cpp XWindowsScreen.h`
+  **无任何结果**（在 blob 已本地化的情况下执行，故不是 promisor 取用失败）。
+- `git ls-tree -r --name-only 5365e34f0^` 按 drag/drop 过滤后，恰好就是上述十个文件。
+
+被删的 `ArgParser.cpp` 代码块甚至有一行日志：`WINAPI_XWINDOWS` 下
+*"ignoring --enable-drag-drop, not supported on linux."*
+
+**对规划的影响**：Windows（OLE `IDropSource`/`IDropTarget`）与 macOS
+（`NSPasteboard`/`NSDragPboard`）有上游代码可移植；**Linux 无物可移植** —— XDND / Wayland DnD
+属全新开发，而本项目没有 Linux 机器可供验证。因此确定的范围是 Windows + macOS，Linux 明确
+记为「未实现」，而不是含糊地像是「快好了」。
+
+**本克隆可离线取出**（移除前的 blob 就在本地对象库里，无需 fetch）：
+
+```
+git show 5365e34f0^:src/lib/platform/MSWindowsDropTarget.cpp
+git show 5365e34f0^:src/lib/platform/OSXDragView.m
+git show 5365e34f0^:src/lib/platform/OSXDragSimulator.m
+```
+
+**三处必须改写**（都不是原样照搬）：
+
+1. 旧 `FileChunk` 接口已不存在：`kStart`/`kNotFinish`/`kFinish`/`kError` 与
+   `assemble(stream, cached, size) -> int` 已被 `TransferState` 与
+   `ChunkType::DataStart/DataChunk/DataEnd` 取代（`protocol/ProtocolTypes.h`）。
+2. 旧发送端按 512 KiB 分块。现在 `%s` 的传输上限是 64 KiB（`PROTOCOL_MAX_STRING_LENGTH`），
+   且超限不是变慢而是**致命** —— 接收端抛 `BadClientException`，分发层断开连接。移植代码必须
+   使用 `FileChunk::chunkSize()`；这与 `49444783b` 修的正是同一类漂移。
+3. 旧 `DDRG` 载荷是 `路径,大小,路径,大小…`。当前编码器只发 NUL 分隔的**基名**
+   （`FileTransferPath::joinNames`）。这是有意的安全改进 —— 不应把本机路径交给对端 —— 故平台层
+   必须调用新编码器，而非 `DragInformation`。
 
 ### 已核实一致（不是缺陷）
 
