@@ -12,7 +12,7 @@
 
 // important: this is used for settings paths on some platforms,
 // and must not be a url. qt automatically converts this to reverse domain
-// notation (rdn), e.g. org.deskflow
+// notation (rdn), e.g. com.tupig.synergy from kAppDomain "tupig.com"
 const auto kOrgDomain = QString::fromUtf8(kAppDomain);
 
 // Destination for "Get help" / "Report bug" in the menu and for the

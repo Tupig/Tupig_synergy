@@ -10,7 +10,10 @@
 #  VCPKG_BUILD_TYPE release (see triplets/overlay), so a Debug build configures
 #  and compiles but cannot link the dependencies - offering it here would only
 #  produce a confusing link failure. For an instrumented or non-optimised build
-#  use the diagnostics presets (linux-asan / linux-tsan / linux-coverage) via
+#  use the diagnostics presets (linux-asan-build / linux-tsan-build /
+#  linux-coverage-build) via cmake --preset <name>. The configure presets
+#  named linux-asan / linux-tsan / linux-coverage are hidden and not usable
+#  with --preset.
 #  cmake --preset directly.
 #
 #  Self-contained by design:
@@ -34,7 +37,8 @@ case "${BUILD_TYPE}" in
         echo "[ERROR] A Debug build cannot link this project's dependencies."
         echo "        Every overlay triplet sets VCPKG_BUILD_TYPE release, so only"
         echo "        Release dependencies are available."
-        echo "        Use 'release', or a diagnostics preset such as linux-asan."
+        echo "        Use 'release', or a visible diagnostics build preset such as"
+        echo "        linux-asan-build (also linux-tsan-build, linux-coverage-build)."
         exit 1
         ;;
     *)

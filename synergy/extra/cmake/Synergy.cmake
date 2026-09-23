@@ -14,8 +14,9 @@ set(CMAKE_PROJECT_HOMEPAGE_URL "https://tupig.com")
 # Display brand. "TuPig Synergy 1" is the default user-facing name (window title,
 # About dialog). When building as the Core, flip to "TuPig Synergy Core" so the 
 # same codebase ships under a different product label.
-# Distinct from CMAKE_PROJECT_PROPER_NAME, which stays "TuPig Synergy" to keep file paths
-# (~/.config/TuPig Synergy/, TuPig Synergy.conf) and Windows globals space-free.
+# Distinct from CMAKE_PROJECT_PROPER_NAME, which stays "TuPig Synergy" so config
+# and data paths (~/.config/TuPig Synergy/, TuPig Synergy.conf) and Windows
+# global object names match the product brand (spaces included by design).
 option(SYNERGY_CORE_FLAVOR "Build as TuPig Synergy Core" OFF)
 if(SYNERGY_CORE_FLAVOR)
   set(SYNERGY_DISPLAY_NAME "TuPig Synergy Core")
@@ -27,9 +28,8 @@ add_compile_definitions(SYNERGY_DISPLAY_NAME="${SYNERGY_DISPLAY_NAME}")
 # Single source of truth for the minimum macOS version. Synergy is long-term
 # stable (unlike upstream, which tracks recent macOS), so we target the oldest
 # macOS the linked Qt 6.x supports, the same value for every architecture.
-# Both the build (here) and the packaged app's advertised minimum
-# (apps/gui-electron/dist/package.config.js, which reads this line) derive from
-# this one value, so they can't drift. CI must NOT pass -DCMAKE_OSX_DEPLOYMENT_TARGET.
+# CMake uses this for the build; the packaged .app inherits it via the Xcode/
+# Ninja generators. CI must NOT pass -DCMAKE_OSX_DEPLOYMENT_TARGET.
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "12")
 endif()
@@ -63,11 +63,10 @@ set(GUI_QRC_FILE "${GUI_RES_DIR}/synergy.qrc")
 # target name == source basename.
 set(CMAKE_PROJECT_NAME synergy)
 
-# Synergy version. Base semver lives in ./VERSION (read by the root CMakeLists.txt);
-# composition rules — dev/snapshot/release suffix, rev count — are shared with
-# extra/cmake/SaveVersion.cmake via synergy_compute_version() so the CI-side
-# version (used in package filenames, S3 paths, etc.) matches what the binaries
-# report. Default mode is dev; flip with -DSYNERGY_VERSION_RELEASE=ON or
+# Synergy version. Base semver and composition rules — dev/snapshot/release
+# suffix, rev count — live in extra/cmake/Version.cmake via synergy_compute_version()
+# so the CI-side version (package filenames, S3 paths, etc.) matches what the
+# binaries report. Default mode is dev; flip with -DSYNERGY_VERSION_RELEASE=ON or
 # -DSYNERGY_VERSION_SNAPSHOT=ON for CI/release builds.
 option(SYNERGY_VERSION_RELEASE "Release version" OFF)
 option(SYNERGY_VERSION_SNAPSHOT "Snapshot version" OFF)
