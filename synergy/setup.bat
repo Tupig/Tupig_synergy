@@ -123,8 +123,12 @@ echo   Environment Setup Complete
 echo ========================================
 echo.
 echo Next steps:
-echo   1. cmake --preset windows-msvc-release
-echo   2. cmake --build build --config Release
+echo   1. cd synergy
+echo   2. scripts\build.bat release
+echo.
+echo Advanced equivalent:
+echo   cmake --preset windows-msvc-release
+echo   cmake --build build --config Release
 echo.
 echo Output: build\bin\Release\synergy.exe        (GUI)
 echo         build\bin\Release\synergy-core.exe   (core)

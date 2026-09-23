@@ -2,7 +2,7 @@
 
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
-> **Last updated / 最后更新**: 2026-09-21
+> **Last updated / 最后更新**: 2026-09-23
 > **Scope / 范围**: Cross-cutting naming + identity consistency / 跨模块命名与身份一致性
 > **Related / 相关**: `docs/HANDOFF.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
 >
@@ -45,7 +45,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
 | U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | **Fixed** |
 | U-07 | P2 | Runtime (icons) | Two icon themes compiled into the same binary | Open |
-| U-08 | P3 | Comments | Three comments contradict the code | Open |
+| U-08 | P3 | Comments | Three comments contradict the code | **Fixed** |
 | U-09 | P3 | Runtime (paths) | Directory names and file names use different app identifiers | Open |
 | U-10 | P3 | Packaging | Vendor / copyright strings still name the upstream commercial vendor | Open |
 | U-11 | P1 | Docs | Three bilingual formats coexist; two docs have no English | **Fixed** |
@@ -53,7 +53,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-13 | P2 | Docs | Version numbers hardcoded in six places | Open |
 | U-14 | P2 | Docs | `HANDOFF.md` has drifted from reality | Open |
 | U-15 | P2 | Docs | Licence description disagrees across four files | Open |
-| U-16 | P2 | CI | CI enforces unversioned binary names and the upstream vendor identity | Open |
+| U-16 | P2 | CI | CI enforces unversioned binary names and the upstream vendor identity | **Fixed** (narrowed; see below) |
 | U-17 | P3 | Naming | Four different product display names | Open |
 | U-18 | P3 | Naming | `deskflow` / `synergy` boundary plus a fragile i18n coupling | Open |
 | U-19 | P3 | Naming | Overlay layout and test placement are inconsistent | Open |
@@ -171,9 +171,11 @@ The GUI links both `../res/deskflow.qrc` and `extra/src/apps/res/synergy.qrc` (`
 
 #### U-08 — Comments that contradict the code
 
-- `src/lib/common/UrlConstants.h:13-15` says the domain is converted to reverse-DNS "e.g. org.deskflow"; the actual `kAppDomain` is `tupig.com` (`extra/cmake/Synergy.cmake:11`). Behaviour is fine; the comment is stale.
-- `extra/cmake/Synergy.cmake:14-18` claims keeping `CMAKE_PROJECT_PROPER_NAME` makes paths and Windows globals "space-free" — but `"TuPig Synergy"` contains a space, and `Constants.h.in:36-40` uses it to build `Global\TuPig SynergyClose`-style names, with `MSWindowsScreen.cpp:112,785` using it as a Win32 window class name.
-- `extra/cmake/Synergy.cmake:66` says "Base semver lives in `./VERSION` (read by the root CMakeLists.txt)". There is no `VERSION` file; the root `CMakeLists.txt:24` includes `extra/cmake/Version.cmake`.
+**Fixed 2026-09-23**: the three stale comments were rewritten to match the code —
+
+- `UrlConstants.h` example is now `com.tupig.synergy` / `tupig.com`.
+- `Synergy.cmake` no longer claims paths are "space-free", no longer cites a phantom
+  `gui-electron` package config, and points at `extra/cmake/Version.cmake` instead of `./VERSION`.
 
 #### U-09 — Directory names and file names use different identifiers
 
@@ -238,10 +240,12 @@ The single source of truth is `extra/cmake/Version.cmake`, but `1.21.2` is hardc
 
 #### U-16 — CI enforces the unversioned names and the upstream identity
 
-- `.github/actions/test-package/action.yml:20,25,44` probes unversioned `synergy-core` / `synergy-core.exe` (also U-01).
-- `.github/workflows/ci.yml:678,681,687` lints and builds `extra/deploy/linux/com.symless.synergy.*`, actively enforcing the upstream commercial identity (see U-03).
-- `.github/workflows/ci.yml:179` assumes unversioned artifact names in a comment.
-- `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` is a status tracker, not an issue template, and is filed where templates live.
+**Fixed** for the packaging/identity bullets (2026-09-23):
+
+- Unversioned probes in `test-package` are correct after U-01 (executables no longer carry a version suffix).
+- `ci.yml` flatpak lint/build paths now use `com.tupig.synergy` (U-02/U-03).
+
+**Surviving observation** (not a product defect): `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` is a long-lived status tracker filed under issue templates. Moving it is a docs-layout choice, not a CI identity bug.
 
 #### U-17 — Four product display names
 
@@ -358,7 +362,9 @@ These were checked and are **not** problems — recorded so a future audit does 
 
 ### Verification needed
 
-U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` are not on `PATH` locally (`HANDOFF.md:158`). Confirm by configuring and building once, then checking whether `synergy-core-1.21.2[.exe]` exists and whether the GUI starts the core. If it does, U-01 is confirmed.
+None for U-01: local Release builds produce unversioned `synergy` / `synergy-core` /
+`synergy-daemon` under `build/bin/Release/`, matching `docs/delivery.md`. Re-open only if a
+future change reintroduces versioned `OUTPUT_NAME`.
 
 ---
 
@@ -387,7 +393,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |
 | U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | **已修复** |
 | U-07 | P2 | 运行时 (图标) | 两套图标主题编进同一个二进制 | 待处理 |
-| U-08 | P3 | 注释 | 三处注释与代码相反 | 待处理 |
+| U-08 | P3 | 注释 | 三处注释与代码相反 | **已修复** |
 | U-09 | P3 | 运行时 (路径) | 目录名与文件名用了不同的应用标识 | 待处理 |
 | U-10 | P3 | 打包 | 供应商/版权字样仍指上游商业厂商 | 待处理 |
 | U-11 | P1 | 文档 | 三种双语格式并存；两份文档没有英文 | **已修复** |
@@ -395,7 +401,7 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-13 | P2 | 文档 | 版本号硬编码在六处 | 待处理 |
 | U-14 | P2 | 文档 | `HANDOFF.md` 与实际状态脱节 | 待处理 |
 | U-15 | P2 | 文档 | 许可描述在四个文件里不一致 | 待处理 |
-| U-16 | P2 | CI | CI 强制无版本产物名与上游厂商身份 | 待处理 |
+| U-16 | P2 | CI | CI 强制无版本产物名与上游厂商身份 | **已修复**（身份）；追踪文档错放目录仍作备注 |
 | U-17 | P3 | 命名 | 四个不同的产品显示名 | 待处理 |
 | U-18 | P3 | 命名 | `deskflow` / `synergy` 边界，以及一个脆弱的 i18n 耦合 | 待处理 |
 | U-19 | P3 | 命名 | overlay 目录结构与测试归属不一致 | 待处理 |
@@ -481,9 +487,10 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 #### U-08 — 与代码相反的注释
 
-- `src/lib/common/UrlConstants.h:13-15` 说该域名会被转成反向域名 “e.g. org.deskflow”；实际 `kAppDomain` 是 `tupig.com`（`extra/cmake/Synergy.cmake:11`）。功能没问题，注释过时。
-- `extra/cmake/Synergy.cmake:14-18` 称保留 `CMAKE_PROJECT_PROPER_NAME` 可让路径与 Windows 全局对象名 “space-free” —— 但 `"TuPig Synergy"` 本身带空格，且 `Constants.h.in:36-40` 正是用它拼 `Global\TuPig SynergyClose` 这类全局名，`MSWindowsScreen.cpp:112,785` 还把它当 Win32 窗口类名。
-- `extra/cmake/Synergy.cmake:66` 说 “Base semver lives in `./VERSION` (read by the root CMakeLists.txt)”。仓库没有 `VERSION` 文件；根 `CMakeLists.txt:24` 包含的是 `extra/cmake/Version.cmake`。
+**已修复（2026-09-23）**：三处过时注释已按代码现状改写 ——
+
+- `UrlConstants.h` 示例改为 `com.tupig.synergy` / `tupig.com`。
+- `Synergy.cmake` 不再声称路径「无空格」、不再引用不存在的 `gui-electron`，版本说明指向 `extra/cmake/Version.cmake`。
 
 #### U-09 — 目录名与文件名用不同标识
 
@@ -543,10 +550,12 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 #### U-16 — CI 强制的命名与身份
 
-- `.github/actions/test-package/action.yml:20,25,44` 探测无版本名 `synergy-core` / `synergy-core.exe`（同 U-01）。
-- `.github/workflows/ci.yml:678,681,687` 校验并构建 `extra/deploy/linux/com.symless.synergy.*`，等于在 CI 上主动强制上游商业厂商身份（见 U-03）。
-- `.github/workflows/ci.yml:179` 的注释假定产物无版本名。
-- `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 是状态追踪文档而非 issue 模板，位置不当。
+**已修复**打包/身份相关条目（2026-09-23）：
+
+- `test-package` 的无版本探测在 U-01 之后是正确的。
+- `ci.yml` 的 flatpak lint/build 已使用 `com.tupig.synergy`（U-02/U-03）。
+
+**残留观察**（非产品缺陷）：`.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 是长期状态追踪文档，放在 issue 模板目录下；是否搬迁属文档布局选择。
 
 #### U-17 — 四个产品显示名
 
@@ -654,4 +663,5 @@ git show 5365e34f0^:src/lib/platform/OSXDragSimulator.m
 
 ### 待验证项
 
-U-01 无法实证确认：`build/` 为空，且本地 `cmake`/`ninja` 不在 `PATH`（`HANDOFF.md:158`）。确认方式是配置并构建一次，检查是否存在 `synergy-core-1.21.2[.exe]`、以及 GUI 能否启动 core。若能，则 U-01 成立。
+U-01 已实证：本机 Release 构建产出无版本名 `synergy` / `synergy-core` / `synergy-daemon`
+（`build/bin/Release/`），与 `docs/delivery.md` 一致。仅当未来再次引入带版本的 `OUTPUT_NAME` 时才重开。

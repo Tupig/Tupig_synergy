@@ -1,4 +1,4 @@
-# TuPig Synergy / TuPig Synergy
+# TuPig Synergy / 跨平台键鼠共享
 
 <div align="center">
 
@@ -102,9 +102,13 @@ cd TuPig_Product
 REM 2. Right-click setup.bat → Run as Administrator
 REM    (installs CMake, MSVC Build Tools, Git, bootstraps vcpkg)
 
-REM 3. Build
-cmake --preset windows-msvc-release
-cmake --build build --config Release
+REM 3. Build (preferred user-facing entry — see AGENTS.md)
+cd synergy
+scripts\build.bat release
+
+REM Advanced equivalent:
+REM   cmake --preset windows-msvc-release
+REM   cmake --build build --config Release
 ```
 
 Output (VS multi-config) / 产物（VS 多配置）: `build\bin\Release\synergy.exe` (GUI / 图形界面),
