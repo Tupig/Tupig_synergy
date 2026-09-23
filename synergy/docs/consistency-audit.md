@@ -51,7 +51,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-11 | P1 | Docs | Three bilingual formats coexist; two docs have no English | **Fixed** |
 | U-12 | P1 | Docs | Stale references: presets, a deleted file, moved docs | **Fixed** |
 | U-13 | P2 | Docs | Version numbers hardcoded in six places | Open |
-| U-14 | P2 | Docs | `HANDOFF.md` has drifted from reality | Open |
+| U-14 | P2 | Docs | `HANDOFF.md` has drifted from reality | **Fixed** (aligned 2026-09-23 with A-03) |
 | U-15 | P2 | Docs | Licence description disagrees across four files | Open |
 | U-16 | P2 | CI | CI enforces unversioned binary names and the upstream vendor identity | **Fixed** (narrowed; see below) |
 | U-17 | P3 | Naming | Four different product display names | Open |
@@ -399,7 +399,7 @@ future change reintroduces versioned `OUTPUT_NAME`.
 | U-11 | P1 | 文档 | 三种双语格式并存；两份文档没有英文 | **已修复** |
 | U-12 | P1 | 文档 | 过时引用：预设、已删除文件、已移动文档 | **已修复** |
 | U-13 | P2 | 文档 | 版本号硬编码在六处 | 待处理 |
-| U-14 | P2 | 文档 | `HANDOFF.md` 与实际状态脱节 | 待处理 |
+| U-14 | P2 | 文档 | `HANDOFF.md` 与实际状态脱节 | **已修复**（2026-09-23 与 A-03 一并对齐） |
 | U-15 | P2 | 文档 | 许可描述在四个文件里不一致 | 待处理 |
 | U-16 | P2 | CI | CI 强制无版本产物名与上游厂商身份 | **已修复**（身份）；追踪文档错放目录仍作备注 |
 | U-17 | P3 | 命名 | 四个不同的产品显示名 | 待处理 |

@@ -68,7 +68,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 |------|--------|------|----------|------|
 | **A-01** | P1 | CMake「3.24+」声明低于 presets schema v6 实际所需 3.25 | `CMakePresets.json:2-6` 等 7 处 | ✅ 已修复（全部声明升 3.25，presets minor=25；`CMakeLists.txt:9` RHEL floor 3.20 按决策保留） |
 | **A-02** | P1 | Qt 下限三方不一致：6.4.0（代码）/ 6.7（文档）/ 6.9+（CI） | `CMakeLists.txt:88` 等 | ✅ 已修复（统一下限 6.7.0；vcpkg qtbase 6.11.1、CI ≥6.9.3 均满足；Qt5/RHEL 回退 5.13 路径不受影响） |
-| **A-03** | P1 | `HANDOFF.md` 自相矛盾 + 「Step 3」三方定义漂移 + 头部元数据过期（U-14 加重） | `docs/HANDOFF.md:5-6,152,174` | ⬜ 待处理 |
+| **A-03** | P1 | `HANDOFF.md` 自相矛盾 + 「Step 3」三方定义漂移 + 头部元数据过期（U-14 加重） | `docs/HANDOFF.md:5-6,152,174` | ✅ 已修复（统一 Step 定义表；QtNetworkTransport 标为完整实现；头部/下一步/提交列表刷新） |
 | **A-04** | P2 | 本追踪文档落后 09-23 的 15+ 提交；U 计数过期（违反 HANDOFF §1.3） | 本文档变更日志 | ✅ 已修复（变更日志已补登主路径；细节以 git log 为准） |
 | **A-05** | P2 | `consistency-audit.md` 状态栏/待验证节滞后于自身正文（含 U-16） | `docs/consistency-audit.md:56,63,349-351` | ✅ 已修复（U-16 收窄为 Fixed；U-01 待验证节改为已实证；U-08 随注释修正关闭） |
 | **A-06** | P2 | `build.sh` 建议使用 hidden 预设 `linux-asan`（应为 `linux-asan-build`） | `scripts/build.sh:37` | ✅ 已修复 |
@@ -238,6 +238,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-23 | 全面审计（4 轮）：新增 A-01～A-11 清单（§2.4），完整报告落盘 `synergy/docs/audit-2026-09-23.md`；U 计数修正 19→21；修复 §2.3 失效相对链接（A-11） | opencode |
 | 2026-09-23 | A-01：CMake 下限声明统一 3.25+；A-02：Qt 下限统一 6.7.0；U-03：删除 `org.deskflow` 打包残留 | Cursor |
 | 2026-09-23 | 文件传输：Win32DropData / IDropTarget / Outbound 切屏接线 / macOS pasteboard（`7bf1325b5`…`e922e1639`） | Cursor |
+| 2026-09-23 | A-03/U-14：HANDOFF 对齐（Step 定义表、QtNetworkTransport 完整实现、头部/下一步刷新） | Cursor |
 | 2026-09-23 | A-06：`build.sh` 改为提示 `linux-asan-build`；A-08/U-08：修正 Synergy.cmake 与 UrlConstants 过时注释；A-05：U-16/U-01 台账对齐 | Cursor |
 | 2026-09-23 | 待补登其余历史细节若有遗漏，以 `git log --since=2026-09-22` 为准（A-04 主路径已闭合） | Cursor |
 | 2026-09-23 | A-09 关闭：原未提交 WIP 已随 `fe1f4fe37`（Windows IDropTarget）、`91960506f`（Outbound 发送）、`e922e1639`（macOS 路径读取）提交，`git status --porcelain` 仅剩本文档与审计报告 | opencode |

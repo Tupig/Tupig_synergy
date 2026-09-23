@@ -1,9 +1,9 @@
 # HANDOFF — TuPig Synergy 代码库优化重构
 
-> **最后更新**: 2026-09-23  
-> **当前分支**: `main`  
-> **最新 Commit**: (待提交)  
-> **状态**: Phase 0+1 已完成，Phase 2 Step 1-3 已完成
+> **最后更新**: 2026-09-23
+> **当前分支**: `main`
+> **最新 Commit**: `72734ba05`
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–3（抽象层 + Qt QTcpSocket 传输）完成；Step 4–6（Qt TLS / 智能指针 / 删除旧网络栈）与文件传输人工验证仍待办
 
 ---
 
@@ -71,16 +71,16 @@
 ### 全面审计 ✅ (2026-09-23)
 - [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付），报告落盘 `docs/audit-2026-09-23.md`
 - [x] 新发现 A-01～A-11 登记至 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` §2.4；U 计数修正为 21 项
-- [ ] 待整改：P1 = A-03；A-01/A-02 已修复（CMake 3.25+ / Qt 6.7.0 下限）；U-03 已修复（org.deskflow 打包残留删除，身份统一 `com.tupig.synergy`）；A-09 已关闭（WIP 已随 `fe1f4fe37`/`91960506f`/`e922e1639` 提交）；计划详见审计报告「整改计划」节
+- [x] 审计整改：A-01～A-09、A-11 已关闭；A-10 挂账；U-03 已修复；详见 `docs/audit-2026-09-23.md`
 
 ### main 分支提交记录 (最新 6 个)
 ```
-13d448213 docs: add HANDOFF.md for session continuity
-f005aef5f docs(phase2): add detailed QtNetwork migration plan with contingency
-f38a6a1ea fix(security): address review findings — remaining assert, redundant assignment, comment clarity
-5bf7a34d5 docs(security): update issue tracker — S-4 and S-5 completed
-6ca684a6e feat(security): implement Phase 1 security fixes (S-1 through S-5)
-cca322a6c docs(security): add GitHub Issue tracking document for 23-item security/quality refactoring
+72734ba05 docs: 关闭 A-05/A-07 并同步一致性审计与追踪台账
+585017b03 fix: 修正 A-06 隐藏预设提示与 A-08/U-08 过时注释
+83c262811 修复 U-03：删除 org.deskflow 打包残留，统一身份为 com.tupig.synergy
+919fb1bcc fix(build): Qt 下限统一对齐文档为 6.7.0（A-02）
+2bf927ccc fix(build): 统一 CMake 最低版本声明为 3.25+（A-01）
+25bd8df29 docs: 落盘 2026-09-23 全面审计报告并登记 A-01～A-11
 ```
 
 ---
@@ -96,7 +96,7 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | 输入验证位置 | 独立模块 `InputValidator` | 可复用、可测试、平台无关 |
 | X11 降级策略 | 标记+事件+守卫 (非重连) | 最小风险，重连逻辑留给 Phase 3 |
 
-### 3.2 Phase 2 方案 (已制定，待实施)
+### 3.2 Phase 2 方案 (Step 1–3 已落地，Step 4–6 待实施)
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
 - **回滚策略**: 3 级 (代码级 revert / 运行时 `USE_LEGACY_NETWORK=1` / CMake `LEGACY_NETWORK` 选项)
@@ -136,7 +136,7 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 | `src/lib/net/SocketMultiplexer.cpp/h` | 网络事件循环 | Step 1 重构 | ✅ 已完成 |
 | `src/lib/net/INetworkTransport.h` | 统一传输接口 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/LegacyNetworkTransport.cpp/h` | Legacy 包装器 | Step 2 新增 | ✅ 已完成 |
-| `src/lib/net/QtNetworkTransport.cpp/h` | Qt 骨架 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/QtNetworkTransport.cpp/h` | Qt QTcpSocket 传输（完整实现） | Step 2–3 | ✅ 已完成 |
 | `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
 | `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
@@ -151,13 +151,18 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 
 ## 5. 待处理事项与已知问题
 
-### 5.1 Phase 2 实施状态
-1. **Step 1**: SocketMultiplexer 并发重构 ✅ 已完成
-2. **Step 2**: QtNetwork 抽象层 + 双实现骨架 ✅ 已完成
-3. **Step 3**: QtTcpTransport 替代 TCPSocket — 待实施
-4. **Step 4**: QtTlsTransport 替代 SecureSocket — 待实施
-5. **Step 5**: 网络层智能指针化 — 待实施
-6. **Step 6**: 移除旧网络代码 — 待实施
+### 5.1 Phase 2 实施状态（与追踪文档统一的 Step 定义）
+
+| Step | 含义 | 状态 |
+|------|------|------|
+| 1 | SocketMultiplexer 并发重构 | ✅ 已完成 |
+| 2 | QtNetwork 抽象层 + Legacy/Qt 双实现 | ✅ 已完成 |
+| 3 | `QtNetworkTransport` 用 QTcpSocket 完整实现（工厂可选；`TCPSocket` 仍并存） | ✅ 已完成 |
+| 4 | Qt TLS（`QSslSocket`）替代 `SecureSocket` 路径 | 待实施 |
+| 5 | 网络层智能指针化 | 待实施 |
+| 6 | 移除旧 `TCPSocket` / Multiplexer Job 等遗留代码 | 待实施 |
+
+说明：追踪文档里的「Step 3 完成」指 QTcpSocket 集成，**不是**「已删除 TCPSocket」。二者勿混用。
 
 ### 5.2 已知问题
 - **XWindowsScreen.cpp/h**: 预存 LSP 报错 (X11 头文件在 Windows 不可用)，非本次改动
@@ -176,8 +181,8 @@ cca322a6c docs(security): add GitHub Issue tracking document for 23-item securit
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **Step 3**: QtTcpTransport 实现 QTcpSocket 集成
-2. **Step 4**: QtTlsTransport 实现 QSslSocket 集成
+1. **Step 4**: Qt TLS（QSslSocket）路径，或先做本机文件拖拽跨屏人工验证
+2. **决策项**: U-07 / U-09 / U-10 / U-13 / U-15（需产品决策后再改）
 
 ### Step 1 具体操作 ✅ 已完成
 ```
@@ -192,7 +197,7 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: Step 3
+### 下一步: Step 4（Qt TLS）或文件传输人工验证
 1. 在 `QtTcpTransport` 中实现 QTcpSocket 集成
 2. 实现 connect/bind/read/write/flush
 3. 接入 SocketMultiplexer 事件循环
@@ -211,4 +216,4 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 
 ---
 
-> **交接完成**。当前在 `main` 分支，Phase 0+1 已完成。下一个 agent 应从审核 Phase 2 方案开始，确认后启动 Step 1。
+> **交接完成**。当前在 `main` @ `72734ba05`。Phase 0+1 与 Phase 2 Step 1–3 已完成。下一步优先 Step 4（Qt TLS）或 Windows 文件拖拽跨屏人工验证。
