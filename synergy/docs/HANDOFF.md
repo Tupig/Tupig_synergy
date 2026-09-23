@@ -3,7 +3,7 @@
 > **最后更新**: 2026-09-23
 > **当前分支**: `main`
 > **最新 Commit**: `72734ba05`
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4（抽象层 + Qt QTcpSocket + QSslSocket）完成；Step 5–6（智能指针 / 删除旧网络栈）与文件传输跨屏人工验证仍待办
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）
 
 ---
 
