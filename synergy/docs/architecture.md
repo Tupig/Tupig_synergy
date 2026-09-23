@@ -277,9 +277,9 @@ Interface defined in `src/lib/arch/`.
 
 ---
 
-### ADR-0008: Event-Driven Architecture with Lock-Free Queues
+### ADR-0008: Event-Driven Architecture with Mutex-Guarded Event Queues
 
-**Status**: Accepted
+**Status**: Accepted (revised 2026-09-23)
 **Date**: 2024-01-15
 **Deciders**: @tupig-team
 **Technical Story**: #6
@@ -291,7 +291,22 @@ Input events (mouse/keyboard) must be processed with minimal latency. Threading 
 - GUI thread: Qt event loop
 
 #### Decision
-Use **lock-free MPSC queues** (`src/lib/mt/`) for inter-thread communication. Event processing pipeline:
+Inter-thread communication goes through the event queue in `src/lib/base/`
+(`IEventQueue` / `EventQueue`), which is guarded by a **mutex and a condition
+variable** (`mt/Mutex.h`, `mt/CondVar.h`). The `src/lib/mt/` library supplies
+those primitives plus thread wrappers; it holds **no** lock-free or atomic-based
+queue.
+
+> **Correction (2026-09-23).** This ADR originally claimed "lock-free MPSC
+> queues (`src/lib/mt/`)". No such implementation exists. `src/lib/mt/` contains
+> only `Mutex`, `CondVar`, `Lock` and `Thread`; `EventQueue.h:121-122` declares
+> `std::unique_ptr<Mutex> m_readyMutex` and `std::unique_ptr<CondVar<bool>>
+> m_readyCondVar`; and no file in the tree uses `std::atomic` or
+> `std::memory_order`. The text below records what the code actually does. A
+> lock-free queue remains a possible future optimisation, not a description of
+> the present design.
+
+Event processing pipeline:
 
 ```
 Network → Decode → Queue → Input Thread → OS Synthesis
@@ -301,18 +316,17 @@ Network → Decode → Queue → Input Thread → OS Synthesis
 
 #### Consequences
 **Positive:**
-- Sub-millisecond latency
-- No priority inversion
-- Deterministic memory allocation
-- Scalable to multi-core
+- Straightforward, well-understood synchronisation
+- No ABA problem to reason about
+- Debuggable with ordinary tooling
 
 **Negative:**
-- Complex correctness proof
-- ABA problem mitigation needed
-- Debugging harder
+- Contention on the shared queue, so latency is bounded by wake-up cost rather
+  than sub-millisecond by construction
+- Priority inversion is possible in principle
 
 **Neutral:**
-- Alternative: mutex + condition variable (higher latency)
+- A lock-free MPSC queue was considered and **not** implemented
 
 ---
 
@@ -707,9 +721,9 @@ v1.8 关键新增：
 
 ---
 
-### ADR-0008: 基于无锁队列的事件驱动架构
+### ADR-0008: 基于互斥量保护事件队列的事件驱动架构
 
-**状态**: 已接受
+**状态**: 已接受（2026-09-23 修订）
 **日期**: 2024-01-15
 **决策者**: @tupig-team
 **技术背景**: #6
@@ -721,7 +735,11 @@ v1.8 关键新增：
 - GUI 线程: Qt 事件循环
 
 #### 决策
-使用 **无锁 MPSC 队列** (`src/lib/mt/`) 进行线程间通信。事件处理流水线：
+线程间通信经由 `src/lib/base/` 中的事件队列（`IEventQueue` / `EventQueue`），由**互斥量 + 条件变量**保护（`mt/Mutex.h`、`mt/CondVar.h`）。`src/lib/mt/` 提供这些原语与线程封装，其中**没有**任何无锁或基于原子操作的队列。
+
+> **更正（2026-09-23）**：本 ADR 原先声称使用「无锁 MPSC 队列（`src/lib/mt/`）」，但该实现并不存在。`src/lib/mt/` 只有 `Mutex`、`CondVar`、`Lock`、`Thread`；`EventQueue.h:121-122` 声明的是 `std::unique_ptr<Mutex> m_readyMutex` 与 `std::unique_ptr<CondVar<bool>> m_readyCondVar`；全仓亦无任何文件使用 `std::atomic` 或 `std::memory_order`。以下文字记录代码的真实行为。无锁队列仍可作为未来的优化方向，但它不是当前设计的描述。
+
+事件处理流水线：
 
 ```
 网络 → 解码 → 队列 → 输入线程 → OS 合成
@@ -731,18 +749,16 @@ v1.8 关键新增：
 
 #### 后果
 **正面：**
-- 亚毫秒级延迟
-- 无优先级反转
-- 确定性内存分配
-- 多核可扩展
+- 同步机制直观且成熟
+- 无需处理 ABA 问题
+- 可用常规工具调试
 
 **负面：**
-- 正确性证明复杂
-- ABA 问题需缓解
-- 调试更难
+- 共享队列存在争用，延迟取决于唤醒开销，并非结构上即达亚毫秒级
+- 原理上存在优先级反转
 
 **中性：**
-- 替代方案: mutex + condition variable (延迟更高)
+- 曾考虑无锁 MPSC 队列，但**未**实现
 
 ---
 

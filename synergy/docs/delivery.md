@@ -129,7 +129,7 @@ Verified on Windows (Release, static triplet):
   audit item U-01, whose fix (unversioned executable names) is thereby confirmed
   end-to-end rather than by file name alone.
 - Interface language resolves to the system locale (`initial language: zh_CN`).
-- Unit tests: 24/24 pass, in both the Release and AddressSanitizer configurations.
+- Unit tests: 25/25 pass, in both the Release and AddressSanitizer configurations.
 
 **Not verified:** macOS and Linux builds, packaging and runtime. No machine of
 either platform was available, so nothing here should be read as a claim about
@@ -223,6 +223,6 @@ Windows 产物落在 `build/` 下，例如 `synergy_1.21.2-dev+<sha>_windows_x64
 - `dumpbin /DEPENDENTS` 确认不依赖 MSVC 运行库 DLL。
 - GUI→core 握手：设置 `gui/startCoreWithGui=true` 与服务端 `coreMode` 后，GUI 在约 3 秒内启动 `synergy-core.exe`。这走的正是审计条目 U-01 所涉代码路径，因此其修复（可执行文件名去掉版本号）得到端到端确认，而非仅凭文件名判断。
 - 界面语言随系统区域解析（`initial language: zh_CN`）。
-- 单元测试：Release 与 AddressSanitizer 两种配置均 24/24 通过。
+- 单元测试：Release 与 AddressSanitizer 两种配置均 25/25 通过。
 
 **未验证**：macOS 与 Linux 的构建、打包与运行。当前没有这两个平台的机器，因此上文所列 DEB/RPM 与 DMG 产物不应被理解为已经过验证。

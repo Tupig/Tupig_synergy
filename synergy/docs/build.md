@@ -179,10 +179,12 @@ cmake --build build --config Release -j$(nproc)
 | **macOS** | DMG (DragNDrop) |
 | **Windows** | 7Z (portable), MSI (WiX, see note) |
 
-> **Note**: AppImage and Flatpak are not implemented — no `appimage` reference
-> exists in `deploy/`, `extra/` or `.github/`. MSI generation additionally requires
-> accepting the WiX v7 OSMF EULA. See [delivery.md](delivery.md) for the full
-> per-platform matrix and constraints.
+> **Note**: AppImage is not implemented — no `appimage` reference exists in
+> `deploy/`, `extra/` or `.github/`. Flatpak manifests are present
+> (`deploy/linux/flatpak/`, `extra/deploy/linux/flatpak/`) but nothing in the build
+> consumes them, so no Flatpak bundle is produced either. MSI generation
+> additionally requires accepting the WiX v7 OSMF EULA. See
+> [delivery.md](delivery.md) for the full per-platform matrix and constraints.
 
 ---
 
@@ -421,7 +423,7 @@ cmake --build build --config Release -j$(nproc)
 | **macOS** | DMG (DragNDrop) |
 | **Windows** | 7Z（便携）、MSI (WiX，见说明) |
 
-> **说明**：AppImage 与 Flatpak **未实现** —— `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用。生成 MSI 另需接受 WiX v7 的 OSMF 许可协议。完整的各平台产物矩阵与限制见 [delivery.md](delivery.md)。
+> **说明**：AppImage **未实现** —— `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用。Flatpak 清单虽存在（`deploy/linux/flatpak/`、`extra/deploy/linux/flatpak/`），但构建流程中无任何环节消费它们，因此同样不产出 Flatpak 包。生成 MSI 另需接受 WiX v7 的 OSMF 许可协议。完整的各平台产物矩阵与限制见 [delivery.md](delivery.md)。
 
 ---
 

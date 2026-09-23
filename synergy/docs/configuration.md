@@ -10,21 +10,30 @@
 
 TuPig Synergy searches for settings in platform-specific locations (in order):
 
+> **Naming**: every config file is named after the application (`kAppName`, which
+> is `TuPig Synergy` in a normal build), so the file is `TuPig Synergy.conf` —
+> **not** `Synergy.conf`. The containing directory uses the same name.
+
 #### Linux
-1. `$XDG_CONFIG_HOME/TuPig Synergy/Synergy.conf`
-2. `~/.config/TuPig Synergy/Synergy.conf`
-3. `/etc/TuPig Synergy/Synergy.conf`
+1. `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`
+2. `~/.config/TuPig Synergy/TuPig Synergy.conf`
+3. `/etc/TuPig Synergy/TuPig Synergy.conf`
 
 #### macOS
-1. `~/Library/Application Support/TuPig Synergy/Synergy.conf`
-2. `/Library/Application Support/TuPig Synergy/Synergy.conf`
+1. `~/Library/TuPig Synergy/TuPig Synergy.conf`
+2. `/Library/TuPig Synergy/TuPig Synergy.conf`
 
 #### Windows
-1. `<install-dir>/settings/Synergy.conf`
-2. Registry: `HKCU\Software\TuPig Synergy\Synergy`
-3. Fallback: `C:\ProgramData\TuPig Synergy\`
+1. `<install-dir>/settings/TuPig Synergy.conf` (portable mode; checked first)
+2. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
+3. `<system-drive>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
+4. Registry `HKCU\Software\TuPig Synergy\TuPig Synergy` — used by
+   `QSettingsProxy` only when no file path is supplied at all
 
 > The first found file is used as base for all other config files (certs, logs, etc.)
+
+`gui/windowGeometry` is not stored in that file: it lives in a separate state
+file, `<state-dir>/TuPig Synergy.state` (see `Settings::m_stateKeys`).
 
 ---
 
@@ -63,7 +72,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 | `coreMode` | int | `0` | `0`=None, `1`=Client, `2`=Server |
 | `display` | int | auto | X11 display number (Linux) |
 | `interface` | IP | auto | Bind address (`0.0.0.0` = all) |
-| `lastVersion` | string | — | Last run version (update check) |
+| `lastVersion` | string | — | Last run version |
 | `port` | int | `24800` | TCP port |
 | `preventSleep` | bool | `false` | Inhibit system sleep |
 | `processMode` | int | `0` | `0`=Desktop, `1`=Service |
@@ -79,7 +88,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `command` | string | — | Daemon executable filename |
+| `configFile` | path | — | Core config the daemon starts the core with |
 | `elevate` | bool | `true` | Run elevated (UAC) |
 | `logFile` | path | — | Daemon log file |
 | `logLevel` | string | — | Log verbosity |
@@ -89,18 +98,16 @@ Comments start with `#` or `;`. Only non-default values are written.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `autoHide` | bool | `false` | Hide window on startup |
-| `enableUpdateCheck` | bool | `false` | Check for updates on start |
 | `closeReminder` | bool | `true` | Show "runs in background" reminder |
 | `closeToTray` | bool | `true` | Minimize to tray on close |
-| `logExpanded` | bool | `false` | Expand log panel by default |
-| `symbolicTrayIcon` | bool | `true` | Monochrome tray icon |
-| `windowGeometry` | QRect | — | Saved window position/size |
-| `showGenericClientFailureDialog` | bool | `true` | Suppress connection error popups |
+| `ignoreMissingKeyboardLayouts` | bool | `false` | Suppress missing-layout warnings |
+| `logExpanded` | bool | `true` | Expand log panel by default |
+| `showVersionInTitle` | bool | `false` | Show version in window title |
 | `shownFirstConnectedMessage` | bool | `false` | First-connect hint shown |
 | `shownServerFirstStartMessage` | bool | `false` | Server-started hint shown |
-| `shownVerionInTitle` | bool | `false` | Show version in window title |
 | `startCoreWithGui` | bool | `false` | Auto-start core with GUI |
-| `updateCheckUrl` | URL | api.tupig.com | Version check endpoint |
+| `symbolicTrayIcon` | bool | `true` | Monochrome tray icon |
+| `windowGeometry` | QRect | — | Saved window position/size (state file) |
 
 #### `[log]` — Logging
 
@@ -124,6 +131,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| `clipboardSize` | int | `3` | Max clipboard transfer size (MiB) |
 | `externalConfig` | bool | `false` | Use external server config file |
 | `externalConfigFile` | path | — | Path to server config |
 | `protocol` | enum | `synergy` | `synergy` or `barrier` |
@@ -342,20 +350,27 @@ end
 TuPig Synergy 按平台按顺序搜索配置文件：
 
 #### Linux
-1. `$XDG_CONFIG_HOME/TuPig Synergy/Synergy.conf`
-2. `~/.config/TuPig Synergy/Synergy.conf`
-3. `/etc/TuPig Synergy/Synergy.conf`
+1. `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`
+2. `~/.config/TuPig Synergy/TuPig Synergy.conf`
+3. `/etc/TuPig Synergy/TuPig Synergy.conf`
 
 #### macOS
-1. `~/Library/Application Support/TuPig Synergy/Synergy.conf`
-2. `/Library/Application Support/TuPig Synergy/Synergy.conf`
+1. `~/Library/TuPig Synergy/TuPig Synergy.conf`
+2. `/Library/TuPig Synergy/TuPig Synergy.conf`
 
 #### Windows
-1. `<安装目录>/settings/Synergy.conf`
-2. 注册表：`HKCU\Software\TuPig Synergy\Synergy`
-3. 兜底：`C:\ProgramData\TuPig Synergy\`
+1. `<安装目录>/settings/TuPig Synergy.conf`（便携模式，最先查找）
+2. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
+3. `<系统盘>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
+4. 注册表 `HKCU\Software\TuPig Synergy\TuPig Synergy` —— 仅在完全没有传入文件路径时由 `QSettingsProxy` 使用
 
 > 首个找到的文件作为基础，其他文件（证书、日志等）相对其路径。
+
+> **命名**：配置文件名取自应用名（`kAppName`，常规构建中为 `TuPig Synergy`），
+> 即 `TuPig Synergy.conf`，**而非** `Synergy.conf`。所在目录名亦同。
+
+`gui/windowGeometry` 不存在该文件中：它位于独立的状态文件
+`<状态目录>/TuPig Synergy.state`（见 `Settings::m_stateKeys`）。
 
 ---
 
@@ -394,7 +409,7 @@ key=value
 | `coreMode` | int | `0` | `0`=无, `1`=客户端, `2`=服务端 |
 | `display` | int | 自动 | X11 显示编号 (Linux) |
 | `interface` | IP | 自动 | 绑定地址 (`0.0.0.0`=所有) |
-| `lastVersion` | string | — | 上次运行版本 (更新检查) |
+| `lastVersion` | string | — | 上次运行版本 |
 | `port` | int | `24800` | TCP 端口 |
 | `preventSleep` | bool | `false` | 阻止系统休眠 |
 | `processMode` | int | `0` | `0`=桌面, `1`=服务 |
@@ -410,7 +425,7 @@ key=value
 
 | 键 | 类型 | 默认值 | 说明 |
 |-----|------|--------|------|
-| `command` | string | — | 守护进程可执行文件名 |
+| `configFile` | path | — | 守护进程启动核心时使用的核心配置文件 |
 | `elevate` | bool | `true` | 以提升权限运行 (UAC) |
 | `logFile` | path | — | 守护进程日志文件 |
 | `logLevel` | string | — | 日志详细程度 |
@@ -420,18 +435,16 @@ key=value
 | 键 | 类型 | 默认值 | 说明 |
 |-----|------|--------|------|
 | `autoHide` | bool | `false` | 启动时隐藏窗口 |
-| `enableUpdateCheck` | bool | `false` | 启动检查更新 |
 | `closeReminder` | bool | `true` | 显示"后台运行"提醒 |
 | `closeToTray` | bool | `true` | 关闭窗口最小化到托盘 |
-| `logExpanded` | bool | `false` | 默认展开日志面板 |
-| `symbolicTrayIcon` | bool | `true` | 单色托盘图标 |
-| `windowGeometry` | QRect | — | 保存窗口位置/大小 |
-| `showGenericClientFailureDialog` | bool | `true` | 抑制连接错误弹窗 |
+| `ignoreMissingKeyboardLayouts` | bool | `false` | 抑制缺失键盘布局的警告 |
+| `logExpanded` | bool | `true` | 默认展开日志面板 |
+| `showVersionInTitle` | bool | `false` | 标题栏显示版本 |
 | `shownFirstConnectedMessage` | bool | `false` | 首次连接提示已显示 |
 | `shownServerFirstStartMessage` | bool | `false` | 服务端启动提示已显示 |
-| `shownVerionInTitle` | bool | `false` | 标题栏显示版本 |
 | `startCoreWithGui` | bool | `false` | GUI 启动时自动启动核心 |
-| `updateCheckUrl` | URL | api.tupig.com | 版本检查端点 |
+| `symbolicTrayIcon` | bool | `true` | 单色托盘图标 |
+| `windowGeometry` | QRect | — | 保存窗口位置/大小（存于状态文件） |
 
 #### `[log]` — 日志
 
@@ -455,6 +468,7 @@ key=value
 
 | 键 | 类型 | 默认值 | 说明 |
 |-----|------|--------|------|
+| `clipboardSize` | int | `3` | 剪贴板传输大小上限（MiB） |
 | `externalConfig` | bool | `false` | 使用外部服务端配置文件 |
 | `externalConfigFile` | path | — | 服务端配置文件路径 |
 | `protocol` | enum | `synergy` | `synergy` 或 `barrier` |
