@@ -50,8 +50,8 @@ std::unique_ptr<INetworkTransport> NetworkTransportFactory::createTransport(
 )
 {
   if (m_type == TransportType::Qt && isQtTransportAvailable()) {
-    LOG_DEBUG("NetworkTransportFactory: creating Qt transport");
-    return std::make_unique<QtNetworkTransport>();
+    LOG_DEBUG("NetworkTransportFactory: creating Qt transport (security=%d)", static_cast<int>(securityLevel));
+    return std::make_unique<QtNetworkTransport>(securityLevel);
   }
 
   // Fallback to legacy
@@ -72,8 +72,8 @@ std::unique_ptr<ITransportListenSocket> NetworkTransportFactory::createListenTra
 )
 {
   if (m_type == TransportType::Qt && isQtTransportAvailable()) {
-    LOG_DEBUG("NetworkTransportFactory: creating Qt listen transport");
-    return std::make_unique<QtTransportListenSocket>();
+    LOG_DEBUG("NetworkTransportFactory: creating Qt listen transport (security=%d)", static_cast<int>(securityLevel));
+    return std::make_unique<QtTransportListenSocket>(securityLevel);
   }
 
   // Fallback to legacy
