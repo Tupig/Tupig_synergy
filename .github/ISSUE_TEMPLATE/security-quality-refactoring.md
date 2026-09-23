@@ -4,7 +4,7 @@
 > **优先级**: P0  
 > **分支**: `refactor/security-baseline`  
 > **创建日期**: 2026-09-18  
-> **最后更新**: 2026-09-21  
+> **最后更新**: 2026-09-23  
 > **状态**: 🔄 进行中
 
 ---
@@ -56,7 +56,27 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 
 ### 2.3 相关审计
 
-命名与身份一致性（产品标识、打包身份、文档、CI、i18n 命名）的独立审计见 [`docs/consistency-audit.md`](../../docs/consistency-audit.md)，共 19 项 `U-01` ～ `U-19`。两套编号体系相互独立，与本清单的 23 项不重叠。
+命名与身份一致性（产品标识、打包身份、文档、CI、i18n 命名）的独立审计见 [`synergy/docs/consistency-audit.md`](../../synergy/docs/consistency-audit.md)，共 21 项 `U-01` ～ `U-21`。两套编号体系相互独立，与本清单的 23 项不重叠。
+
+### 2.4 全面审计新发现（A-01 ～ A-11，2026-09-23）
+
+> 4 轮多角度全面审计（范围/目标/验收标准、文档对账、R1–R10 合规、源码与过程、CI 与交付）的完整报告
+> 见 [`synergy/docs/audit-2026-09-23.md`](../../synergy/docs/audit-2026-09-23.md)（双语，含证据、整改计划与验证方法）。
+> `A-nn` 与 `S/Q/P/T`、`U-nn` 相互独立，不重叠。
+
+| 编号 | 优先级 | 问题 | 核心位置 | 状态 |
+|------|--------|------|----------|------|
+| **A-01** | P1 | CMake「3.24+」声明低于 presets schema v6 实际所需 3.25 | `CMakePresets.json:2-6` 等 7 处 | ⬜ 待处理 |
+| **A-02** | P1 | Qt 下限三方不一致：6.4.0（代码）/ 6.7（文档）/ 6.9+（CI） | `CMakeLists.txt:88` 等 | ⬜ 待处理（需决策） |
+| **A-03** | P1 | `HANDOFF.md` 自相矛盾 + 「Step 3」三方定义漂移 + 头部元数据过期（U-14 加重） | `docs/HANDOFF.md:5-6,152,174` | ⬜ 待处理 |
+| **A-04** | P2 | 本追踪文档落后 09-23 的 15+ 提交；U 计数过期（违反 HANDOFF §1.3） | 本文档变更日志 | 🔄 部分完成（A 系列已登记，历史补登待做） |
+| **A-05** | P2 | `consistency-audit.md` 状态栏/待验证节滞后于自身正文（含 U-16） | `docs/consistency-audit.md:56,63,349-351` | ⬜ 待处理 |
+| **A-06** | P2 | `build.sh` 建议使用 hidden 预设 `linux-asan`（应为 `linux-asan-build`） | `scripts/build.sh:37` | ⬜ 待处理 |
+| **A-07** | P3 | README 标题非双语；README/setup.bat 入口指引与 AGENTS「两个入口」表述不一致 | `README.md:1,97-108`、`setup.bat:125-127` | ⬜ 待处理 |
+| **A-08** | P3 | 注释与代码相反：`gui-electron` 幽灵路径、`./VERSION` 不存在、「space-free」不实（U-08 新增实例） | `extra/cmake/Synergy.cmake:17-18,30-31,66` | ⬜ 待处理 |
+| **A-09** | P2 | 未提交 WIP：3 改 + 2 个 untracked 源文件（Windows 拖拽第 2 步），有丢失风险 | `git status --porcelain` | ✅ 已修复（WIP 已随 `fe1f4fe37`/`91960506f`/`e922e1639` 提交，工作区无源码残留） |
+| **A-10** | P3 | `IDataSocket` 契约 `assert(0)` 残留（观察项，暂不修） | `src/lib/net/IDataSocket.cpp:19,25` | 👀 挂账 |
+| **A-11** | P3 | 本文档 §2.3 相对链接指向不存在的根 `docs/` | 本文档 §2.3 | ✅ 已修复（本节登记时改为 `synergy/docs/`） |
 
 ---
 
@@ -215,6 +235,9 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-21 | 一致性审计：新增 docs/consistency-audit.md（19 项 U-01~U-19） | Cursor |
 | 2026-09-22 | S-4 修正：校验器原先只创建未接入，实际未生效；已接入 ServerProxy 入站路径（keyDown/keyRepeat/keyUp）并新增 InputValidatorTests | Cursor |
 | 2026-09-22 | 质量：MSWindowsScreen::disable() 改为幂等，消除一次 enable 对应两次 disable 导致的重复清理与误导性告警 | Cursor |
+| 2026-09-23 | 全面审计（4 轮）：新增 A-01～A-11 清单（§2.4），完整报告落盘 `synergy/docs/audit-2026-09-23.md`；U 计数修正 19→21；修复 §2.3 失效相对链接（A-11） | opencode |
+| 2026-09-23 | 待补登：09-23 已合入提交（U-02/U-04~U-07/U-12/U-20 修复、CRT 按 triplet 解析、`.github` 迁仓库根、签名 .bat 化等 15+ 笔）——即 A-04 剩余部分 | opencode |
+| 2026-09-23 | A-09 关闭：原未提交 WIP 已随 `fe1f4fe37`（Windows IDropTarget）、`91960506f`（Outbound 发送）、`e922e1639`（macOS 路径读取）提交，`git status --porcelain` 仅剩本文档与审计报告 | opencode |
 
 ---
 
