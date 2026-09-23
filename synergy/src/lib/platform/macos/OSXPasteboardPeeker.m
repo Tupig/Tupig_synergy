@@ -1,31 +1,35 @@
 /*
  * Deskflow -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 TuPig
  * SPDX-FileCopyrightText: (C) 2013 - 2016 Symless Ltd.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#import "platform/OSXPasteboardPeeker.h"
+#import "OSXPasteboardPeeker.h"
 
 #import <Cocoa/Cocoa.h>
-#import <CoreData/CoreData.h>
-#import <Foundation/Foundation.h>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
-CFStringRef getDraggedFileURL()
+CFArrayRef copyDraggedFilePaths(void)
 {
-  NSString *pbName = NSDragPboard;
-  NSPasteboard *pboard = [NSPasteboard pasteboardWithName:pbName];
+  @autoreleasepool {
+    // NSPasteboardNameDrag is the modern name for the drag pasteboard; the
+    // filenames property list is still what Explorer-equivalent drags publish.
+    NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSPasteboardNameDrag];
+    if (pboard == nil) {
+      return NULL;
+    }
 
-  NSMutableString *string;
-  string = [[NSMutableString alloc] initWithCapacity:0];
+    NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
+    if (files == nil || files.count == 0) {
+      return NULL;
+    }
 
-  NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
-  for (id file in files) {
-    [string appendString:(NSString *)file];
-    [string appendString:@"\0"];
+    // Retain across the autoreleasepool so the caller can CFRelease later.
+    return (CFArrayRef)CFBridgingRetain(files);
   }
-
-  return (CFStringRef)string;
 }
+
+#pragma clang diagnostic pop

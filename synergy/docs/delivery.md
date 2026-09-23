@@ -2,7 +2,7 @@
 
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
-> **Last updated / 最后更新**: 2026-09-22
+> **Last updated / 最后更新**: 2026-09-23
 > **Related / 相关**: `docs/build.md`, `docs/consistency-audit.md`, `AGENTS.md`
 
 ---
@@ -98,6 +98,20 @@ registers that service — there is no `--install-service` option and no `Create
 call — so it must come from the MSI (which declares `ServiceInstall`) or a manual
 `sc create`. See `docs/troubleshooting.md`. The portable package intentionally omits the
 daemon, so portable builds cannot offer this capability at all.
+
+### File transfer (drag-and-drop) status
+
+| Layer | Status | Verified |
+|---|---|---|
+| Protocol (`DDRG`/`DFTR`) + path sanitisation | Implemented | Unit tests |
+| Client receive + hardened drop directory | Implemented | Unit tests |
+| Server outbound (`FileTransferOutbound` + leave-primary send) | Implemented | Unit tests |
+| Windows OLE `IDropTarget` + CF_HDROP parser | Implemented | Unit tests (parser); cross-screen capture needs manual check |
+| macOS drag pasteboard (`copyDraggedFilePaths`) | Implemented | **No** — no macOS host; static review only |
+| Linux XDND / Wayland DnD | **Not implemented** (never was upstream) | N/A |
+| Windows `IDropSource` (drop into local Explorer) | Not implemented | N/A |
+
+Enable with `fileTransfer/enabled=true` and a non-empty `fileTransfer/dropDirectory`.
 
 ### How to produce each artifact
 
@@ -198,6 +212,20 @@ daemon 以 Windows **服务**形式运行（会话 0），通过复制 `winlogon
 core 启动到安全桌面。本代码库中没有任何地方注册该服务 —— 既无 `--install-service` 选项，也无
 `CreateService` 调用 —— 因此必须由 MSI（其声明了 `ServiceInstall`）或手工 `sc create` 完成。
 详见 `docs/troubleshooting.md`。便携包有意不含 daemon，故便携构建完全无法提供该能力。
+
+### 文件传输（拖拽）状态
+
+| 层 | 状态 | 已验证 |
+|---|---|---|
+| 协议（`DDRG`/`DFTR`）+ 文件名净化 | 已实现 | 单元测试 |
+| 客户端接收 + 加固落盘 | 已实现 | 单元测试 |
+| 服务端外发（`FileTransferOutbound` + 离开主屏发送） | 已实现 | 单元测试 |
+| Windows OLE `IDropTarget` + CF_HDROP 解析 | 已实现 | 解析器单测；跨屏捕获需人工验证 |
+| macOS 拖拽剪贴板（`copyDraggedFilePaths`） | 已实现 | **否** —— 无 macOS 主机，仅静态审阅 |
+| Linux XDND / Wayland DnD | **未实现**（上游亦从未实现） | 不适用 |
+| Windows `IDropSource`（投进本机资源管理器） | 未实现 | 不适用 |
+
+需设置 `fileTransfer/enabled=true` 且 `fileTransfer/dropDirectory` 非空。
 
 ### 如何产出各产物
 

@@ -36,6 +36,7 @@
 #include <AppKit/NSEvent.h>
 #include <AvailabilityMacros.h>
 #include <IOKit/hidsystem/event_status_driver.h>
+#include <cstring>
 #include <dispatch/dispatch.h>
 #include <libproc.h>
 #include <mach-o/dyld.h>
@@ -804,6 +805,42 @@ void OSXScreen::leave()
 
   // now off screen
   m_isOnScreen = false;
+}
+
+std::vector<std::string> OSXScreen::takeDraggingPaths()
+{
+  // Reads NSPasteboardNameDrag. Not runtime-verified on this machine (no macOS
+  // host); the peeker itself is the restored upstream path, fixed to return a
+  // CFArray so multi-file drags are not truncated at the first embedded NUL.
+  std::vector<std::string> paths;
+
+  CFArrayRef files = copyDraggedFilePaths();
+  if (files == nullptr) {
+    return paths;
+  }
+
+  const CFIndex count = CFArrayGetCount(files);
+  paths.reserve(static_cast<size_t>(count));
+
+  for (CFIndex i = 0; i < count; ++i) {
+    auto *path = static_cast<CFStringRef>(CFArrayGetValueAtIndex(files, i));
+    if (path == nullptr) {
+      continue;
+    }
+
+    const CFIndex length = CFStringGetLength(path);
+    const CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+    std::string utf8(static_cast<size_t>(maxSize), '\0');
+    if (CFStringGetCString(path, utf8.data(), maxSize, kCFStringEncodingUTF8)) {
+      utf8.resize(std::strlen(utf8.c_str()));
+      if (!utf8.empty()) {
+        paths.push_back(std::move(utf8));
+      }
+    }
+  }
+
+  CFRelease(files);
+  return paths;
 }
 
 bool OSXScreen::setClipboard(ClipboardID, const IClipboard *src)

@@ -83,6 +83,7 @@ public:
   void enter() override;
   bool canLeave() override;
   void leave() override;
+  std::vector<std::string> takeDraggingPaths() override;
   bool setClipboard(ClipboardID, const IClipboard *) override;
   void checkClipboards() override;
   void openScreensaver(bool notify) override;
@@ -307,9 +308,6 @@ private:
   int32_t m_lastSingleClickYCursor;
 
   IEventQueue *m_events;
-
-  std::unique_ptr<Thread> m_getDropTargetThread;
-  std::string m_dropTarget;
 
   Mutex *m_carbonLoopMutex;
   CondVar<bool> *m_carbonLoopReady;
