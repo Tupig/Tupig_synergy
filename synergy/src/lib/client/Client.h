@@ -16,6 +16,8 @@
 #include "net/NetworkAddress.h"
 
 #include <climits>
+#include <string>
+#include <vector>
 
 class Event;
 class EventQueueTimer;
@@ -96,6 +98,9 @@ public:
   Notifies the client that the connection handshake has completed.
   */
   virtual void handshakeComplete();
+
+  //! Offer received files as a platform drag (Windows Explorer drop).
+  void offerReceivedFiles(const std::vector<std::string> &paths);
 
   //@}
   //! @name accessors

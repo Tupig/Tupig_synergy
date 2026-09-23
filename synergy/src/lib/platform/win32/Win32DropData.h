@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
 namespace deskflow::win32 {
 
 //! Read the file paths out of a `CF_HDROP` memory block.
@@ -35,5 +38,28 @@ code page - non-ASCII file names arrived as mojibake.
 header, if `pFiles` points outside it, or if no complete path is present.
 */
 std::vector<std::string> readDropFilePaths(const void *data, std::size_t size);
+
+//! Build a wide (`fWide=TRUE`) `DROPFILES` block for the given UTF-8 paths.
+/*!
+Returns an empty vector if \p paths is empty or if any path cannot be converted
+to UTF-16. The block is suitable for unit tests and for stuffing into an
+`HGLOBAL` for `CF_HDROP`.
+*/
+std::vector<unsigned char> buildDropFileBlock(const std::vector<std::string> &utf8Paths);
+
+//! Allocate a movable `HGLOBAL` holding `buildDropFileBlock(utf8Paths)`.
+/*!
+Caller owns the handle and must `GlobalFree` it (or hand it to OLE via
+`STGMEDIUM`, which takes ownership on success). Returns `nullptr` on failure.
+*/
+HGLOBAL createDropFilesHGlobal(const std::vector<std::string> &utf8Paths);
+
+//! Start an OLE drag of the given files (copy effect) under the current cursor.
+/*!
+Blocks until the user drops or cancels. Returns true if `DoDragDrop` reported
+`DRAGDROP_S_DROP`. Requires COM/OLE already initialised on this thread
+(as `MSWindowsScreen` does for `RegisterDragDrop`).
+*/
+bool startDraggingFiles(const std::vector<std::string> &utf8Paths);
 
 } // namespace deskflow::win32

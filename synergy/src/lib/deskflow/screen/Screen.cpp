@@ -362,6 +362,11 @@ std::vector<std::string> Screen::takeDraggingPaths()
   return m_screen->takeDraggingPaths();
 }
 
+bool Screen::startDraggingFiles(const std::vector<std::string> &paths)
+{
+  return m_screen->startDraggingFiles(paths);
+}
+
 bool Screen::isLockedToScreen() const
 {
   if (uint32_t buttonID = 0; m_screen->isAnyMouseButtonDown(buttonID)) {

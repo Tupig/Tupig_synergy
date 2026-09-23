@@ -160,6 +160,15 @@ void Client::handshakeComplete()
   sendEvent(EventTypes::ClientConnected);
 }
 
+void Client::offerReceivedFiles(const std::vector<std::string> &paths)
+{
+  if (m_screen == nullptr || paths.empty()) {
+    return;
+  }
+  LOG_INFO("file transfer: offering %zu received file(s) for local drop", paths.size());
+  m_screen->startDraggingFiles(paths);
+}
+
 bool Client::isConnected() const
 {
   return (m_server != nullptr);

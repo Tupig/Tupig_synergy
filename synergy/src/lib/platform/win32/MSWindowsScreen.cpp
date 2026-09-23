@@ -25,6 +25,7 @@
 #include "MSWindowsClipboard.h"
 #include "MSWindowsDesks.h"
 #include "MSWindowsDropTarget.h"
+#include "Win32DropData.h"
 #include "MSWindowsEventQueueBuffer.h"
 #include "MSWindowsKeyState.h"
 #include "MSWindowsScreenSaver.h"
@@ -214,6 +215,11 @@ std::vector<std::string> MSWindowsScreen::takeDraggingPaths()
   std::vector<std::string> paths = m_dropTarget->draggingPaths();
   m_dropTarget->clearDraggingPaths();
   return paths;
+}
+
+bool MSWindowsScreen::startDraggingFiles(const std::vector<std::string> &paths)
+{
+  return deskflow::win32::startDraggingFiles(paths);
 }
 
 void MSWindowsScreen::offerDropWindowAtCursor()

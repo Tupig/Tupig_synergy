@@ -965,6 +965,10 @@ void ServerProxy::fileChunk()
   switch (m_fileTransferReceiver->onFileChunk(m_stream)) {
   case TransferState::Finished:
     LOG_INFO("file transfer: received a file");
+    if (m_fileTransferReceiver->writtenFiles().size() == m_fileTransferReceiver->acceptedNames().size() &&
+        !m_fileTransferReceiver->writtenFiles().empty()) {
+      m_client->offerReceivedFiles(m_fileTransferReceiver->writtenFiles());
+    }
     break;
   case TransferState::Error:
     LOG_WARN("file transfer: the server sent a chunk this client rejected");

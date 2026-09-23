@@ -232,6 +232,9 @@ public:
   //! Take paths from an in-progress file drag, if the platform captured any.
   std::vector<std::string> takeDraggingPaths();
 
+  //! Offer received files as a platform drag (Windows: DoDragDrop into Explorer).
+  bool startDraggingFiles(const std::vector<std::string> &paths);
+
   //! Get screen lock state
   /*!
   Returns true if there's any reason that the user should not be

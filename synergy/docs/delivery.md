@@ -107,9 +107,9 @@ daemon, so portable builds cannot offer this capability at all.
 | Client receive + hardened drop directory | Implemented | Unit tests |
 | Server outbound (`FileTransferOutbound` + leave-primary send) | Implemented | Unit tests |
 | Windows OLE `IDropTarget` + CF_HDROP parser | Implemented | Unit tests (parser); cross-screen capture needs manual check |
+| Windows `IDropSource` (drop into local Explorer) | Implemented | Unit tests (CF_HDROP writer round-trip); DoDragDrop needs manual check |
 | macOS drag pasteboard (`copyDraggedFilePaths`) | Implemented | **No** — no macOS host; static review only |
 | Linux XDND / Wayland DnD | **Not implemented** (never was upstream) | N/A |
-| Windows `IDropSource` (drop into local Explorer) | Not implemented | N/A |
 
 Enable with `fileTransfer/enabled=true` and a non-empty `fileTransfer/dropDirectory`.
 
@@ -221,9 +221,9 @@ core 启动到安全桌面。本代码库中没有任何地方注册该服务 �
 | 客户端接收 + 加固落盘 | 已实现 | 单元测试 |
 | 服务端外发（`FileTransferOutbound` + 离开主屏发送） | 已实现 | 单元测试 |
 | Windows OLE `IDropTarget` + CF_HDROP 解析 | 已实现 | 解析器单测；跨屏捕获需人工验证 |
+| Windows `IDropSource`（投进本机资源管理器） | 已实现 | CF_HDROP 写入往返单测；DoDragDrop 需人工验证 |
 | macOS 拖拽剪贴板（`copyDraggedFilePaths`） | 已实现 | **否** —— 无 macOS 主机，仅静态审阅 |
 | Linux XDND / Wayland DnD | **未实现**（上游亦从未实现） | 不适用 |
-| Windows `IDropSource`（投进本机资源管理器） | 未实现 | 不适用 |
 
 需设置 `fileTransfer/enabled=true` 且 `fileTransfer/dropDirectory` 非空。
 

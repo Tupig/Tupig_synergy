@@ -34,6 +34,10 @@ private Q_SLOTS:
   // Bounds
   void capsTheNumberOfPaths();
 
+  // Writer / round-trip
+  void buildDropFileBlockRoundTrips();
+  void buildDropFileBlockRejectsEmpty();
+
 private:
   //! Build a `CF_HDROP` block the way Windows lays one out.
   /*!

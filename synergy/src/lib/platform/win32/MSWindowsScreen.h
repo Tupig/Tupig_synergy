@@ -50,6 +50,9 @@ public:
   */
   std::vector<std::string> takeDraggingPaths() override;
 
+  //! Start an OLE drag of received files so the user can drop into Explorer.
+  bool startDraggingFiles(const std::vector<std::string> &paths) override;
+
   //! @name manipulators
   //@{
 

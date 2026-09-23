@@ -233,5 +233,24 @@ void Win32DropDataTests::capsTheNumberOfPaths()
   QCOMPARE(paths.size(), kCap);
 }
 
+void Win32DropDataTests::buildDropFileBlockRoundTrips()
+{
+  const std::vector<std::string> original = {
+      "C:\\Users\\test\\a.txt",
+      "D:\\文档\\file.bin",
+  };
+  const auto block = deskflow::win32::buildDropFileBlock(original);
+  QVERIFY(!block.empty());
+  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  QCOMPARE(paths.size(), original.size());
+  QCOMPARE(QString::fromStdString(paths[0]), QString::fromStdString(original[0]));
+  QCOMPARE(QString::fromStdString(paths[1]), QString::fromStdString(original[1]));
+}
+
+void Win32DropDataTests::buildDropFileBlockRejectsEmpty()
+{
+  QVERIFY(deskflow::win32::buildDropFileBlock({}).empty());
+}
+
 QTEST_MAIN(Win32DropDataTests)
 #include "Win32DropDataTests.moc"

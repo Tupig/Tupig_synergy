@@ -150,3 +150,79 @@ std::vector<std::string> deskflow::win32::readDropFilePaths(const void *data, st
 
   return paths;
 }
+
+namespace {
+
+std::wstring utf8ToWide(std::string_view text)
+{
+  if (text.empty()) {
+    return {};
+  }
+
+  const auto length = static_cast<int>(text.size());
+  const int needed = ::MultiByteToWideChar(CP_UTF8, 0, text.data(), length, nullptr, 0);
+  if (needed <= 0) {
+    return {};
+  }
+
+  std::wstring out(static_cast<size_t>(needed), L'\0');
+  const int written = ::MultiByteToWideChar(CP_UTF8, 0, text.data(), length, out.data(), needed);
+  if (written <= 0) {
+    return {};
+  }
+  out.resize(static_cast<size_t>(written));
+  return out;
+}
+
+} // namespace
+
+std::vector<unsigned char> deskflow::win32::buildDropFileBlock(const std::vector<std::string> &utf8Paths)
+{
+  if (utf8Paths.empty() || utf8Paths.size() > kMaxDropPaths) {
+    return {};
+  }
+
+  std::vector<wchar_t> list;
+  for (const auto &path : utf8Paths) {
+    const std::wstring wide = utf8ToWide(path);
+    if (wide.empty() && !path.empty()) {
+      return {};
+    }
+    list.insert(list.end(), wide.begin(), wide.end());
+    list.push_back(L'\0');
+  }
+  list.push_back(L'\0');
+
+  const size_t listBytes = list.size() * sizeof(wchar_t);
+  std::vector<unsigned char> block(sizeof(DROPFILES) + listBytes);
+
+  DROPFILES header{};
+  header.pFiles = sizeof(DROPFILES);
+  header.fWide = TRUE;
+  std::memcpy(block.data(), &header, sizeof(DROPFILES));
+  std::memcpy(block.data() + sizeof(DROPFILES), list.data(), listBytes);
+  return block;
+}
+
+HGLOBAL deskflow::win32::createDropFilesHGlobal(const std::vector<std::string> &utf8Paths)
+{
+  const auto block = buildDropFileBlock(utf8Paths);
+  if (block.empty()) {
+    return nullptr;
+  }
+
+  HGLOBAL handle = ::GlobalAlloc(GHND, block.size());
+  if (handle == nullptr) {
+    return nullptr;
+  }
+
+  void *locked = ::GlobalLock(handle);
+  if (locked == nullptr) {
+    ::GlobalFree(handle);
+    return nullptr;
+  }
+
+  std::memcpy(locked, block.data(), block.size());
+  ::GlobalUnlock(handle);
+  return handle;
+}

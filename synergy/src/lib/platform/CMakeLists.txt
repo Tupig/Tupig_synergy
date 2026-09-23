@@ -64,6 +64,8 @@ if(WIN32)
     win32/Win32DropData.h
     win32/MSWindowsDropTarget.cpp
     win32/MSWindowsDropTarget.h
+    win32/MSWindowsDropSource.cpp
+    win32/MSWindowsDropSource.h
   )
 elseif(APPLE)
   set(PLATFORM_SOURCES

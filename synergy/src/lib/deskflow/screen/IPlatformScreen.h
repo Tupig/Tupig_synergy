@@ -159,6 +159,16 @@ public:
     return {};
   }
 
+  //! Offer received files as an OLE drag under the cursor (Windows IDropSource).
+  /*!
+  Default is a no-op. Windows starts `DoDragDrop` with CF_HDROP so the user can
+  drop into Explorer. Blocks until drop or cancel.
+  */
+  virtual bool startDraggingFiles(const std::vector<std::string> & /*paths*/)
+  {
+    return false;
+  }
+
   //@}
   // IKeyState overrides
   void fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang) override = 0;
