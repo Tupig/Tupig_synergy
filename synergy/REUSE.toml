@@ -4,7 +4,7 @@
 version = 1
 SPDX-PackageName = "TuPig Synergy"
 SPDX-PackageSupplier = "TuPig"
-SPDX-PackageDownloadLocation = "https://github.com/tupig/synergy"
+SPDX-PackageDownloadLocation = "https://github.com/Tupig/TuPig_Product"
 
 [[annotations]]
 path = [

@@ -29,15 +29,15 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-01 | P0 | Runtime / build | Versioned output names vs unversioned references | **Fixed** (see below) |
 | U-02 | P0 | Packaging (Linux) | Install source paths use an identity that has no files | Open |
 | U-03 | P1 | Packaging (all) | Three coexisting product identities; macOS and Linux differ | Open |
-| U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | Open |
-| U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | Open |
+| U-04 | P1 | Packaging (macOS) | Bundle icon filename does not exist | **Fixed** |
+| U-05 | P2 | Packaging (macOS) | Dead plist templates referencing removed variables | **Fixed** |
 | U-06 | P2 | Packaging (Arch) | PKGBUILD declares a conflict with itself | Open |
 | U-07 | P2 | Runtime (icons) | Two icon themes compiled into the same binary | Open |
 | U-08 | P3 | Comments | Three comments contradict the code | Open |
 | U-09 | P3 | Runtime (paths) | Directory names and file names use different app identifiers | Open |
 | U-10 | P3 | Packaging | Vendor / copyright strings still name the upstream commercial vendor | Open |
-| U-11 | P1 | Docs | Three bilingual formats coexist; two docs have no English | Open |
-| U-12 | P1 | Docs | Stale references: presets, a deleted file, moved docs | Open |
+| U-11 | P1 | Docs | Three bilingual formats coexist; two docs have no English | **Fixed** |
+| U-12 | P1 | Docs | Stale references: presets, a deleted file, moved docs | **Fixed** |
 | U-13 | P2 | Docs | Version numbers hardcoded in six places | Open |
 | U-14 | P2 | Docs | `HANDOFF.md` has drifted from reality | Open |
 | U-15 | P2 | Docs | Licence description disagrees across four files | Open |
@@ -101,9 +101,13 @@ The same file (`:17`) renames the icon to `com.tupig.synergy.png`, while the des
 
 On `APPLE`, `target = CMAKE_PROJECT_PROPER_NAME` = `"TuPig Synergy"` (`src/apps/deskflow-gui/CMakeLists.txt:6`), so `:25` sets `BUNDLE_ICON_FILE` to `TuPig Synergy.icns` and `:35` points at `extra/deploy/mac/bundle/Contents/Resources/TuPig Synergy.icns`. That directory contains only `Synergy.icns` and `Volume.icns`. The path is added to `add_executable` (`:39-44`), so macOS configuration fails on a missing source file.
 
+**Resolution (2026-09-23)**: confirmed by reading the code path — `CMAKE_PROJECT_PROPER_NAME` is `"TuPig Synergy"` (`extra/cmake/Synergy.cmake:6`), so `${target}.icns` really does expand to `TuPig Synergy.icns`. The stray `Volume.icns` was deleted and `Synergy.icns` renamed to `TuPig Synergy.icns`, matching the reference. The removed `Volume.icns` belonged to the dead `dmgbuild` mechanism (U-05).
+
 #### U-05 — Dead macOS plist templates
 
 `extra/deploy/mac/bundle/Contents/Info.plist.in` and `PkgInfo.in` reference `@DESKFLOW_APP_NAME@`, `@DESKFLOW_APP_ID@`, `@DESKFLOW_MAC_BUNDLE_CODE@`, `@DESKFLOW_VERSION@` and `@DESKFLOW_BUILD_YEAR@`. Nothing in the tree sets those variables (the upstream changelog recorded in `deploy/linux/org.deskflow.deskflow.metainfo.xml:346-355` notes they were removed). No `configure_file` references this template either — the GUI uses `src/apps/res/deskflow.plist.in` (`src/apps/deskflow-gui/CMakeLists.txt:30`). `Info.plist.in:27` also still carries the upstream commercial copyright line.
+
+**Resolution (2026-09-23)**: both templates deleted, along with the rest of the never-wired `dmgbuild` mechanism they belonged to (`dmgbuild/settings.py`, `Resources/Background.tiff`, `Resources/Volume.icns`). Verified beforehand that no `configure_file` and no build script referenced any of them. `deploy/mac/deploy.cmake` is the one live macOS packaging path.
 
 #### U-06 — PKGBUILD conflicts with itself
 
@@ -135,24 +139,38 @@ Directories are derived from `kAppName` (`TuPig Synergy`) while file names insid
 
 | Format | Files |
 |---|---|
-| Sectioned (`## English` + `## 中文`) | `build.md`, `configuration.md`, `troubleshooting.md`, `architecture.md`, `protocol.md`, `contributing.md`, `delivery.md`, `consistency-audit.md`, `mcp-integration.md` |
-| Inline per-heading, Chinese first | `security.md` (mostly, see below) |
-| Chinese only, no English | `FORK.md`, `HANDOFF.md`, `.github/CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` |
+| Sectioned (`## English` + `## 中文`) | `build.md`, `configuration.md`, `troubleshooting.md`, `architecture.md`, `protocol.md`, `contributing.md`, `delivery.md`, `consistency-audit.md`, `security.md`, `.github/CONTRIBUTING.md`, `.github/CODE_OF_CONDUCT.md` |
+| Chinese only, no English | `HANDOFF.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` |
 | English only, no Chinese | `.github/pull_request_template.md` |
 
-**Fixed 2026-09-23**: `mcp-integration.md` was Chinese-only prose behind bilingual
-headings; it is now sectioned like the rest. `security.md` was converted from the
-inline pattern to sectioned. `.github/CODE_OF_CONDUCT.md` gained a Chinese section
-(upstream English body kept unedited). The remaining Chinese-only files above are
-inherited or session-scoped documents and were left as they are.
+**Fixed 2026-09-23**: `security.md` was converted from the inline per-heading pattern
+to sectioned. `mcp-integration.md` was Chinese-only prose behind bilingual headings and
+is now **deleted** — it described an integration with no code anywhere in the tree.
+`.github/CODE_OF_CONDUCT.md` gained a Chinese section while keeping the upstream English
+body unedited. `FORK.md` was merged into `contributing.md` as an "Upstream Sync" section
+and deleted; that let `.github/CONTRIBUTING.md` become a short pointer to
+`docs/contributing.md` (its previous wiki link pointed at a repository that does not
+exist, and `REUSE.toml` carried the same wrong URL).
 
-`docs/build.md:523` also has a `## CMake Presets` section that sits after the Chinese section, outside the bilingual structure, and is Chinese-only.
+The three files still outside the bilingual convention are operational rather than
+reference material — `HANDOFF.md` and the issue template are session-scoped, and the
+pull request template is consumed by GitHub's PR form — so they were left as they are.
+
+`docs/build.md` also carries a `## Build Presets & Scripts / 构建预设与脚本` section after
+the Chinese section. It was Chinese-only and sat outside the bilingual structure; it now
+carries bilingual headings, so it no longer breaks the convention.
 
 #### U-12 — Stale documentation references
 
 - `docs/build.md:525` references `CMakeUserPresets.json`, deleted in Phase 0 (`security-quality-refactoring.md:102`, `HANDOFF.md:48`).
 - `docs/build.md:527-548` documents presets named `release` / `debug`. The real presets in `CMakePresets.json` are `windows-msvc`, `windows-msvc-release`, `windows-msvc-debug`, `linux`, `linux-release`, `macos`, `macos-release` — so `cmake --preset=release` fails.
 - `docs/HANDOFF.md:98,122,123` reference `docs/phase2-qt-network-migration.md` and `docs/optimization-plan.md`; both now live in `docs/archive/`.
+
+**Resolution (2026-09-23)**: all three corrected. `build.md` now documents the real
+presets (`windows-msvc`, `windows-msvc-release`, `windows-msvc-debug`, `linux`,
+`linux-release`, `macos`, `macos-release`, plus the diagnostics presets) and states
+explicitly that there is no `CMakeUserPresets.json`. `HANDOFF.md` now records that the
+two archived documents were deleted rather than moved.
 
 #### U-13 — Hardcoded version numbers
 
@@ -184,7 +202,7 @@ The single source of truth is `extra/cmake/Version.cmake`, but `1.21.2` is hardc
 
 #### U-18 — The `deskflow` / `synergy` boundary and a fragile i18n coupling
 
-Internal identifiers deliberately keep `deskflow` to stay mergeable with upstream (see `docs/FORK.md`): the `deskflow::` namespace, `src/lib/deskflow/`, `src/apps/deskflow-*/` including the `deskflow-*.cpp` filenames, `src/unittests/deskflow/`, `src/apps/res/deskflow.qrc|deskflow.plist.in|Deskflow.icns`, and the `set(filename ...)` values in the CMake files.
+Internal identifiers deliberately keep `deskflow` to stay mergeable with upstream (see the "Upstream Sync" section of `docs/contributing.md`): the `deskflow::` namespace, `src/lib/deskflow/`, `src/apps/deskflow-*/` including the `deskflow-*.cpp` filenames, `src/unittests/deskflow/`, `src/apps/res/deskflow.qrc|deskflow.plist.in`, and the `set(filename ...)` values in the CMake files.
 
 **Warning**: the translation chain depends on this name. Translations are `translations/deskflow_*.ts` (`translations/CMakeLists.txt:7`), and at runtime `src/lib/common/I18N.cpp:41,178` filters for files matching `kUpstreamId`. `kUpstreamId` (`Constants.h.in:12`) is `@UPSTREAM_PROJECT_NAME@`, assigned at root `CMakeLists.txt:58` *before* `extra/cmake/Synergy.cmake:64` renames the project, so its value is `deskflow`. `src/unittests/common/I18NTests.cpp:34,107` hardcodes the same names.
 
@@ -252,15 +270,15 @@ U-01 could not be confirmed empirically: `build/` is empty and `cmake`/`ninja` a
 | U-01 | P0 | 运行时 / 构建 | 产物名带版本号，引用处不带 | **已修复**（见下） |
 | U-02 | P0 | 打包 (Linux) | 安装源路径指向一个没有文件的身份 | 待处理 |
 | U-03 | P1 | 打包 (全平台) | 三套产品身份并存；macOS 与 Linux 不一致 | 待处理 |
-| U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | 待处理 |
-| U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | 待处理 |
+| U-04 | P1 | 打包 (macOS) | Bundle 图标文件名不存在 | **已修复** |
+| U-05 | P2 | 打包 (macOS) | 死模板引用已被删除的变量 | **已修复** |
 | U-06 | P2 | 打包 (Arch) | PKGBUILD 声明与自己冲突 | 待处理 |
 | U-07 | P2 | 运行时 (图标) | 两套图标主题编进同一个二进制 | 待处理 |
 | U-08 | P3 | 注释 | 三处注释与代码相反 | 待处理 |
 | U-09 | P3 | 运行时 (路径) | 目录名与文件名用了不同的应用标识 | 待处理 |
 | U-10 | P3 | 打包 | 供应商/版权字样仍指上游商业厂商 | 待处理 |
-| U-11 | P1 | 文档 | 三种双语格式并存；两份文档没有英文 | 待处理 |
-| U-12 | P1 | 文档 | 过时引用：预设、已删除文件、已移动文档 | 待处理 |
+| U-11 | P1 | 文档 | 三种双语格式并存；两份文档没有英文 | **已修复** |
+| U-12 | P1 | 文档 | 过时引用：预设、已删除文件、已移动文档 | **已修复** |
 | U-13 | P2 | 文档 | 版本号硬编码在六处 | 待处理 |
 | U-14 | P2 | 文档 | `HANDOFF.md` 与实际状态脱节 | 待处理 |
 | U-15 | P2 | 文档 | 许可描述在四个文件里不一致 | 待处理 |
@@ -356,17 +374,33 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 | 格式 | 文件 |
 |---|---|
-| 分节式（`## English` + `## 中文`） | `build.md`、`configuration.md`、`troubleshooting.md`、`architecture.md`、`protocol.md`、`contributing.md` |
-| 行内对照、中文在前 | `security.md`、`mcp-integration.md` |
-| 纯中文、无英文 | `FORK.md`、`HANDOFF.md` |
+| 分节式（`## English` + `## 中文`） | `build.md`、`configuration.md`、`troubleshooting.md`、`architecture.md`、`protocol.md`、`contributing.md`、`delivery.md`、`consistency-audit.md`、`security.md`、`.github/CONTRIBUTING.md`、`.github/CODE_OF_CONDUCT.md` |
+| 纯中文、无英文 | `HANDOFF.md`、`.github/ISSUE_TEMPLATE/security-quality-refactoring.md` |
+| 纯英文、无中文 | `.github/pull_request_template.md` |
 
-`docs/build.md:523` 还有一个 `## CMake Presets` 段落，位于中文段之后、双语结构之外，且只有中文。
+**已修复（2026-09-23）**：`security.md` 由「行内对照」改为分节式。`mcp-integration.md` 原为
+「标题双语、正文纯中文」，现已**删除** —— 它描述的集成在代码库中没有任何实现。
+`.github/CODE_OF_CONDUCT.md` 增补中文节，上游英文正文保持不改。`FORK.md` 已并入
+`contributing.md` 的「上游同步」一节并删除；因此 `.github/CONTRIBUTING.md` 得以改为指向
+`docs/contributing.md` 的短指针（其原 wiki 链接指向一个不存在的仓库，`REUSE.toml` 也带着
+同一个错误 URL）。
+
+仍未遵循双语约定的三份文件属操作类而非参考资料 —— `HANDOFF.md` 与 issue 模板是会话范围内
+的文档，pull request 模板由 GitHub 的 PR 表单消费 —— 故保持原样。
+
+`docs/build.md` 在中文段之后还有一个 `## Build Presets & Scripts / 构建预设与脚本` 段。它此前只有中文、
+位于双语结构之外，现已改为双语标题，不再违反约定。
 
 #### U-12 — 文档过时引用
 
 - `docs/build.md:525` 提到 `CMakeUserPresets.json`，该文件已在 Phase 0 删除（`security-quality-refactoring.md:102`、`HANDOFF.md:48`）。
 - `docs/build.md:527-548` 记录的预设名是 `release` / `debug`。`CMakePresets.json` 里实际是 `windows-msvc`、`windows-msvc-release`、`windows-msvc-debug`、`linux`、`linux-release`、`macos`、`macos-release` —— 敲 `cmake --preset=release` 会失败。
 - `docs/HANDOFF.md:98,122,123` 引用 `docs/phase2-qt-network-migration.md` 与 `docs/optimization-plan.md`，两者现已在 `docs/archive/`。
+
+**已修复（2026-09-23）**：三处均已更正。`build.md` 现记录真实预设（`windows-msvc`、
+`windows-msvc-release`、`windows-msvc-debug`、`linux`、`linux-release`、`macos`、
+`macos-release`，以及诊断类预设），并明确说明本仓库不含 `CMakeUserPresets.json`。
+`HANDOFF.md` 现写明那两份归档文档是**被删除**而非迁移。
 
 #### U-13 — 版本号硬编码
 
@@ -398,7 +432,7 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 #### U-18 — `deskflow` / `synergy` 边界与一个脆弱的 i18n 耦合
 
-内部标识有意保留 `deskflow`，以便与上游合并（见 `docs/FORK.md`）：`deskflow::` 命名空间、`src/lib/deskflow/`、`src/apps/deskflow-*/`（含 `deskflow-*.cpp` 文件名）、`src/unittests/deskflow/`、`src/apps/res/deskflow.qrc|deskflow.plist.in|Deskflow.icns`，以及 CMake 里的 `set(filename ...)`。
+内部标识有意保留 `deskflow`，以便与上游合并（见 `docs/contributing.md` 的「上游同步」一节）：`deskflow::` 命名空间、`src/lib/deskflow/`、`src/apps/deskflow-*/`（含 `deskflow-*.cpp` 文件名）、`src/unittests/deskflow/`、`src/apps/res/deskflow.qrc|deskflow.plist.in`，以及 CMake 里的 `set(filename ...)`。
 
 **警告**：翻译链路依赖这个名字。翻译文件是 `translations/deskflow_*.ts`（`translations/CMakeLists.txt:7`），运行时 `src/lib/common/I18N.cpp:41,178` 按 `kUpstreamId` 过滤文件。`kUpstreamId`（`Constants.h.in:12`）取值 `@UPSTREAM_PROJECT_NAME@`，它在根 `CMakeLists.txt:58` 赋值，**早于** `extra/cmake/Synergy.cmake:64` 把项目改名为 `synergy`，所以值是 `deskflow`。`src/unittests/common/I18NTests.cpp:34,107` 也硬编码了同样的名字。
 
