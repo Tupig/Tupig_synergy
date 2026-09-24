@@ -78,7 +78,10 @@ jobs:
       # filters out, so requiring it catches a build skipped by its failure.
       # lint-clang has no platform filter: a failed lint used to be invisible here
       # (builds skip via needs:, skipped counted as ok) — always require it.
+      # No checkout: this job only inspects needs.* results. Override the
+      # workflow-level working-directory (synergy/) or bash can't start.
       - name: Check all jobs passed or were intentionally skipped
+        working-directory: .
         run: |
           ok() {
             [[ "$1" == "success" || "$1" == "skipped" ]]
@@ -707,6 +710,8 @@ jobs:
   # uploads whatever artifacts exist — one failed target must not block shipping
   # the rest (a flaky distro shouldn't sink a whole nightly snapshot). Gated only
   # on get-version, which supplies the path. Layout: <dir>/<dev|snapshot|release>/<version>/...
+  # No checkout (download-artifact only), so run steps must override the
+  # workflow working-directory; artifacts land at the workspace root under dist/.
   s3-upload:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
     if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
@@ -729,6 +734,7 @@ jobs:
 
       - name: Upload to AWS S3
         shell: bash
+        working-directory: .
         run: |
           version="${{ needs.get-version.outputs.version }}"
           s3_uri="${{ inputs.aws-s3-uri || format('s3://{0}/{1}', vars.AWS_S3_BUCKET, vars.AWS_S3_UPLOAD_DIR) }}"
@@ -756,9 +762,11 @@ jobs:
     timeout-minutes: 2
 
     steps:
+      # No checkout: override workflow working-directory so bash can start.
       - name: Build Slack message
         id: message
         shell: bash
+        working-directory: .
         run: |
           link="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           {
