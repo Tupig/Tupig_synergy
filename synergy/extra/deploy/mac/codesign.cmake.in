@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd
+# Upstream copyright retained intentionally (A-24); current project is TuPig.
 # SPDX-License-Identifier: MIT
 
 # CPack pre-build script: sign the app bundle as the final packaging step, after

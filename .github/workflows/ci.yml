@@ -299,7 +299,7 @@ jobs:
             runs-on: macos-15-intel
             timeout: 20
             qt-version: 6.9.3
-            config-args: '-DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_SYSROOT=/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
+            config-args: '-DCMAKE_OSX_ARCHITECTURES="x86_64"'
 
     steps:
       - name: Checkout

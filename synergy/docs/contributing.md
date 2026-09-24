@@ -23,7 +23,7 @@ Thank you for your interest in contributing to TuPig Synergy! We welcome all for
 
 | Type | Description | Where to Start |
 |------|-------------|----------------|
-| 🐛 **Bug Reports** | Found a bug? Report it with details | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
+| 🐛 **Bug Reports** | Found a bug? Report it with details | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.yml) |
 | 💡 **Feature Requests** | Have an idea? Share it | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
 | 📝 **Documentation** | Fix typos, add examples, translate | Edit `.md` files in `docs/` |
 | 🌐 **Translations** | Add/update Qt `.ts` files | `translations/` directory |
@@ -95,24 +95,20 @@ Closes #42
 | Aspect | Standard | Tool / Config |
 |--------|----------|---------------|
 | **C++ Version** | C++20 | Enforced by CMake |
-| **Formatting** | ClangFormat (Google-based) | `.clang-format` |
+| **Formatting** | ClangFormat (Google-based) | `.clang-format` (CI enforces via `clang-format-diff`) |
 | **CMake Style** | Modern CMake 3.25+ | `cmake-format` |
 | **Static Analysis** | Clang-Tidy, Cppcheck | CI Pipeline |
-| **Testing** | GoogleTest, >80% coverage | `ctest` |
-| **Commit Hooks** | Pre-commit (format, lint) | `.pre-commit-config.yaml` |
+| **Testing** | Qt Test + CTest, >80% coverage | `ctest` |
 
-#### Pre-commit Setup
+#### Formatting
 
 ```bash
-# Install pre-commit
-pip install pre-commit
-
-# Install hooks
-pre-commit install
-
-# Run manually
-pre-commit run --all-files
+# Format changed files in place (same style the CI lint job applies)
+clang-format -i path/to/changed.cpp
 ```
+
+Note: this repository has no `.pre-commit-config.yaml`; formatting is enforced
+by the `lint-clang` CI job using `clang-format-diff` against the merge base.
 
 ---
 
@@ -122,7 +118,7 @@ Before submitting, ensure your PR meets these criteria:
 
 - [ ] **Branch** targets `main` (not `develop` or release branches)
 - [ ] **Commits** follow Conventional Commits format
-- [ ] **Code** passes `clang-format` (run `pre-commit run clang-format`)
+- [ ] **Code** passes `clang-format` (see Formatting above)
 - [ ] **Static analysis** passes (`clang-tidy`, `cppcheck`)
 - [ ] **Tests** pass (`ctest --output-on-failure`)
 - [ ] **Coverage** doesn't decrease significantly
@@ -353,7 +349,7 @@ Contributors are credited in the release notes. Thank you! 🙏
 
 | 类型 | 说明 | 起始位置 |
 |------|------|----------|
-| 🐛 **Bug 报告** | 发现 Bug？详细报告 | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
+| 🐛 **Bug 报告** | 发现 Bug？详细报告 | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.yml) |
 | 💡 **功能建议** | 有想法？分享讨论 | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
 | 📝 **文档改进** | 修正错别字、补充示例、翻译 | 编辑 `docs/` 下的 `.md` 文件 |
 | 🌐 **翻译** | 新增/更新 Qt `.ts` 翻译文件 | `translations/` 目录 |
@@ -424,24 +420,20 @@ Closes #42
 | 方面 | 标准 | 工具/配置 |
 |------|------|-----------|
 | **C++ 版本** | C++20 | CMake 强制要求 |
-| **格式化** | ClangFormat (基于 Google) | `.clang-format` |
+| **格式化** | ClangFormat (基于 Google) | `.clang-format`（CI 以 `clang-format-diff` 强制） |
 | **CMake 风格** | Modern CMake 3.25+ | `cmake-format` |
 | **静态分析** | Clang-Tidy, Cppcheck | CI 流水线 |
-| **测试** | GoogleTest, 覆盖率 >80% | `ctest` |
-| **提交钩子** | Pre-commit (格式化、检查) | `.pre-commit-config.yaml` |
+| **测试** | Qt Test + CTest, 覆盖率 >80% | `ctest` |
 
-#### Pre-commit 安装
+#### 格式化
 
 ```bash
-# 安装 pre-commit
-pip install pre-commit
-
-# 安装钩子
-pre-commit install
-
-# 手动运行
-pre-commit run --all-files
+# 就地格式化变更文件（与 CI lint 作业同一套规则）
+clang-format -i path/to/changed.cpp
 ```
+
+注意：本仓库**没有** `.pre-commit-config.yaml`；格式由 CI 的 `lint-clang` 作业
+对合并基线执行 `clang-format-diff` 强制。
 
 ---
 
@@ -451,7 +443,7 @@ pre-commit run --all-files
 
 - [ ] **分支** 目标为 `main`（非 `develop` 或发布分支）
 - [ ] **提交** 遵循 Conventional Commits 格式
-- [ ] **代码** 通过 `clang-format` (`pre-commit run clang-format`)
+- [ ] **代码** 通过 `clang-format`（见「格式化」）
 - [ ] **静态分析** 通过 (`clang-tidy`, `cppcheck`)
 - [ ] **测试** 全部通过 (`ctest --output-on-failure`)
 - [ ] **覆盖率** 无显著下降

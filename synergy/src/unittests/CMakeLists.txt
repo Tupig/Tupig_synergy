@@ -104,7 +104,8 @@ get_property(PROJECT_TESTS GLOBAL PROPERTY ${CMAKE_PROJECT_NAME}_tests)
 # extra/cmake/Synergy.cmake tells people to do.
 set(guiApp ${CMAKE_PROJECT_NAME})
 
-option(SKIP_BUILD_TESTS "Skip build time test" OFF)
+# SKIP_BUILD_TESTS is owned by extra/cmake/Synergy.cmake (default ON); do not
+# declare a second option() here with a conflicting default.
 
 if(NOT SKIP_BUILD_TESTS)
   set(run_tests_deps ${PROJECT_TESTS})

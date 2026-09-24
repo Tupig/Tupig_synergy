@@ -14,7 +14,10 @@
 
 ### Reporting a Vulnerability
 
-If you discover a security vulnerability within TuPig Synergy, please send an email to the maintainers. All security vulnerabilities will be promptly addressed.
+Please use **GitHub private vulnerability reporting** for this repository
+(GitHub → Security → Report a vulnerability). If that is unavailable, open a
+minimal issue asking for a private channel and do not include exploit details
+in the public issue. All security vulnerabilities will be promptly addressed.
 
 **Please do NOT report security vulnerabilities through public GitHub issues.**
 
@@ -77,7 +80,9 @@ If you discover a security vulnerability within TuPig Synergy, please send an em
 
 ### 报告漏洞
 
-如果您在 TuPig Synergy 中发现安全漏洞，请发送邮件给维护者。所有安全漏洞将及时处理。
+请使用本仓库的 **GitHub 私密漏洞报告**（GitHub → Security → Report a vulnerability）。
+若该入口不可用，请先开一个**不含漏洞细节**的公开 issue 请求私密沟通渠道。
+所有安全漏洞将及时处理。
 
 **请不要通过公开的 GitHub Issues 报告安全漏洞。**
 

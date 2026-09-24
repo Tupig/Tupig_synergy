@@ -323,11 +323,11 @@ else()
   endif()
 endif()
 
-# Debug visibility
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message(STATUS "Disabling debug build")
-  add_definitions(-DNDEBUG)
-endif()
+# Debug visibility. Multi-config generators (Visual Studio, Xcode) leave
+# CMAKE_BUILD_TYPE empty, so gate NDEBUG on the actual configuration instead —
+# the old `NOT CMAKE_BUILD_TYPE STREQUAL "Debug"` was true for empty and forced
+# NDEBUG even for `--config Debug`.
+add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")

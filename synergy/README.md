@@ -148,7 +148,7 @@ synergy/
 ├── src/                        # Source code
 │   ├── apps/                   # Entry points (core, daemon, gui)
 │   ├── lib/                    # 12 core libraries
-│   └── unittests/              # GoogleTest unit tests
+│   └── unittests/              # Qt Test unit tests
 ├── translations/               # Qt .ts translation files
 ├── triplets/                   # vcpkg overlay triplets (static linking)
 ├── vcpkg.json                  # vcpkg dependency manifest
@@ -185,14 +185,11 @@ Server screen layout is a **separate** config file (`screens`, `main.position`, 
 | Document | Description |
 |---|---|
 | [build.md](docs/build.md) | Detailed Build Guide / 编译指南 |
-| [contributing.md](docs/contributing.md) | Contributing Guide / 贡献指南 |
 | [protocol.md](docs/protocol.md) | Protocol Reference / 协议参考 (v1.8) |
 | [configuration.md](docs/configuration.md) | Configuration Reference / 配置参考 |
-| [architecture.md](docs/architecture.md) | Architecture Decision Records / 架构决策记录 |
-| [delivery.md](docs/delivery.md) | Delivery Matrix / 交付矩阵 (artifacts, self-containment, constraints) |
-| [consistency-audit.md](docs/consistency-audit.md) | Consistency Audit / 一致性审计 (U-01 ~ U-21) |
 | [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查 |
 | [security.md](docs/security.md) | Security Policy / 安全策略 |
+| [HANDOFF.md](docs/HANDOFF.md) | Session Handoff / 会话交接 (progress, open items, G1 checklist) |
 
 ---
 

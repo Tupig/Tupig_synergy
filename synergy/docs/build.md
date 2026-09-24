@@ -13,8 +13,8 @@
 | **CMake** | 3.25+ | Modern CMake required |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/crypto support |
-| **libportal** | 0.9.1+ | Linux/BSD only (Wayland portal) |
-| **libei** | 1.3+ | Linux/BSD only (input emulation) |
+| **libportal** | 0.8.0+ | Linux/BSD only (Wayland portal) |
+| **libei** | 1.0+ | Linux/BSD only (input emulation) |
 
 ### Default Build Options
 
@@ -24,7 +24,7 @@ The following components are enabled by default:
 - ✅ TuPig Synergy Core Service (`synergy-core`)
 - ✅ Daemon for Windows UAC handling (`synergy-daemon`, Windows only)
 - ✅ Doxygen Documentation (if Doxygen installed)
-- ✅ Build-time Unit Tests (GoogleTest)
+- ✅ Build-time Unit Tests (Qt Test + CTest)
 
 ### CMake Configuration Options
 
@@ -35,7 +35,7 @@ The following components are enabled by default:
 | `BUILD_INSTALLER` | Build platform installers | `ON` |
 | `BUILD_X11_SUPPORT` | Build X11 backend (Linux/BSD) | `ON` |
 | `BUILD_OSX_BUNDLE` | Build macOS `.app` bundle | `ON` |
-| `SKIP_BUILD_TESTS` | Skip tests during build | `OFF` |
+| `SKIP_BUILD_TESTS` | Skip tests during build | `ON` |
 | `ENABLE_COVERAGE` | Enable code coverage reports | `OFF` |
 | `CLEAN_TRS` | Remove obsolete translation strings | `OFF` |
 | `SYNERGY_CORE_FLAVOR` | Build as "TuPig Synergy Core"; seeds headless defaults (GUI/tests/installer off) | `OFF` |
@@ -175,29 +175,21 @@ cmake --build build --config Release -j$(nproc)
 | Platform | Formats |
 |----------|---------|
 | **All** | TGZ, TBZ2, TXZ, TZST |
-| **Linux** | DEB or RPM (auto-selected from `/etc/os-release`) |
+| **Linux** | DEB or RPM (auto-selected from `/etc/os-release`); Flatpak via CI `build-flatpak`; Arch via `deploy/linux/arch/PKGBUILD.in` |
 | **macOS** | DMG (DragNDrop) |
 | **Windows** | 7Z (portable), MSI (WiX, see note) |
 
 > **Note**: AppImage is not implemented — no `appimage` reference exists in
-> `deploy/`, `extra/` or `.github/`. A Flatpak manifest is present
-> (`extra/deploy/linux/flatpak/`) but nothing in the build
-> consumes it, so no Flatpak bundle is produced either. MSI generation
-> additionally requires accepting the WiX v7 OSMF EULA. See
-> [delivery.md](delivery.md) for the full per-platform matrix and constraints.
+> `deploy/`, `extra/` or `.github/`. A Flatpak manifest exists under
+> `extra/deploy/linux/flatpak/` and is consumed by the CI `build-flatpak`
+> job; the local `package` target does not produce a Flatpak bundle.
+> MSI generation uses the WiX toolset installed on the machine (CI pins
+> 5.0.2; CPack requests the WiX v4 schema). See `docs/HANDOFF.md` for
+> verification status.
 
 ---
 
 ### 🔧 Advanced Configuration
-
-#### Cross-Compilation (Linux → Windows)
-
-```bash
-# Requires mingw-w64 and Qt for MinGW
-cmake -S . -B build-mingw \
-  -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release
-```
 
 #### Sanitizer Builds
 
@@ -260,8 +252,8 @@ cmake --build build --target coverage
 | **CMake** | 3.25+ | 需要现代 CMake 特性 |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/加密支持 |
-| **libportal** | 0.9.1+ | 仅 Linux/BSD (Wayland Portal) |
-| **libei** | 1.3+ | 仅 Linux/BSD (输入仿真) |
+| **libportal** | 0.8.0+ | 仅 Linux/BSD (Wayland Portal) |
+| **libei** | 1.0+ | 仅 Linux/BSD (输入仿真) |
 
 ### 默认启用组件
 
@@ -269,7 +261,7 @@ cmake --build build --target coverage
 - ✅ TuPig Synergy 核心服务 (`synergy-core`)
 - ✅ Windows UAC 守护进程 (`synergy-daemon`，仅 Windows)
 - ✅ Doxygen 文档 (检测到 Doxygen 时)
-- ✅ 编译时单元测试 (GoogleTest)
+- ✅ 编译时单元测试 (Qt Test + CTest)
 
 ### CMake 配置选项
 
@@ -280,7 +272,7 @@ cmake --build build --target coverage
 | `BUILD_INSTALLER` | 编译平台安装包 | `ON` |
 | `BUILD_X11_SUPPORT` | 编译 X11 后端 (Linux/BSD) | `ON` |
 | `BUILD_OSX_BUNDLE` | 编译 macOS `.app` 包 | `ON` |
-| `SKIP_BUILD_TESTS` | 跳过编译时测试 | `OFF` |
+| `SKIP_BUILD_TESTS` | 跳过编译时测试 | `ON` |
 | `ENABLE_COVERAGE` | 启用代码覆盖率报告 | `OFF` |
 | `CLEAN_TRS` | 清理翻译文件中过时字符串 | `OFF` |
 | `SYNERGY_CORE_FLAVOR` | 以 “TuPig Synergy Core” 构建；同时将 GUI/测试/安装包默认置为关闭（无界面构建） | `OFF` |
@@ -419,24 +411,15 @@ cmake --build build --config Release -j$(nproc)
 | 平台 | 格式 |
 |------|------|
 | **所有平台** | TGZ, TBZ2, TXZ, TZST |
-| **Linux** | DEB 或 RPM（依 `/etc/os-release` 自动二选一） |
+| **Linux** | DEB 或 RPM（依 `/etc/os-release` 自动二选一）；Flatpak 经 CI `build-flatpak`；Arch 经 `deploy/linux/arch/PKGBUILD.in` |
 | **macOS** | DMG (DragNDrop) |
 | **Windows** | 7Z（便携）、MSI (WiX，见说明) |
 
-> **说明**：AppImage **未实现** —— `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用。Flatpak 清单虽存在（`extra/deploy/linux/flatpak/`），但构建流程中无任何环节消费它，因此同样不产出 Flatpak 包。生成 MSI 另需接受 WiX v7 的 OSMF 许可协议。完整的各平台产物矩阵与限制见 [delivery.md](delivery.md)。
+> **说明**：AppImage **未实现** —— `deploy/`、`extra/`、`.github/` 中不存在任何 `appimage` 引用。Flatpak 清单位于 `extra/deploy/linux/flatpak/`，由 CI 的 `build-flatpak` job 消费；本地 `package` 目标不产出 Flatpak 包。MSI 使用机器上已安装的 WiX（CI 固定 5.0.2；CPack 请求 WiX v4 schema）。验证状态见 `docs/HANDOFF.md`。
 
 ---
 
 ### 🔧 进阶配置
-
-#### 交叉编译 (Linux → Windows)
-
-```bash
-# 需要 mingw-w64 和 MinGW 版 Qt
-cmake -S . -B build-mingw \
-  -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release
-```
 
 #### Sanitizer 构建
 
@@ -503,8 +486,13 @@ automatically — no `VCPKG_ROOT`, no global install, no manual environment vari
 
 | Platform / 平台 | Command / 命令 |
 |---|---|
-| Windows | `scripts\build.bat [release\|debug]` |
-| Linux / macOS | `./scripts/build.sh [release\|debug]` |
+| Windows | `scripts\build.bat release` |
+| Linux / macOS | `./scripts/build.sh release` |
+
+Both scripts accept only `release`: every vcpkg overlay triplet in this repository sets
+`VCPKG_BUILD_TYPE release`, so a Debug configuration cannot link the dependencies. For
+instrumented builds use the diagnostics presets (`linux-asan-build` / `linux-tsan-build` /
+`linux-coverage-build`).
 
 Both scripts call `scripts/bootstrap-vcpkg.{bat,sh}`, which clones the repository-local vcpkg into
 `vendor/vcpkg`, checks out the baseline pinned by `builtin-baseline` in `vcpkg.json`, and bootstraps
@@ -514,6 +502,10 @@ duplicated in the scripts.
 两个脚本都会调用 `scripts/bootstrap-vcpkg.{bat,sh}`：克隆仓库内 vcpkg 到 `vendor/vcpkg`，检出
 `vcpkg.json` 中 `builtin-baseline` 固定的版本，并引导 vcpkg 工具。baseline 是唯一真源，由脚本从
 `vcpkg.json` 读取，不在脚本里复制一份。
+
+两个脚本都只接受 `release`：本仓库所有 vcpkg overlay triplet 均设置
+`VCPKG_BUILD_TYPE release`，Debug 配置无法链接依赖。需要插桩构建请使用诊断预设
+（`linux-asan-build` / `linux-tsan-build` / `linux-coverage-build`）。
 
 > **Windows prerequisite / Windows 前置条件**: a C++ toolchain (Visual Studio 2022 Build Tools with
 > the "Desktop development with C++" workload), CMake 3.25+ and Git. Run `setup.bat` once to install

@@ -140,6 +140,9 @@ runs:
         extra-args: --classic --host-triplet=${{inputs.vcpkg-triplet}}
         triplet: ${{inputs.vcpkg-triplet}}
         token: ${{ github.token }}
+        # Unpinned on purpose (A-23): the action tracks vcpkg master so new
+        # ports resolve; our vcpkg.json builtin-baseline still pins library
+        # versions. Revisit if a vcpkg-action release ever ships a breaking input.
         revision: master
 
     - name: Cache Chocolatey

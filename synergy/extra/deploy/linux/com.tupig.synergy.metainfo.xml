@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd -->
+<!-- Upstream copyright retained intentionally (A-24); current project is TuPig. -->
 <!-- SPDX-License-Identifier: CC0-1.0 -->
 <component type="desktop-application">
 	<id>com.tupig.synergy</id>
 	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>GPL-2.0-only</project_license>
+	<project_license>GPL-2.0-only WITH LicenseRef-OpenSSL-Exception</project_license>
 	<name>TuPig Synergy</name>
 	<developer id="com.tupig">
 		<name>TuPig</name>
@@ -83,7 +84,7 @@
 				</ul>
 				<p>See the release notes for the full changelog.</p>
 			</description>
-			<url>https://symless.com/synergy/download</url>
+			<url>https://github.com/Tupig</url>
 		</release>
 	</releases>
 </component>

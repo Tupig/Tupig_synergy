@@ -98,8 +98,8 @@ void ClientApp::parseArgs()
 const char *ClientApp::daemonName() const
 {
   if (deskflow::platform::isWindows())
-    return "Deskflow Client";
-  return "deskflow-client";
+    return "TuPig Synergy Client";
+  return "synergy-client";
 }
 
 deskflow::Screen *ClientApp::createScreen()

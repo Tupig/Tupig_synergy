@@ -175,6 +175,7 @@
         <file alias="icons/synergy-light/actions/32/view-refresh.svg">../../../../src/apps/res/icons/deskflow-light/actions/32/view-refresh.svg</file>
         <file alias="icons/synergy-light/actions/32/system-search.svg">../../../../src/apps/res/icons/deskflow-light/actions/32/system-search.svg</file>
         <file alias="icons/synergy-light/devices/64/video-display.svg">../../../../src/apps/res/icons/deskflow-light/devices/64/video-display.svg</file>
+        <file alias="icons/synergy-light/places/64/user-trash.svg">../../../../src/apps/res/icons/deskflow-light/places/64/user-trash.svg</file>
         <file alias="icons/synergy-light/status/64/dialog-error.svg">../../../../src/apps/res/icons/deskflow-light/status/64/dialog-error.svg</file>
         <file alias="icons/synergy-light/status/64/dialog-information.svg">../../../../src/apps/res/icons/deskflow-light/status/64/dialog-information.svg</file>
         <file alias="icons/synergy-light/status/64/dialog-positive.svg">../../../../src/apps/res/icons/deskflow-light/status/64/dialog-positive.svg</file>

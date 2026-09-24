@@ -581,8 +581,8 @@ int ServerApp::start()
 const char *ServerApp::daemonName() const
 {
   if (deskflow::platform::isWindows())
-    return "Deskflow Server";
-  return "deskflow-server";
+    return "TuPig Synergy Server";
+  return "synergy-server";
 }
 
 void ServerApp::startNode()

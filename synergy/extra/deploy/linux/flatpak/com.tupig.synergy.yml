@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: (C) 2012 - 2026 Synergy App Ltd
-# SPDX-License-Identifier: GPL-2.0-only
+# Upstream copyright retained intentionally (A-24); current project is TuPig.
+# SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
 
 # Synergy-branded Flatpak manifest. Lives under extra/ so the build identifies
 # itself to the Flatpak runtime by the project's own reverse-DNS id

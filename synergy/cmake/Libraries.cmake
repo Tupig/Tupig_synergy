@@ -259,6 +259,7 @@ macro(configure_xorg_libs)
   check_library_exists("Xinerama" XineramaQueryExtension "" HAVE_Xinerama)
   check_library_exists("Xi" XISelectEvents "" HAVE_Xi)
   check_library_exists("Xrandr" XRRQueryExtension "" HAVE_Xrandr)
+  check_library_exists("xkbfile" XkbGetKeyboard "" HAVE_XKBFILE)
 
   if(HAVE_ICE)
 
@@ -268,7 +269,7 @@ macro(configure_xorg_libs)
 
   endif()
 
-  if(!X11_xkbfile_FOUND)
+  if(NOT HAVE_XKBFILE)
     message(FATAL_ERROR "Missing library: xkbfile")
   endif()
 

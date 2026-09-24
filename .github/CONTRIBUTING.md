@@ -32,7 +32,7 @@ Reporting:
 
 | Purpose | Where |
 |---|---|
-| Bugs | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
+| Bugs | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.yml) |
 | Ideas and questions | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
 | Security vulnerabilities | [synergy/docs/security.md](../synergy/docs/security.md) — **not** public issues |
 
@@ -56,6 +56,6 @@ Reporting:
 
 | 用途 | 位置 |
 |---|---|
-| Bug | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.md) |
+| Bug | [GitHub Issues](https://github.com/Tupig/TuPig_Product/issues/new?template=bug_report.yml) |
 | 想法与提问 | [GitHub Discussions](https://github.com/Tupig/TuPig_Product/discussions) |
 | 安全漏洞 | [synergy/docs/security.md](../synergy/docs/security.md) —— **不要**用公开 issue |

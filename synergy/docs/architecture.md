@@ -330,7 +330,7 @@ Network → Decode → Queue → Input Thread → OS Synthesis
 
 ---
 
-### ADR-0009: GoogleTest + CTest for Testing
+### ADR-0009: Qt Test + CTest for Testing
 
 **Status**: Accepted
 **Date**: 2024-01-15
@@ -345,7 +345,7 @@ Need testing framework supporting:
 - CI integration
 
 #### Decision
-Use **GoogleTest** for C++ unit tests + **CTest** for orchestration. Target >80% coverage.
+Use **Qt Test** for C++ unit tests + **CTest** for orchestration. Target >80% coverage.
 
 Structure:
 ```
@@ -360,10 +360,10 @@ src/unittests/
 
 #### Consequences
 **Positive:**
-- Rich assertions, death tests, parameterized tests
+- Rich assertions, data-driven tests, Qt object mocking
 - CTest: parallel, sharding, labels
 - XML/JUnit output for CI
-- Mocking via GMock
+- Same framework as the rest of the Qt stack
 
 **Negative:**
 - Compile time overhead
@@ -421,13 +421,12 @@ Flatten to `docs/` with bilingual (EN/ZH) markdown files:
 
 ```
 docs/
-  build.md           # 编译指南
-  contributing.md    # 贡献指南
-  protocol.md        # 协议参考
-  configuration.md   # 配置参考
-  architecture.md    # 架构决策 (本文件)
-  troubleshooting.md # 故障排查
-  security.md        # 安全策略
+  HANDOFF.md          # 会话交接
+  build.md            # 编译指南
+  configuration.md    # 配置参考
+  protocol.md         # 协议参考
+  security.md         # 安全策略
+  troubleshooting.md  # 故障排查
 ```
 
 Each file: English first, Chinese second, shared diagrams/tables.
@@ -762,7 +761,7 @@ v1.8 关键新增：
 
 ---
 
-### ADR-0009: GoogleTest + CTest 测试框架
+### ADR-0009: Qt Test + CTest 测试框架
 
 **状态**: 已接受
 **日期**: 2024-01-15
@@ -777,7 +776,7 @@ v1.8 关键新增：
 - CI 集成
 
 #### 决策
-使用 **GoogleTest** 编写 C++ 单元测试 + **CTest** 编排。目标覆盖率 >80%。
+使用 **Qt Test** 编写 C++ 单元测试 + **CTest** 编排。目标覆盖率 >80%。
 
 结构：
 ```
@@ -792,10 +791,10 @@ src/unittests/
 
 #### 后果
 **正面：**
-- 丰富断言、死亡测试、参数化测试
+- 丰富断言、数据驱动测试、Qt 对象 Mock
 - CTest: 并行、分片、标签
 - XML/JUnit 输出供 CI
-- GMock 支持 Mock
+- 与 Qt 技术栈同源框架
 
 **负面：**
 - 编译时间开销

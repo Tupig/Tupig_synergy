@@ -14,7 +14,6 @@
 #  linux-coverage-build) via cmake --preset <name>. The configure presets
 #  named linux-asan / linux-tsan / linux-coverage are hidden and not usable
 #  with --preset.
-#  cmake --preset directly.
 #
 #  Self-contained by design:
 #    * bootstraps the repository-local vcpkg (no VCPKG_ROOT, no global vcpkg)

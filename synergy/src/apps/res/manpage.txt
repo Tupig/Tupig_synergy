@@ -1,5 +1,5 @@
 [SEE ALSO]
 synergy(1), synergy-core(1)
 
-All documentation is on the web, so please point your browser at
-<https://github.com/deskflow/deskflow/wiki> and surf away.
+Project documentation lives in the repository under synergy/docs/
+(https://github.com/Tupig/TuPig_Product).

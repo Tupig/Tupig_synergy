@@ -12,7 +12,7 @@ PanelDefault=48
 DialogDefault=32
 KDE-Extensions=.svg
 
-Directories=actions/16,actions/22,actions/24,actions/32,apps/64,devices/64,status/64
+Directories=actions/16,actions/22,actions/24,actions/32,apps/64,devices/64,places/64,status/64
 
 [apps/64]
 Size=64
@@ -61,4 +61,11 @@ Size=64
 Context=Devices
 Type=Scalable
 MinSize=22
+MaxSize=256
+
+[places/64]
+Size=64
+Type=Scalable
+Context=Places
+MinSize=48
 MaxSize=256
