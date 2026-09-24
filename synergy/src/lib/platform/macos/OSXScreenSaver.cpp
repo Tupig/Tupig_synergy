@@ -7,9 +7,9 @@
 
 #import "OSXScreenSaver.h"
 
+#import "OSXScreenSaverUtil.h"
 #import "base/IEventQueue.h"
 #import "base/Log.h"
-#import "OSXScreenSaverUtil.h"
 
 #import <string.h>
 #import <sys/sysctl.h>
