@@ -68,7 +68,7 @@ jobs:
   # Quality gate to allow PR merge, used in the branch protection rules.
   ci-passed:
     runs-on: ubuntu-latest
-    needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
+    needs: [get-version, lint-clang, build-windows, build-macos, build-linux, build-flatpak]
     if: always()
 
     steps:
@@ -76,12 +76,15 @@ jobs:
       # filtered the platform set (workflow_dispatch with inputs.platform=windows
       # skips macos+linux jobs). A failed job is still a failure. get-version never
       # filters out, so requiring it catches a build skipped by its failure.
+      # lint-clang has no platform filter: a failed lint used to be invisible here
+      # (builds skip via needs:, skipped counted as ok) — always require it.
       - name: Check all jobs passed or were intentionally skipped
         run: |
           ok() {
             [[ "$1" == "success" || "$1" == "skipped" ]]
           }
           if ok "${{needs.get-version.result}}" \
+             && ok "${{needs.lint-clang.result}}" \
              && ok "${{needs.build-windows.result}}" \
              && ok "${{needs.build-macos.result}}" \
              && ok "${{needs.build-linux.result}}" \
@@ -676,23 +679,28 @@ jobs:
       - name: Lint manifest
         run: flatpak-builder-lint manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
 
+      # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root),
+      # not from defaults.run.working-directory (ADR 0549). The builder therefore
+      # reads the manifest under synergy/ and writes repo/, .flatpak-builder/ and
+      # the bundle at the workspace root; Validate/Upload must anchor there too.
       - name: Build
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_linux_${{ matrix.flatpak.arch }}.flatpak
-          manifest-path: extra/deploy/linux/flatpak/com.tupig.synergy.yml
+          manifest-path: synergy/extra/deploy/linux/flatpak/com.tupig.synergy.yml
           cache-key: flatpak-builder-${{matrix.flatpak.arch}}-2.0
           arch: ${{matrix.flatpak.arch}}
           upload-artifact: false
 
       - name: Validate build
-        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
+        working-directory: .
+        run: flatpak-builder-lint --exceptions --user-exceptions synergy/extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
 
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
-          path: ${{github.workspace}}/synergy/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
+          path: ${{github.workspace}}/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
 
   # Upload all packages that built to AWS S3 for distribution. Runs after the
   # build jobs on push/dispatch/release events (PRs skipped, no secrets), and

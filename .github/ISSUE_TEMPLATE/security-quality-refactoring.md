@@ -86,8 +86,8 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 
 | 编号 | 优先级 | 问题 | 核心位置 | 状态 |
 |------|--------|------|----------|------|
-| **A-12** | P1 | CI 门禁可「全绿但零构建」：lint-clang 无 `working-directory`（`find src/` 在仓库根失败）→ build 全 skip；`ci-passed` 不 needs lint 且 `skipped` 计为通过 | `.github/actions/lint-clang/action.yml:12`、`ci.yml:71,79-92` | ⬜ 待修复 |
-| **A-13** | P1 | build-flatpak 三处路径锚定矛盾：`uses:` 不继承 `defaults.run.working-directory`，`manifest-path: extra/...` 以 workspace 根解析 | `ci.yml:63-65,680-695` | ⬜ 待修复 |
+| **A-12** | P1 | CI 门禁可「全绿但零构建」：lint-clang 无 `working-directory`（`find src/` 在仓库根失败）→ build 全 skip；`ci-passed` 不 needs lint 且 `skipped` 计为通过 | `.github/actions/lint-clang/action.yml:12`、`ci.yml:71,79-92` | ✅ 已修复（lint 步补 `working-directory: synergy`；`ci-passed` 纳入 `lint-clang` needs 并校验其 result；YAML 解析通过，待 CI 实证） |
+| **A-13** | P1 | build-flatpak 三处路径锚定矛盾：`uses:` 不继承 `defaults.run.working-directory`，`manifest-path: extra/...` 以 workspace 根解析 | `ci.yml:63-65,680-695` | ✅ 已修复（`manifest-path` 加 `synergy/` 前缀；Validate `working-directory: .` + 例外文件 `synergy/` 前缀；Upload 改 workspace 根；YAML 解析通过，待 CI 实证） |
 | **A-14** | P2 | `push` 只配不存在的 `beta`（main 推送不触发 CI）；`static-analysis.yml` 无调用者，clang-tidy/cppcheck 从未自动运行 | `ci.yml:33-34`、`static-analysis.yml:2,6-8` | ⬜ 待修复 |
 | **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md:102` vs `plan-B:27` | ⬜ 待修复（先改文档或接线二选一） |
 | **A-16** | P2 | README 称文件拖拽「未实现」，与 delivery（Win/mac 已实现 + 单测）反向过期 | `README.md:42` vs `delivery.md:106-111` | ⬜ 待修复 |
@@ -274,6 +274,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-23 | U-07/U-17/U-18/U-19 关闭、U-09 文档化：D1 单图标主题、显示名统一、i18n 加固、overlay 有意设计；plan-B 落盘；拖拽 G1 清单入 delivery（`1269e7cb9`） | opencode |
 | 2026-09-23 | Phase 2：Windows IDropSource（`587415ef1`）、Qt QSslSocket/QSslServer Step 4（`c8a5fae8c`）、EventQueue 泵入 Qt（`ea01a602a`）、B 计划进度同步（`8695555be`） | opencode |
 | 2026-09-24 | 二轮全面审计（4 路并行）：报告落盘 `synergy/docs/audit-2026-09-24.md`；新发现 A-12～A-27 登记 §2.5；A-10 状态补翻；A-18/A-19 登记并随本提交刷新 HANDOFF 头部与本变更日志 | opencode |
+| 2026-09-24 | A-12/A-13 关闭（待 CI 实证）：lint-clang 补 `working-directory: synergy`；`ci-passed` 纳入 lint needs；flatpak `manifest-path`/Validate/Upload 统一 workspace 根锚定 | opencode |
 
 ---
 

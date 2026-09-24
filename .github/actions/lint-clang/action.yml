@@ -11,6 +11,7 @@ runs:
     - name: Run format command
       run: find src/ -regex '.*\.\(cpp\|hpp\|cc\|cxx\|h\|c\|m\|mm\)' -exec clang-format -i {} \;
       shell: bash
+      working-directory: synergy
 
     - name: Find changes
       id: changes

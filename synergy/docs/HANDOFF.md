@@ -3,7 +3,7 @@
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
 > **最新 Commit**: `8695555be`（本文件随后的审计登记提交见 `git log`）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 A-12～A-27 待整改（P1 = A-12/A-13）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）已改待 CI 实证，P2/P3 待整改
 
 ---
 
@@ -76,7 +76,8 @@
 ### 二轮全面审计 🔄 (2026-09-24)
 - [x] 4 路并行只读取证 + P1/P2 独立复核，报告落盘 `docs/audit-2026-09-24.md`
 - [x] 新发现 A-12～A-27 登记追踪文档 §2.5；A-10 状态补翻；变更日志补登 09-23 末 6 笔
-- [ ] 待整改：**P1 = A-12（CI 门禁可空转绿灯）/ A-13（flatpak 路径锚定）**；P2 = A-14～A-19；P3 = A-20～A-27（A-24 需 Dev 拍板版权策略）
+- [x] P1 A-12/A-13 代码已改（lint cwd + ci-passed needs；flatpak 路径统一 workspace 根）— **待下次 CI 运行实证**
+- [ ] 待整改：P2 = A-14～A-19（A-18/A-19a 已随登记提交部分修复）；P3 = A-20～A-27（A-24 需 Dev 拍板版权策略）
 
 ### main 分支提交记录 (最新 6 个)
 ```
@@ -186,9 +187,10 @@ cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **09-24 审计 P1**: A-12（lint `working-directory` + `ci-passed` needs）、A-13（flatpak 路径统一根）
-2. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
-3. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
+1. **下次 CI**: 确认 A-12/A-13 实证（lint 找到 `src/`、flatpak 三步路径一致、故意破坏格式 → `ci-passed` 失败）
+2. **09-24 审计 P2**: A-14（push→main + static-analysis）、A-15（工厂/回滚）、A-16/A-17（README）、A-19b（U 详情节）
+3. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
+4. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
 
 ### Step 1 具体操作 ✅ 已完成
 ```
@@ -203,11 +205,12 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: 09-24 审计 P1 → Step 5 / B 计划 Phase 1 → G1 验证
-1. A-12 / A-13（CI 门禁与 flatpak 路径，T+1）
-2. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU）
-3. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
-4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15）
+### 下一步: CI 实证 A-12/A-13 → P2 → Step 5 / B 计划 Phase 1 → G1 验证
+1. A-12 / A-13 下次 CI 运行实证（T+1）
+2. P2：A-14 / A-15 / A-16 / A-17 / A-19b（T+3）
+3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU）
+4. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
+5. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15）
 
 ---
 
