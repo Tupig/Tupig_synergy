@@ -17,10 +17,11 @@
 		</p>
 	</description>
 	<launchable type="desktop-id">com.tupig.synergy.desktop</launchable>
-	<!-- Repo is private (github.com/Tupig/TuPig_Product returns 404 unauthenticated),
-	     so flatpak-builder-lint's url-reachability check always failed. Point at
-	     the public project homepage instead. -->
-	<url type="homepage">https://tupig.com</url>
+	<!-- Repo is private (github.com/Tupig/TuPig_Product returns 404 unauthenticated)
+	     and tupig.com currently fails TLS from CI (curl exit 35 / unexpected EOF),
+	     so flatpak-builder-lint's url-reachability check failed on both. Point at
+	     the public GitHub org, which is reachable without auth. -->
+	<url type="homepage">https://github.com/Tupig</url>
 	<provides>
 		<id>com.tupig.synergy.desktop</id>
 	</provides>

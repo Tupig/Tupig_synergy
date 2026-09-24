@@ -726,6 +726,7 @@ jobs:
     steps:
       - name: Check AWS secrets
         id: aws
+        working-directory: .
         env:
           AWS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -804,7 +805,23 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
+      - name: Check Slack secrets
+        id: slack
+        shell: bash
+        working-directory: .
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_NOTIFY_CHANNEL_ID }}
+        run: |
+          if [ -n "$SLACK_TOKEN" ] && [ -n "$SLACK_CHANNEL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Slack secrets not configured; skipping notification."
+          fi
+
       - name: Send Slack notification
+        if: steps.slack.outputs.configured == 'true'
         uses: slackapi/slack-github-action@v3
         with:
           method: chat.postMessage

@@ -57,13 +57,23 @@ get_target_property(lupdate_executable Qt6::lupdate IMPORTED_LOCATION)
 get_filename_component(_qt_bin_dir "${lupdate_executable}" DIRECTORY)
 file(REAL_PATH "${_qt_bin_dir}/../" QT_ROOT_DIR)
 
+# System Qt (distro packages) puts catalogues under /usr/share/qt6/translations,
+# which is neither under QT_ROOT_DIR (derived from lupdate's bin/) nor covered by
+# the old suffixes - configure failed on every Linux CI leg with
+# "Could not find qtbase_en.qm". Search /usr and /usr/local explicitly as well.
 find_file(
   _QT_QM_FILE
   NAMES qtbase_en.qm
   PATHS
     "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}"
     "${QT_ROOT_DIR}"
-  PATH_SUFFIXES "translations/Qt6" "translations" "share/qt/translations"
+    "/usr"
+    "/usr/local"
+  PATH_SUFFIXES
+    "translations/Qt6"
+    "translations"
+    "share/qt/translations"
+    "share/qt6/translations"
   REQUIRED
 )
 get_filename_component(QT_LANG_PATH "${_QT_QM_FILE}" DIRECTORY)

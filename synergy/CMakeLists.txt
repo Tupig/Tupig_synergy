@@ -292,7 +292,10 @@ if(MSVC)
 else()
   # Toolchain hardening that mainstream distributions ship by default.
   add_compile_options(-fstack-protector-strong)
-  if(SYNERGY_ENABLE_HARDENING)
+  # Apple's ld rejects GNU -z flags (ld: unknown options: -z); only pass them
+  # to ELF linkers. macOS still gets -fstack-protector and the PIE/FORTIFY
+  # block below is already NOT APPLE.
+  if(SYNERGY_ENABLE_HARDENING AND NOT APPLE)
     add_link_options(-Wl,-z,relro,-z,now)
   endif()
   if(NOT APPLE)

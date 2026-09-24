@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `daf0330a1`
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑新发现 A-28～A-35 全部已修（A-30 拍板：无 AWS secrets 时 s3-upload skip）；P3（A-20～A-27）等 CI 绿
+> **最新 Commit**: `1e9bbe418`
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮暴露 A-36～A-41 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页）；P3（A-20～A-27）等 CI 绿
 
 ---
 
@@ -83,6 +83,7 @@
 - [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
 - [x] A-31 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
 - [x] A-32～A-35 已修（Linux 矩阵首步 cwd 同 A-31 根因；macOS GUI target 名空格 + 五处 TARGET_BUNDLE 同步；CodeQL autobuild 双项目歧义改 manual；metainfo homepage 私仓 404 改公开 URL）— 待下次 CI 实证
+- [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — 待下次 CI 实证
 - [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
 
 ### main 分支提交记录 (最新 6 个)
@@ -193,7 +194,7 @@ c41dadfe5 style: 应用 CI clang-format 20.1.0 修复 lint 门禁检出的 105 �
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **下次 CI**: 实证 A-28～A-35（lint 零 diff、ci-passed/report 不因 cwd 挂、s3-upload 无 secrets 时绿、CodeQL 容器首步过 chdir + manual build、Linux 矩阵 Install Git 过 chdir、macOS Configure 过、flatpak appstream lint 过）
+1. **下次 CI**: 实证 A-28～A-41（lint 零 diff、ci-passed/report 不因 cwd 挂、s3-upload 无 secrets 时绿、CodeQL manual build 过、Linux 矩阵 Configure/Build 过（qtbase_en.qm + XWindowsConfig.h）、macOS Build 过（-z 守卫）、flatpak appstream lint 过（github 组织页 URL）、report Slack 无 secrets 时 skip）
 2. **09-24 审计 P3**（等 CI 绿）: A-20～A-25、A-27 小改分批；A-24 按已定策略执行（SPDX 保留+注释，改用户可见面）；A-15 接线并入 plan-B Phase 1
 3. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
 4. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
@@ -212,7 +213,7 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 接口文档完整
 
 ### 下一步: CI 全绿实证 → P3 → Step 5 / B 计划 Phase 1 → G1 验证
-1. 下次 CI 实证 A-28～A-35（+ A-12/A-13/A-14 全链路）
+1. 下次 CI 实证 A-28～A-41（+ A-12/A-13/A-14 全链路）
 2. P3：A-20～A-25、A-27（A-24 策略已定；T+7）
 3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU + 工厂接线，闭合 A-15）
 4. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）

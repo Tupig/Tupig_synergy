@@ -109,7 +109,13 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-32** | P1 | Linux 容器矩阵首步 `Install Git on Container`（checkout 前）同 A-31 根因：继承 `working-directory: synergy` → 14+ 发行版 job 全部 exit 127 | `ci.yml:559-575` | ✅ 已修复（首步补 `working-directory: .`；YAML 解析通过，待 CI 实证） |
 | **A-33** | P1 | macOS GUI CMake target 名含空格 `"TuPig Synergy"`（`CMAKE_PROJECT_PROPER_NAME`），`add_executable` 拒收 + 所有 `TARGET_BUNDLE_*` 生成器表达式失效 → Configure 必挂 | `deskflow-gui/CMakeLists.txt:5-9`；`MacCodesign.cmake:43`；`translations:102`；`deskflow-core:57`；`extra/CMakeLists.txt:27`；`unittests:103` | ✅ 已修复（target 统一为 `CMAKE_PROJECT_NAME`；bundle 元数据/OUTPUT_NAME 仍用 PROPER_NAME 保 `.app` 名；五处 `TARGET_BUNDLE_*` 引用同步） |
 | **A-34** | P1 | CodeQL `autobuild` 在仓库根遇双项目（`GitHubDesktop2Chinese` + `synergy`）拒绝选边 → 分析失败 | `codeql-analysis.yml:59-60` | ✅ 已修复（`build-mode: manual` + 显式在 `synergy/` 下 cmake configure/build；YAML 解析通过，待 CI 实证） |
-| **A-35** | P2 | metainfo homepage 指向私有仓库 `github.com/Tupig/TuPig_Product`（未认证 404），`flatpak-builder-lint appstream` url-reachability 必挂 | `com.tupig.synergy.metainfo.xml:20` | ✅ 已修复（改指公开主页 `https://tupig.com`） |
+| **A-35** | P2 | metainfo homepage 指向私有仓库 `github.com/Tupig/TuPig_Product`（未认证 404），`flatpak-builder-lint appstream` url-reachability 必挂 | `com.tupig.synergy.metainfo.xml:20` | ✅ 已修复（改指 `https://github.com/Tupig` 组织页；首版改 `https://tupig.com` 仍因 TLS 失败，见 A-39） |
+| **A-36** | P1 | 二轮 CI（`35952577862`）26 job 挂：Linux 矩阵 Configure 全挂 — `translations/CMakeLists.txt:60` `find_file(qtbase_en.qm)` 搜不到系统 Qt 翻译（PATH_SUFFIXES 缺 `share/qt6/translations`，且 Debian/Fedora/SUSE 未装翻译包）；CodeQL 同根因 | `translations/CMakeLists.txt:60-68`；`.github/actions/install-dependencies/action.yml:39-66` | ✅ 已修复（PATHS 补 `/usr`、`/usr/local`；PATH_SUFFIXES 补 `share/qt6/translations`；debian/fedora/suse 各装对应翻译包） |
+| **A-37** | P1 | macOS Build 挂：`SYNERGY_ENABLE_HARDENING`（默认 ON）无条件 `add_link_options(-Wl,-z,relro,-z,now)`，Apple ld 不认 GNU `-z` → `ld: unknown options: -z -z` | `CMakeLists.txt:295-297` | ✅ 已修复（硬化 `-z` 仅在 `NOT APPLE` 时加；`-fstack-protector-strong` 与 `-pie`/FORTIFY 本就在 `NOT APPLE` 内） |
+| **A-38** | P1 | Linux Build 挂：`XWindowsConfig.h` 由 `configure_file` 生成到 `platform` 二进制目录，但 `target_include_directories` 只加了源码子目录，rocky/rocky-9 等过 Configure 后编译 `XWindowsScreen.h` 即 `No such file or directory` | `src/lib/platform/CMakeLists.txt:187-192` | ✅ 已修复（include path 补 `${CMAKE_CURRENT_BINARY_DIR}`） |
+| **A-39** | P2 | flatpak Lint appsteam 挂：A-35 改的 `https://tupig.com` 从 CI 仍 TLS 失败（`unexpected eof`，本地 curl exit 35）→ `url-not-reachable` warning 仍判 fail | `com.tupig.synergy.metainfo.xml:23` | ✅ 已修复（改指公开可达的 `https://github.com/Tupig`；私仓与坏 TLS 域名均不可作 homepage） |
+| **A-40** | P1 | s3-upload 挂：`Check AWS secrets` 步未补 `working-directory: .`，无 checkout 却继承 `synergy/` → `No such file or directory` | `ci.yml:727-738` | ✅ 已修复（该步补 `working-directory: .`；同 A-29 根因） |
+| **A-41** | P1 | report 挂：`Send Slack notification` 无 `SLACK_TOKEN` → `Missing input! A token must be provided`；与 A-30 同类 secrets 判空缺失 | `ci.yml:807-814` | ✅ 已修复（新增 `Check Slack secrets` 步 step 级判空，无 secrets 时 skip send） |
 
 ---
 
@@ -288,6 +294,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-24 | A-28 关闭：应用 CI clang-format-diff（105 源文件）；A-29 关闭：ci-passed/report/s3-upload 补 `working-directory: .`；A-30 关闭（拍板：无 AWS secrets 时 s3-upload skip，job `if` 判空） | opencode |
 | 2026-09-24 | A-30 返工：job 级 `if` 不可用 `secrets` 上下文（workflow 0s 解析失败）→ 改 step 级判空；A-31 登记并修复（CodeQL/Sonar/Valgrind 容器首步 cwd） | opencode |
 | 2026-09-24 | A-32～A-35 登记并修复：Linux 矩阵首步 cwd（同 A-31 根因）；macOS GUI target 名空格（五处 TARGET_BUNDLE 同步）；CodeQL autobuild 双项目歧义改 manual build；metainfo homepage 私仓 404 改公开 URL | opencode |
+| 2026-09-24 | 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，登记并修复 A-36～A-41：qtbase_en.qm 搜不到 + 缺翻译包；macOS ld 拒 GNU -z；XWindowsConfig.h 生成目录不在 include path；tupig.com TLS 仍挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 skip | opencode |
 
 ---
 
