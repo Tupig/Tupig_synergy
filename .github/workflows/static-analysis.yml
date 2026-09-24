@@ -1,5 +1,6 @@
-# Static analysis workflow: runs clang-tidy and cppcheck on PRs.
-# Triggered by ci.yml or directly for manual runs.
+# Static analysis workflow: runs clang-tidy and cppcheck.
+# Not currently invoked from ci.yml — run manually via workflow_dispatch,
+# or call it from another workflow via workflow_call.
 
 name: Static Analysis
 

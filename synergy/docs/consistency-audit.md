@@ -2,7 +2,7 @@
 
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
-> **Last updated / 最后更新**: 2026-09-23
+> **Last updated / 最后更新**: 2026-09-24
 > **Scope / 范围**: Cross-cutting naming + identity consistency / 跨模块命名与身份一致性
 > **Related / 相关**: `docs/HANDOFF.md`, `.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
 >
@@ -60,7 +60,7 @@ Items were found by static analysis (ripgrep + reading the build/packaging files
 | U-20 | P2 | Docs | Documented CLI option `--install-service` does not exist | **Fixed** |
 | U-21 | P2 | Docs / feature scope | Linux drag-and-drop described as restorable; it was never implemented | Recorded |
 
-Already fixed in this session: stale binary names in `README.md`, `setup.bat`, `docs/build.md`, `docs/configuration.md` and `src/apps/res/manpage.txt` (commit `baa5afe76`, branch `cursor/docs-fix-binary-names`).
+**Archived note** (2026-09-23, branch `cursor/docs-fix-binary-names`, already merged): stale binary names in `README.md`, `setup.bat`, `docs/build.md`, `docs/configuration.md` and `src/apps/res/manpage.txt` were fixed in commit `baa5afe76`.
 
 ### Findings
 
@@ -167,7 +167,9 @@ On `APPLE`, `target = CMAKE_PROJECT_PROPER_NAME` = `"TuPig Synergy"` (`src/apps/
 
 The GUI links both `../res/deskflow.qrc` and `extra/src/apps/res/synergy.qrc` (`src/apps/deskflow-gui/CMakeLists.txt:41-42`). The first ships `icons/deskflow-{dark,light}/` with the app icon named `org.deskflow.deskflow.svg`; the second ships `icons/synergy-{dark,light}/` (theme names `synergy-dark` / `synergy-light`) with the app icon named `com.tupig.synergy.svg`. Two theme names and two app-icon identifiers coexist.
 
-**Partly addressed (2026-09-23)**: the second theme's app-icon identifier is now `com.tupig.synergy` (was `com.symless.synergy`), which is what `QIcon::fromTheme(kRevFqdnName)` asks for — see U-02. The two-themes-coexisting half of this item is still open; the upstream `deskflow-{dark,light}` theme is still linked in.
+**Partly addressed (2026-09-23)**: the second theme's app-icon identifier is now `com.tupig.synergy` (was `com.symless.synergy`), which is what `QIcon::fromTheme(kRevFqdnName)` asks for — see U-02.
+
+**Resolution (2026-09-23, closed with D1)**: GUI links only `synergy.qrc` (`src/apps/deskflow-gui/CMakeLists.txt:41`); the upstream `deskflow-{dark,light}` theme is no longer compiled in, and deskflow SVG assets are aliased into the synergy theme. D1 is locked in `plan-B-D1-E2-F1-G1.md`. Status: **Fixed**.
 
 #### U-08 — Comments that contradict the code
 
@@ -181,13 +183,13 @@ The GUI links both `../res/deskflow.qrc` and `extra/src/apps/res/synergy.qrc` (`
 
 Directories are derived from `kAppName` (`TuPig Synergy`) while file names inside them use `kAppId` (`synergy`) — e.g. `~/.config/TuPig Synergy/` alongside `~/synergy.log`. See `src/lib/common/Settings.h:22-33` and `Settings.cpp:178,184,193,210`. `kUpstreamId` (`deskflow`) is also retained in `Constants.h.in:12`.
 
-**Decision needed**: intentional, or to be aligned.
+**Resolution (2026-09-23)**: intentional — documented in `docs/contributing.md` "Upstream Sync" (`:314-316`). Directory names use `kAppName` for the data directory; file names use `kAppId`; `kUpstreamId` is retained for the upstream-sync / i18n boundary (U-18). E2 locked in `plan-B-D1-E2-F1-G1.md`. Status: **By design**.
 
 #### U-10 — Vendor strings still name the upstream commercial vendor
 
-`extra/deploy/linux/com.symless.synergy.metainfo.xml:9-11` declares developer `com.symless` / "Synergy App Ltd", and `:20` sets the homepage to the upstream commercial site. `extra/deploy/linux/com.symless.synergy.desktop:1`, `extra/deploy/PackageFileName.cmake:1` and `Info.plist.in:27` carry the same copyright line.
+`extra/deploy/linux/com.symless.synergy.metainfo.xml:9-11` (historical paths; files renamed in U-02) declared developer `com.symless` / "Synergy App Ltd", and `:20` set the homepage to the upstream commercial site. `extra/deploy/linux/com.symless.synergy.desktop:1`, `extra/deploy/PackageFileName.cmake:1` and `Info.plist.in:27` carried the same copyright line.
 
-**Decision needed**: legitimate upstream attribution, or to be replaced.
+**Resolution (2026-09-23)**: developer/homepage rewritten to TuPig / this repository's GitHub; metainfo desktop-entry identity already renamed via U-02. Residual `Synergy App Ltd` SPDX attribution lines (×5) and the metainfo download URL are tracked as **A-24** (needs a one-time Dev decision on copyright wording). Status: **Fixed** (residuals under A-24).
 
 #### U-11 — Three bilingual documentation formats
 
@@ -230,6 +232,8 @@ two archived documents were deleted rather than moved.
 
 The single source of truth is `extra/cmake/Version.cmake`, but `1.21.2` is hardcoded in `vcpkg.json` (`version-string`), `docs/HANDOFF.md:16`, `docs/protocol.md:38,256`, `docs/troubleshooting.md:282,568` and `docs/archive/optimization-plan.md:247-251`. All of these go stale on a version bump.
 
+**Resolution (2026-09-23)**: CI gained a version-consistency check (`scripts/check-version-consistency.py`); doc hardcodes rewritten to reference `--version` or the single source where practical (`cbd2baf39`). Status: **Fixed**.
+
 #### U-14 — `HANDOFF.md` has drifted
 
 `docs/HANDOFF.md:2` says the current branch is `main`; `:13` gives a repo URL under `github.com/Tupig/TuPig_Product/tree/main/synergy`; `:71-79` lists a "latest 6 commits" set whose newest entry is `13d448213` while HEAD is `88926ce09`; `:115-124` lists `HANDOFF.md` without the `docs/` prefix it now has.
@@ -237,6 +241,8 @@ The single source of truth is `extra/cmake/Version.cmake`, but `1.21.2` is hardc
 #### U-15 — Licence description disagrees across files
 
 `README.md` states "GNU General Public License v2.0"; source SPDX headers and `deploy/linux/arch/PKGBUILD.in:12` use `GPL-2.0-only WITH LicenseRef-OpenSSL-Exception`; `vcpkg.json` (`license`) uses `GPL-2.0-only` without the exception.
+
+**Resolution (2026-09-23)**: `vcpkg.json` / README / PKGBUILD aligned on `GPL-2.0-only WITH LicenseRef-OpenSSL-Exception` (`cbd2baf39`). Residual: metainfo `project_license` and flatpak yml SPDX still lack the exception — tracked as **A-25**. Status: **Fixed** (residual under A-25).
 
 #### U-16 — CI enforces the unversioned names and the upstream identity
 
@@ -255,6 +261,8 @@ The single source of truth is `extra/cmake/Version.cmake`, but `1.21.2` is hardc
 | `TuPig Synergy 1` | default `SYNERGY_DISPLAY_NAME` | window title, About dialog (`extra/cmake/Synergy.cmake:14-24`) |
 | `TuPig Synergy Core` | `SYNERGY_CORE_FLAVOR=ON` | same |
 | `Synergy` | hardcoded in `extra/deploy/linux/*` | Linux desktop entry, AppStream |
+
+**Resolution (2026-09-23)**: canonical display name unified to `TuPig Synergy` across desktop entry, metainfo, README and CMake (`1269e7cb9`); `TuPig Synergy 1` / bare `Synergy` display strings retired. Status: **Fixed**.
 
 #### U-18 — The `deskflow` / `synergy` boundary and a fragile i18n coupling
 
@@ -408,7 +416,7 @@ future change reintroduces versioned `OUTPUT_NAME`.
 | U-20 | P2 | 文档 | 文档中的 CLI 选项 `--install-service` 并不存在 | **已修复** |
 | U-21 | P2 | 文档 / 功能范围 | 文档称 Linux 拖拽可恢复；实际从未实现 | 已记录 |
 
-本次已修复：`README.md`、`setup.bat`、`docs/build.md`、`docs/configuration.md`、`src/apps/res/manpage.txt` 中过时的产物文件名（提交 `baa5afe76`，分支 `cursor/docs-fix-binary-names`）。
+**归档备注**（2026-09-23，分支 `cursor/docs-fix-binary-names`，已合入）：`README.md`、`setup.bat`、`docs/build.md`、`docs/configuration.md`、`src/apps/res/manpage.txt` 中过时的产物文件名已在提交 `baa5afe76` 修复。
 
 ### 问题明细
 
@@ -483,7 +491,8 @@ SPDX 头且被构建引用）。同步更新 `REUSE.toml`（移除 3 条已删�
 #### U-07 — 两套图标主题编进同一个二进制
 
 GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`src/apps/deskflow-gui/CMakeLists.txt:41-42`）。前者带 `icons/deskflow-{dark,light}/`，app 图标名为 `org.deskflow.deskflow.svg`；后者带 `icons/synergy-{dark,light}/`（主题名 `synergy-dark` / `synergy-light`），app 图标名为 `com.tupig.synergy.svg`。两套主题名与两种 app 图标标识并存。
-**部分处理（2026-09-23）**：第二套主题的图标标识已改为 `com.tupig.synergy`（原为 `com.symless.synergy`），即 `QIcon::fromTheme(kRevFqdnName)` 实际请求的名字，见 U-02。本条目「两套主题并存」的另一半仍未处理：上游 `deskflow-{dark,light}` 主题仍被链接进来。
+**部分处理（2026-09-23）**：第二套主题的图标标识已改为 `com.tupig.synergy`（原为 `com.symless.synergy`），即 `QIcon::fromTheme(kRevFqdnName)` 实际请求的名字，见 U-02。
+**已修复（2026-09-23，随 D1 关闭）**：GUI 仅链接 `synergy.qrc`（`src/apps/deskflow-gui/CMakeLists.txt:41`），上游 `deskflow-{dark,light}` 主题不再编入二进制，deskflow SVG 资源以别名并入 synergy 主题。D1 已锁定于 `plan-B-D1-E2-F1-G1.md`。状态：**已修复**。
 
 #### U-08 — 与代码相反的注释
 
@@ -496,13 +505,12 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 目录名来自 `kAppName`（`TuPig Synergy`），目录内文件名用 `kAppId`（`synergy`）—— 例如 `~/.config/TuPig Synergy/` 与 `~/synergy.log` 并存。见 `src/lib/common/Settings.h:22-33` 与 `Settings.cpp:178,184,193,210`。`kUpstreamId`（`deskflow`）也保留在 `Constants.h.in:12`。
 
-**需要决策**：是否有意如此，还是应对齐。
+**已处理（2026-09-23）**：有意如此 —— 已在 `docs/contributing.md`「上游同步」（`:314-316`）文档化。目录名用 `kAppName`，目录内文件名用 `kAppId`；`kUpstreamId` 因上游同步 / i18n 边界（U-18）保留。E2 已锁定于 `plan-B-D1-E2-F1-G1.md`。状态：**有意设计**。
 
 #### U-10 — 供应商字样仍指上游商业厂商
 
-`extra/deploy/linux/com.symless.synergy.metainfo.xml:9-11` 的 developer 是 `com.symless` / “Synergy App Ltd”，`:20` 的 homepage 指向上游商业站点。`extra/deploy/linux/com.symless.synergy.desktop:1`、`extra/deploy/PackageFileName.cmake:1`、`Info.plist.in:27` 也带同一版权行。
-
-**需要决策**：算合法的上游归属声明，还是要替换。
+`extra/deploy/linux/com.symless.synergy.metainfo.xml:9-11`（历史路径；文件已在 U-02 重命名）曾声明 developer 为 `com.symless` / “Synergy App Ltd”，`:20` 的 homepage 指向上游商业站点。`extra/deploy/linux/com.symless.synergy.desktop:1`、`extra/deploy/PackageFileName.cmake:1`、`Info.plist.in:27` 也带同一版权行。
+**已修复（2026-09-23）**：developer/homepage 已改为 TuPig / 本仓库 GitHub；metainfo 身份随 U-02 一并重命名。残留的 `Synergy App Ltd` SPDX 版权行（×5）与 metainfo 下载链登记为 **A-24**（需 Dev 一次拍板版权措辞）。状态：**已修复**（残留归 A-24）。
 
 #### U-11 — 三种双语格式并存
 
@@ -540,6 +548,8 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 
 单一来源是 `extra/cmake/Version.cmake`，但 `1.21.2` 被硬编码在 `vcpkg.json`（`version-string`）、`docs/HANDOFF.md:16`、`docs/protocol.md:38,256`、`docs/troubleshooting.md:282,568`、`docs/archive/optimization-plan.md:247-251`。版本一升全部失效。
 
+**已修复（2026-09-23）**：CI 新增版本一致性检查（`scripts/check-version-consistency.py`）；文档硬编码改为指向 `--version` 或单一真源（`cbd2baf39`）。状态：**已修复**。
+
 #### U-14 — `HANDOFF.md` 与实际脱节
 
 `docs/HANDOFF.md:2` 称当前分支是 `main`；`:13` 给的仓库 URL 指向 `github.com/Tupig/TuPig_Product/tree/main/synergy`；`:71-79` 的“最新 6 个提交”最新一条是 `13d448213`，而 HEAD 已是 `88926ce09`；`:115-124` 里列 `HANDOFF.md` 时没带它现在所属的 `docs/` 前缀。
@@ -547,6 +557,8 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 #### U-15 — 许可描述不一致
 
 `README.md` 写 “GNU General Public License v2.0”；源码 SPDX 头与 `deploy/linux/arch/PKGBUILD.in:12` 用的是 `GPL-2.0-only WITH LicenseRef-OpenSSL-Exception`；`vcpkg.json` 的 `license` 字段是 `GPL-2.0-only`，漏了 exception。
+
+**已修复（2026-09-23）**：`vcpkg.json` / README / PKGBUILD 已对齐为 `GPL-2.0-only WITH LicenseRef-OpenSSL-Exception`（`cbd2baf39`）。残留：metainfo `project_license` 与 flatpak yml SPDX 仍缺 exception —— 登记为 **A-25**。状态：**已修复**（残留归 A-25）。
 
 #### U-16 — CI 强制的命名与身份
 
@@ -565,6 +577,8 @@ GUI 同时链接 `../res/deskflow.qrc` 与 `extra/src/apps/res/synergy.qrc`（`s
 | `TuPig Synergy 1` | `SYNERGY_DISPLAY_NAME` 默认值 | 窗口标题、关于框（`extra/cmake/Synergy.cmake:14-24`） |
 | `TuPig Synergy Core` | `SYNERGY_CORE_FLAVOR=ON` | 同上 |
 | `Synergy` | 写死在 `extra/deploy/linux/*` | Linux 桌面项、AppStream |
+
+**已修复（2026-09-23）**：显示名统一为 `TuPig Synergy`（桌面项、metainfo、README、CMake；`1269e7cb9`）；`TuPig Synergy 1` / 裸 `Synergy` 显示字符串已退役。状态：**已修复**。
 
 #### U-18 — `deskflow` / `synergy` 边界与一个脆弱的 i18n 耦合
 

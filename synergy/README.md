@@ -39,7 +39,7 @@
 | 🌐 **Cross-Platform / 跨平台** | Windows, macOS, Linux (X11/Wayland) | ✅ Native / 原生 |
 | 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
 | 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
-| 📁 **File Drag-Drop / 文件拖拽** | Not implemented — the v1.5 transfer messages are stubbed out / 未实现 —— v1.5 传输消息为空壳实现 | ❌ Not implemented / 未实现 |
+| 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was — see delivery matrix / Win/mac 已实现，Linux 从未实现（见交付矩阵） | ⚠️ Platform-dependent / 视平台而定 |
 | ⌨️ **Hotkey Switching / 热键切屏** | Instant screen switching via custom hotkeys / 自定义热键瞬间切换 | ✅ Configurable / 可配置 |
 | 🚫 **No License Required / 无需许可证** | Completely free, no serial keys or activation / 完全免费，无序列号/激活 | ✅ Forever / 永久 |
 | 🎨 **Modern Qt6 UI / 现代 Qt6 界面** | Beautiful, responsive graphical interface / 美观、响应式图形界面 | ✅ Polished / 打磨完成 |
@@ -161,7 +161,9 @@ synergy/
 
 ## 🔧 Configuration / 配置
 
-### Server (Primary / 主控端)
+### Settings (GUI INI / 设置文件)
+
+Real keys live in `src/lib/common/Settings.h`. Example (`~/.config/TuPig Synergy/TuPig Synergy.conf` on Linux; see `Settings.h` for per-OS paths):
 
 ```ini
 [core]
@@ -169,21 +171,12 @@ computerName = my-desktop
 port = 24800
 interface = 0.0.0.0
 
-[server]
-screens = main, laptop
-main.position = 0,0
-laptop.position = right,main
-```
-
-### Client (Secondary / 被控端)
-
-```ini
 [client]
-serverHost = 192.168.1.100
-serverPort = 24800
-reconnectInterval = 5
-autoConnect = true
+remoteHost = 192.168.1.100
+dynamicConnectionInterval = true
 ```
+
+Server screen layout is a **separate** config file (`screens`, `main.position`, …), not these settings — see [configuration.md](docs/configuration.md).
 
 ---
 

@@ -88,12 +88,12 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 |------|--------|------|----------|------|
 | **A-12** | P1 | CI 门禁可「全绿但零构建」：lint-clang 无 `working-directory`（`find src/` 在仓库根失败）→ build 全 skip；`ci-passed` 不 needs lint 且 `skipped` 计为通过 | `.github/actions/lint-clang/action.yml:12`、`ci.yml:71,79-92` | ✅ 已修复（lint 步补 `working-directory: synergy`；`ci-passed` 纳入 `lint-clang` needs 并校验其 result；YAML 解析通过，待 CI 实证） |
 | **A-13** | P1 | build-flatpak 三处路径锚定矛盾：`uses:` 不继承 `defaults.run.working-directory`，`manifest-path: extra/...` 以 workspace 根解析 | `ci.yml:63-65,680-695` | ✅ 已修复（`manifest-path` 加 `synergy/` 前缀；Validate `working-directory: .` + 例外文件 `synergy/` 前缀；Upload 改 workspace 根；YAML 解析通过，待 CI 实证） |
-| **A-14** | P2 | `push` 只配不存在的 `beta`（main 推送不触发 CI）；`static-analysis.yml` 无调用者，clang-tidy/cppcheck 从未自动运行 | `ci.yml:33-34`、`static-analysis.yml:2,6-8` | ⬜ 待修复 |
-| **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md:102` vs `plan-B:27` | ⬜ 待修复（先改文档或接线二选一） |
-| **A-16** | P2 | README 称文件拖拽「未实现」，与 delivery（Win/mac 已实现 + 单测）反向过期 | `README.md:42` vs `delivery.md:106-111` | ⬜ 待修复 |
-| **A-17** | P2 | README 配置示例键全不存在（`serverHost/serverPort/…`），真实键见 `Settings.h` | `README.md:166-186` vs `Settings.h:37,43,51` | ⬜ 待修复 |
-| **A-18** | P2 | A-03/U-14 回归：HANDOFF 头部 commit / 最新 6 笔 / U 计数 19 vs 21 / `:6` 与 `:74`/`:185` 对 U-07/09 状态矛盾 | `docs/HANDOFF.md:5,6,74,128,185` | 🔄 本登记提交同步刷新头部与矛盾行 |
-| **A-19** | P2 | A-04/A-05 回归：追踪变更日志缺 `d8512e321` 后 6 笔；consistency-audit 详情节与状态栏矛盾（U-07/09/10/17 等） | 追踪 §5、`consistency-audit.md:170,184,190,250-257` | 🔄 变更日志本提交补登；详情节待补 |
+| **A-14** | P2 | `push` 只配不存在的 `beta`（main 推送不触发 CI）；`static-analysis.yml` 无调用者，clang-tidy/cppcheck 从未自动运行 | `ci.yml:33-34`、`static-analysis.yml:2,6-8` | ✅ 已修复（`push` 改 `main`；static-analysis 头注释改为如实说明仅手动/`workflow_call`，不接 ci.yml 以免首跑即挂） |
+| **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md:102` vs `plan-B:27` | ✅ 文档已对齐现实（docs-first；工厂接线仍为 plan-B Phase 1 开放项，见 HANDOFF §3.2/§4.3） |
+| **A-16** | P2 | README 称文件拖拽「未实现」，与 delivery（Win/mac 已实现 + 单测）反向过期 | `README.md:42` vs `delivery.md:106-111` | ✅ 已修复（README 改为「Win/mac 已实现、Linux 从未实现」并指向 delivery 矩阵） |
+| **A-17** | P2 | README 配置示例键全不存在（`serverHost/serverPort/…`），真实键见 `Settings.h` | `README.md:166-186` vs `Settings.h:37,43,51` | ✅ 已修复（示例改为 `client/remoteHost`、`dynamicConnectionInterval` 等真实键，并区分 settings INI 与 server screens 配置） |
+| **A-18** | P2 | A-03/U-14 回归：HANDOFF 头部 commit / 最新 6 笔 / U 计数 19 vs 21 / `:6` 与 `:74`/`:185` 对 U-07/09 状态矛盾 | `docs/HANDOFF.md:5,6,74,128,185` | ✅ 已修复（登记提交已刷头部/计数/矛盾行；本轮再刷 P2 状态） |
+| **A-19** | P2 | A-04/A-05 回归：追踪变更日志缺 `d8512e321` 后 6 笔；consistency-audit 详情节与状态栏矛盾（U-07/09/10/17 等） | 追踪 §5、`consistency-audit.md:170,184,190,250-257` | ✅ 已修复（变更日志已补登；U-07/09/10/13/15/17 详情节补 Resolution 并归档 `:63`） |
 | **A-20** | P3 | GoogleTest 幽灵声明 ×7，实际为 `Qt::Test` | `README.md:151`、`build.md:27,272`、`architecture.md` ADR-0009、`contributing.md:101,430` | ⬜ 待修复 |
 | **A-21** | P3 | CMake 缺陷批：xkbfile `!` 死检查、多配置 NDEBUG 误加、`generate_app_man` 变量大小写、`PORTABLE_LIBS` 死语句、`SKIP_BUILD_TESTS` 双源、libportal/libei 版本文档不符、`build.sh:17` 残句 | `cmake/Libraries.cmake:271`、`CMakeLists.txt:320-323` 等 | ⬜ 待修复 |
 | **A-22** | P3 | 文档死链/幽灵：mingw-toolchain、`.pre-commit-config.yaml`、`bug_report.md`、security.md 无邮箱、ADR-0011 目录树、`build.md` 声称支持 `debug` 参数 | `build.md:198,437,506-507`、`contributing.md:26,102,356,431` 等 | ⬜ 待修复 |
@@ -275,6 +275,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-23 | Phase 2：Windows IDropSource（`587415ef1`）、Qt QSslSocket/QSslServer Step 4（`c8a5fae8c`）、EventQueue 泵入 Qt（`ea01a602a`）、B 计划进度同步（`8695555be`） | opencode |
 | 2026-09-24 | 二轮全面审计（4 路并行）：报告落盘 `synergy/docs/audit-2026-09-24.md`；新发现 A-12～A-27 登记 §2.5；A-10 状态补翻；A-18/A-19 登记并随本提交刷新 HANDOFF 头部与本变更日志 | opencode |
 | 2026-09-24 | A-12/A-13 关闭（待 CI 实证）：lint-clang 补 `working-directory: synergy`；`ci-passed` 纳入 lint needs；flatpak `manifest-path`/Validate/Upload 统一 workspace 根锚定 | opencode |
+| 2026-09-24 | P2 关闭 A-14～A-19：ci push→main + static-analysis 注释如实；HANDOFF 回滚/工厂状态对齐现实；README 拖拽与配置键按 delivery/Settings 重写；consistency-audit U 详情节补 Resolution | opencode |
 
 ---
 

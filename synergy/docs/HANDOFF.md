@@ -3,7 +3,7 @@
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
 > **最新 Commit**: `8695555be`（本文件随后的审计登记提交见 `git log`）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）已改待 CI 实证，P2/P3 待整改
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）待 CI 实证，P2（A-14～A-19）已改，P3（A-20～A-27）待整改
 
 ---
 
@@ -77,7 +77,8 @@
 - [x] 4 路并行只读取证 + P1/P2 独立复核，报告落盘 `docs/audit-2026-09-24.md`
 - [x] 新发现 A-12～A-27 登记追踪文档 §2.5；A-10 状态补翻；变更日志补登 09-23 末 6 笔
 - [x] P1 A-12/A-13 代码已改（lint cwd + ci-passed needs；flatpak 路径统一 workspace 根）— **待下次 CI 运行实证**
-- [ ] 待整改：P2 = A-14～A-19（A-18/A-19a 已随登记提交部分修复）；P3 = A-20～A-27（A-24 需 Dev 拍板版权策略）
+- [x] P2 A-14～A-19 已改（ci push→main；HANDOFF 回滚/工厂对齐；README 两处；U 详情节 Resolution）
+- [ ] 待整改：P3 = A-20～A-27（A-24 需 Dev 拍板版权策略；A-15 工厂接线仍为 plan-B Phase 1 开放项）
 
 ### main 分支提交记录 (最新 6 个)
 ```
@@ -105,7 +106,7 @@ cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
 ### 3.2 Phase 2 方案 (Step 1–4 已落地，Step 5–6 待实施)
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
-- **回滚策略**: 3 级 (代码级 revert / 运行时 `USE_LEGACY_NETWORK=1` / CMake `LEGACY_NETWORK` 选项)
+- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 / plan-B Phase 1）。默认仍走 legacy `TCPSocketFactory`。
 - **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；方案已落地 Step 1-4，剩余步骤见第 5 节
 
 ---
@@ -143,7 +144,7 @@ cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
 | `src/lib/net/INetworkTransport.h` | 统一传输接口 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/LegacyNetworkTransport.cpp/h` | Legacy 包装器 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/QtNetworkTransport.cpp/h` | Qt QTcpSocket 传输（完整实现） | Step 2–3 | ✅ 已完成 |
-| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ✅ 已完成 |
+| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15：无生产调用者，见 plan-B Phase 1） |
 | `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
 | `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
 | `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换 | 待实施 |
@@ -187,8 +188,8 @@ cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **下次 CI**: 确认 A-12/A-13 实证（lint 找到 `src/`、flatpak 三步路径一致、故意破坏格式 → `ci-passed` 失败）
-2. **09-24 审计 P2**: A-14（push→main + static-analysis）、A-15（工厂/回滚）、A-16/A-17（README）、A-19b（U 详情节）
+1. **下次 CI**: 确认 A-12/A-13 实证（lint 找到 `src/`、flatpak 三步路径一致、故意破坏格式 → `ci-passed` 失败）；push 到 main 应触发 CI（A-14）
+2. **09-24 审计 P3**: A-20～A-25、A-27 小改分批（A-24 版权策略需 Dev 拍板）；A-15 工厂接线可并入 plan-B Phase 1
 3. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
 4. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
 
@@ -205,12 +206,12 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: CI 实证 A-12/A-13 → P2 → Step 5 / B 计划 Phase 1 → G1 验证
-1. A-12 / A-13 下次 CI 运行实证（T+1）
-2. P2：A-14 / A-15 / A-16 / A-17 / A-19b（T+3）
-3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU）
+### 下一步: CI 实证 A-12/A-13 → P3 → Step 5 / B 计划 Phase 1 → G1 验证
+1. A-12 / A-13 / A-14 下次 CI 运行实证（T+1）
+2. P3：A-20～A-25、A-27（A-24 需 Dev 拍板；T+7）
+3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU + 工厂接线，闭合 A-15）
 4. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
-5. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15）
+5. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / plan-B Phase 1）
 
 ---
 
