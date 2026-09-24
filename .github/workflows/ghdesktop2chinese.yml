@@ -1,0 +1,512 @@
+# GitHubDesktop2Chinese 统一 CI/CD 工作流
+# 一个工作流完成：自动构建、安全与质量检查、失效检测/候选提取、Release 发布。
+#
+# 自动触发：
+#   - push / PR 涉及 GitHubDesktop2Chinese/** 变更 → 构建 + 安全质量 + 自动维护
+#   - 每周一 01:00 UTC → 构建 + 安全质量 + 自动维护
+#   - 推送 tag ghdesktop2chinese-v* → 构建并发布 Release
+# 手动触发：
+#   - 输入 type 选择执行子集（auto / build / security / maintain / release）
+
+name: GitHubDesktop2Chinese
+
+on:
+  pull_request:
+    paths:
+      - "GitHubDesktop2Chinese/**"
+  push:
+    branches: [main]
+    tags:
+      - "ghdesktop2chinese-v*"
+  schedule:
+    - cron: "0 1 * * 1" # 每周一 01:00 UTC
+  workflow_dispatch:
+    inputs:
+      type:
+        description: "执行类型"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - build
+          - security
+          - maintain
+          - release
+      version:
+        description: "发布版本号（type=release 时必填，不带 v 前缀，如 1.2.4）"
+        required: false
+        type: string
+
+concurrency:
+  group: ghdesktop2chinese
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  security-events: write
+
+env:
+  BUILD_TYPE: Release
+  PROJECT_DIR: GitHubDesktop2Chinese
+  WORK_DIR: /tmp/ghdesktop-auto-maintain
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 0. 变更检测：判断本次 push 是否涉及 GitHubDesktop2Chinese
+  # ─────────────────────────────────────────────
+  changes:
+    name: 检测变更范围
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant || steps.fallback.outputs.relevant }}
+    steps:
+      - name: 非 push/PR 事件直接标记相关
+        if: |
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v'))
+        id: fallback
+        run: echo "relevant=true" >> "$GITHUB_OUTPUT"
+
+      - name: push/PR 检测变更
+        if: |
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v'))
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            relevant:
+              - 'GitHubDesktop2Chinese/**'
+              - '.github/workflows/ghdesktop2chinese.yml'
+
+  # ─────────────────────────────────────────────
+  # 1. 构建 x64 + x86（push/PR/定时/手动/tag）
+  # ─────────────────────────────────────────────
+  build:
+    name: 构建 (x64 + x86)
+    needs: changes
+    if: |
+      (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v') || needs.changes.outputs.relevant == 'true')) ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'build' || inputs.type == 'release'))
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x64, x86]
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 解析版本号
+        id: version
+        shell: pwsh
+        run: |
+          # tag 触发用 tag 版本；其他用 commit sha 短码
+          $tag = "${{ github.ref_name }}"
+          if ($tag -like "ghdesktop2chinese-v*") {
+            $version = $tag -replace '^ghdesktop2chinese-v', ''
+            Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_VERSION=$version"
+            Write-Host "发布版本: $version"
+          } else {
+            Write-Host "CI 构建（非发布）"
+          }
+
+      - name: Configure CMake (${{ matrix.arch }})
+        shell: pwsh
+        run: |
+          chcp 65001 | Out-Null
+          $ver = if ($env:RELEASE_VERSION) { "v$env:RELEASE_VERSION" } else { "ci-${{ github.sha }}" }
+          if ($env:ARCH -eq 'x64') {
+            cmake -B build -A x64 -DGitHubActions=1 -DFILE_VERSION="$ver"
+          } else {
+            cmake -B build32 -A Win32 -DGitHubActions=1 -DFILE_VERSION="$ver"
+          }
+
+      - name: Build (${{ matrix.arch }})
+        shell: pwsh
+        run: |
+          chcp 65001 | Out-Null
+          if ($env:ARCH -eq 'x64') {
+            cmake --build build --config $env:BUILD_TYPE
+          } else {
+            cmake --build build32 --config $env:BUILD_TYPE
+          }
+
+      - name: 重命名 x86 产物
+        if: matrix.arch == 'x86'
+        shell: pwsh
+        run: |
+          if (Test-Path build32/$env:BUILD_TYPE/GitHubDesktop2Chinese.exe) {
+            Move-Item build32/$env:BUILD_TYPE/GitHubDesktop2Chinese.exe build32/$env:BUILD_TYPE/GitHubDesktop2Chinese_x86.exe -Force
+          }
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: GitHubDesktop2Chinese-${{ matrix.arch }}-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            ${{ matrix.arch == 'x64' && 'build/Release/GitHubDesktop2Chinese.exe' || 'build32/Release/GitHubDesktop2Chinese_x86.exe' }}
+
+  # ─────────────────────────────────────────────
+  # 2. 安全与质量（push/PR/定时/手动/发布前）
+  # ─────────────────────────────────────────────
+  json-quality:
+    name: localization.json 质量校验
+    needs: changes
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'release'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 深度校验 localization.json
+        run: |
+          python - <<'PY'
+          import json, re, sys
+
+          path = "${{ env.PROJECT_DIR }}/json/localization.json"
+          with open(path, encoding="utf-8") as f:
+              data = json.load(f)
+
+          errors = []
+          warnings = []
+
+          for key in ["version", "minversion", "main", "renderer", "main_dev", "renderer_dev"]:
+              if key not in data:
+                  errors.append(f"缺少节点: {key}")
+
+          def check_array(name, arr):
+              seen = {}
+              for i, item in enumerate(arr):
+                  if not isinstance(item, list):
+                      errors.append(f"{name}[{i}] 不是数组")
+                      continue
+                  if len(item) < 2 or len(item) > 3:
+                      errors.append(f"{name}[{i}] 长度应为 2 或 3，实际 {len(item)}")
+                      continue
+                  if not all(isinstance(x, str) for x in item):
+                      errors.append(f"{name}[{i}] 含非字符串元素")
+                      continue
+                  pat = item[0]
+                  if not pat:
+                      continue
+                  try:
+                      re.compile(pat)
+                  except re.error as e:
+                      errors.append(f"{name}[{i}] 非法正则: {pat!r} -> {e}")
+                  if pat in seen:
+                      warnings.append(f"{name} 重复查找项: {pat!r} (index {seen[pat]} 与 {i})")
+                  else:
+                      seen[pat] = i
+
+          for key in ["main", "renderer", "main_dev", "renderer_dev"]:
+              if isinstance(data.get(key), list):
+                  check_array(key, data[key])
+
+          for si, sel in enumerate(data.get("select", [])):
+              if "replaceFile" not in sel:
+                  errors.append(f"select[{si}] 缺少 replaceFile")
+              if not isinstance(sel.get("replace"), list):
+                  errors.append(f"select[{si}] replace 应为数组")
+
+          print(f"映射项统计: main={len(data.get('main', []))} renderer={len(data.get('renderer', []))}")
+          if warnings:
+              print(f"\n⚠️  {len(warnings)} 个警告:")
+              for w in warnings[:20]:
+                  print(f"  - {w}")
+          if errors:
+              print(f"\n❌ {len(errors)} 个错误:")
+              for e in errors[:30]:
+                  print(f"  - {e}")
+              sys.exit(1)
+          print("\n✅ localization.json 质量校验通过")
+          PY
+
+  tools-test:
+    name: 自动维护工具自检
+    needs: changes
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'maintain'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: 语法检查
+        working-directory: ${{ env.PROJECT_DIR }}/tools/auto-maintain
+        run: |
+          for f in src/*.js; do node --check "$f"; done
+          echo "所有源文件语法检查通过"
+
+      - name: 单元测试（提取过滤逻辑）
+        working-directory: ${{ env.PROJECT_DIR }}/tools/auto-maintain
+        run: |
+          node --input-type=module -e "
+          import { isLikelyUiText } from './src/extract-new.js';
+          const cases = [
+            ['Do not show this message again', true],
+            ['into ', false],
+            ['  leading space', false],
+            ['h:mm aaa', false],
+            ['[object Object]', false],
+            ['rgba(255, 255, 255, 0.3)', false],
+            ['GitHub Desktop', true],
+          ];
+          let pass = 0;
+          for (const [s, exp] of cases) {
+            const got = isLikelyUiText(s);
+            if (got !== exp) { console.error('FAIL:', JSON.stringify(s), 'got', got, 'exp', exp); process.exit(1); }
+            pass++;
+          }
+          console.log('单元测试通过:', pass, '/', cases.length);
+          "
+
+  codeql:
+    name: CodeQL 安全扫描
+    needs: changes
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security'))
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          build-mode: manual
+
+      - name: Configure CMake (x64)
+        shell: pwsh
+        run: |
+          chcp 65001 | Out-Null
+          cmake -B build -A x64 -DGitHubActions=1 -DFILE_VERSION="codeql"
+
+      - name: Build for CodeQL
+        shell: pwsh
+        run: |
+          chcp 65001 | Out-Null
+          cmake --build build --config Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:c-cpp"
+
+  # ─────────────────────────────────────────────
+  # 3. 自动维护（失效检测 + 候选提取，push/定时/手动）
+  # ─────────────────────────────────────────────
+  auto-maintain:
+    name: 失效检测 + 未翻译候选提取
+    needs: changes
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'maintain'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: 安装解压工具
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: 查询 GitHub Desktop 最新版本
+        id: version
+        working-directory: ${{ env.PROJECT_DIR }}/tools/auto-maintain
+        run: |
+          LATEST=$(node -e "import('./src/fetch.js').then(async m=>{const r=await m.getLatestRelease();console.log(r.version)})")
+          echo "ghdesktop_version=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "查询到 GitHub Desktop 最新版本: $LATEST"
+
+      - name: 缓存 GitHub Desktop release zip
+        id: cache-zip
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.WORK_DIR }}/github-desktop.zip
+          key: ghdesktop-${{ steps.version.outputs.ghdesktop_version }}-${{ runner.os }}
+
+      - name: 运行失效检测 + 未翻译候选提取
+        working-directory: ${{ env.PROJECT_DIR }}/tools/auto-maintain
+        run: |
+          node src/index.js check extract \
+            --workdir "$WORK_DIR" \
+            --top 100 \
+            --write-report
+
+      - name: 创建或更新自动维护 Issue
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const reportPath = path.join(process.env.WORK_DIR, 'report.md');
+            const report = fs.readFileSync(reportPath, 'utf8');
+
+            const failedMatch = report.match(/总映射项\s+(\d+)，有效\s+(\d+)，失效\s+(\d+)。/);
+            const failed = failedMatch ? failedMatch[3] : '?';
+            const noFailures = Number(failed) === 0;
+
+            const title = `[自动维护] 汉化映射失效 ${failed} 项 / 未翻译候选 (GitHub Desktop 报告)`;
+            const today = new Date().toISOString().slice(0, 10);
+            const body = [
+              `## 自动维护报告（${today}）`,
+              '',
+              '本 Issue 由自动维护工作流生成，用于提醒维护者关注汉化映射的健康度。',
+              '',
+              '> ⚠️ 此报告不直接修改 `localization.json`，请人工确认后处理。',
+              '',
+              '---',
+              '',
+              report,
+              '',
+              '---',
+              `_由 [GitHubDesktop2Chinese](https://github.com/${{ github.repository }}/actions/workflows/ghdesktop2chinese.yml) 自动生成_`,
+            ].join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['auto-maintain'],
+            });
+
+            const existing = issues.find(i => i.title.startsWith('[自动维护]'));
+
+            if (noFailures) {
+              if (existing) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                  body: body,
+                });
+                console.log(`已关闭 Issue #${existing.number}（无失效项）`);
+              } else {
+                console.log('无失效项且无历史 Issue，无需操作');
+              }
+              return;
+            }
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                title: title,
+                body: body,
+              });
+              console.log(`已更新 Issue #${existing.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['auto-maintain'],
+              });
+              console.log(`已创建 Issue #${created.data.number}`);
+            }
+
+  # ─────────────────────────────────────────────
+  # 4. 发布 Release（tag ghdesktop2chinese-v* 或手动）
+  # ─────────────────────────────────────────────
+  release:
+    name: 发布 Release
+    needs: build
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.type == 'release')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: 解析版本号
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ github.ref_name }}" == ghdesktop2chinese-v* ]]; then
+            VER="${{ github.ref_name }}"
+            VER="${VER#ghdesktop2chinese-v}"
+          else
+            VER="${{ github.event.inputs.version }}"
+          fi
+          if [[ -z "$VER" ]]; then
+            echo "::error::手动发布需在 workflow_dispatch 输入 version（如 1.2.4）"
+            exit 1
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "版本: $VER"
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: GitHubDesktop2Chinese-x64-${{ github.sha }}
+          path: release/
+          # 下载 x64 产物；x86 通过第二次下载合并
+
+      - name: 下载 x86 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: GitHubDesktop2Chinese-x86-${{ github.sha }}
+          path: release/
+
+      - name: 准备 localization.json
+        run: |
+          mkdir -p release
+          cp "${{ env.PROJECT_DIR }}/json/localization.json" release/
+
+      - name: 生成 Release 说明
+        shell: bash
+        run: |
+          VER="${{ steps.version.outputs.version }}"
+          {
+            echo "# GitHubDesktop2Chinese v$VER"
+            echo ""
+            echo "自动构建产物："
+            echo "- \`GitHubDesktop2Chinese.exe\` — 64 位"
+            echo "- \`GitHubDesktop2Chinese_x86.exe\` — 32 位"
+            echo "- \`localization.json\` — 汉化映射（最新）"
+            echo ""
+            echo "## 使用方法"
+            echo "1. 下载 \`GitHubDesktop2Chinese.exe\` 双击运行，自动联网获取最新 \`localization.json\` 完成汉化"
+            echo "2. 或下载 exe 与 \`localization.json\` 放在同一文件夹运行"
+            echo "3. GitHub Desktop 每次版本更新后需重新运行一次"
+            echo ""
+            echo "> ⚠️ 找不到 openssl dll 请升级到本版本；缺失 MSVCP140_ATOMIC_WAIT.dll 请安装 Microsoft Visual C++ Redistributable"
+          } > release-notes.md
+
+      - name: 创建 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ghdesktop2chinese-v${{ steps.version.outputs.version }}
+          name: GitHubDesktop2Chinese v${{ steps.version.outputs.version }}
+          body_path: release-notes.md
+          files: |
+            release/GitHubDesktop2Chinese.exe
+            release/GitHubDesktop2Chinese_x86.exe
+            release/localization.json
