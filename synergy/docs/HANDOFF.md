@@ -2,7 +2,7 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `8695555be`（本文件随后的审计登记提交见 `git log`）
+> **最新 Commit**: `daf0330a1`
 > **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑新发现 A-28/A-29 已修、A-30（AWS secrets）待拍板；P3（A-20～A-27）等 CI 绿
 
 ---
@@ -85,12 +85,12 @@
 
 ### main 分支提交记录 (最新 6 个)
 ```
-8695555be docs: HANDOFF 同步 B 计划进度与 G1 清单引用
-ea01a602a feat(net): EventQueue 泵入 Qt 事件，为 Qt 网络路径铺路
-1269e7cb9 fix(identity): 关闭 U-07/U-17/U-18/U-19 与 U-09 文档化，并给出拖拽清单
-c8a5fae8c feat(net): Phase 2 Step 4 — QtNetworkTransport 支持 QSslSocket/QSslServer
-587415ef1 feat(platform): Windows IDropSource，接收文件可投进本机 Explorer
-cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
+daf0330a1 docs: 登记 CI 首跑新发现 A-28～A-30 与 A-24/A-15 决策，同步 HANDOFF
+f3de79126 fix(ci): 无 checkout 的 ci-passed/report/s3-upload 步覆盖 working-directory，bash 才能启动（A-29）
+c41dadfe5 style: 应用 CI clang-format 20.1.0 修复 lint 门禁检出的 105 文件格式漂移（A-28）
+5b38ac64c 修复 A-14～A-19：CI 触发分支、HANDOFF 回滚描述、README 与 U 台账详情同步
+46d9529d8 修复 A-12/A-13：CI 门禁不再可空转绿灯，flatpak 路径统一 workspace 根
+8be1b1221 docs: 落盘 2026-09-24 全面审计报告并登记 A-12～A-27
 ```
 
 ---
