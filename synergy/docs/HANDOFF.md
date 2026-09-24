@@ -80,7 +80,7 @@
 - [x] P2 A-14～A-19 已改（ci push→main；HANDOFF 回滚/工厂对齐；README 两处；U 详情节 Resolution）
 - [x] CI 首跑（`35948919314`）：A-14 push→main 触发生效；A-12 lint 实证生效（检出 105 文件漂移）；新发现 A-28～A-30 登记
 - [x] A-28 格式已修（应用 CI clang-format-diff，105 源文件）；A-29 已修（ci-passed/report/s3-upload 补 `working-directory: .`）— 待下次 CI 实证
-- [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 整 job skip，不计失败）— 待下次 CI 实证
+- [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
 - [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
 
 ### main 分支提交记录 (最新 6 个)

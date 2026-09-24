@@ -104,7 +104,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-27** | P3 | 亮色主题缺 `places/64/user-trash`（Windows 亮色删除按钮无图标） | `synergy.qrc:90`、`synergy-light.theme:15` | ⬜ 待修复 |
 | **A-28** | P1 | CI 首跑（A-14 生效后）暴露：lint-clang 真实检出 105 文件 clang-format 漂移（A-12 门禁实证生效，非空转） | run `35948919314` lint artifact | ✅ 已修复（应用 CI `clang-format-diff` artifact，108 文件含 workflow/文档；本地 22.1.8 ≠ CI 20.1.0，以 CI diff 为准） |
 | **A-29** | P1 | `ci-passed`/`report`/`s3-upload` 无 Checkout 却继承 `defaults.run.working-directory: synergy`，bash 无法启动 → 三 job 必挂 | `ci.yml:63-65` vs `:69,752,710` | ✅ 已修复（三处 run 步补 `working-directory: .`；YAML 解析通过，待 CI 实证） |
-| **A-30** | P1 | `s3-upload` AWS secrets 为空（`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`），push 主干必挂 | `ci.yml:726-727`；`gh secret list` 空 | ✅ 已修复（拍板：无 secrets 时 skip；job `if` 加 `secrets.AWS_ACCESS_KEY_ID/SECRET != ''`；YAML 解析通过，待 CI 实证） |
+| **A-30** | P1 | `s3-upload` AWS secrets 为空（`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`），push 主干必挂 | `ci.yml:726-727`；`gh secret list` 空 | ✅ 已修复（拍板：无 secrets 时 skip；首版误用 job 级 `if` 判 secrets 导致 workflow 0s 解析失败，改为首步 check + 后续 step 级 `if`；YAML 解析通过，待 CI 实证） |
 
 ---
 
