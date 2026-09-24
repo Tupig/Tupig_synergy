@@ -28,13 +28,13 @@ env:
 
 jobs:
   auto-maintain:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
 
       - name: 安装解压工具
         run: sudo apt-get update && sudo apt-get install -y unzip
@@ -50,7 +50,7 @@ jobs:
       # 缓存已下载的 GitHub Desktop zip（约 328MB），key 绑定版本号，发新版时自动失效
       - name: 缓存 GitHub Desktop release zip
         id: cache-zip
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.WORK_DIR }}/github-desktop.zip
           key: ghdesktop-${{ steps.version.outputs.ghdesktop_version }}-${{ runner.os }}
@@ -65,7 +65,7 @@ jobs:
             --write-report
 
       - name: 创建或更新自动维护 Issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
