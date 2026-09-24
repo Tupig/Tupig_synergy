@@ -32,7 +32,10 @@ ScreenSetupModel::ScreenSetupModel(ScreenList &screens, int numColumns, int numR
 
   const long span = static_cast<long>(m_NumColumns) * m_NumRows;
   if (span > screens.size()) {
-    qFatal("scrren list (%lld) too small for %d columns x %d rows", screens.size(), m_NumColumns, m_NumRows);
+    qFatal(
+        "screen list (%lld) too small for %d columns x %d rows", static_cast<qlonglong>(screens.size()), m_NumColumns,
+        m_NumRows
+    );
   }
 }
 

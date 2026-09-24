@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `365f64cb7`（A-20～A-27 修复；docs 清理与台账同步随本笔提交）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证
+> **最新 Commit**: A-52～A-56 修复（五/六轮 CI 根因批；台账与本 HANDOFF 随笔提交 —— hash 见 `git log`）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51、五轮+六轮 A-52～A-56 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退；A-52 为 A-21 xkbfile 探测回归收口）；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证；docs 已收敛六文件（`3f140c029`）
 
 ---
 
@@ -86,16 +86,17 @@
 - [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
 - [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — **四轮已实证大部分腿绿（windows/flatpak/fedora/opensuse/archlinux/ubuntu-26.04/lint/get-version/s3/report）**
 - [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48～A-51 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
-- [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）
+- [x] 五轮 CI（`35964563457`，commit `25f848a25`）7 job 挂（macOS×2 dyld、debian-13-x86_64 测试目录、debian-12×2 `<optional>`、ubuntu-24.04×2 format、ci-passed 级联）；六轮 CI（`35970799694`，commit `3f140c029`）23 job 挂 —— 主因 A-21 xkbfile 探测符号错（`XkbGetKeyboard` 在 libX11）致 UNIX X11 腿 Configure 全灭 + CodeQL；macOS dyld 未愈；flatpak×2 上游 libei 503（瞬态）。已修 A-52～A-56：`find_library` xkbfile；`CoreProcess.h` `<optional>`；`qFatal` `qlonglong` + 拼写；run-tests 缺目录跳过 + `Qt6_DIR` 诊断；`QT_IS_SHARED` 补 `.framework/` — **待 CI 实证；flatpak 需重跑**
+- [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）；docs 收敛六文件（`3f140c029`）
 
 ### main 分支提交记录 (最新 6 个)
 ```
+e72b61711 feat(ci): GitHubDesktop2Chinese 构建/发布/安全质量工作流
+a1942fe06 fix(ci): 修复自动维护 workflow 的 YAML 语法错误
+a8f8aa5be fix(ghdesktop2chinese): 修复自动维护工具的四个缺陷
+7afab51fb feat(ghdesktop2chinese): 新增 localization.json 自动维护工具与工作流
+3f140c029 docs: synergy/docs 收敛为六文件，迁移 G1/交付验证/B 计划状态至 HANDOFF
 365f64cb7 fix(docs,cmake): A-20～A-27 修复将删文档内错误与全仓遗留
-25f848a25 fix(ci): A-48～A-51 修复四轮 CI 11 job 失败的四类根因
-318562a78 style: OSXScreenSaver.cpp include 排序满足 clang-format（A-43 附带）
-d91138ccc fix(ci): A-42～A-47 修复三轮 CI 19 job 失败的六类根因
-dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
-1e9bbe418 fix(ci): A-32～A-35 修复 CI 首跑暴露的四类问题
 ```
 
 ---

@@ -17,6 +17,8 @@
 #include <QProcess>
 #include <QTimer>
 
+#include <optional>
+
 namespace deskflow::gui {
 
 namespace ipc {

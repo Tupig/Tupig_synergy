@@ -32,5 +32,7 @@ macro(find_qt_with_fallback)
   endif()
   find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Core Widgets Network)
   set(QT_FOUND TRUE)
-  message(STATUS "Qt: ${Qt${QT_VERSION_MAJOR}_VERSION}")
+  # Qt6_DIR tells whether Qt6 config was visible at all (diagnoses silent Qt5
+  # picks on distros that ship Qt6, e.g. debian-13-x86_64).
+  message(STATUS "Qt: ${Qt${QT_VERSION_MAJOR}_VERSION} (Qt6_DIR=${Qt6_DIR}, Qt5_DIR=${Qt5_DIR})")
 endmacro()

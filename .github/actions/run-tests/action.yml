@@ -12,5 +12,11 @@ runs:
       # Relative to the project directory, not the repository root.
       working-directory: synergy
       run: |
+        # BUILD_TESTS=OFF legs (debian-12, ubuntu-24.04, rocky) and Qt5
+        # fallback (debian-13-x86_64) produce no unittests directory.
+        if [ ! -d "build/src/unittests" ]; then
+          echo "No unit tests built (BUILD_TESTS=OFF or Qt5); skipping."
+          exit 0
+        fi
         ctest --test-dir "build/src/unittests" --output-on-failure
       shell: bash

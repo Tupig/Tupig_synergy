@@ -66,7 +66,9 @@ macro(configure_libs)
       set(QT_IS_SHARED TRUE)
     else()
       get_target_property(_qt_imported_location Qt${QT_VERSION_MAJOR}::Core IMPORTED_LOCATION)
-      if(_qt_imported_location MATCHES "\\.(so|dylib)(\\.|$)")
+      # Framework-style Qt (macOS installers / CI) resolves to
+      # .../QtCore.framework/Versions/A/QtCore — no .so/.dylib suffix.
+      if(_qt_imported_location MATCHES "\\.(so|dylib)(\\.|$)|\\.framework/")
         set(QT_IS_SHARED TRUE)
       endif()
     endif()
@@ -259,7 +261,8 @@ macro(configure_xorg_libs)
   check_library_exists("Xinerama" XineramaQueryExtension "" HAVE_Xinerama)
   check_library_exists("Xi" XISelectEvents "" HAVE_Xi)
   check_library_exists("Xrandr" XRRQueryExtension "" HAVE_Xrandr)
-  check_library_exists("xkbfile" XkbGetKeyboard "" HAVE_XKBFILE)
+  # libxkbfile exports XkbRF_* (used by DeskflowXkbKeyboard); XkbGetKeyboard is in libX11.
+  find_library(XKBFILE_LIBRARY xkbfile)
 
   if(HAVE_ICE)
 
@@ -269,7 +272,7 @@ macro(configure_xorg_libs)
 
   endif()
 
-  if(NOT HAVE_XKBFILE)
+  if(NOT XKBFILE_LIBRARY)
     message(FATAL_ERROR "Missing library: xkbfile")
   endif()
 
