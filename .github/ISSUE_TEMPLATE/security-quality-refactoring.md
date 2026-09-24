@@ -132,6 +132,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-55** | P1 | 五轮 CI `ctest --test-dir build/src/unittests` 挂：目录不存在即 `Failed to change working directory` —— 触发腿为 debian-13-x86_64（Qt5 回退无测试，A-51 门控只跳过编译不跳过 Tests 步）；且 debian-12/ubuntu-24.04 `BUILD_TESTS=OFF` 一旦 Build 修绿将同挂（Tests 步条件仅 `like != 'rhel'`） | `.github/actions/run-tests/action.yml`；`ci.yml:643-646` | ✅ 已修复（action 内 `! -d build/src/unittests` 时 echo 原因并 exit 0；`DependencyFallback` 诊断行补 `Qt6_DIR`/`Qt5_DIR` 解 x86_64 腿非对称之谜；本笔，待 CI 实证） |
 | **A-56** | P1 | 五/六轮 CI macOS×2 Test package 挂（dyld exit 134）：`@rpath/QtWidgets.framework` 未嵌入 —— `QT_IS_SHARED` 判据 `\\.(so\|dylib)` 不匹配 framework 路径 `…/QtCore.framework/Versions/A/QtCore` → 误判静态 → 跳过 macdeployqt → DMG 缺框架 | `cmake/Libraries.cmake:69` | ✅ 已修复（正则追加 `\|\\.framework/`；`deploy/mac/deploy.cmake` 靠 `DEPLOYQT` 有无分流无需改；本笔） |
 | **A-57** | P2 | synergy CI 与 ghdesktop2chinese 触发器纠缠：`ci.yml` 的 `push`/`pull_request` 无 `paths` 过滤，任一子项目变更都会触发全量 synergy 矩阵（两工作流本体无交叉引用，仅触发面混叠） | `ci.yml:33-35` | ✅ 已修复（push/PR 限定 `synergy/**`、`.github/workflows/ci.yml`、`.github/actions/**`；release/schedule/workflow_dispatch 不变；ghdesktop2chinese 仍由其独立工作流按自身 paths 触发） |
+| **A-58** | P1 | 私仓 Free 账单被拒（付款失败/spending limit）后全 CI `runner_id:0` 秒挂；且此前 CI 仍在烧高倍率/定时分钟：macOS 10×、Windows 2×、nightly schedule、CodeQL 自动跑（私仓需 GHAS 付费）、PR valgrind、push 侧 s3-upload、全量 19 腿 Linux 矩阵 | `ci.yml` schedule/windows/macos/flatpak/s3/valgrind；`codeql-analysis.yml`；`sonarcloud-analysis.yml` | ✅ 已修复（用户拍板「付费的不要了」）：删 schedule；Windows/macOS/flatpak/s3-upload 仅 release+dispatch；Linux push/PR 收敛为 `.github/matrices/linux-targets.json` `free` 4 腿、全量 19 腿走 dispatch/release；CodeQL/Sonar 改仅 workflow_dispatch；ci.yml 去掉 PR 自动 valgrind；ghdesktop2chinese 周定时已由用户 `3aaa92ed1` 删除 — YAML/JSON 解析通过，待 CI 实证（若账户仍处硬锁，须网页 Billing 处理或转 public） |
 
 ---
 
@@ -318,6 +319,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-24 | 五轮 CI（`35964563457`，commit `25f848a25`）+ 六轮 CI（`35970799694`，commit `3f140c029`）诊断：五轮 7 job 挂（macOS×2 dyld、debian-13-x86_64 测试目录、debian-12×2 `<optional>`、ubuntu-24.04×2 format、ci-passed 级联）；六轮 23 job 挂 —— 主因 A-21 xkbfile 探测符号选错致 UNIX X11 腿 Configure 全灭（CodeQL 同挂），macOS dyld 未愈，flatpak×2 上游 libei 503（瞬态，非代码）；登记 A-52～A-56 | opencode |
 | 2026-09-24 | 修复 A-52～A-56：xkbfile 改 `find_library`；`CoreProcess.h` 补 `<optional>`；`ScreenSetupModel` qFatal `qlonglong` 转型 + 拼写；run-tests 缺目录跳过 + Qt 选择诊断打印 `Qt6_DIR`；`QT_IS_SHARED` 补 framework 判据 —— 待 CI 实证；flatpak 503 需重跑观察 | opencode |
 | 2026-09-24 | 五/六轮后全部 job `runner_id:0` 秒挂：annotation 实证为 GitHub Actions **billing 失败**（付款失败/ spending limit），非代码问题；A-57 登记并修复：`ci.yml` push/PR 加 synergy 路径过滤，与 `ghdesktop2chinese.yml` 触发隔离 — 待 Billing 恢复后 CI 实证 | opencode |
+| 2026-09-24 | 用户拍板「付费的不要了」：A-58 登记并修复 —— ci.yml 删 schedule、Windows/macOS/flatpak/s3 仅 release+dispatch、Linux 矩阵拆 free(4)/full(19)（`.github/matrices/linux-targets.json`）、CodeQL/Sonar 仅手动、去 PR valgrind；ghdesktop2chinese 周定时用户已删（`3aaa92ed1`）；YAML/JSON 解析通过 | opencode |
 
 ---
 

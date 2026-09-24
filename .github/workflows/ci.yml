@@ -1,6 +1,8 @@
 # All-in-one continuous integration (CI) workflow.
-# Runs on all platforms (Windows, macOS, and Linux)
-# for all events (pull request, release, and schedule).
+# Free-tier plan (private repo): push/PR run only cheap Linux legs
+# (see .github/matrices/linux-targets.json "free"). Windows/macOS/flatpak
+# and the full Linux matrix run only on release or workflow_dispatch.
+# No schedule — nightly burns free minutes without a code change.
 
 name: CI
 
@@ -38,15 +40,15 @@ on:
       - "synergy/**"
       - ".github/workflows/ci.yml"
       - ".github/actions/**"
+      - ".github/matrices/**"
   pull_request:
     paths:
       - "synergy/**"
       - ".github/workflows/ci.yml"
       - ".github/actions/**"
+      - ".github/matrices/**"
   release:
     types: [published]
-  schedule:
-    - cron: "0 5 * * *" # 5am UTC nightly snapshot
 
 # Cancel superseded PR builds; pushes to branches/tags always run to completion.
 concurrency:
@@ -61,10 +63,10 @@ env:
 
   # Release shape, propagated to cmake (Synergy.cmake reads these as options).
   # Release events + explicit "release" workflow_dispatch input → release build.
-  # Push to main + schedule + explicit "snapshot" dispatch → snapshot build.
+  # Push to main + explicit "snapshot" dispatch → snapshot build.
   # PRs and "dev" dispatch fall through to dev (the cmake default).
   SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
-  SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
+  SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
 # The project lives in the `synergy/` subdirectory of a repository whose root also
 # holds unrelated content, so every `run` step below has to be anchored there. This
@@ -118,16 +120,15 @@ jobs:
       - name: Lint Checker
         uses: ./.github/actions/lint-clang
 
-  analyze-valgrind:
-    needs: lint-clang
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/valgrind-analysis.yml
+  # Valgrind is free-tier expensive (full container build). Keep the
+  # reusable workflow dispatch-only; do not auto-run it on every PR.
 
   get-version:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
       version: ${{ steps.get-version.outputs.version }}
+      linux_targets: ${{ steps.linux-matrix.outputs.targets }}
 
     steps:
       - name: Checkout
@@ -143,9 +144,24 @@ jobs:
       - name: Check vcpkg version matches Version.cmake
         run: python3 scripts/check-version-consistency.py
 
+      # push/PR use the free-tier subset (x86_64 only, ~4 legs);
+      # release/workflow_dispatch use the full distro matrix.
+      - name: Select Linux matrix
+        id: linux-matrix
+        working-directory: .
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ] || [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            key=free
+          else
+            key=full
+          fi
+          targets=$(jq -c --arg k "$key" '.[$k]' .github/matrices/linux-targets.json)
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+
   build-windows:
     needs: [lint-clang, get-version]
-    if: ${{ inputs.platform == '' || inputs.platform == 'windows' }}
+    # Free tier: Windows is 2x minutes — release / manual dispatch only.
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'windows')) }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: 30
@@ -285,7 +301,8 @@ jobs:
 
   build-macos:
     needs: [lint-clang, get-version]
-    if: ${{ inputs.platform == '' || inputs.platform == 'macos' }}
+    # Free tier: macOS is 10x minutes — release / manual dispatch only.
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'macos')) }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: ${{ matrix.target.timeout }}
@@ -446,126 +463,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - name: "debian-13-x86_64"
-            runs-on: ubuntu-latest
-            container: debian:13-slim
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "debian-13-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: debian:13-slim
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          # Debian 12's GCC 12 trips -Wstringop-overflow false positives (gone in GCC 13),
-          # so warnings-as-errors is off here; the GCC 13+ legs keep it on.
-          # Qt 6.4 < floor 6.7.0 -> find_qt_with_fallback selects Qt5; tests need
-          # Qt6 Test and translations need LinguistTools, so both are off (as on rocky).
-          - name: "debian-12-x86_64"
-            runs-on: ubuntu-latest
-            container: debian:12-slim
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
-
-          - name: "debian-12-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: debian:12-slim
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
-
-          - name: "fedora-42-x86_64"
-            runs-on: ubuntu-latest
-            container: fedora:42
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "fedora-42-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: fedora:42
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "fedora-43-x86_64"
-            runs-on: ubuntu-latest
-            container: fedora:43
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "fedora-43-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: fedora:43
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "fedora-44-x86_64"
-            runs-on: ubuntu-latest
-            container: fedora:44
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "fedora-44-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: fedora:44
-            like: "fedora"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          # RHEL/Rocky: Qt5, X11-only, tests off (the suite needs Qt6 Test).
-          - name: "rocky-8-x86_64"
-            runs-on: ubuntu-latest
-            container: rockylinux:8
-            like: "rhel"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
-
-          - name: "rocky-9-x86_64"
-            runs-on: ubuntu-latest
-            container: rockylinux:9
-            like: "rhel"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
-
-          - name: "opensuse-x86_64"
-            runs-on: ubuntu-latest
-            container: opensuse/tumbleweed:latest
-            like: "suse"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "opensuse-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: opensuse/tumbleweed:latest
-            like: "suse"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "archlinux-x86_64"
-            runs-on: ubuntu-latest
-            container: archlinux:latest
-            like: "arch"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          # Qt 6.4 < floor 6.7.0 -> Qt5 fallback (see debian-12 note above).
-          - name: "ubuntu-24.04-x86_64"
-            runs-on: ubuntu-latest
-            container: ubuntu:24.04
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
-
-          - name: "ubuntu-24.04-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: ubuntu:24.04
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
-
-          - name: "ubuntu-26.04-x86_64"
-            runs-on: ubuntu-latest
-            container: ubuntu:26.04
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
-
-          - name: "ubuntu-26.04-arm64"
-            runs-on: ubuntu-24.04-arm
-            container: ubuntu:26.04
-            like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+        # free = push/PR subset; full = release/workflow_dispatch (see get-version).
+        target: ${{ fromJSON(needs.get-version.outputs.linux_targets) }}
 
     steps:
       # Containers don't ship git; everything else needs it for checkout + describe.
@@ -668,7 +567,8 @@ jobs:
 
   build-flatpak:
     needs: [lint-clang, get-version]
-    if: ${{ inputs.platform == '' || inputs.platform == 'linux' }}
+    # Free tier: flatpak is a long privileged container build — release / manual only.
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'linux')) }}
     name: flatpak-${{matrix.flatpak.arch}}
     runs-on: ${{matrix.flatpak.runs-on}}
     timeout-minutes: 60
@@ -736,7 +636,8 @@ jobs:
   # job still runs but every upload step is skipped - job stays green (A-30).
   s3-upload:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
-    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
+    # Free tier: no push auto-upload; snapshot S3 only via release / manual dispatch.
+    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
     runs-on: ubuntu-latest
 
     steps:

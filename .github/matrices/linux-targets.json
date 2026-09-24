@@ -1,0 +1,167 @@
+{
+  "free": [
+    {
+      "name": "ubuntu-26.04-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "ubuntu:26.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "debian-13-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "debian:13-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "debian-12-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "debian:12-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "ubuntu-24.04-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "ubuntu:24.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+    }
+  ],
+  "full": [
+    {
+      "name": "debian-13-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "debian:13-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "debian-13-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "debian:13-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "debian-12-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "debian:12-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "debian-12-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "debian:12-slim",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "fedora-42-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "fedora:42",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "fedora-42-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "fedora:42",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "fedora-43-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "fedora:43",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "fedora-43-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "fedora:43",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "fedora-44-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "fedora:44",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "fedora-44-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "fedora:44",
+      "like": "fedora",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "rocky-8-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "rockylinux:8",
+      "like": "rhel",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "rocky-9-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "rockylinux:9",
+      "like": "rhel",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "opensuse-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "opensuse/tumbleweed:latest",
+      "like": "suse",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "opensuse-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "opensuse/tumbleweed:latest",
+      "like": "suse",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "archlinux-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "archlinux:latest",
+      "like": "arch",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "ubuntu-24.04-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "ubuntu:24.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "ubuntu-24.04-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "ubuntu:24.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
+    },
+    {
+      "name": "ubuntu-26.04-x86_64",
+      "runs-on": "ubuntu-latest",
+      "container": "ubuntu:26.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    },
+    {
+      "name": "ubuntu-26.04-arm64",
+      "runs-on": "ubuntu-24.04-arm",
+      "container": "ubuntu:26.04",
+      "like": "debian",
+      "config-args": "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+    }
+  ]
+}

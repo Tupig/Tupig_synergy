@@ -2,27 +2,10 @@ name: "SonarCloud Analysis"
 
 # This is best run as a standalone workflow, not as part of another workflow like CI
 # because of how GitHub understands the code scanning workflows in it's UI.
+#
+# Free tier: no auto push/PR triggers — run manually only.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/sonarcloud-analysis.yml'
-      - 'synergy/config/sonar-project.properties'
-      - 'synergy/cmake/Libraries.cmake'
-      - 'synergy/CMakeLists.txt'
-      - 'synergy/src/**'
-      - '!synergy/src/apps/res/**'
-      - '!synergy/src/unittests/**'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sonarcloud-analysis.yml'
-      - 'synergy/config/sonar-project.properties'
-      - 'synergy/cmake/Libraries.cmake'
-      - 'synergy/CMakeLists.txt'
-      - 'synergy/src/**'
-      - '!synergy/src/apps/res/**'
-      - '!synergy/src/unittests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

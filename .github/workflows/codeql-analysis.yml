@@ -2,25 +2,11 @@ name: "CodeQL Analysis"
 
 # This is best run as a standalone workflow, not as part of another workflow like CI
 # because of how GitHub understands the code scanning workflows in it's UI.
+#
+# Free tier: private-repo code scanning requires GitHub Advanced Security (paid).
+# Auto push/PR triggers are disabled; run manually only if GHAS is enabled.
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/codeql-analysis.yml'
-      - 'synergy/cmake/Libraries.cmake'
-      - 'synergy/CMakeLists.txt'
-      - 'synergy/src/**'
-      - '!synergy/src/apps/res/**'
-      - '!synergy/src/unittests/**'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/codeql-analysis.yml'
-      - 'synergy/cmake/Libraries.cmake'
-      - 'synergy/CMakeLists.txt'
-      - 'synergy/src/**'
-      - '!synergy/src/apps/res/**'
-      - '!synergy/src/unittests/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
