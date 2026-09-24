@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `3aaa92ed1`（用户：ghdesktop2chinese 删周定时）；A-58 免费化瘦身见下笔；A-52～A-56 在 `2539f1932`；A-57 在 `53e343692`
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51、五轮+六轮 A-52～A-56 均已修；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证；docs 已收敛六文件（`3f140c029`）；A-57 已隔离触发；**A-58 已免费化瘦身（删 schedule、Win/macOS/flatpak/s3 仅手动/发布、Linux free 4 腿、CodeQL/Sonar 仅 dispatch）—— 若账户仍 billing 硬锁，须网页 Billing 处理或转 public 才能实证**
+> **最新 Commit**: `478be74cc`（A-58 免费化瘦身）；ghdesktop 去定时 `3aaa92ed1`；A-52～A-56 在 `2539f1932`；A-57 在 `53e343692`
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51、五轮+六轮 A-52～A-56 均已修；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证；docs 已收敛六文件（`3f140c029`）；A-57 已隔离触发；**A-58 已免费化瘦身并推送（`478be74cc`）—— run `35978730528` 证明结构生效但 billing 硬锁仍在（`runner_id:0`），须用户网页 Billing 处理或转 public**
 
 ---
 
@@ -90,16 +90,17 @@
 - [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）；docs 收敛六文件（`3f140c029`）
 - [x] A-57 已修：`ci.yml` push/PR 增加 `synergy/**` 等路径过滤，与 `ghdesktop2chinese.yml` 触发隔离（两工作流本体本无交叉）— 待 CI 实证
 - [x] **阻断→拍板**：五/六轮后所有 run job `runner_id:0`、`steps:[]`、日志空 — check annotation 实证 *「recent account payments have failed or your spending limit needs to be increased」*（GitHub Actions billing）。用户拍板「付费的不要了」→ **A-58 免费化瘦身**（见下）
-- [x] **A-58 免费化瘦身**：ci.yml 删 `schedule`；Windows(2×)/macOS(10×)/flatpak/s3-upload 仅 `release`+`workflow_dispatch`；Linux 矩阵拆 `free`（push/PR，4 腿 x86_64：ubuntu-26.04/debian-13/debian-12/ubuntu-24.04）与 `full`（19 腿，dispatch/release），源在 `.github/matrices/linux-targets.json`；CodeQL/Sonar 改仅 `workflow_dispatch`（私仓 CodeQL 需 GHAS 付费）；去掉 ci.yml 内 PR 自动 valgrind；ghdesktop2chinese 周定时用户已删（`3aaa92ed1`）— YAML/JSON 解析通过，**待推送后观察是否仍被 billing 硬锁**
+- [x] **A-58 免费化瘦身**：ci.yml 删 `schedule`；Windows(2×)/macOS(10×)/flatpak/s3-upload 仅 `release`+`workflow_dispatch`；Linux 矩阵拆 `free`（push/PR，4 腿 x86_64：ubuntu-26.04/debian-13/debian-12/ubuntu-24.04）与 `full`（19 腿，dispatch/release），源在 `.github/matrices/linux-targets.json`；CodeQL/Sonar 改仅 `workflow_dispatch`（私仓 CodeQL 需 GHAS 付费）；去掉 ci.yml 内 PR 自动 valgrind；ghdesktop2chinese 周定时用户已删（`3aaa92ed1`）— `478be74cc` 已推送
+- [x] **A-58 推送后实测（run `35978730528`）**：瘦身结构生效（Windows/macOS/flatpak/s3-upload 正确 skip、无 CodeQL/Sonar 自动跑），但 **lint/get-version/ci-passed/report 仍 `runner_id:0`、`steps:[]` 9 秒失败 —— 账户 billing 硬锁未解除**。**用户须在 GitHub Settings → Billing & plans 处理（移除失败付款方式 / 调 spending limit）或将仓库转 public；代码侧免费化已完成，无法再省**
 
 ### main 分支提交记录 (最新 6 个)
 ```
+478be74cc fix(ci): A-58 免费化瘦身，去掉定时与高计费 CI 步骤
 3aaa92ed1 fix(ci): 移除定时自动运行，全部改为手动触发
 f73989c0e docs: HANDOFF 回填 2539f1932/53e343692 与 billing 阻断记录
 53e343692 fix(ci): A-57 ci.yml 路径过滤隔离 synergy 与 ghdesktop2chinese 触发
 4ac6d21f5 fix(ci): 重构统一工作流，去除 changes 前置 job
 a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
-2539f1932 fix(ci,cxx): A-52～A-56 修复五/六轮 CI 失败的五类根因
 ```
 
 ---
@@ -265,9 +266,10 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **推送 A-58 后观察下一次 push CI**：若账户已从 billing 硬锁恢复，push 应只跑 lint + get-version + free 4 腿 Linux + ci-passed（Win/macOS/flatpak/s3/CodeQL/Sonar/valgrind 均 skip 或不存在触发），可实证 A-12～A-13、A-20～A-27、A-28～A-55（free 腿覆盖 xkbfile/optional/format/测试目录）；A-56（macOS dyld）与全量矩阵须手动 `workflow_dispatch` 或 release。**若仍 `runner_id:0` 秒挂 → 账户仍硬锁，须用户在 Settings → Billing & plans 处理（移除坏卡/调 spending limit）或仓库转 public**
-2. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
-3. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
+1. **[用户] 解除 billing 硬锁**：`478be74cc` 后 run `35978730528` 证明免费化结构生效但 lint 等仍 `runner_id:0` 秒挂 — 须在 GitHub Settings → Billing & plans 移除失败付款/调 spending limit，或仓库转 public。**在此之前任何 CI 实证都不可能**
+2. **锁解除后下次 push CI**（free 最小集：lint + get-version + 4 腿 Linux + ci-passed）：实证 A-12～A-13、A-20～A-27、A-28～A-55；A-56（macOS）与全量矩阵须手动 `workflow_dispatch` 或 release
+3. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
+4. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
 
 ### Step 1 具体操作 ✅ 已完成
 ```
@@ -282,11 +284,12 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: CI 免费最小集实证 → Step 5 / B 计划阶段 1 → G1 验证
-1. 推送 A-58 后观察 free 最小集 CI 是否脱离 billing 硬锁并实证 A-12～A-13、A-20～A-27、A-28～A-55；A-56/全量矩阵走手动 dispatch
-2. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15；见 §5.4）
-3. Windows 跨屏拖拽人工验证（清单 §5.6：IDropTarget 捕获 + IDropSource 投放到 Explorer）
-4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / §5.4 阶段 1）
+### 下一步: 解除 billing 锁 → free 最小集 CI 实证 → Step 5 / B 计划阶段 1 → G1 验证
+1. **[用户] GitHub Settings → Billing & plans**：移除失败付款方式或调 spending limit（或仓库转 public）—— `35978730528` 证明 A-58 结构生效但 `runner_id:0` 硬锁仍在
+2. 锁解除后下次 push 观察 free 最小集实证 A-12～A-13、A-20～A-27、A-28～A-55；A-56/全量矩阵走手动 dispatch
+3. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15；见 §5.4）
+4. Windows 跨屏拖拽人工验证（清单 §5.6：IDropTarget 捕获 + IDropSource 投放到 Explorer）
+5. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / §5.4 阶段 1）
 
 ---
 
