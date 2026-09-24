@@ -16,7 +16,9 @@
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QSslServer>
+#endif
 
 #include <cstring>
 
@@ -365,11 +367,18 @@ void QtNetworkTransport::processWriteQueue()
 
 QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : m_securityLevel(securityLevel)
 {
+  // QSslServer is Qt 6+; Qt 5 (RHEL/Rocky, and Debian/Ubuntu legs that fall
+  // back when system Qt 6 is below the project floor) only has QTcpServer.
+  // TLS listen on Qt 5 is rejected in configureSslServer() below.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   if (wantsTls()) {
     m_server = new QSslServer(this);
   } else {
     m_server = new QTcpServer(this);
   }
+#else
+  m_server = new QTcpServer(this);
+#endif
   LOG_DEBUG("QtTransportListenSocket: created (tls=%d)", wantsTls() ? 1 : 0);
 }
 
@@ -387,6 +396,7 @@ bool QtTransportListenSocket::wantsTls() const
 
 bool QtTransportListenSocket::configureSslServer()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   auto *sslServer = qobject_cast<QSslServer *>(m_server);
   if (sslServer == nullptr) {
     return false;
@@ -411,6 +421,12 @@ bool QtTransportListenSocket::configureSslServer()
 
   sslServer->setSslConfiguration(config);
   return true;
+#else
+  if (wantsTls()) {
+    LOG_ERR("QtTransportListenSocket: TLS listen requires Qt 6 QSslServer (Qt 5 build)");
+  }
+  return !wantsTls();
+#endif
 }
 
 std::unique_ptr<INetworkTransport> QtTransportListenSocket::accept()

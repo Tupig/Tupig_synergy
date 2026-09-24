@@ -1,6 +1,7 @@
 {
     "com.tupig.synergy": [
         "metainfo-missing-screenshots",
-        "appstream-screenshots-not-mirrored-in-ostree"
+        "appstream-screenshots-not-mirrored-in-ostree",
+        "appid-url-not-reachable"
     ]
 }

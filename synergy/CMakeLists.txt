@@ -237,8 +237,12 @@ if(SYNERGY_ENABLE_ASAN)
 endif()
 
 # x86-64 (as opposed to arm64): both are 64-bit, but only x86-64 has AVX2.
+# Match the normalized BUILD_ARCHITECTURE (validated to x64|x86_64|arm64|aarch64
+# above), not CMAKE_SYSTEM_PROCESSOR: Debian/Ubuntu arm64 containers report
+# "aarch64", which the old arm64-only regex missed and wrongly enabled
+# -march=x86-64-v3 (cc1plus: unknown value 'x86-64-v3').
 set(_synergy_arch_x86_64 FALSE)
-if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "[Aa][Rr][Mm]64")
+if(BUILD_ARCHITECTURE MATCHES "^(x64|x86_64)$")
   set(_synergy_arch_x86_64 TRUE)
 endif()
 

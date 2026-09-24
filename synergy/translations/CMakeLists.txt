@@ -85,14 +85,23 @@ foreach(_ts IN LISTS _qt_langs)
   string(REPLACE "${filename}_" "" _lang "${_ts}")
   string(REPLACE ".ts" "" _lang "${_lang}")
   set(_qt_qm "${CMAKE_CURRENT_BINARY_DIR}/qt_${_lang}.qm")
-  add_custom_command(
-    OUTPUT "${_qt_qm}"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${QT_LANG_PATH}/qtbase_${_lang}.qm" "${_qt_qm}"
-    DEPENDS "${QT_LANG_PATH}/qtbase_${_lang}.qm"
-    COMMENT "Copying Qt translations for ${_lang}"
-    VERBATIM
-  )
-  list(APPEND QT_TRANSLATION_FILES "${_qt_qm}")
+  set(_qt_qm_src "${QT_LANG_PATH}/qtbase_${_lang}.qm")
+  # Not every distro package ships every language (Fedora's qt6-qttranslations
+  # provides qtbase_en.qm but not qtbase_es.qm, which made the hard DEPENDS fail
+  # at build time with "missing and no known rule to make it"). Skip languages
+  # the system Qt does not provide; the app's own .ts catalogues still build.
+  if(EXISTS "${_qt_qm_src}")
+    add_custom_command(
+      OUTPUT "${_qt_qm}"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_qt_qm_src}" "${_qt_qm}"
+      DEPENDS "${_qt_qm_src}"
+      COMMENT "Copying Qt translations for ${_lang}"
+      VERBATIM
+    )
+    list(APPEND QT_TRANSLATION_FILES "${_qt_qm}")
+  else()
+    message(STATUS "Qt catalogue qtbase_${_lang}.qm not found under ${QT_LANG_PATH}; skipping")
+  endif()
 endforeach()
 
 # Expose everything the runtime needs to the parent scope so the top-level build

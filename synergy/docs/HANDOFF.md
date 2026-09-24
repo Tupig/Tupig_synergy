@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `1e9bbe418`
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮暴露 A-36～A-41 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页）；P3（A-20～A-27）等 CI 绿
+> **最新 Commit**: `dcd1b1cae`（A-42～A-47 修复随下笔提交）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）等 CI 绿
 
 ---
 
@@ -83,17 +83,17 @@
 - [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
 - [x] A-31 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
 - [x] A-32～A-35 已修（Linux 矩阵首步 cwd 同 A-31 根因；macOS GUI target 名空格 + 五处 TARGET_BUNDLE 同步；CodeQL autobuild 双项目歧义改 manual；metainfo homepage 私仓 404 改公开 URL）— 待下次 CI 实证
-- [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — 待下次 CI 实证
+- [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
+- [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — 待下次 CI 实证
 - [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
 
 ### main 分支提交记录 (最新 6 个)
 ```
-daf0330a1 docs: 登记 CI 首跑新发现 A-28～A-30 与 A-24/A-15 决策，同步 HANDOFF
-f3de79126 fix(ci): 无 checkout 的 ci-passed/report/s3-upload 步覆盖 working-directory，bash 才能启动（A-29）
-c41dadfe5 style: 应用 CI clang-format 20.1.0 修复 lint 门禁检出的 105 文件格式漂移（A-28）
-5b38ac64c 修复 A-14～A-19：CI 触发分支、HANDOFF 回滚描述、README 与 U 台账详情同步
-46d9529d8 修复 A-12/A-13：CI 门禁不再可空转绿灯，flatpak 路径统一 workspace 根
-8be1b1221 docs: 落盘 2026-09-24 全面审计报告并登记 A-12～A-27
+dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
+1e9bbe418 fix(ci): A-32～A-35 修复 CI 首跑暴露的四类问题
+7f214119e fix(ci): A-31 CodeQL/Sonar/Valgrind 容器首步补 working-directory，checkout 前不再 chdir 失败
+88aa7bcf0 fix(ci): A-30 改为 step 级 secrets 判空（job 级 if 不可用 secrets 上下文）
+19b69fb54 docs: A-30 拍板关闭（无 secrets 时 skip），同步 HANDOFF 与追踪台账
 ```
 
 ---

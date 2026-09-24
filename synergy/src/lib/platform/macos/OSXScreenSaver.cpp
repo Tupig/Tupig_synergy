@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#import "platform/OSXScreenSaver.h"
+#import "OSXScreenSaver.h"
 
 #import "base/IEventQueue.h"
 #import "base/Log.h"
-#import "platform/OSXScreenSaverUtil.h"
+#import "OSXScreenSaverUtil.h"
 
 #import <string.h>
 #import <sys/sysctl.h>

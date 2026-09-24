@@ -116,6 +116,12 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-39** | P2 | flatpak Lint appsteam 挂：A-35 改的 `https://tupig.com` 从 CI 仍 TLS 失败（`unexpected eof`，本地 curl exit 35）→ `url-not-reachable` warning 仍判 fail | `com.tupig.synergy.metainfo.xml:23` | ✅ 已修复（改指公开可达的 `https://github.com/Tupig`；私仓与坏 TLS 域名均不可作 homepage） |
 | **A-40** | P1 | s3-upload 挂：`Check AWS secrets` 步未补 `working-directory: .`，无 checkout 却继承 `synergy/` → `No such file or directory` | `ci.yml:727-738` | ✅ 已修复（该步补 `working-directory: .`；同 A-29 根因） |
 | **A-41** | P1 | report 挂：`Send Slack notification` 无 `SLACK_TOKEN` → `Missing input! A token must be provided`；与 A-30 同类 secrets 判空缺失 | `ci.yml:807-814` | ✅ 已修复（新增 `Check Slack secrets` 步 step 级判空，无 secrets 时 skip send） |
+| **A-42** | P1 | 三轮 CI（`35957542966`）arm64 Configure 挂：`cc1plus: unknown value 'x86-64-v3'` — 架构正则 `[Aa][Rr][Mm]64` 不匹配 Debian/Ubuntu arm64 的 `aarch64`，AVX2 误开 | `CMakeLists.txt:244-246` | ✅ 已修复（改用已校验的 `BUILD_ARCHITECTURE MATCHES "^(x64\|x86_64)$"`） |
+| **A-43** | P1 | 三轮 CI macOS Build 挂：`'platform/OSXCocoaApp.h' file not found` — 平台 include 根为 `platform/` + `platform/macos`（无 `src/lib`），`#import "platform/X.h"` 前缀错且文件实际在 `macos/` 下（6 处 4 文件） | `OSXCocoaApp.m`、`OSXMediaKeySupport.m`、`OSXScreenSaver.cpp`、`OSXScreenSaverUtil.m` | ✅ 已修复（改为 `#import "X.h"` 相对同目录名；`rg '#[im]port "platform/' src/lib/platform/macos` 零命中） |
+| **A-44** | P1 | 三轮 CI fedora-x86_64 Build 挂：`ninja: error: '/usr/share/qt6/translations/qtbase_es.qm', needed by 'translations/qt_es.qm', missing` — Fedora `qt6-qttranslations` 有 `qtbase_en.qm` 无 `qtbase_es.qm`，翻译拷贝命令硬 DEPENDS | `translations/CMakeLists.txt:93-104` | ✅ 已修复（per-lang 拷贝改 `if(EXISTS)` 软跳过 + STATUS 消息；app 自有 .ts 目录仍构建） |
+| **A-45** | P1 | 三轮 CI debian-12/ubuntu-24.04 Configure 挂：`Could not find a configuration file for package "Qt6" ... "6.7.0"` — 自带 Qt6 6.4.x < 项目下限 6.7.0（A-02 设定），DependencyFallback 硬失败 | `cmake/DependencyFallback.cmake:19`；`ci.yml` debian-12/ubuntu-24.04 四腿 | ✅ 已修复（`find_qt_with_fallback` Qt6 版本不足时回退 Qt5 并下调 REQUIRED_QT/OPENSSL 下限；debian 分支补装 `qtbase5-dev`；四腿 `config-args` 补 `-DBUILD_TESTS=OFF`，同 rocky 模式——unittests 硬 `find_package(Qt6 Test)`） |
+| **A-46** | P1 | 三轮 CI rocky-8/9 编译挂：`QSslServer: No such file or directory` — Qt6-only 类型无版本守卫（Qt5 路径 A-45 同理须覆盖） | `QtNetworkTransport.cpp:19-21,373-381,397-423` | ✅ 已修复（`#include`、构造函数、`configureSslServer` 三处 `#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)`；Qt5 分支仅 QTcpServer，TLS listen 返回 false + LOG_ERR） |
+| **A-47** | P1 | 三轮 CI flatpak Lint manifest 挂：`appid-url-not-reachable: Tried https://tupig.com` — linter 按 app-id 命名空间探测（非 manifest URL），该步未传 exceptions 标志 | `ci.yml:691-692`；`ci-build-lint-exceptions.json` | ✅ 已修复（例外文件补 `appid-url-not-reachable`；Lint manifest 步加 `--exceptions --user-exceptions`，与 Validate build 步对齐） |
 
 ---
 
@@ -295,6 +301,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-24 | A-30 返工：job 级 `if` 不可用 `secrets` 上下文（workflow 0s 解析失败）→ 改 step 级判空；A-31 登记并修复（CodeQL/Sonar/Valgrind 容器首步 cwd） | opencode |
 | 2026-09-24 | A-32～A-35 登记并修复：Linux 矩阵首步 cwd（同 A-31 根因）；macOS GUI target 名空格（五处 TARGET_BUNDLE 同步）；CodeQL autobuild 双项目歧义改 manual build；metainfo homepage 私仓 404 改公开 URL | opencode |
 | 2026-09-24 | 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，登记并修复 A-36～A-41：qtbase_en.qm 搜不到 + 缺翻译包；macOS ld 拒 GNU -z；XWindowsConfig.h 生成目录不在 include path；tupig.com TLS 仍挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 skip | opencode |
+| 2026-09-24 | 三轮 CI（`35957542966`）暴露 6 类 19 job 挂（10 job 绿），登记并修复 A-42～A-47：aarch64 误开 AVX2；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退 + BUILD_TESTS=OFF + qtbase5-dev；rocky QSslServer 无 Qt6 守卫；flatpak Lint manifest 未传 exceptions | opencode |
 
 ---
 

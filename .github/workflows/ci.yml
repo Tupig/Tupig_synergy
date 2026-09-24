@@ -451,17 +451,19 @@ jobs:
 
           # Debian 12's GCC 12 trips -Wstringop-overflow false positives (gone in GCC 13),
           # so warnings-as-errors is off here; the GCC 13+ legs keep it on.
+          # Qt 6.4 < floor 6.7.0 -> find_qt_with_fallback selects Qt5; tests need
+          # Qt6 Test and translations need LinguistTools, so both are off (as on rocky).
           - name: "debian-12-x86_64"
             runs-on: ubuntu-latest
             container: debian:12-slim
             like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
 
           - name: "debian-12-arm64"
             runs-on: ubuntu-24.04-arm
             container: debian:12-slim
             like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF -DBUILD_TESTS=OFF"
 
           - name: "fedora-42-x86_64"
             runs-on: ubuntu-latest
@@ -530,17 +532,18 @@ jobs:
             like: "arch"
             config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
 
+          # Qt 6.4 < floor 6.7.0 -> Qt5 fallback (see debian-12 note above).
           - name: "ubuntu-24.04-x86_64"
             runs-on: ubuntu-latest
             container: ubuntu:24.04
             like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
 
           - name: "ubuntu-24.04-arm64"
             runs-on: ubuntu-24.04-arm
             container: ubuntu:24.04
             like: "debian"
-            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr"
+            config-args: "-G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTS=OFF"
 
           - name: "ubuntu-26.04-x86_64"
             runs-on: ubuntu-latest
@@ -682,8 +685,11 @@ jobs:
       - name: Lint appsteam
         run: flatpak-builder-lint appstream extra/deploy/linux/com.tupig.synergy.metainfo.xml
 
+      # appid-url-not-reachable: the linter probes https://tupig.com (app-id
+      # namespace), which fails TLS from CI — same class as A-39. Covered by
+      # ci-build-lint-exceptions.json; without --exceptions this step hard-fails.
       - name: Lint manifest
-        run: flatpak-builder-lint manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
+        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
 
       # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root),
       # not from defaults.run.working-directory (ADR 0549). The builder therefore

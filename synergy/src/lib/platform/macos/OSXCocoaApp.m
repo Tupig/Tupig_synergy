@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#import "platform/OSXCocoaApp.h"
+#import "OSXCocoaApp.h"
 
 #import <Cocoa/Cocoa.h>
 #import <CoreData/CoreData.h>
