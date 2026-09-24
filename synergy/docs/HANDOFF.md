@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `318562a78`（A-48～A-51 修复随下笔提交）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）等 CI 绿
+> **最新 Commit**: `365f64cb7`（A-20～A-27 修复；docs 清理与台账同步随本笔提交）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证
 
 ---
 
@@ -69,12 +69,12 @@
 - 所有变更已推送到 `origin/main`
 
 ### 全面审计 ✅ (2026-09-23)
-- [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付），报告落盘 `docs/audit-2026-09-23.md`
+- [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付）；报告见 git 历史（原 `docs/audit-2026-09-23.md`，已随 docs 清理删除）
 - [x] 新发现 A-01～A-11 登记至 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` §2.4；U 计数修正为 21 项
-- [x] 审计整改：A-01～A-11 已关闭；U-03 / U-10 / U-13 / U-15 已关闭；U-07 / U-09 已随后 `1269e7cb9` 关闭（D1/E2），状态以 `docs/consistency-audit.md` 为准
+- [x] 审计整改：A-01～A-11 已关闭；U-03 / U-10 / U-13 / U-15 已关闭；U-07 / U-09 已随后 `1269e7cb9` 关闭（D1/E2），状态以追踪台账为准
 
 ### 二轮全面审计 🔄 (2026-09-24)
-- [x] 4 路并行只读取证 + P1/P2 独立复核，报告落盘 `docs/audit-2026-09-24.md`
+- [x] 4 路并行只读取证 + P1/P2 独立复核；报告见 git 历史（原 `docs/audit-2026-09-24.md`，已随 docs 清理删除）
 - [x] 新发现 A-12～A-27 登记追踪文档 §2.5；A-10 状态补翻；变更日志补登 09-23 末 6 笔
 - [x] P1 A-12/A-13 代码已改（lint cwd + ci-passed needs；flatpak 路径统一 workspace 根）— **待下次 CI 运行实证**
 - [x] P2 A-14～A-19 已改（ci push→main；HANDOFF 回滚/工厂对齐；README 两处；U 详情节 Resolution）
@@ -86,16 +86,16 @@
 - [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
 - [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — **四轮已实证大部分腿绿（windows/flatpak/fedora/opensuse/archlinux/ubuntu-26.04/lint/get-version/s3/report）**
 - [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48～A-51 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
-- [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
+- [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）
 
 ### main 分支提交记录 (最新 6 个)
 ```
-d91138ccc fix(ci): A-42～A-47 修复三轮 CI 19 job 失败的六类根因
+365f64cb7 fix(docs,cmake): A-20～A-27 修复将删文档内错误与全仓遗留
+25f848a25 fix(ci): A-48～A-51 修复四轮 CI 11 job 失败的四类根因
 318562a78 style: OSXScreenSaver.cpp include 排序满足 clang-format（A-43 附带）
+d91138ccc fix(ci): A-42～A-47 修复三轮 CI 19 job 失败的六类根因
 dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 1e9bbe418 fix(ci): A-32～A-35 修复 CI 首跑暴露的四类问题
-7f214119e fix(ci): A-31 CodeQL/Sonar/Valgrind 容器首步补 working-directory，checkout 前不再 chdir 失败
-88aa7bcf0 fix(ci): A-30 改为 step 级 secrets 判空（job 级 if 不可用 secrets 上下文）
 ```
 
 ---
@@ -114,7 +114,7 @@ dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 ### 3.2 Phase 2 方案 (Step 1–4 已落地，Step 5–6 待实施)
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
-- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 / plan-B Phase 1）。默认仍走 legacy `TCPSocketFactory`。
+- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 / §5.4 阶段 1）。默认仍走 legacy `TCPSocketFactory`。
 - **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；方案已落地 Step 1-4，剩余步骤见第 5 节
 
 ---
@@ -139,11 +139,13 @@ dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 |------|------|
 | `.github/workflows/static-analysis.yml` | clang-tidy + cppcheck CI |
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
-| `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 23 项 Issue 追踪 |
-| `docs/consistency-audit.md` | 命名与身份一致性审计 (21 项 U-01~U-21) |
-| `docs/delivery.md` | 交付矩阵（产物、自包含程度、结构性约束） |
+| `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 问题追踪台账（A/U 条目） |
 | `docs/security.md` | 安全策略文档 |
 | `docs/HANDOFF.md` | 本文件 — 会话交接文档 |
+
+> 注：原 `docs/delivery.md`（交付矩阵）、`docs/consistency-audit.md`（U 条目审计）与两份
+> audit 报告已按 docs 清理计划删除；交付要点迁入本文件 §5.5～§5.6，结构性约束见
+> `AGENTS.md`「交付约束」，U 条目状态以追踪台账为准。
 
 ### 4.3 Phase 2 涉及文件
 | 文件 | 用途 | 操作 | 状态 |
@@ -152,7 +154,7 @@ dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 | `src/lib/net/INetworkTransport.h` | 统一传输接口 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/LegacyNetworkTransport.cpp/h` | Legacy 包装器 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/QtNetworkTransport.cpp/h` | Qt QTcpSocket 传输（完整实现） | Step 2–3 | ✅ 已完成 |
-| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15：无生产调用者，见 plan-B Phase 1） |
+| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15：无生产调用者，见 §5.4 阶段 1） |
 | `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
 | `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
 | `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换 | 待实施 |
@@ -191,15 +193,77 @@ dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 - Phase 5: 部署打包 (Week 11) — 三平台安装包
 - Phase 6: 验收交付 (Week 12) — 全维度验收
 
+### 5.4 B 计划（原 plan-B）决策与阶段状态
+
+> 原 `docs/plan-B-D1-E2-F1-G1.md` 已删除，状态迁移至此。**阶段 1~3 为数周级工程，
+> 经拍板暂不执行**；下列状态为权威记录。
+
+已锁定决策（2026-09-23）：
+
+| 代号 | 选择 | 状态 |
+|---|---|---|
+| B | Qt 默认 + Step 5 + Step 6 删除 Legacy | 阶段 1~3 暂不执行 |
+| D1 | 仅保留 synergy 图标主题（deskflow SVG 以别名并入 `synergy.qrc`） | ✅ 已完成 |
+| E2 | U-09 路径有意保留（`kUpstreamId` 供上游同步 / i18n 边界） | ✅ 已关闭（有意设计） |
+| F1 | 关闭 U-17/18/19（显示名 / i18n 耦合 / 文档化） | ✅ 已完成（`1269e7cb9`） |
+| G1 | 用户执行双机拖拽；agent 提供清单 | 清单见 §5.6，待用户执行 |
+
+阶段状态：
+
+- **阶段 0（命名/图标/文档）**: ✅ 完成 —— D1 别名折叠、U-17 显示名 `TuPig Synergy`、U-18 保持内部 deskflow 名、U-09/U-19 文档化、G1 清单迁入 §5.6。
+- **阶段 1（Qt 适配器 + 指纹 TOFU，A-15 工厂接线）**: ⏸ 暂不执行 —— `QtDataSocket`/`QtListenSocket` 适配器、TOFU 对齐、经 factory 接线 apps 并以 `USE_LEGACY_NETWORK=0` 实证后再切默认。
+- **阶段 2（默认 Qt + Step 5 智能指针）**: ⏸ 暂不执行。
+- **阶段 3（Step 6 删除 Legacy 栈）**: ⏸ 暂不执行。
+
+验证方式（恢复执行时适用）：每阶段 `scripts\build.bat release` + 单测 + 推送；G1 由用户按 §5.6 执行。
+
+### 5.5 交付验证状态与 R8 风险（自 delivery.md 迁入）
+
+**已在 Windows（Release、静态 triplet）验证：**
+
+- 构建与打包成功，便携归档（7Z）正常产出；MSI 已构建并经 Windows Installer 数据库 API 检查（File/ServiceInstall/ServiceControl 三表），**未执行实际安装**。
+- `dumpbin /DEPENDENTS` 确认不依赖 MSVC 运行库 DLL（`/MT` 静态链接，vcpkg 静态 triplet）。
+- GUI→core 握手：`gui/startCoreWithGui=true` + 服务端 `coreMode` 下，GUI 约 3 秒内拉起 `synergy-core.exe`（端到端实证 U-01 修复）。
+- 界面语言随系统区域解析（`initial language: zh_CN`）。
+- 单元测试：Release 与 AddressSanitizer 两种配置均 25/25 通过。
+
+**R8 风险（未验证，沿革）**：macOS 与 Linux 的构建、打包与运行**零实机验证** —— 无对应机器，DEB/RPM/DMG 从未产出；相关代码修复仅为代码级推理 + CI 绿（CI 的 macOS/Linux 腿是第一级证据）。结构性约束（daemon 独立、便携包排除 daemon、macOS `.app`、无自安装服务）见 `AGENTS.md`「交付约束」。
+
+**产物摘要**：Windows = 便携 7Z + MSI；macOS = 含 `.app` 的 DMG；Linux = DEB 或 RPM（依 `/etc/os-release` 二选一）+ CI Flatpak + Arch PKGBUILD；AppImage 未实现。如何产出：`scripts\build.{bat,sh} release` 后 `cmake --build build --target package`。
+
+### 5.6 G1：跨屏拖拽人工验证清单（Windows，自 delivery.md 迁入）
+
+文件传输（拖拽）各层状态：
+
+| 层 | 状态 | 已验证 |
+|---|---|---|
+| 协议（`DDRG`/`DFTR`）+ 文件名净化 | 已实现 | 单元测试 |
+| 客户端接收 + 加固落盘 | 已实现 | 单元测试 |
+| 服务端外发（`FileTransferOutbound` + 离开主屏发送） | 已实现 | 单元测试 |
+| Windows OLE `IDropTarget` + CF_HDROP 解析 | 已实现 | 解析器单测；跨屏捕获需人工验证 |
+| Windows `IDropSource`（投进本机资源管理器） | 已实现 | CF_HDROP 写入往返单测；DoDragDrop 需人工验证 |
+| macOS 拖拽剪贴板（`copyDraggedFilePaths`） | 已实现 | **否** —— 无 macOS 主机，仅静态审阅 |
+| Linux XDND / Wayland DnD | **未实现**（上游亦从未实现） | 不适用 |
+
+启用条件：`fileTransfer/enabled=true` 且 `fileTransfer/dropDirectory` 非空。
+
+人工验证步骤 —— 两台同局域网机器；一台主屏（服务端），一台客户端；同一提交构建。两端均设置上述启用条件：
+
+1. **主屏 → 客户端（IDropTarget 捕获）**：在主屏从资源管理器拖文件到共享边缘，直到光标跳到客户端。确认客户端落盘目录收到文件（文件名已净化；不覆盖已有文件）。
+2. **客户端 → 本机资源管理器（IDropSource）**：接收完成后 Synergy 在光标下发起 OLE 拖拽。投放到本机资源管理器并确认文件出现。
+3. **拖拽中按 Escape / 取消**：任一侧不得崩溃。
+4. **反例**：`fileTransfer/enabled=false` 时，按住左键离开主屏不得发送文件。
+
+将 OS、`synergy-core --version`、通过/失败记入追踪台账或本文件。
+
 ---
 
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **下次 CI**: 实证 A-28～A-41（lint 零 diff、ci-passed/report 不因 cwd 挂、s3-upload 无 secrets 时绿、CodeQL manual build 过、Linux 矩阵 Configure/Build 过（qtbase_en.qm + XWindowsConfig.h）、macOS Build 过（-z 守卫）、flatpak appstream lint 过（github 组织页 URL）、report Slack 无 secrets 时 skip）
-2. **09-24 审计 P3**（等 CI 绿）: A-20～A-25、A-27 小改分批；A-24 按已定策略执行（SPDX 保留+注释，改用户可见面）；A-15 接线并入 plan-B Phase 1
-3. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
-4. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
+1. **下次 CI**: 实证 A-12～A-13、A-28～A-51 全链路 + P3（A-20～A-27，`365f64cb7`）——lint 零 diff、ci-passed/report 不因 cwd 挂、s3/report 无 secrets 时 skip、Linux/macOS 矩阵 Configure/Build 过、flatpak lint 过、`365f64cb7` 的 CMake/REUSE 改动不炸 Configure
+2. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
+3. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
 
 ### Step 1 具体操作 ✅ 已完成
 ```
@@ -214,12 +278,11 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: CI 全绿实证 → P3 → Step 5 / B 计划 Phase 1 → G1 验证
-1. 下次 CI 实证 A-28～A-41（+ A-12/A-13/A-14 全链路）
-2. P3：A-20～A-25、A-27（A-24 策略已定；T+7）
-3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU + 工厂接线，闭合 A-15）
-4. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
-5. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / plan-B Phase 1）
+### 下一步: CI 全绿实证 → Step 5 / B 计划阶段 1 → G1 验证
+1. 下次 CI 实证 A-12～A-13、A-28～A-51 + P3（`365f64cb7`）
+2. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15；见 §5.4）
+3. Windows 跨屏拖拽人工验证（清单 §5.6：IDropTarget 捕获 + IDropSource 投放到 Explorer）
+4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / §5.4 阶段 1）
 
 ---
 
@@ -234,4 +297,4 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 
 ---
 
-> **交接完成**。Phase 0+1 与 Phase 2 Step 1–4 已完成（含 Windows IDropSource、U-10/U-13/U-15/A-10）。下一步优先 Step 5 或跨屏拖拽人工验证。
+> **交接完成**。Phase 0+1 与 Phase 2 Step 1–4 已完成（含 Windows IDropSource、U-10/U-13/U-15/A-10）；P3（A-20～A-27）已修待 CI 实证。下一步优先下次 CI 实证，或跨屏拖拽人工验证（§5.6）。

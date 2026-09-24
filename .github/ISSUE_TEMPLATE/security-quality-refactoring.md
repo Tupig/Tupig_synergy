@@ -56,12 +56,12 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 
 ### 2.3 相关审计
 
-命名与身份一致性（产品标识、打包身份、文档、CI、i18n 命名）的独立审计见 [`synergy/docs/consistency-audit.md`](../../synergy/docs/consistency-audit.md)，共 21 项 `U-01` ～ `U-21`。两套编号体系相互独立，与本清单的 23 项不重叠。
+命名与身份一致性（产品标识、打包身份、文档、CI、i18n 命名）的独立审计共 21 项 `U-01` ～ `U-21`，原文件 `synergy/docs/consistency-audit.md` 已随 docs 清理删除，全文见 git 历史（状态以本台账与 `synergy/docs/HANDOFF.md` 为准）。两套编号体系相互独立，与本清单的 23 项不重叠。
 
 ### 2.4 全面审计新发现（A-01 ～ A-11，2026-09-23）
 
 > 4 轮多角度全面审计（范围/目标/验收标准、文档对账、R1–R10 合规、源码与过程、CI 与交付）的完整报告
-> 见 [`synergy/docs/audit-2026-09-23.md`](../../synergy/docs/audit-2026-09-23.md)（双语，含证据、整改计划与验证方法）。
+> 原文见 git 历史（原 `synergy/docs/audit-2026-09-23.md`，已随 docs 清理删除）。
 > `A-nn` 与 `S/Q/P/T`、`U-nn` 相互独立，不重叠。
 
 | 编号 | 优先级 | 问题 | 核心位置 | 状态 |
@@ -81,7 +81,7 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 ### 2.5 全面审计新发现（A-12 ～ A-27，2026-09-24）
 
 > 二轮 4 路并行只读审计（回归 / R1–R10 + 文档对账 / 构建·CI·源码·交付 / Open 项深挖）的完整报告
-> 见 [`synergy/docs/audit-2026-09-24.md`](../../synergy/docs/audit-2026-09-24.md)（双语，含证据与整改计划）。
+> 原文见 git 历史（原 `synergy/docs/audit-2026-09-24.md`，已随 docs 清理删除）。
 > 基线：`main` @ `8695555be`，工作区干净。A-01～A-11 代码侧回归全部 HOLD（A-03/A-04/A-05 文档同步债见 A-18/A-19）。
 
 | 编号 | 优先级 | 问题 | 核心位置 | 状态 |
@@ -89,19 +89,19 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-12** | P1 | CI 门禁可「全绿但零构建」：lint-clang 无 `working-directory`（`find src/` 在仓库根失败）→ build 全 skip；`ci-passed` 不 needs lint 且 `skipped` 计为通过 | `.github/actions/lint-clang/action.yml:12`、`ci.yml:71,79-92` | ✅ 已修复（lint 步补 `working-directory: synergy`；`ci-passed` 纳入 `lint-clang` needs 并校验其 result；YAML 解析通过，待 CI 实证） |
 | **A-13** | P1 | build-flatpak 三处路径锚定矛盾：`uses:` 不继承 `defaults.run.working-directory`，`manifest-path: extra/...` 以 workspace 根解析 | `ci.yml:63-65,680-695` | ✅ 已修复（`manifest-path` 加 `synergy/` 前缀；Validate `working-directory: .` + 例外文件 `synergy/` 前缀；Upload 改 workspace 根；YAML 解析通过，待 CI 实证） |
 | **A-14** | P2 | `push` 只配不存在的 `beta`（main 推送不触发 CI）；`static-analysis.yml` 无调用者，clang-tidy/cppcheck 从未自动运行 | `ci.yml:33-34`、`static-analysis.yml:2,6-8` | ✅ 已修复（`push` 改 `main`；static-analysis 头注释改为如实说明仅手动/`workflow_call`，不接 ci.yml 以免首跑即挂） |
-| **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md:102` vs `plan-B:27` | ✅ 文档已对齐现实（docs-first；工厂接线仍为 plan-B Phase 1 开放项，见 HANDOFF §3.2/§4.3） |
+| **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md` §3.2 | ✅ 文档已对齐现实（docs-first；工厂接线仍为 B 计划阶段 1 开放项，见 HANDOFF §5.4，暂不执行） |
 | **A-16** | P2 | README 称文件拖拽「未实现」，与 delivery（Win/mac 已实现 + 单测）反向过期 | `README.md:42` vs `delivery.md:106-111` | ✅ 已修复（README 改为「Win/mac 已实现、Linux 从未实现」并指向 delivery 矩阵） |
 | **A-17** | P2 | README 配置示例键全不存在（`serverHost/serverPort/…`），真实键见 `Settings.h` | `README.md:166-186` vs `Settings.h:37,43,51` | ✅ 已修复（示例改为 `client/remoteHost`、`dynamicConnectionInterval` 等真实键，并区分 settings INI 与 server screens 配置） |
 | **A-18** | P2 | A-03/U-14 回归：HANDOFF 头部 commit / 最新 6 笔 / U 计数 19 vs 21 / `:6` 与 `:74`/`:185` 对 U-07/09 状态矛盾 | `docs/HANDOFF.md:5,6,74,128,185` | ✅ 已修复（登记提交已刷头部/计数/矛盾行；本轮再刷 P2 状态） |
 | **A-19** | P2 | A-04/A-05 回归：追踪变更日志缺 `d8512e321` 后 6 笔；consistency-audit 详情节与状态栏矛盾（U-07/09/10/17 等） | 追踪 §5、`consistency-audit.md:170,184,190,250-257` | ✅ 已修复（变更日志已补登；U-07/09/10/13/15/17 详情节补 Resolution 并归档 `:63`） |
-| **A-20** | P3 | GoogleTest 幽灵声明 ×7，实际为 `Qt::Test` | `README.md:151`、`build.md:27,272`、`architecture.md` ADR-0009、`contributing.md:101,430` | ⬜ 待修复 |
-| **A-21** | P3 | CMake 缺陷批：xkbfile `!` 死检查、多配置 NDEBUG 误加、`generate_app_man` 变量大小写、`PORTABLE_LIBS` 死语句、`SKIP_BUILD_TESTS` 双源、libportal/libei 版本文档不符、`build.sh:17` 残句 | `cmake/Libraries.cmake:271`、`CMakeLists.txt:320-323` 等 | ⬜ 待修复 |
-| **A-22** | P3 | 文档死链/幽灵：mingw-toolchain、`.pre-commit-config.yaml`、`bug_report.md`、security.md 无邮箱、ADR-0011 目录树、`build.md` 声称支持 `debug` 参数 | `build.md:198,437,506-507`、`contributing.md:26,102,356,431` 等 | ⬜ 待修复 |
-| **A-23** | P3 | 打包/CI 卫生：REUSE 死路径 ×4、build.md「无人消费 Flatpak」与 CI 矛盾、delivery 漏 flatpak+Arch、WiX 5/4/7 三角、Xcode 绝对路径、vcpkg `revision: master`、sonar 幽灵排除 | `REUSE.toml:20-22,36-37`、`build.md:182-186` 等 | ⬜ 待修复 |
-| **A-24** | P3 | 上游身份残留：`Synergy App Ltd` SPDX ×5、symless 下载链、AboutDialog「Deskflow」回退、`daemonName()` 上游名、manpage 上游 wiki、issue `config.yml` 全指 deskflow | 见审计报告 A-24 | 🔵 策略已定：**保留上游 SPDX 归属 + 加注释；仅改用户可见面**（AboutDialog/daemonName/manpage/config.yml → 本仓库）；待 CI 绿后执行 |
-| **A-25** | P3 | U-15 残留：metainfo `project_license` 与 flatpak SPDX 缺 OpenSSL exception | `metainfo.xml:7`、`com.tupig.synergy.yml:2` | ⬜ 待修复 |
+| **A-20** | P3 | GoogleTest 幽灵声明 ×7，实际为 `Qt::Test` | `README.md:151`、`build.md:27,272`、`architecture.md` ADR-0009、`contributing.md:101,430` | ✅ 已修复（7 处改 Qt Test + CTest；`365f64cb7`，待 CI 实证） |
+| **A-21** | P3 | CMake 缺陷批：xkbfile `!` 死检查、多配置 NDEBUG 误加、`generate_app_man` 变量大小写、`PORTABLE_LIBS` 死语句、`SKIP_BUILD_TESTS` 双源、libportal/libei 版本文档不符、`build.sh:17` 残句 | `cmake/Libraries.cmake:271`、`CMakeLists.txt:320-323` 等 | ✅ 已修复（7 项全改：`check_library_exists` 探测 + `NOT HAVE_XKBFILE`、NDEBUG 生成器表达式、`${TARGET}`、删死行、单 option 源、版本表对齐、删孤行；`365f64cb7`，待 CI 实证） |
+| **A-22** | P3 | 文档死链/幽灵：mingw-toolchain、`.pre-commit-config.yaml`、`bug_report.md`、security.md 无邮箱、ADR-0011 目录树、`build.md` 声称支持 `debug` 参数 | `build.md:198,437,506-507`、`contributing.md:26,102,356,431` 等 | ✅ 已修复（交叉编译段删、pre-commit 段改 clang-format 直用、`bug_report.yml` ×4（含 `.github/CONTRIBUTING.md`）、security 改 GitHub 私密报告、ADR-0011 树改 6 文档、脚本参数仅 `release` + 中英说明；`365f64cb7`） |
+| **A-23** | P3 | 打包/CI 卫生：REUSE 死路径 ×4、build.md「无人消费 Flatpak」与 CI 矛盾、delivery 漏 flatpak+Arch、WiX 5/4/7 三角、Xcode 绝对路径、vcpkg `revision: master`、sonar 幽灵排除 | `REUSE.toml:20-22,36-37`、`build.md:182-186` 等 | ✅ 已修复（REUSE 23 路径全实存——含补删 `welcome.png`；build.md Flatpak/WiX/包格式 EN+ZH 重写并补 Flatpak+Arch；deploy.cmake WiX 4/5.0.2 注释；ci.yml 删 Xcode 硬编码；vcpkg revision 加有意不钉注释；sonar 删幽灵排除 + 补 `extra/**`；`365f64cb7`，待 CI 实证） |
+| **A-24** | P3 | 上游身份残留：`Synergy App Ltd` SPDX ×5、symless 下载链、AboutDialog「Deskflow」回退、`daemonName()` 上游名、manpage 上游 wiki、issue `config.yml` 全指 deskflow | 见审计报告 A-24 | ✅ 已修复（按既定策略：SPDX ×5 保留 + A-24 注释；metainfo symless→Tupig；AboutDialog/daemonName×2/manpage/config.yml 全改本仓库；6 翻译 URL 批量同步；`365f64cb7`） |
+| **A-25** | P3 | U-15 残留：metainfo `project_license` 与 flatpak SPDX 缺 OpenSSL exception | `metainfo.xml:7`、`com.tupig.synergy.yml:2` | ✅ 已修复（两处补 `WITH LicenseRef-OpenSSL-Exception`；`365f64cb7`，XML 校验通过） |
 | **A-26** | P3 | A-10 追踪行过期（代码已修、状态仍「挂账」） | 本文档 §2.4 A-10 行 | ✅ 已修复（本登记提交补翻状态） |
-| **A-27** | P3 | 亮色主题缺 `places/64/user-trash`（Windows 亮色删除按钮无图标） | `synergy.qrc:90`、`synergy-light.theme:15` | ⬜ 待修复 |
+| **A-27** | P3 | 亮色主题缺 `places/64/user-trash`（Windows 亮色删除按钮无图标） | `synergy.qrc:90`、`synergy-light.theme:15` | ✅ 已修复（qrc 补 light 别名 + theme 补 Directories/[places/64] 段，镜像 dark；`365f64cb7`） |
 | **A-28** | P1 | CI 首跑（A-14 生效后）暴露：lint-clang 真实检出 105 文件 clang-format 漂移（A-12 门禁实证生效，非空转） | run `35948919314` lint artifact | ✅ 已修复（应用 CI `clang-format-diff` artifact，108 文件含 workflow/文档；本地 22.1.8 ≠ CI 20.1.0，以 CI diff 为准） |
 | **A-29** | P1 | `ci-passed`/`report`/`s3-upload` 无 Checkout 却继承 `defaults.run.working-directory: synergy`，bash 无法启动 → 三 job 必挂 | `ci.yml:63-65` vs `:69,752,710` | ✅ 已修复（三处 run 步补 `working-directory: .`；YAML 解析通过，待 CI 实证） |
 | **A-30** | P1 | `s3-upload` AWS secrets 为空（`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`），push 主干必挂 | `ci.yml:726-727`；`gh secret list` 空 | ✅ 已修复（拍板：无 secrets 时 skip；首版误用 job 级 `if` 判 secrets 导致 workflow 0s 解析失败，改为首步 check + 后续 step 级 `if`；YAML 解析通过，待 CI 实证） |
@@ -307,6 +307,8 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-24 | 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，登记并修复 A-36～A-41：qtbase_en.qm 搜不到 + 缺翻译包；macOS ld 拒 GNU -z；XWindowsConfig.h 生成目录不在 include path；tupig.com TLS 仍挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 skip | opencode |
 | 2026-09-24 | 三轮 CI（`35957542966`）暴露 6 类 19 job 挂（10 job 绿），登记并修复 A-42～A-47：aarch64 误开 AVX2；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退 + BUILD_TESTS=OFF + qtbase5-dev；rocky QSslServer 无 Qt6 守卫；flatpak Lint manifest 未传 exceptions | opencode |
 | 2026-09-24 | 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，登记并修复 A-48～A-51：AppUtilUnix `<platform/OSXAutoTypes.h>` 错；Qt5 `sslErrors`/`errorOccurred`/`QLocalSocket::error` 重载与 5.15 信号守卫；`QSettingsProxy.h`/`Settings.h` 缺 `<memory>`；debian-13 Qt5 误选（OpenGL 缺失）+ unittests 硬 find_package(Qt6) 碰 ALIAS —— debian 补 OpenGL 包、BUILD_TESTS 门控 Qt6、unittests 加注释 | opencode |
+| 2026-09-24 | P3 关闭 A-20～A-27（`365f64cb7`，待 CI 实证）：GoogleTest 幽灵 ×7；CMake 批 7 项；文档死链批（含 `.github/CONTRIBUTING.md` 的 `bug_report.yml`）；REUSE/Sonar/Flatpak/WiX/Xcode/vcpkg 卫生；上游身份用户可见面 + SPDX A-24 注释；metainfo/Flatpak 许可补 OpenSSL exception；light 回收站图标 | opencode |
+| 2026-09-24 | docs 清理：`synergy/docs` 收敛为 HANDOFF/build/configuration/protocol/security/troubleshooting 六文件；G1 拖拽清单 + 交付验证/R8 + B 计划阶段状态迁入 HANDOFF §5.4～§5.6；删除 architecture/contributing/delivery/consistency-audit/两份 audit/plan-B；AGENTS、`.github/CONTRIBUTING.md`、本台账引用同步 | opencode |
 
 ---
 

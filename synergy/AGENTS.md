@@ -3,11 +3,10 @@
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
 > 本文件是本仓库对**所有 AI 协作代理与贡献者**的统一约束。与 `docs/HANDOFF.md`（会话交接）、
-> `docs/consistency-audit.md`（一致性审计）、`../.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
-> （问题追踪）配套使用。
+> `../.github/ISSUE_TEMPLATE/security-quality-refactoring.md`（问题追踪）配套使用。
 >
 > This file defines the binding rules for **all AI agents and contributors** working in this
-> repository. It complements `docs/HANDOFF.md`, `docs/consistency-audit.md` and the issue tracker.
+> repository. It complements `docs/HANDOFF.md` and the issue tracker.
 
 ---
 
@@ -79,7 +78,8 @@ release builds and for every local build. The exception carries three requiremen
 
 ### Delivery constraints — do not "fix" these
 
-`docs/delivery.md` is the authoritative matrix. The following are deliberate, not defects:
+This section is the authoritative list (verification status lives in `docs/HANDOFF.md` §5.5).
+The following are deliberate, not defects:
 
 - **`synergy-daemon.exe` must stay a separate process.** It runs as a Windows service (session 0) and
   duplicates `winlogon.exe` / `logonui.exe` tokens to start the core on the secure desktop. Folding it
@@ -180,7 +180,7 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
 
 ### 交付约束 —— 不要把这些当缺陷「修复」
 
-`docs/delivery.md` 是权威的产物矩阵。以下均为**有意设计**，不是缺陷：
+本节即权威清单（验证状态见 `docs/HANDOFF.md` §5.5）。以下均为**有意设计**，不是缺陷：
 
 - **`synergy-daemon.exe` 必须保持独立进程。** 它以 Windows 服务（会话 0）运行，通过复制
   `winlogon.exe` / `logonui.exe` 令牌把 core 启动到安全桌面。若合并进 GUI，会静默失去 UAC 提示与
