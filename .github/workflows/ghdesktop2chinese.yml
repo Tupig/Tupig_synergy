@@ -1,13 +1,13 @@
 # GitHubDesktop2Chinese 统一 CI/CD 工作流
 # 一个工作流完成：自动构建、安全与质量检查、失效检测/候选提取、Release 发布。
 #
-# 自动触发：
-#   - push / PR 涉及 GitHubDesktop2Chinese/** 变更 → 构建 + 安全质量 + 自动维护
-#   - 每周一 01:00 UTC → 构建 + 安全质量 + 自动维护
+# 触发：
+#   - PR 涉及 GitHubDesktop2Chinese/** 变更 → 构建 + 安全质量 + 自动维护
 #   - 推送 tag ghdesktop2chinese-v* → 构建并发布 Release
-# 手动触发：
-#   - 输入 type 选择执行子集（auto / build / security / maintain / release）
-#   - type=release 时需输入 version
+#   - 手动触发（type 选择执行子集）→ 全部功能
+#
+# 说明：私有仓库 GitHub Actions 按分钟/带宽计费，因此移除定时自动运行，
+# 全部改为手动触发，避免自动消耗付费额度。
 
 name: GitHubDesktop2Chinese
 
@@ -18,8 +18,6 @@ on:
   push:
     tags:
       - "ghdesktop2chinese-v*"
-  schedule:
-    - cron: "0 1 * * 1" # 每周一 01:00 UTC 自动运行
   workflow_dispatch:
     inputs:
       type:
@@ -55,14 +53,13 @@ env:
 jobs:
   # ─────────────────────────────────────────────
   # 1. 构建 x64 + x86
-  # 触发：tag / PR / 每周一 / 手动(auto/build/release)
+  # 触发：tag / PR / 手动(auto/build/release)
   # ─────────────────────────────────────────────
   build:
     name: 构建 (x64 + x86)
     if: |
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v')) ||
       github.event_name == 'pull_request' ||
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'build' || inputs.type == 'release'))
     runs-on: windows-latest
     strategy:
@@ -131,7 +128,6 @@ jobs:
     name: localization.json 质量校验
     if: |
       github.event_name == 'pull_request' ||
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'release'))
     runs-on: ubuntu-latest
     steps:
@@ -207,7 +203,6 @@ jobs:
     name: 自动维护工具自检
     if: |
       github.event_name == 'pull_request' ||
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'maintain'))
     runs-on: ubuntu-latest
     steps:
@@ -253,7 +248,6 @@ jobs:
     name: CodeQL 安全扫描
     if: |
       github.event_name == 'pull_request' ||
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security'))
     runs-on: windows-latest
     steps:
@@ -288,7 +282,6 @@ jobs:
   auto-maintain:
     name: 失效检测 + 未翻译候选提取
     if: |
-      github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'maintain'))
     runs-on: ubuntu-latest
     steps:
