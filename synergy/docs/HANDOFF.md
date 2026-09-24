@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: A-52～A-56 修复（五/六轮 CI 根因批；台账与本 HANDOFF 随笔提交 —— hash 见 `git log`）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51、五轮+六轮 A-52～A-56 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退；A-52 为 A-21 xkbfile 探测回归收口）；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证；docs 已收敛六文件（`3f140c029`）
+> **最新 Commit**: `2539f1932`（A-52～A-56 修复五/六轮 CI 根因批；台账与本 HANDOFF 随笔提交）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51、五轮+六轮 A-52～A-56 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退；A-52 为 A-21 xkbfile 探测回归收口）；P3（A-20～A-27）已修（`365f64cb7`）待 CI 实证；docs 已收敛六文件（`3f140c029`）；A-57 已隔离 synergy/ghdesktop2chinese 触发；**当前 GitHub Actions billing 失败（付款/额度），全 job `runner_id:0` 秒挂，须先恢复 Billing 才能实证**
 
 ---
 
@@ -88,6 +88,8 @@
 - [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48～A-51 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
 - [x] 五轮 CI（`35964563457`，commit `25f848a25`）7 job 挂（macOS×2 dyld、debian-13-x86_64 测试目录、debian-12×2 `<optional>`、ubuntu-24.04×2 format、ci-passed 级联）；六轮 CI（`35970799694`，commit `3f140c029`）23 job 挂 —— 主因 A-21 xkbfile 探测符号错（`XkbGetKeyboard` 在 libX11）致 UNIX X11 腿 Configure 全灭 + CodeQL；macOS dyld 未愈；flatpak×2 上游 libei 503（瞬态）。已修 A-52～A-56：`find_library` xkbfile；`CoreProcess.h` `<optional>`；`qFatal` `qlonglong` + 拼写；run-tests 缺目录跳过 + `Qt6_DIR` 诊断；`QT_IS_SHARED` 补 `.framework/` — **待 CI 实证；flatpak 需重跑**
 - [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）；docs 收敛六文件（`3f140c029`）
+- [x] A-57 已修：`ci.yml` push/PR 增加 `synergy/**` 等路径过滤，与 `ghdesktop2chinese.yml` 触发隔离（两工作流本体本无交叉）— 待 CI 实证
+- [x] **阻断**：五/六轮后所有 run job `runner_id:0`、`steps:[]`、日志空 — check annotation 实证 *「recent account payments have failed or your spending limit needs to be increased」*（GitHub Actions billing）。**A-52～A-57 均无法 CI 实证，须先在 GitHub Settings → Billing & plans 恢复**
 
 ### main 分支提交记录 (最新 6 个)
 ```

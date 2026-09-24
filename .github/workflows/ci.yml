@@ -30,9 +30,19 @@ on:
           - windows
           - macos
           - linux
+  # Path filters keep synergy CI independent of sibling projects
+  # (GitHubDesktop2Chinese has its own ghdesktop2chinese.yml workflow).
   push:
     branches: [main]
+    paths:
+      - "synergy/**"
+      - ".github/workflows/ci.yml"
+      - ".github/actions/**"
   pull_request:
+    paths:
+      - "synergy/**"
+      - ".github/workflows/ci.yml"
+      - ".github/actions/**"
   release:
     types: [published]
   schedule:
