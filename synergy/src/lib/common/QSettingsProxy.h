@@ -8,6 +8,8 @@
 
 #include <QSettings>
 
+#include <memory>
+
 QString getSystemSettingBaseDir();
 
 class QSettingsProxy

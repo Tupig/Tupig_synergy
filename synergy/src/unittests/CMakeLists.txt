@@ -75,6 +75,9 @@ function(create_test)
 endfunction()
 
 enable_testing()
+# Only reached when the parent gated on QT_VERSION_MAJOR==6 (src/CMakeLists.txt).
+# Do not hardcode a second find_package(Qt6) here without that gate: on Qt5
+# fallback builds the Qt6::* ALIAS targets make this fail in Qt6CoreTargets.cmake.
 find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Test)
 
 add_subdirectory(base)

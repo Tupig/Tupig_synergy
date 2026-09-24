@@ -14,6 +14,16 @@
 
 namespace deskflow::gui::ipc {
 
+// QLocalSocket::errorOccurred was added in Qt 5.15; the pre-5.15 signal is
+// error(QLocalSocket::LocalSocketError), which is overloaded against the
+// error() const getter — qOverload disambiguates. Resolve once so the connect
+// sites stay readable. With QT_NO_KEYWORDS both spellings are plain pointers.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+static const auto kLocalSocketError = &QLocalSocket::errorOccurred;
+#else
+static const auto kLocalSocketError = qOverload<QLocalSocket::LocalSocketError>(&QLocalSocket::error);
+#endif
+
 IpcClient::IpcClient(QObject *parent, const QString &socketName, const QString &typeName)
     : QObject(parent),
       m_socket{new QLocalSocket(this)},
@@ -21,7 +31,7 @@ IpcClient::IpcClient(QObject *parent, const QString &socketName, const QString &
       m_typeName(typeName)
 {
   connect(m_socket, &QLocalSocket::disconnected, this, &IpcClient::handleDisconnected);
-  connect(m_socket, &QLocalSocket::errorOccurred, this, &IpcClient::handleErrorOccurred);
+  connect(m_socket, kLocalSocketError, this, &IpcClient::handleErrorOccurred);
   connect(m_socket, &QLocalSocket::readyRead, this, &IpcClient::handleReadyRead);
 }
 
@@ -86,10 +96,10 @@ void IpcClient::attemptConnection()
   );
 
   connect(
-      m_socket, &QLocalSocket::errorOccurred, this,
+      m_socket, kLocalSocketError, this,
       [this] {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        disconnect(m_socket, &QLocalSocket::errorOccurred, this, nullptr);
+        disconnect(m_socket, kLocalSocketError, this, nullptr);
 #endif
         qWarning().noquote(
         ) << QStringLiteral("%1 ipc client failed to connect: %2").arg(m_typeName, m_socket->errorString());

@@ -14,6 +14,14 @@
 
 namespace deskflow::core::ipc {
 
+// QLocalSocket::errorOccurred was added in Qt 5.15; pre-5.15 uses error(),
+// which is overloaded against the error() const getter — qOverload disambiguates.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+static const auto kLocalSocketError = &QLocalSocket::errorOccurred;
+#else
+static const auto kLocalSocketError = qOverload<QLocalSocket::LocalSocketError>(&QLocalSocket::error);
+#endif
+
 IpcServer::IpcServer(QObject *parent, const QString &serverName, const QString &typeName)
     : QObject(parent),
       m_server{new QLocalServer(this)}, // NOSONAR - Qt memory
@@ -55,7 +63,7 @@ void IpcServer::handleNewConnection()
 
   connect(clientSocket, &QLocalSocket::readyRead, this, &IpcServer::handleReadyRead);
   connect(clientSocket, &QLocalSocket::disconnected, this, &IpcServer::handleDisconnected);
-  connect(clientSocket, &QLocalSocket::errorOccurred, this, &IpcServer::handleErrorOccurred);
+  connect(clientSocket, kLocalSocketError, this, &IpcServer::handleErrorOccurred);
 }
 
 void IpcServer::handleReadyRead()

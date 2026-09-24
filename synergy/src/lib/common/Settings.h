@@ -11,6 +11,8 @@
 
 #include <QDir>
 
+#include <memory>
+
 #include "common/Constants.h"
 #include "common/QSettingsProxy.h"
 

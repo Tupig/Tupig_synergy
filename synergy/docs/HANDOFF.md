@@ -2,8 +2,8 @@
 
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `dcd1b1cae`（A-42～A-47 修复随下笔提交）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）等 CI 绿
+> **最新 Commit**: `318562a78`（A-48～A-51 修复随下笔提交）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 P1（A-12/A-13）+ P2（A-14～A-19）已改；CI 首跑暴露 A-28～A-35、二轮 A-36～A-41、三轮 A-42～A-47、四轮 A-48～A-51 均已修（A-30/A-41 拍板：无 secrets 时 skip；A-39 homepage 改 github 组织页；A-45 拍板：debian-12/ubuntu-24.04 走 Qt5 回退）；P3（A-20～A-27）等 CI 绿
 
 ---
 
@@ -84,16 +84,18 @@
 - [x] A-31 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
 - [x] A-32～A-35 已修（Linux 矩阵首步 cwd 同 A-31 根因；macOS GUI target 名空格 + 五处 TARGET_BUNDLE 同步；CodeQL autobuild 双项目歧义改 manual；metainfo homepage 私仓 404 改公开 URL）— 待下次 CI 实证
 - [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
-- [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — 待下次 CI 实证
+- [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — **四轮已实证大部分腿绿（windows/flatpak/fedora/opensuse/archlinux/ubuntu-26.04/lint/get-version/s3/report）**
+- [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48～A-51 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
 - [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
 
 ### main 分支提交记录 (最新 6 个)
 ```
+d91138ccc fix(ci): A-42～A-47 修复三轮 CI 19 job 失败的六类根因
+318562a78 style: OSXScreenSaver.cpp include 排序满足 clang-format（A-43 附带）
 dcd1b1cae fix(ci): A-36～A-41 修复二轮 CI 26 job 失败的六类根因
 1e9bbe418 fix(ci): A-32～A-35 修复 CI 首跑暴露的四类问题
 7f214119e fix(ci): A-31 CodeQL/Sonar/Valgrind 容器首步补 working-directory，checkout 前不再 chdir 失败
 88aa7bcf0 fix(ci): A-30 改为 step 级 secrets 判空（job 级 if 不可用 secrets 上下文）
-19b69fb54 docs: A-30 拍板关闭（无 secrets 时 skip），同步 HANDOFF 与追踪台账
 ```
 
 ---

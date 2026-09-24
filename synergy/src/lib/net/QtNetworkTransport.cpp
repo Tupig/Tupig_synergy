@@ -135,7 +135,10 @@ void QtNetworkTransport::connectSignals()
 
   if (auto *ssl = qobject_cast<QSslSocket *>(m_socket)) {
     QObject::connect(ssl, &QSslSocket::encrypted, this, &QtNetworkTransport::onConnected);
-    QObject::connect(ssl, &QSslSocket::sslErrors, this, &QtNetworkTransport::onSslErrors);
+    // Qt5: sslErrors is both a signal and a const getter — qOverload disambiguates.
+    QObject::connect(
+        ssl, qOverload<const QList<QSslError> &>(&QSslSocket::sslErrors), this, &QtNetworkTransport::onSslErrors
+    );
   } else {
     QObject::connect(m_socket, &QTcpSocket::connected, this, &QtNetworkTransport::onConnected);
   }
@@ -143,7 +146,15 @@ void QtNetworkTransport::connectSignals()
   QObject::connect(m_socket, &QTcpSocket::disconnected, this, &QtNetworkTransport::onDisconnected);
   QObject::connect(m_socket, &QTcpSocket::readyRead, this, &QtNetworkTransport::onReadyRead);
   QObject::connect(m_socket, &QTcpSocket::bytesWritten, this, &QtNetworkTransport::onBytesWritten);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
   QObject::connect(m_socket, &QTcpSocket::errorOccurred, this, &QtNetworkTransport::onErrorOccurred);
+#else
+  // errorOccurred was added in 5.15; Qt 5.13 (RHEL 8 floor) still uses error().
+  QObject::connect(
+      m_socket, static_cast<void (QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error), this,
+      &QtNetworkTransport::onErrorOccurred
+  );
+#endif
 }
 
 QtNetworkTransport::~QtNetworkTransport()
