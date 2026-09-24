@@ -81,6 +81,7 @@
 - [x] CI 首跑（`35948919314`）：A-14 push→main 触发生效；A-12 lint 实证生效（检出 105 文件漂移）；新发现 A-28～A-30 登记
 - [x] A-28 格式已修（应用 CI clang-format-diff，105 源文件）；A-29 已修（ci-passed/report/s3-upload 补 `working-directory: .`）— 待下次 CI 实证
 - [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
+- [x] A-31 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
 - [ ] 待整改：P3 = A-20～A-27 —— **等 CI 绿后启动**；A-24 策略已拍板（保留上游 SPDX 归属+注释，仅改用户可见面）；A-15 工厂接线并入 plan-B Phase 1
 
 ### main 分支提交记录 (最新 6 个)
@@ -191,7 +192,7 @@ c41dadfe5 style: 应用 CI clang-format 20.1.0 修复 lint 门禁检出的 105 �
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **下次 CI**: 实证 A-28/A-29/A-30（lint 应零 diff、ci-passed/report 不再因 cwd 挂、s3-upload 无 secrets 时显示 skipped）
+1. **下次 CI**: 实证 A-28～A-31（lint 零 diff、ci-passed/report 不因 cwd 挂、s3-upload 无 secrets 时绿、CodeQL 容器首步过 chdir）
 2. **09-24 审计 P3**（等 CI 绿）: A-20～A-25、A-27 小改分批；A-24 按已定策略执行（SPDX 保留+注释，改用户可见面）；A-15 接线并入 plan-B Phase 1
 3. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
 4. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
@@ -210,7 +211,7 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 接口文档完整
 
 ### 下一步: CI 全绿实证 → P3 → Step 5 / B 计划 Phase 1 → G1 验证
-1. 下次 CI 实证 A-28/A-29/A-30（+ A-12/A-13/A-14 全链路）
+1. 下次 CI 实证 A-28～A-31（+ A-12/A-13/A-14 全链路）
 2. P3：A-20～A-25、A-27（A-24 策略已定；T+7）
 3. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU + 工厂接线，闭合 A-15）
 4. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）

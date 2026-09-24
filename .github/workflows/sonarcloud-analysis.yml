@@ -47,7 +47,10 @@ jobs:
       CPU_CORE_COUNT: 4
 
     steps:
+      # Pre-checkout: synergy/ does not exist yet; override workflow cwd or
+      # the container fails chdir before Fancy Checkout runs.
       - name: Install container dependencies
+        working-directory: .
         run: |
           apt update -qqq > /dev/null
           apt install -qqq git curl unzip gcovr dirmngr gpg > /dev/null
