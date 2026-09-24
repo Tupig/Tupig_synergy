@@ -7,6 +7,7 @@
 #   - 推送 tag ghdesktop2chinese-v* → 构建并发布 Release
 # 手动触发：
 #   - 输入 type 选择执行子集（auto / build / security / maintain / release）
+#   - type=release 时需输入 version
 
 name: GitHubDesktop2Chinese
 
@@ -15,11 +16,10 @@ on:
     paths:
       - "GitHubDesktop2Chinese/**"
   push:
-    branches: [main]
     tags:
       - "ghdesktop2chinese-v*"
   schedule:
-    - cron: "0 1 * * 1" # 每周一 01:00 UTC
+    - cron: "0 1 * * 1" # 每周一 01:00 UTC 自动运行
   workflow_dispatch:
     inputs:
       type:
@@ -39,7 +39,7 @@ on:
         type: string
 
 concurrency:
-  group: ghdesktop2chinese
+  group: ghdesktop2chinese-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -54,42 +54,13 @@ env:
 
 jobs:
   # ─────────────────────────────────────────────
-  # 0. 变更检测：判断本次 push 是否涉及 GitHubDesktop2Chinese
-  # ─────────────────────────────────────────────
-  changes:
-    name: 检测变更范围
-    runs-on: ubuntu-latest
-    outputs:
-      relevant: ${{ steps.filter.outputs.relevant || steps.fallback.outputs.relevant }}
-    steps:
-      - name: 非 push/PR 事件直接标记相关
-        if: |
-          github.event_name == 'schedule' ||
-          github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v'))
-        id: fallback
-        run: echo "relevant=true" >> "$GITHUB_OUTPUT"
-
-      - name: push/PR 检测变更
-        if: |
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v'))
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            relevant:
-              - 'GitHubDesktop2Chinese/**'
-              - '.github/workflows/ghdesktop2chinese.yml'
-
-  # ─────────────────────────────────────────────
-  # 1. 构建 x64 + x86（push/PR/定时/手动/tag）
+  # 1. 构建 x64 + x86
+  # 触发：tag / PR / 每周一 / 手动(auto/build/release)
   # ─────────────────────────────────────────────
   build:
     name: 构建 (x64 + x86)
-    needs: changes
     if: |
-      (github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v') || needs.changes.outputs.relevant == 'true')) ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/ghdesktop2chinese-v')) ||
       github.event_name == 'pull_request' ||
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'build' || inputs.type == 'release'))
@@ -154,13 +125,11 @@ jobs:
             ${{ matrix.arch == 'x64' && 'build/Release/GitHubDesktop2Chinese.exe' || 'build32/Release/GitHubDesktop2Chinese_x86.exe' }}
 
   # ─────────────────────────────────────────────
-  # 2. 安全与质量（push/PR/定时/手动/发布前）
+  # 2. localization.json 质量校验
   # ─────────────────────────────────────────────
   json-quality:
     name: localization.json 质量校验
-    needs: changes
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
       github.event_name == 'pull_request' ||
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'release'))
@@ -231,11 +200,12 @@ jobs:
           print("\n✅ localization.json 质量校验通过")
           PY
 
+  # ─────────────────────────────────────────────
+  # 3. 自动维护工具自检（语法 + 单元测试）
+  # ─────────────────────────────────────────────
   tools-test:
     name: 自动维护工具自检
-    needs: changes
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
       github.event_name == 'pull_request' ||
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security' || inputs.type == 'maintain'))
@@ -276,11 +246,12 @@ jobs:
           console.log('单元测试通过:', pass, '/', cases.length);
           "
 
+  # ─────────────────────────────────────────────
+  # 4. CodeQL 安全扫描
+  # ─────────────────────────────────────────────
   codeql:
     name: CodeQL 安全扫描
-    needs: changes
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
       github.event_name == 'pull_request' ||
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'security'))
@@ -312,13 +283,11 @@ jobs:
           category: "/language:c-cpp"
 
   # ─────────────────────────────────────────────
-  # 3. 自动维护（失效检测 + 候选提取，push/定时/手动）
+  # 5. 自动维护（失效检测 + 候选提取，创建 Issue）
   # ─────────────────────────────────────────────
   auto-maintain:
     name: 失效检测 + 未翻译候选提取
-    needs: changes
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.relevant == 'true') ||
       github.event_name == 'schedule' ||
       (github.event_name == 'workflow_dispatch' && (inputs.type == 'auto' || inputs.type == 'maintain'))
     runs-on: ubuntu-latest
@@ -431,7 +400,8 @@ jobs:
             }
 
   # ─────────────────────────────────────────────
-  # 4. 发布 Release（tag ghdesktop2chinese-v* 或手动）
+  # 6. 发布 Release（tag ghdesktop2chinese-v* 或手动 type=release）
+  # 依赖 build（需其产物），仅发布不重复构建
   # ─────────────────────────────────────────────
   release:
     name: 发布 Release
@@ -467,7 +437,6 @@ jobs:
         with:
           name: GitHubDesktop2Chinese-x64-${{ github.sha }}
           path: release/
-          # 下载 x64 产物；x86 通过第二次下载合并
 
       - name: 下载 x86 产物
         uses: actions/download-artifact@v4
