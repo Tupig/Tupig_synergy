@@ -197,7 +197,7 @@ autoConnect = true
 | [configuration.md](docs/configuration.md) | Configuration Reference / 配置参考 |
 | [architecture.md](docs/architecture.md) | Architecture Decision Records / 架构决策记录 |
 | [delivery.md](docs/delivery.md) | Delivery Matrix / 交付矩阵 (artifacts, self-containment, constraints) |
-| [consistency-audit.md](docs/consistency-audit.md) | Consistency Audit / 一致性审计 (U-01 ~ U-19) |
+| [consistency-audit.md](docs/consistency-audit.md) | Consistency Audit / 一致性审计 (U-01 ~ U-21) |
 | [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查 |
 | [security.md](docs/security.md) | Security Policy / 安全策略 |
 

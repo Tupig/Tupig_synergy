@@ -2,9 +2,9 @@
 
 > **Issue 类型**: Security / Quality  
 > **优先级**: P0  
-> **分支**: `refactor/security-baseline`  
+> **分支**: `refactor/security-baseline`（历史名；现仅 `main`）  
 > **创建日期**: 2026-09-18  
-> **最后更新**: 2026-09-23  
+> **最后更新**: 2026-09-24  
 > **状态**: 🔄 进行中
 
 ---
@@ -75,8 +75,33 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-07** | P3 | README 标题非双语；README/setup.bat 入口指引与 AGENTS「两个入口」表述不一致 | `README.md:1,97-108`、`setup.bat:125-127` | ✅ 已修复 |
 | **A-08** | P3 | 注释与代码相反：`gui-electron` 幽灵路径、`./VERSION` 不存在、「space-free」不实（U-08 新增实例） | `extra/cmake/Synergy.cmake:17-18,30-31,66` | ✅ 已修复 |
 | **A-09** | P2 | 未提交 WIP：3 改 + 2 个 untracked 源文件（Windows 拖拽第 2 步），有丢失风险 | `git status --porcelain` | ✅ 已修复（WIP 已随 `fe1f4fe37`/`91960506f`/`e922e1639` 提交，工作区无源码残留） |
-| **A-10** | P3 | `IDataSocket` 契约 `assert(0)` 残留（观察项，暂不修） | `src/lib/net/IDataSocket.cpp:19,25` | 👀 挂账 |
+| **A-10** | P3 | `IDataSocket` 契约 `assert(0)` 残留（观察项，暂不修） | `src/lib/net/IDataSocket.cpp:19,25` | ✅ 已修复（`cbd2baf39` 改为抛 `SocketException`；2026-09-24 复核 `rg assert\(0\)` 零命中，补翻状态） |
 | **A-11** | P3 | 本文档 §2.3 相对链接指向不存在的根 `docs/` | 本文档 §2.3 | ✅ 已修复（本节登记时改为 `synergy/docs/`） |
+
+### 2.5 全面审计新发现（A-12 ～ A-27，2026-09-24）
+
+> 二轮 4 路并行只读审计（回归 / R1–R10 + 文档对账 / 构建·CI·源码·交付 / Open 项深挖）的完整报告
+> 见 [`synergy/docs/audit-2026-09-24.md`](../../synergy/docs/audit-2026-09-24.md)（双语，含证据与整改计划）。
+> 基线：`main` @ `8695555be`，工作区干净。A-01～A-11 代码侧回归全部 HOLD（A-03/A-04/A-05 文档同步债见 A-18/A-19）。
+
+| 编号 | 优先级 | 问题 | 核心位置 | 状态 |
+|------|--------|------|----------|------|
+| **A-12** | P1 | CI 门禁可「全绿但零构建」：lint-clang 无 `working-directory`（`find src/` 在仓库根失败）→ build 全 skip；`ci-passed` 不 needs lint 且 `skipped` 计为通过 | `.github/actions/lint-clang/action.yml:12`、`ci.yml:71,79-92` | ⬜ 待修复 |
+| **A-13** | P1 | build-flatpak 三处路径锚定矛盾：`uses:` 不继承 `defaults.run.working-directory`，`manifest-path: extra/...` 以 workspace 根解析 | `ci.yml:63-65,680-695` | ⬜ 待修复 |
+| **A-14** | P2 | `push` 只配不存在的 `beta`（main 推送不触发 CI）；`static-analysis.yml` 无调用者，clang-tidy/cppcheck 从未自动运行 | `ci.yml:33-34`、`static-analysis.yml:2,6-8` | ⬜ 待修复 |
+| **A-15** | P2 | `NetworkTransportFactory` 无生产调用者；HANDOFF 宣称的 3 级回滚落空（`USE_LEGACY_NETWORK` 只在未接线工厂内读取；CMake `LEGACY_NETWORK` 不存在） | `NetworkTransportFactory.cpp:32-41`、`HANDOFF.md:102` vs `plan-B:27` | ⬜ 待修复（先改文档或接线二选一） |
+| **A-16** | P2 | README 称文件拖拽「未实现」，与 delivery（Win/mac 已实现 + 单测）反向过期 | `README.md:42` vs `delivery.md:106-111` | ⬜ 待修复 |
+| **A-17** | P2 | README 配置示例键全不存在（`serverHost/serverPort/…`），真实键见 `Settings.h` | `README.md:166-186` vs `Settings.h:37,43,51` | ⬜ 待修复 |
+| **A-18** | P2 | A-03/U-14 回归：HANDOFF 头部 commit / 最新 6 笔 / U 计数 19 vs 21 / `:6` 与 `:74`/`:185` 对 U-07/09 状态矛盾 | `docs/HANDOFF.md:5,6,74,128,185` | 🔄 本登记提交同步刷新头部与矛盾行 |
+| **A-19** | P2 | A-04/A-05 回归：追踪变更日志缺 `d8512e321` 后 6 笔；consistency-audit 详情节与状态栏矛盾（U-07/09/10/17 等） | 追踪 §5、`consistency-audit.md:170,184,190,250-257` | 🔄 变更日志本提交补登；详情节待补 |
+| **A-20** | P3 | GoogleTest 幽灵声明 ×7，实际为 `Qt::Test` | `README.md:151`、`build.md:27,272`、`architecture.md` ADR-0009、`contributing.md:101,430` | ⬜ 待修复 |
+| **A-21** | P3 | CMake 缺陷批：xkbfile `!` 死检查、多配置 NDEBUG 误加、`generate_app_man` 变量大小写、`PORTABLE_LIBS` 死语句、`SKIP_BUILD_TESTS` 双源、libportal/libei 版本文档不符、`build.sh:17` 残句 | `cmake/Libraries.cmake:271`、`CMakeLists.txt:320-323` 等 | ⬜ 待修复 |
+| **A-22** | P3 | 文档死链/幽灵：mingw-toolchain、`.pre-commit-config.yaml`、`bug_report.md`、security.md 无邮箱、ADR-0011 目录树、`build.md` 声称支持 `debug` 参数 | `build.md:198,437,506-507`、`contributing.md:26,102,356,431` 等 | ⬜ 待修复 |
+| **A-23** | P3 | 打包/CI 卫生：REUSE 死路径 ×4、build.md「无人消费 Flatpak」与 CI 矛盾、delivery 漏 flatpak+Arch、WiX 5/4/7 三角、Xcode 绝对路径、vcpkg `revision: master`、sonar 幽灵排除 | `REUSE.toml:20-22,36-37`、`build.md:182-186` 等 | ⬜ 待修复 |
+| **A-24** | P3 | 上游身份残留：`Synergy App Ltd` SPDX ×5、symless 下载链、AboutDialog「Deskflow」回退、`daemonName()` 上游名、manpage 上游 wiki、issue `config.yml` 全指 deskflow | 见审计报告 A-24 | ⬜ 待修复（版权策略需 Dev 一次拍板） |
+| **A-25** | P3 | U-15 残留：metainfo `project_license` 与 flatpak SPDX 缺 OpenSSL exception | `metainfo.xml:7`、`com.tupig.synergy.yml:2` | ⬜ 待修复 |
+| **A-26** | P3 | A-10 追踪行过期（代码已修、状态仍「挂账」） | 本文档 §2.4 A-10 行 | ✅ 已修复（本登记提交补翻状态） |
+| **A-27** | P3 | 亮色主题缺 `places/64/user-trash`（Windows 亮色删除按钮无图标） | `synergy.qrc:90`、`synergy-light.theme:15` | ⬜ 待修复 |
 
 ---
 
@@ -243,6 +268,12 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-23 | 待补登其余历史细节若有遗漏，以 `git log --since=2026-09-22` 为准（A-04 主路径已闭合） | Cursor |
 | 2026-09-23 | A-09 关闭：原未提交 WIP 已随 `fe1f4fe37`（Windows IDropTarget）、`91960506f`（Outbound 发送）、`e922e1639`（macOS 路径读取）提交，`git status --porcelain` 仅剩本文档与审计报告 | opencode |
 | 2026-09-23 | U-03 关闭：删除 org.deskflow 打包残留 4 文件（`deploy/linux/org.deskflow.{desktop,metainfo.xml,png}`、`flatpak/org.deskflow.deskflow.yml`）及孤儿 lint 伴随 json（唯一 key 即被删清单 app-id）；REUSE.toml/build.md/flatpak yml 注释同步，身份统一 `com.tupig.synergy` | opencode |
+| 2026-09-23 | A-05/A-07 关闭：台账状态对齐 + README 双语标题与入口指引（`72734ba05`） | opencode |
+| 2026-09-23 | A-03/U-14 关闭：HANDOFF 对齐 Step 定义与头部（`d8512e321`） | opencode |
+| 2026-09-23 | A-10/U-10/U-13/U-15 关闭：IDataSocket 抛异常、许可与版本真源统一、metainfo 供应商改 TuPig、CI 增版本比对（`cbd2baf39`） | opencode |
+| 2026-09-23 | U-07/U-17/U-18/U-19 关闭、U-09 文档化：D1 单图标主题、显示名统一、i18n 加固、overlay 有意设计；plan-B 落盘；拖拽 G1 清单入 delivery（`1269e7cb9`） | opencode |
+| 2026-09-23 | Phase 2：Windows IDropSource（`587415ef1`）、Qt QSslSocket/QSslServer Step 4（`c8a5fae8c`）、EventQueue 泵入 Qt（`ea01a602a`）、B 计划进度同步（`8695555be`） | opencode |
+| 2026-09-24 | 二轮全面审计（4 路并行）：报告落盘 `synergy/docs/audit-2026-09-24.md`；新发现 A-12～A-27 登记 §2.5；A-10 状态补翻；A-18/A-19 登记并随本提交刷新 HANDOFF 头部与本变更日志 | opencode |
 
 ---
 

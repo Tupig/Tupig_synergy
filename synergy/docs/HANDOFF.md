@@ -1,9 +1,9 @@
 # HANDOFF — TuPig Synergy 代码库优化重构
 
-> **最后更新**: 2026-09-23
+> **最后更新**: 2026-09-24
 > **当前分支**: `main`
-> **最新 Commit**: `72734ba05`
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）
+> **最新 Commit**: `8695555be`（本文件随后的审计登记提交见 `git log`）
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见 `docs/consistency-audit.md`）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续）；跨屏拖拽见 delivery 清单（G1）；09-24 二轮审计 A-12～A-27 待整改（P1 = A-12/A-13）
 
 ---
 
@@ -71,16 +71,21 @@
 ### 全面审计 ✅ (2026-09-23)
 - [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付），报告落盘 `docs/audit-2026-09-23.md`
 - [x] 新发现 A-01～A-11 登记至 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` §2.4；U 计数修正为 21 项
-- [x] 审计整改：A-01～A-11 已关闭；U-03 / U-10 / U-13 / U-15 已关闭；U-07 / U-09 仍需产品决策；详见 `docs/audit-2026-09-23.md`
+- [x] 审计整改：A-01～A-11 已关闭；U-03 / U-10 / U-13 / U-15 已关闭；U-07 / U-09 已随后 `1269e7cb9` 关闭（D1/E2），状态以 `docs/consistency-audit.md` 为准
+
+### 二轮全面审计 🔄 (2026-09-24)
+- [x] 4 路并行只读取证 + P1/P2 独立复核，报告落盘 `docs/audit-2026-09-24.md`
+- [x] 新发现 A-12～A-27 登记追踪文档 §2.5；A-10 状态补翻；变更日志补登 09-23 末 6 笔
+- [ ] 待整改：**P1 = A-12（CI 门禁可空转绿灯）/ A-13（flatpak 路径锚定）**；P2 = A-14～A-19；P3 = A-20～A-27（A-24 需 Dev 拍板版权策略）
 
 ### main 分支提交记录 (最新 6 个)
 ```
-72734ba05 docs: 关闭 A-05/A-07 并同步一致性审计与追踪台账
-585017b03 fix: 修正 A-06 隐藏预设提示与 A-08/U-08 过时注释
-83c262811 修复 U-03：删除 org.deskflow 打包残留，统一身份为 com.tupig.synergy
-919fb1bcc fix(build): Qt 下限统一对齐文档为 6.7.0（A-02）
-2bf927ccc fix(build): 统一 CMake 最低版本声明为 3.25+（A-01）
-25bd8df29 docs: 落盘 2026-09-23 全面审计报告并登记 A-01～A-11
+8695555be docs: HANDOFF 同步 B 计划进度与 G1 清单引用
+ea01a602a feat(net): EventQueue 泵入 Qt 事件，为 Qt 网络路径铺路
+1269e7cb9 fix(identity): 关闭 U-07/U-17/U-18/U-19 与 U-09 文档化，并给出拖拽清单
+c8a5fae8c feat(net): Phase 2 Step 4 — QtNetworkTransport 支持 QSslSocket/QSslServer
+587415ef1 feat(platform): Windows IDropSource，接收文件可投进本机 Explorer
+cbd2baf39 fix(docs): 关闭 U-10/U-13/U-15/A-10 并统一许可与版本真源
 ```
 
 ---
@@ -125,7 +130,7 @@
 | `.github/workflows/static-analysis.yml` | clang-tidy + cppcheck CI |
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
 | `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 23 项 Issue 追踪 |
-| `docs/consistency-audit.md` | 命名与身份一致性审计 (19 项 U-01~U-19) |
+| `docs/consistency-audit.md` | 命名与身份一致性审计 (21 项 U-01~U-21) |
 | `docs/delivery.md` | 交付矩阵（产物、自包含程度、结构性约束） |
 | `docs/security.md` | 安全策略文档 |
 | `docs/HANDOFF.md` | 本文件 — 会话交接文档 |
@@ -181,8 +186,9 @@
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **Step 5**: 网络层智能指针化，或本机文件拖拽跨屏人工验证
-2. **决策项**: U-07 / U-09（双主题 / 路径命名，需产品决策）
+1. **09-24 审计 P1**: A-12（lint `working-directory` + `ci-passed` needs）、A-13（flatpak 路径统一根）
+2. **Step 5 / B 计划**: 网络层智能指针化，或先按 plan-B Phase 1 接线 IDataSocket 适配器 + TOFU
+3. **G1**: 本机文件拖拽跨屏人工验证（清单见 `docs/delivery.md`）
 
 ### Step 1 具体操作 ✅ 已完成
 ```
@@ -197,10 +203,11 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: Step 5（智能指针）或文件传输人工验证
-1. 网络层智能指针化（Step 5）
-2. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
-3. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟
+### 下一步: 09-24 审计 P1 → Step 5 / B 计划 Phase 1 → G1 验证
+1. A-12 / A-13（CI 门禁与 flatpak 路径，T+1）
+2. 网络层智能指针化（Step 5）或 plan-B Phase 1（适配器 + TOFU）
+3. Windows 跨屏拖拽人工验证（IDropTarget 捕获 + IDropSource 投放到 Explorer）
+4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15）
 
 ---
 
