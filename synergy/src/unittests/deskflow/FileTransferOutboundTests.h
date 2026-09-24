@@ -8,8 +8,8 @@
 
 #include "base/Log.h"
 
-#include <QTest>
 #include <QTemporaryDir>
+#include <QTest>
 
 class FileTransferOutboundTests : public QObject
 {

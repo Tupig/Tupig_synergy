@@ -37,8 +37,10 @@ bool clipboardAccessible()
   do {                                                                                                                 \
     if (!(clipboard).open(time)) {                                                                                     \
       if (!clipboardAccessible()) {                                                                                    \
-        QSKIP("the Windows clipboard is unavailable "                                                                  \
-              "(held by another process or blocked by the session)");                                                  \
+        QSKIP(                                                                                                         \
+            "the Windows clipboard is unavailable "                                                                    \
+            "(held by another process or blocked by the session)"                                                      \
+        );                                                                                                             \
       }                                                                                                                \
       QFAIL("MSWindowsClipboard::open() failed while the clipboard is accessible");                                    \
     }                                                                                                                  \

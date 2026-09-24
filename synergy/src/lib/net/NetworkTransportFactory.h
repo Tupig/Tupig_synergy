@@ -36,9 +36,7 @@ public:
   \param events The event queue for socket events
   */
   NetworkTransportFactory(
-      TransportType type = TransportType::Legacy,
-      ISocketFactory *legacyFactory = nullptr,
-      IEventQueue *events = nullptr
+      TransportType type = TransportType::Legacy, ISocketFactory *legacyFactory = nullptr, IEventQueue *events = nullptr
   );
 
   ~NetworkTransportFactory() = default;

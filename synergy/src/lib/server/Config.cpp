@@ -8,12 +8,12 @@
 
 #include "server/Config.h"
 
-#include "base/IEventQueue.h"
 #include "DeskflowException.h"
 #include "KeyMap.h"
 #include "KeyTypes.h"
 #include "OptionTypes.h"
 #include "ProtocolTypes.h"
+#include "base/IEventQueue.h"
 #include "net/SocketException.h"
 #include "server/Server.h"
 

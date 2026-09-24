@@ -7,8 +7,8 @@
 
 #include "server/ClientProxy1_4.h"
 
-#include "base/IEventQueue.h"
 #include "ProtocolUtil.h"
+#include "base/IEventQueue.h"
 #include "server/Server.h"
 
 #include <assert.h>

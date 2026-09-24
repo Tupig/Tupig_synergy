@@ -7,11 +7,11 @@
 #include "CoreArgParser.h"
 #include "CoreArgs.h"
 
+#include "ProtocolTypes.h"
 #include "common/Constants.h"
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
 #include "common/VersionInfo.h"
-#include "ProtocolTypes.h"
 
 #include <QTextStream>
 

@@ -8,8 +8,6 @@
 
 #include "server/Server.h"
 
-#include "base/IEventQueue.h"
-#include "base/Log.h"
 #include "AppUtil.h"
 #include "DeskflowException.h"
 #include "IPlatformScreen.h"
@@ -18,6 +16,8 @@
 #include "ProtocolTypes.h"
 #include "Screen.h"
 #include "StreamChunker.h"
+#include "base/IEventQueue.h"
+#include "base/Log.h"
 #include "ipc/CoreIpc.h"
 #include "net/TCPSocket.h"
 #include "server/ClientListener.h"
@@ -25,8 +25,8 @@
 #include "server/ClientProxyUnknown.h"
 #include "server/PrimaryClient.h"
 
-#include "deskflow/protocol/FileTransferOutbound.h"
 #include "common/Settings.h"
+#include "deskflow/protocol/FileTransferOutbound.h"
 
 #ifdef _WIN32
 #include <algorithm>

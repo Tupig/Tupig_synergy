@@ -7,11 +7,11 @@
 
 #include "MSWindowsProcess.h"
 
+#include "MSWindowsSession.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/Log.h"
 #include "common/Constants.h"
 #include "common/ExitCodes.h"
-#include "MSWindowsSession.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

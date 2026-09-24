@@ -37,8 +37,7 @@ std::string wideToUtf8(std::wstring_view text)
   }
 
   std::string out(static_cast<size_t>(needed), '\0');
-  const int written =
-      ::WideCharToMultiByte(CP_UTF8, 0, text.data(), length, out.data(), needed, nullptr, nullptr);
+  const int written = ::WideCharToMultiByte(CP_UTF8, 0, text.data(), length, out.data(), needed, nullptr, nullptr);
   if (written <= 0) {
     return {};
   }

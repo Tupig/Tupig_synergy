@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "OSXAutoTypes.h"
 #include "KeyState.h"
+#include "OSXAutoTypes.h"
 
 #include <Carbon/Carbon.h>
 

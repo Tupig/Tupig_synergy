@@ -47,9 +47,7 @@ FileTransferSource::FileTransferSource() : m_impl(std::make_unique<Impl>())
 
 FileTransferSource::~FileTransferSource() = default;
 
-FileTransferSource::Status FileTransferSource::inspect(
-    const std::string &path, uint64_t maxFileSize, Entry &out
-)
+FileTransferSource::Status FileTransferSource::inspect(const std::string &path, uint64_t maxFileSize, Entry &out)
 {
   const QFileInfo info(QString::fromStdString(path));
 
@@ -79,8 +77,7 @@ FileTransferSource::Status FileTransferSource::inspect(
 }
 
 std::vector<FileTransferSource::Entry> FileTransferSource::inspectAll(
-    const std::vector<std::string> &paths, uint64_t maxFileSize,
-    std::vector<std::pair<std::string, Status>> *rejected
+    const std::vector<std::string> &paths, uint64_t maxFileSize, std::vector<std::pair<std::string, Status>> *rejected
 )
 {
   std::vector<Entry> entries;
@@ -125,7 +122,9 @@ FileTransferSource::Status FileTransferSource::open(Entry &entry)
 
   m_impl->file.setFileName(QString::fromStdString(entry.path));
   if (!m_impl->file.open(QIODevice::ReadOnly)) {
-    LOG_ERR("cannot open \"%s\" for transfer: %s", entry.path.c_str(), m_impl->file.errorString().toStdString().c_str());
+    LOG_ERR(
+        "cannot open \"%s\" for transfer: %s", entry.path.c_str(), m_impl->file.errorString().toStdString().c_str()
+    );
     return Status::NotReadable;
   }
 

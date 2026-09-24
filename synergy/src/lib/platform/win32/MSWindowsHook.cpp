@@ -6,9 +6,9 @@
  */
 
 #include "MSWindowsHook.h"
+#include "ScreenException.h"
 #include "base/DirectionTypes.h"
 #include "base/Log.h"
-#include "ScreenException.h"
 
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL 0x020E

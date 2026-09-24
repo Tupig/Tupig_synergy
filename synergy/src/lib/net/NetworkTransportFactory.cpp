@@ -19,11 +19,7 @@
 // NetworkTransportFactory
 //
 
-NetworkTransportFactory::NetworkTransportFactory(
-    TransportType type,
-    ISocketFactory *legacyFactory,
-    IEventQueue *events
-)
+NetworkTransportFactory::NetworkTransportFactory(TransportType type, ISocketFactory *legacyFactory, IEventQueue *events)
     : m_type(type),
       m_legacyFactory(legacyFactory),
       m_events(events)
@@ -44,10 +40,8 @@ NetworkTransportFactory::NetworkTransportFactory(
   }
 }
 
-std::unique_ptr<INetworkTransport> NetworkTransportFactory::createTransport(
-    IArchNetwork::AddressFamily family,
-    SecurityLevel securityLevel
-)
+std::unique_ptr<INetworkTransport>
+NetworkTransportFactory::createTransport(IArchNetwork::AddressFamily family, SecurityLevel securityLevel)
 {
   if (m_type == TransportType::Qt && isQtTransportAvailable()) {
     LOG_DEBUG("NetworkTransportFactory: creating Qt transport (security=%d)", static_cast<int>(securityLevel));
@@ -58,18 +52,15 @@ std::unique_ptr<INetworkTransport> NetworkTransportFactory::createTransport(
   if (m_legacyFactory) {
     LOG_DEBUG("NetworkTransportFactory: creating Legacy transport");
     auto *socket = m_legacyFactory->create(family, securityLevel);
-    return std::make_unique<LegacyNetworkTransport>(
-        std::unique_ptr<IDataSocket>(socket), m_events);
+    return std::make_unique<LegacyNetworkTransport>(std::unique_ptr<IDataSocket>(socket), m_events);
   }
 
   LOG_ERR("NetworkTransportFactory: no factory available");
   return nullptr;
 }
 
-std::unique_ptr<ITransportListenSocket> NetworkTransportFactory::createListenTransport(
-    IArchNetwork::AddressFamily family,
-    SecurityLevel securityLevel
-)
+std::unique_ptr<ITransportListenSocket>
+NetworkTransportFactory::createListenTransport(IArchNetwork::AddressFamily family, SecurityLevel securityLevel)
 {
   if (m_type == TransportType::Qt && isQtTransportAvailable()) {
     LOG_DEBUG("NetworkTransportFactory: creating Qt listen transport (security=%d)", static_cast<int>(securityLevel));
@@ -80,8 +71,7 @@ std::unique_ptr<ITransportListenSocket> NetworkTransportFactory::createListenTra
   if (m_legacyFactory) {
     LOG_DEBUG("NetworkTransportFactory: creating Legacy listen transport");
     auto *socket = m_legacyFactory->createListen(family, securityLevel);
-    return std::make_unique<LegacyTransportListenSocket>(
-        std::unique_ptr<IListenSocket>(socket));
+    return std::make_unique<LegacyTransportListenSocket>(std::unique_ptr<IListenSocket>(socket));
   }
 
   LOG_ERR("NetworkTransportFactory: no factory available");

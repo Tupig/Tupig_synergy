@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "App.h"
 #include "arch/Arch.h"
 #include "arch/IArchMultithread.h"
-#include "App.h"
 #include "net/NetworkAddress.h"
 #include "server/Config.h"
 

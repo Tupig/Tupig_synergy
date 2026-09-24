@@ -7,13 +7,13 @@
 
 #include "App.h"
 
+#include "DeskflowException.h"
 #include "DisplayInvalidException.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
 #include "base/LogOutputters.h"
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
-#include "DeskflowException.h"
 #include "mt/ThreadException.h"
 
 #if defined(Q_OS_WIN)

@@ -8,6 +8,16 @@
 
 #include "OSXScreen.h"
 
+#include "ClientApp.h"
+#include "Clipboard.h"
+#include "DisplayInvalidException.h"
+#include "KeyMap.h"
+#include "OSXClipboard.h"
+#include "OSXEventQueueBuffer.h"
+#include "OSXKeyState.h"
+#include "OSXMediaKeySupport.h"
+#include "OSXPasteboardPeeker.h"
+#include "OSXScreenSaver.h"
 #include "arch/Arch.h"
 #include "arch/ArchException.h"
 #include "base/Event.h"
@@ -18,20 +28,10 @@
 #include "client/Client.h"
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
-#include "ClientApp.h"
-#include "Clipboard.h"
-#include "DisplayInvalidException.h"
-#include "KeyMap.h"
 #include "mt/CondVar.h"
 #include "mt/Lock.h"
 #include "mt/Mutex.h"
 #include "mt/Thread.h"
-#include "OSXClipboard.h"
-#include "OSXEventQueueBuffer.h"
-#include "OSXKeyState.h"
-#include "OSXMediaKeySupport.h"
-#include "OSXPasteboardPeeker.h"
-#include "OSXScreenSaver.h"
 
 #include <AppKit/NSEvent.h>
 #include <AvailabilityMacros.h>

@@ -34,10 +34,10 @@ bool isReservedDeviceName(const std::string &loweredName)
   const auto dot = loweredName.find('.');
   const auto stem = loweredName.substr(0, dot);
 
-  constexpr std::array<std::string_view, 22> kReserved = {
-      "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
-      "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
-  };
+  constexpr std::array<std::string_view, 22> kReserved = {"con",  "prn",  "aux",  "nul",  "com1", "com2",
+                                                          "com3", "com4", "com5", "com6", "com7", "com8",
+                                                          "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5",
+                                                          "lpt6", "lpt7", "lpt8", "lpt9"};
 
   return std::find(kReserved.begin(), kReserved.end(), stem) != kReserved.end();
 }

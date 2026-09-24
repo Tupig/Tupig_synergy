@@ -6,10 +6,10 @@
 
 #include "ClipboardChunk.h"
 
-#include "base/Log.h"
-#include "base/String.h"
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "base/Log.h"
+#include "base/String.h"
 #include "io/IStream.h"
 #include <cstring>
 #include <limits>

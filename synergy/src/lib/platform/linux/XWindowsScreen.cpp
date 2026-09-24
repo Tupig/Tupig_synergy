@@ -10,10 +10,6 @@
 
 #include "XWindowsScreen.h"
 
-#include "arch/Arch.h"
-#include "base/IEventQueue.h"
-#include "base/Log.h"
-#include "base/Stopwatch.h"
 #include "App.h"
 #include "ClientApp.h"
 #include "Clipboard.h"
@@ -26,6 +22,10 @@
 #include "XWindowsKeyState.h"
 #include "XWindowsScreenSaver.h"
 #include "XWindowsUtil.h"
+#include "arch/Arch.h"
+#include "base/IEventQueue.h"
+#include "base/Log.h"
+#include "base/Stopwatch.h"
 
 #include <X11/X.h>
 #include <X11/Xutil.h>

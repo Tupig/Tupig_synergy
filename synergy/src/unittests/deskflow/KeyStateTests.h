@@ -7,9 +7,9 @@
 #include <QObject>
 #include <QTest>
 
+#include "KeyMap.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
-#include "KeyMap.h"
 
 class KeyStateTests : public QObject
 {

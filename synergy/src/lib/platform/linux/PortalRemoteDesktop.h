@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "mt/Thread.h"
 #include "EiScreen.h"
+#include "mt/Thread.h"
 
 #include <glib.h>
 #include <libportal/portal.h>

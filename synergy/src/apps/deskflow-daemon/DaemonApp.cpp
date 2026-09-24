@@ -16,11 +16,11 @@
 #include "ipc/DaemonIpcServer.h"
 
 #if defined(Q_OS_WIN)
-#include "arch/win32/ArchDaemonWindows.h"
-#include "Screen.h"
 #include "MSWindowsDebugOutputter.h"
 #include "MSWindowsEventQueueBuffer.h"
 #include "MSWindowsWatchdog.h"
+#include "Screen.h"
+#include "arch/win32/ArchDaemonWindows.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

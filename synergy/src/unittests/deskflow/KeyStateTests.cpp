@@ -7,8 +7,8 @@
  */
 
 #include "KeyStateTests.h"
-#include "base/EventQueue.h"
 #include "KeyMap.h"
+#include "base/EventQueue.h"
 
 #include "MockEventQueue.h"
 #include "MockKeyMap.h"

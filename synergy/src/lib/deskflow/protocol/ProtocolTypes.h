@@ -182,8 +182,7 @@ enum class MessageSizeLimit : uint32_t
  * stay within it (see StreamChunker).
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH =
-    static_cast<uint32_t>(MessageSizeLimit::AbsoluteMaximum);
+static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH = static_cast<uint32_t>(MessageSizeLimit::AbsoluteMaximum);
 
 /**
  * @brief Maximum allowed list length in protocol messages
@@ -194,8 +193,7 @@ static constexpr uint32_t PROTOCOL_MAX_MESSAGE_LENGTH =
  *
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_LIST_LENGTH =
-    static_cast<uint32_t>(MessageSizeLimit::InputEvent);
+static constexpr uint32_t PROTOCOL_MAX_LIST_LENGTH = static_cast<uint32_t>(MessageSizeLimit::InputEvent);
 
 /**
  * @brief Maximum allowed string length in protocol messages
@@ -206,8 +204,7 @@ static constexpr uint32_t PROTOCOL_MAX_LIST_LENGTH =
  *
  * @since Protocol version 1.0
  */
-static constexpr uint32_t PROTOCOL_MAX_STRING_LENGTH =
-    static_cast<uint32_t>(MessageSizeLimit::ClipboardChunk);
+static constexpr uint32_t PROTOCOL_MAX_STRING_LENGTH = static_cast<uint32_t>(MessageSizeLimit::ClipboardChunk);
 
 /** @} */ // end of protocol_constants group
 

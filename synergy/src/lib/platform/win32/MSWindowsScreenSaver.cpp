@@ -7,12 +7,12 @@
 
 #include "MSWindowsScreenSaver.h"
 
+#include "MSWindowsScreen.h"
 #include "arch/Arch.h"
 #include "arch/win32/ArchMiscWindows.h"
 #include "base/Log.h"
 #include "base/TMethodJob.h"
 #include "mt/Thread.h"
-#include "MSWindowsScreen.h"
 
 #include <malloc.h>
 #include <tchar.h>

@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "base/DirectionTypes.h"
 #include "IPlatformScreen.h"
 #include "KeyTypes.h"
 #include "MouseTypes.h"
+#include "base/DirectionTypes.h"
 
 #include <set>
 

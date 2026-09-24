@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "base/BaseException.h"
-#include "base/String.h"
 #include "IPlatformScreen.h"
 #include "OptionTypes.h"
+#include "base/BaseException.h"
+#include "base/String.h"
 #include "net/NetworkAddress.h"
 #include "server/InputFilter.h"
 

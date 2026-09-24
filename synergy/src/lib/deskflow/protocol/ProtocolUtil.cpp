@@ -7,9 +7,9 @@
  */
 
 #include "ProtocolUtil.h"
-#include "base/Log.h"
 #include "DeskflowException.h"
 #include "ProtocolTypes.h"
+#include "base/Log.h"
 #include "io/IStream.h"
 #include <array>
 #include <iterator>

@@ -8,6 +8,10 @@
 
 #include "win32/AppUtilWindows.h"
 
+#include "App.h"
+#include "DeskflowException.h"
+#include "MSWindowsScreen.h"
+#include "Screen.h"
 #include "arch/Arch.h"
 #include "arch/win32/ArchDaemonWindows.h"
 #include "arch/win32/ArchMiscWindows.h"
@@ -17,11 +21,7 @@
 #include "base/Log.h"
 #include "base/LogOutputters.h"
 #include "common/Constants.h"
-#include "App.h"
-#include "DeskflowException.h"
-#include "Screen.h"
 #include "mt/Thread.h"
-#include "MSWindowsScreen.h"
 
 #include <Windows.h>
 #include <conio.h>

@@ -6,8 +6,8 @@
 
 #include "PortalClipboard.h"
 
-#include "base/Log.h"
 #include "EiClipboard.h"
+#include "base/Log.h"
 
 #include <cstring>
 #include <poll.h>

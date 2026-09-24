@@ -6,9 +6,9 @@
  */
 
 #include "KeyMap.h"
+#include "KeyTypes.h"
 #include "base/Log.h"
 #include "common/PlatformInfo.h"
-#include "KeyTypes.h"
 
 #include <algorithm>
 #include <assert.h>

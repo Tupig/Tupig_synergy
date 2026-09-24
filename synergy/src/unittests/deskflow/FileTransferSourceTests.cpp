@@ -22,7 +22,7 @@ using Status = FileTransferSource::Status;
 namespace {
 //! Large enough to be refused by a small limit but cheap to create.
 constexpr uint64_t kSmallLimit = 4;
-}
+} // namespace
 
 void FileTransferSourceTests::initTestCase()
 {

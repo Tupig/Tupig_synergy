@@ -62,10 +62,7 @@ void I18NTests::initTestCase()
   dir.mkdir(m_myTDir);
 
   const auto srcTDir = findGeneratedTranslationsDir();
-  QVERIFY2(
-      !srcTDir.isEmpty(),
-      "generated translations directory not found; build the translations target first"
-  );
+  QVERIFY2(!srcTDir.isEmpty(), "generated translations directory not found; build the translations target first");
 
   dir.setPath(srcTDir);
   const QString filter = QStringLiteral("%1_*.qm").arg(kUpstreamId);

@@ -7,8 +7,8 @@
 
 #include "server/ClientProxy1_1.h"
 
-#include "base/Log.h"
 #include "ProtocolUtil.h"
+#include "base/Log.h"
 
 //
 // ClientProxy1_1

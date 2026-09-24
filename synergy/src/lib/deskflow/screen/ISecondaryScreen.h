@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "MouseTypes.h"
 #include "common/Coordinate.h"
 #include "common/Settings.h"
-#include "MouseTypes.h"
 
 //! Secondary screen interface
 /*!

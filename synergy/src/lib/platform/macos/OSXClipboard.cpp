@@ -7,13 +7,13 @@
 
 #include "OSXClipboard.h"
 
-#include "arch/ArchException.h"
-#include "base/Log.h"
 #include "OSXClipboardBMPConverter.h"
 #include "OSXClipboardHTMLConverter.h"
 #include "OSXClipboardTextConverter.h"
 #include "OSXClipboardUTF16Converter.h"
 #include "OSXClipboardUTF8Converter.h"
+#include "arch/ArchException.h"
+#include "base/Log.h"
 
 //
 // OSXClipboard

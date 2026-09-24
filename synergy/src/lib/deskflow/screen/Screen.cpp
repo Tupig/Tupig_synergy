@@ -6,17 +6,17 @@
  */
 
 #include "Screen.h"
+#include "IPlatformScreen.h"
+#include "MouseTypes.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Settings.h"
-#include "IPlatformScreen.h"
-#include "MouseTypes.h"
 
 #include <QProcess>
 
 #ifdef Q_OS_WIN
-#include "arch/win32/ArchMiscWindows.h"
 #include "MSWindowsProcess.h"
+#include "arch/win32/ArchMiscWindows.h"
 #endif
 
 namespace deskflow {

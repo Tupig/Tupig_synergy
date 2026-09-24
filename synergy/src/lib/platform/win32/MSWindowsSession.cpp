@@ -6,9 +6,9 @@
 
 #include "MSWindowsSession.h"
 
+#include "MSWindowsHandle.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/Log.h"
-#include "MSWindowsHandle.h"
 
 #include <Wtsapi32.h>
 #include <stdexcept>

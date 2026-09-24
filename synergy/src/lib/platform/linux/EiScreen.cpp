@@ -8,18 +8,18 @@
 
 #include "EiScreen.h"
 
+#include "App.h"
+#include "EiClipboard.h"
+#include "EiEventQueueBuffer.h"
+#include "EiKeyState.h"
+#include "IScreen.h"
+#include "OptionTypes.h"
+#include "PortalInputCapture.h"
+#include "PortalRemoteDesktop.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
 #include "common/Settings.h"
-#include "App.h"
-#include "IScreen.h"
-#include "OptionTypes.h"
-#include "EiClipboard.h"
-#include "EiEventQueueBuffer.h"
-#include "EiKeyState.h"
-#include "PortalInputCapture.h"
-#include "PortalRemoteDesktop.h"
 
 #include <algorithm>
 #include <cmath>

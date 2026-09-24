@@ -7,12 +7,12 @@
  */
 
 #include "PortalInputCapture.h"
+#include "ClipboardTypes.h"
+#include "EiClipboard.h"
 #include "base/DirectionTypes.h"
 #include "base/Event.h"
 #include "base/Log.h"
 #include "base/TMethodJob.h"
-#include "ClipboardTypes.h"
-#include "EiClipboard.h"
 
 #ifdef HAVE_LIBPORTAL_CLIPBOARD
 #include "PortalClipboard.h"

@@ -9,8 +9,8 @@
 #include "base/Log.h"
 #include "deskflow/protocol/FileTransferReceiver.h"
 
-#include <QTest>
 #include <QTemporaryDir>
+#include <QTest>
 
 #include <memory>
 #include <string>

@@ -7,8 +7,8 @@
  */
 
 #include "PlatformScreen.h"
-#include "base/DirectionTypes.h"
 #include "App.h"
+#include "base/DirectionTypes.h"
 
 PlatformScreen::PlatformScreen(IEventQueue *events) : IPlatformScreen(events)
 {

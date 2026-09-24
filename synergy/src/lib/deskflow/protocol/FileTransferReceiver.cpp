@@ -62,8 +62,7 @@ bool staysInside(const std::filesystem::path &directory, const std::filesystem::
 
   // Guard against a sibling directory whose name merely starts with the same text
   // (e.g. base "/tmp/drop" vs parent "/tmp/dropped").
-  return parentText.size() == baseText.size() || parentText[baseText.size()] == '/' ||
-         baseText.back() == '/';
+  return parentText.size() == baseText.size() || parentText[baseText.size()] == '/' || baseText.back() == '/';
 }
 
 } // namespace
@@ -114,9 +113,7 @@ bool FileTransferReceiver::onDragInfo(deskflow::IStream *stream)
   }
 
   if (names.size() > m_options.maxFileCount) {
-    LOG_ERR(
-        "file transfer: drag of %zu files exceeds the limit of %zu", names.size(), m_options.maxFileCount
-    );
+    LOG_ERR("file transfer: drag of %zu files exceeds the limit of %zu", names.size(), m_options.maxFileCount);
     m_refused += names.size();
     return false;
   }

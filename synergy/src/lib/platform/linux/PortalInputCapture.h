@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "mt/Thread.h"
 #include "EiScreen.h"
+#include "mt/Thread.h"
 
 #include <QByteArray>
 

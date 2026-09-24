@@ -8,10 +8,10 @@
 
 #include "EiKeyState.h"
 
-#include "base/Log.h"
-#include "common/Settings.h"
 #include "AppUtil.h"
 #include "XDGKeyUtil.h"
+#include "base/Log.h"
+#include "common/Settings.h"
 
 #include <cstddef>
 #include <memory>

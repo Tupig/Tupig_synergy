@@ -29,9 +29,9 @@ void InputValidatorTests::modifierMaskAcceptsDefinedBits()
   QVERIFY(InputValidator::isValidModifierMask(0));
   QVERIFY(InputValidator::isValidModifierMask(KeyModifierShift));
   QVERIFY(InputValidator::isValidModifierMask(KeyModifierControl | KeyModifierAlt));
-  QVERIFY(InputValidator::isValidModifierMask(
-      KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierMeta
-  ));
+  QVERIFY(
+      InputValidator::isValidModifierMask(KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierMeta)
+  );
   QVERIFY(InputValidator::isValidModifierMask(KeyModifierSuper));
   QVERIFY(InputValidator::isValidModifierMask(KeyModifierAltGr));
   QVERIFY(InputValidator::isValidModifierMask(KeyModifierLevel5Lock));
@@ -64,9 +64,8 @@ void InputValidatorTests::sanitizeModifierMaskClearsUndefinedBits()
 
 void InputValidatorTests::sanitizeModifierMaskKeepsDefinedBits()
 {
-  const auto legitimate = static_cast<KeyModifierMask>(
-      KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierCapsLock
-  );
+  const auto legitimate =
+      static_cast<KeyModifierMask>(KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierCapsLock);
   QCOMPARE(InputValidator::sanitizeModifierMask(legitimate), legitimate);
 }
 
@@ -187,9 +186,7 @@ void InputValidatorTests::blockedCombinationToleratesLockModifiers()
   InputValidator validator;
   validator.setBlockedCombinations({{kKeyDelete, KeyModifierControl | KeyModifierAlt}});
 
-  QVERIFY(validator.isBlockedCombination(
-      kKeyDelete, KeyModifierControl | KeyModifierAlt | KeyModifierCapsLock
-  ));
+  QVERIFY(validator.isBlockedCombination(kKeyDelete, KeyModifierControl | KeyModifierAlt | KeyModifierCapsLock));
 }
 
 void InputValidatorTests::blockedCombinationDoesNotMatchWrongModifiers()
@@ -270,8 +267,7 @@ void InputValidatorTests::parseBlockedCombinationRejectsUndefinedModifierBits()
 
 void InputValidatorTests::parseBlockedCombinationKeepsValidEntriesAroundBadOnes()
 {
-  const auto combinations =
-      InputValidator::parseBlockedCombinations({"0xEFFF:0x5", "garbage", "0x0041:0x1"});
+  const auto combinations = InputValidator::parseBlockedCombinations({"0xEFFF:0x5", "garbage", "0x0041:0x1"});
 
   QCOMPARE(combinations.size(), static_cast<size_t>(2));
   QCOMPARE(combinations[0].key, static_cast<KeyID>(0xEFFF));

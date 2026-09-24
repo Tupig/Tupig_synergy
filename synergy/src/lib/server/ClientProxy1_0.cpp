@@ -8,10 +8,10 @@
 
 #include "server/ClientProxy1_0.h"
 
-#include "base/IEventQueue.h"
-#include "base/Log.h"
 #include "DeskflowException.h"
 #include "ProtocolUtil.h"
+#include "base/IEventQueue.h"
+#include "base/Log.h"
 #include "io/IStream.h"
 
 #include <cstring>

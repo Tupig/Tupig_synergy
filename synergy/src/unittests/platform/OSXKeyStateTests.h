@@ -5,8 +5,8 @@
  */
 #include "base/Log.h"
 
-#include "arch/Arch.h"
 #include "OSXKeyState.h"
+#include "arch/Arch.h"
 
 #include <QTest>
 

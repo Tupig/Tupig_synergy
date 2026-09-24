@@ -60,8 +60,7 @@ bool loadPemIdentity(QSslConfiguration &config, const QString &path)
 // QtNetworkTransport
 //
 
-QtNetworkTransport::QtNetworkTransport(SecurityLevel securityLevel)
-    : m_securityLevel(securityLevel)
+QtNetworkTransport::QtNetworkTransport(SecurityLevel securityLevel) : m_securityLevel(securityLevel)
 {
   createSocket();
   connectSignals();
@@ -321,8 +320,7 @@ void QtNetworkTransport::onErrorOccurred(QAbstractSocket::SocketError socketErro
     LOG_ERR("QtNetworkTransport: error: %s", m_socket->errorString().toStdString().c_str());
   }
 
-  if (socketError == QAbstractSocket::ConnectionRefusedError ||
-      socketError == QAbstractSocket::SocketTimeoutError) {
+  if (socketError == QAbstractSocket::ConnectionRefusedError || socketError == QAbstractSocket::SocketTimeoutError) {
     LOG_WARN("QtNetworkTransport: non-fatal error, can retry");
   } else {
     m_fatalError = true;
@@ -365,8 +363,7 @@ void QtNetworkTransport::processWriteQueue()
 // QtTransportListenSocket
 //
 
-QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel)
-    : m_securityLevel(securityLevel)
+QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : m_securityLevel(securityLevel)
 {
   if (wantsTls()) {
     m_server = new QSslServer(this);
@@ -447,14 +444,11 @@ void QtTransportListenSocket::bindAndListen(const NetworkAddress &address)
     return;
   }
 
-  QHostAddress addr = address.getHostname().empty()
-      ? QHostAddress::Any
-      : QHostAddress(QString::fromStdString(address.getHostname()));
+  QHostAddress addr =
+      address.getHostname().empty() ? QHostAddress::Any : QHostAddress(QString::fromStdString(address.getHostname()));
 
   if (!m_server->listen(addr, static_cast<quint16>(address.getPort()))) {
-    LOG_ERR(
-        "QtTransportListenSocket: failed to listen: %s", m_server->errorString().toStdString().c_str()
-    );
+    LOG_ERR("QtTransportListenSocket: failed to listen: %s", m_server->errorString().toStdString().c_str());
   } else {
     LOG_INFO(
         "QtTransportListenSocket: listening on %s:%d (tls=%d)", address.getHostname().c_str(), address.getPort(),

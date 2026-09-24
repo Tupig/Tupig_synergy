@@ -7,8 +7,8 @@
 
 #include "server/PrimaryClient.h"
 
-#include "base/Log.h"
 #include "Screen.h"
+#include "base/Log.h"
 //
 // PrimaryClient
 //

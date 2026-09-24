@@ -129,9 +129,7 @@ public:
   \param now current timestamp
   \return true if the event should be dropped
   */
-  bool isRateLimited(
-      KeyID keyCode, std::chrono::steady_clock::time_point now
-  );
+  bool isRateLimited(KeyID keyCode, std::chrono::steady_clock::time_point now);
 
   //! Set the maximum events per second per key.
   void setMaxEventsPerSecond(uint32_t max);
@@ -147,6 +145,5 @@ private:
   std::vector<KeyCombination> m_blockedCombinations;
 
   //! Sliding window timestamps per key for rate limiting.
-  std::unordered_map<KeyID, std::vector<std::chrono::steady_clock::time_point>>
-      m_eventTimestamps;
+  std::unordered_map<KeyID, std::vector<std::chrono::steady_clock::time_point>> m_eventTimestamps;
 };

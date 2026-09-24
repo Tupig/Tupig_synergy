@@ -61,8 +61,8 @@ void ClientProxy1_5::sendDragInfo(uint32_t fileCount, const char *info, size_t s
   const auto actual = FileTransferPath::splitNames(names).size();
   if (static_cast<size_t>(fileCount) != actual) {
     LOG_WARN(
-        "drag info for \"%s\" declared %u file(s) but carries %zu; sending %zu",
-        getName().c_str(), fileCount, actual, actual
+        "drag info for \"%s\" declared %u file(s) but carries %zu; sending %zu", getName().c_str(), fileCount, actual,
+        actual
     );
     fileCount = static_cast<uint32_t>(actual);
   }

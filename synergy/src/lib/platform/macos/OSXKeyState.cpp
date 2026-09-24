@@ -6,10 +6,10 @@
  */
 
 #include "OSXKeyState.h"
-#include "arch/Arch.h"
-#include "base/Log.h"
 #include "OSXMediaKeySupport.h"
 #include "OSXUchrKeyResource.h"
+#include "arch/Arch.h"
+#include "base/Log.h"
 
 #include <Carbon/Carbon.h>
 #include <IOKit/hidsystem/IOHIDLib.h>

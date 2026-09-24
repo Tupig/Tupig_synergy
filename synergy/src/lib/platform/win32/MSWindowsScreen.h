@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "PlatformScreen.h"
 #include "MSWindowsHook.h"
 #include "MSWindowsPowerManager.h"
+#include "PlatformScreen.h"
 
 #include <map>
 #include <string>

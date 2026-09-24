@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "KeyState.h"
 #include "EiScreen.h"
+#include "KeyState.h"
 
 #include <xkbcommon/xkbcommon.h>
 

@@ -8,9 +8,6 @@
 
 #include "client/ServerProxy.h"
 
-#include "base/IEventQueue.h"
-#include "base/Log.h"
-#include "client/Client.h"
 #include "Clipboard.h"
 #include "ClipboardChunk.h"
 #include "DeskflowException.h"
@@ -18,9 +15,12 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
+#include "base/IEventQueue.h"
+#include "base/Log.h"
+#include "client/Client.h"
 #include "common/Settings.h"
-#include "ipc/CoreIpc.h"
 #include "io/IStream.h"
+#include "ipc/CoreIpc.h"
 
 #include <chrono>
 #include <cstring>
@@ -81,9 +81,7 @@ ServerProxy::ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue 
 
     m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);
     LOG_DEBUG(
-        "file transfer: enabled=%d, drop directory \"%s\"",
-        options.enabled ? 1 : 0,
-        options.dropDirectory.c_str()
+        "file transfer: enabled=%d, drop directory \"%s\"", options.enabled ? 1 : 0, options.dropDirectory.c_str()
     );
   }
 
@@ -640,9 +638,7 @@ void ServerProxy::keyDown(uint16_t id, uint16_t mask, uint16_t button, const std
 
   // Opt-in interception, checked after sanitizing so the mask tested is the one
   // that would actually be applied. Nothing is configured by default.
-  if (m_inputValidator.isBlockedCombination(
-          static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask)
-      )) {
+  if (m_inputValidator.isBlockedCombination(static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask))) {
     LOG_INFO("key down id=0x%04x mask=0x%04x blocked by configuration", id, cleanMask);
     return;
   }
@@ -687,9 +683,7 @@ void ServerProxy::keyRepeat()
 
   // Blocked repeats are dropped for the same reason as blocked presses: the key
   // never reached the local machine, so repeating it would be inconsistent.
-  if (m_inputValidator.isBlockedCombination(
-          static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask)
-      )) {
+  if (m_inputValidator.isBlockedCombination(static_cast<KeyID>(id), static_cast<KeyModifierMask>(cleanMask))) {
     LOG_INFO("key repeat id=0x%04x mask=0x%04x blocked by configuration", id, cleanMask);
     return;
   }
@@ -947,9 +941,7 @@ void ServerProxy::secureInputNotification()
 void ServerProxy::dragInfo()
 {
   if (m_fileTransferReceiver != nullptr && m_fileTransferReceiver->onDragInfo(m_stream)) {
-    LOG_INFO(
-        "file transfer: server is offering %zu file(s)", m_fileTransferReceiver->acceptedNames().size()
-    );
+    LOG_INFO("file transfer: server is offering %zu file(s)", m_fileTransferReceiver->acceptedNames().size());
   }
 }
 

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "base/IEventQueue.h"
 #include "IScreenSaver.h"
+#include "base/IEventQueue.h"
 
 #include <map>
 

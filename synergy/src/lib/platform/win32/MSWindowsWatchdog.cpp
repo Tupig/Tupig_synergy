@@ -6,6 +6,8 @@
 
 #include "MSWindowsWatchdog.h"
 
+#include "App.h"
+#include "MSWindowsHandle.h"
 #include "arch/Arch.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/Log.h"
@@ -13,8 +15,6 @@
 #include "base/TMethodJob.h"
 #include "common/Constants.h"
 #include "common/LogLevel.h"
-#include "App.h"
-#include "MSWindowsHandle.h"
 
 #include <Shellapi.h>
 #include <UserEnv.h>

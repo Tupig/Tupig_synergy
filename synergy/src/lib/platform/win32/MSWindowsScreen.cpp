@@ -8,6 +8,18 @@
 
 #include "MSWindowsScreen.h"
 
+#include "App.h"
+#include "ClientApp.h"
+#include "Clipboard.h"
+#include "KeyMap.h"
+#include "MSWindowsClipboard.h"
+#include "MSWindowsDesks.h"
+#include "MSWindowsDropTarget.h"
+#include "MSWindowsEventQueueBuffer.h"
+#include "MSWindowsKeyState.h"
+#include "MSWindowsScreenSaver.h"
+#include "ScreenException.h"
+#include "Win32DropData.h"
 #include "arch/Arch.h"
 #include "arch/win32/ArchMiscWindows.h"
 #include "arch/win32/XArchWindows.h"
@@ -17,18 +29,6 @@
 #include "client/Client.h"
 #include "common/Constants.h"
 #include "common/Settings.h"
-#include "App.h"
-#include "ClientApp.h"
-#include "Clipboard.h"
-#include "KeyMap.h"
-#include "ScreenException.h"
-#include "MSWindowsClipboard.h"
-#include "MSWindowsDesks.h"
-#include "MSWindowsDropTarget.h"
-#include "Win32DropData.h"
-#include "MSWindowsEventQueueBuffer.h"
-#include "MSWindowsKeyState.h"
-#include "MSWindowsScreenSaver.h"
 
 #include <Shlobj.h>
 #include <algorithm>
@@ -237,9 +237,7 @@ void MSWindowsScreen::offerDropWindowAtCursor()
   const int x = (pt.x - half) < 0 ? 0 : (pt.x - half);
   const int y = (pt.y - half) < 0 ? 0 : (pt.y - half);
 
-  ::SetWindowPos(
-      m_dropWindow, HWND_TOPMOST, x, y, m_dropWindowSize, m_dropWindowSize, SWP_SHOWWINDOW | SWP_NOACTIVATE
-  );
+  ::SetWindowPos(m_dropWindow, HWND_TOPMOST, x, y, m_dropWindowSize, m_dropWindowSize, SWP_SHOWWINDOW | SWP_NOACTIVATE);
 
   // Let OLE deliver DragEnter while the cursor is over our window. No Escape or
   // fake mouse-up: those were the unreliable bits upstream removed.

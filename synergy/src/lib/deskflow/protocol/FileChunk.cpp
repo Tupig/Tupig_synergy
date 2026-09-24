@@ -134,8 +134,7 @@ TransferState FileChunk::assemble(
 
     if (state.expectedSize > maxFileSize) {
       LOG_ERR(
-          "file exceeds size limit, size: %llu, limit: %llu",
-          static_cast<unsigned long long>(state.expectedSize),
+          "file exceeds size limit, size: %llu, limit: %llu", static_cast<unsigned long long>(state.expectedSize),
           static_cast<unsigned long long>(maxFileSize)
       );
       reset();

@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "mt/Thread.h"
 #include "MSWindowsProcess.h"
 #include "MSWindowsSession.h"
+#include "mt/Thread.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

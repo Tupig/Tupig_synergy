@@ -8,9 +8,9 @@
 
 #include "server/ClientProxy1_3.h"
 
+#include "ProtocolUtil.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "ProtocolUtil.h"
 
 #include <cstring>
 

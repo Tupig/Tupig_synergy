@@ -26,9 +26,7 @@ uint64_t FileTransferSender::send(const std::vector<FileTransferSource::Entry> &
     return 0;
   }
 
-  emitter.dragInfo(
-      static_cast<uint32_t>(entries.size()), FileTransferSource::dragInfoPayload(entries)
-  );
+  emitter.dragInfo(static_cast<uint32_t>(entries.size()), FileTransferSource::dragInfoPayload(entries));
 
   uint64_t total = 0;
   FileTransferSource source;
@@ -55,8 +53,6 @@ uint64_t FileTransferSender::send(const std::vector<FileTransferSource::Entry> &
     source.close();
   }
 
-  LOG_DEBUG(
-      "sent %zu file(s), %llu byte(s) of content", entries.size(), static_cast<unsigned long long>(total)
-  );
+  LOG_DEBUG("sent %zu file(s), %llu byte(s) of content", entries.size(), static_cast<unsigned long long>(total));
   return total;
 }

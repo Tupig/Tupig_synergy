@@ -16,9 +16,9 @@
 
 #include "XWindowsKeyState.h"
 
-#include "base/Log.h"
 #include "AppUtil.h"
 #include "XDGKeyUtil.h"
+#include "base/Log.h"
 
 #include <X11/X.h>
 #include <X11/Xutil.h>

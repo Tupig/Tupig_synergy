@@ -49,7 +49,8 @@ public:
 
 private:
   // Service job entry: pairs a socket key with its current job.
-  struct SocketJobEntry {
+  struct SocketJobEntry
+  {
     ISocket *socket = nullptr;
     ISocketMultiplexerJob *job = nullptr;
   };

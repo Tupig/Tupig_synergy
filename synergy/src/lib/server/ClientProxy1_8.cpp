@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#include "base/Log.h"
 #include "KeyboardLayoutManager.h"
 #include "ProtocolUtil.h"
+#include "base/Log.h"
 
 #include "ClientProxy1_8.h"
 

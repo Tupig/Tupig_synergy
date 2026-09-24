@@ -10,9 +10,9 @@
 
 #include "IClient.h"
 
+#include "IClipboard.h"
 #include "base/EventTypes.h"
 #include "common/Enums.h"
-#include "IClipboard.h"
 #include "net/NetworkAddress.h"
 
 #include <climits>

@@ -161,9 +161,7 @@ void FileTransferPathTests::splitNamesDropsEmptySegments()
   // A stray empty segment is never something to act on.
   QCOMPARE(FileTransferPath::splitNames(std::string_view{}), std::vector<std::string>{});
   QCOMPARE(FileTransferPath::splitNames(std::string_view("\0", 1)), std::vector<std::string>{});
-  QCOMPARE(
-      FileTransferPath::splitNames(std::string_view("a\0\0b\0", 5)), (std::vector<std::string>{"a", "b"})
-  );
+  QCOMPARE(FileTransferPath::splitNames(std::string_view("a\0\0b\0", 5)), (std::vector<std::string>{"a", "b"}));
 }
 
 QTEST_MAIN(FileTransferPathTests)

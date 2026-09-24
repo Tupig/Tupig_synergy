@@ -6,10 +6,10 @@
 
 #include "server/ClientProxy1_6.h"
 
-#include "base/Log.h"
 #include "ClipboardChunk.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
+#include "base/Log.h"
 #include "io/IStream.h"
 #include "server/Server.h"
 

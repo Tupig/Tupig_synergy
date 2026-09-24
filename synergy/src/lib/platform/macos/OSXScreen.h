@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "PlatformScreen.h"
 #include "OSXClipboard.h"
 #include "OSXPowerManager.h"
+#include "PlatformScreen.h"
 
 #include <Carbon/Carbon.h>
 #include <IOKit/IOMessage.h>

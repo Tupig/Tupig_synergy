@@ -304,12 +304,8 @@ void ClipboardChunksTests::assembleAcceptsChunkAtStringLengthLimit()
 
   // A payload exactly at the ceiling must still go through, or the limit would
   // be off by one for every sender that fills chunks to capacity.
-  QCOMPARE(
-      ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::Started
-  );
-  QCOMPARE(
-      ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::InProgress
-  );
+  QCOMPARE(ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::Started);
+  QCOMPARE(ClipboardChunk::assemble(&stream, cached, id, seq, state, atLimit * 2), TransferState::InProgress);
   QCOMPARE(cached.size(), atLimit);
 }
 
@@ -328,9 +324,7 @@ void ClipboardChunksTests::assembleRejectsChunkBeyondStringLengthLimit()
   uint32_t seq = 0;
   ClipboardChunkAssemblyState state;
 
-  QCOMPARE(
-      ClipboardChunk::assemble(&stream, cached, id, seq, state, beyond * 2), TransferState::Started
-  );
+  QCOMPARE(ClipboardChunk::assemble(&stream, cached, id, seq, state, beyond * 2), TransferState::Started);
 
   // ProtocolUtil::readBytes() throws BadClientException for a length-prefixed
   // string above MessageSizeLimit::ClipboardChunk, and readf() only converts
@@ -361,9 +355,7 @@ void ClipboardChunksTests::sendChunkSizeFitsReceiverLimit()
   // used to emit 512 KB chunks while the receiver refused anything over 64 KB,
   // so copying a large payload disconnected the session.
   QVERIFY(StreamChunker::chunkSize() > 0);
-  QVERIFY(
-      StreamChunker::chunkSize() <= static_cast<size_t>(MessageSizeLimit::ClipboardChunk)
-  );
+  QVERIFY(StreamChunker::chunkSize() <= static_cast<size_t>(MessageSizeLimit::ClipboardChunk));
 }
 
 QTEST_MAIN(ClipboardChunksTests)

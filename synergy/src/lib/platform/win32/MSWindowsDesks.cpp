@@ -8,19 +8,19 @@
 
 #include "MSWindowsDesks.h"
 
+#include "IScreenSaver.h"
+#include "MSWindowsHook.h"
+#include "MSWindowsScreen.h"
+#include "ScreenException.h"
 #include "arch/Arch.h"
 #include "base/IEventQueue.h"
 #include "base/IJob.h"
 #include "base/Log.h"
 #include "base/TMethodJob.h"
 #include "common/Constants.h"
-#include "IScreenSaver.h"
-#include "ScreenException.h"
-#include "win32/AppUtilWindows.h"
 #include "mt/Lock.h"
 #include "mt/Thread.h"
-#include "MSWindowsHook.h"
-#include "MSWindowsScreen.h"
+#include "win32/AppUtilWindows.h"
 
 #include <malloc.h>
 

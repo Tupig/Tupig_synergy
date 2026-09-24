@@ -8,13 +8,13 @@
 
 #include "CoreArgParser.h"
 
+#include "ClientApp.h"
+#include "ServerApp.h"
 #include "arch/Arch.h"
 #include "base/EventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
 #include "common/ExitCodes.h"
-#include "ClientApp.h"
-#include "ServerApp.h"
 #include "ipc/CoreIpcServer.h"
 
 #if defined(Q_OS_WIN)

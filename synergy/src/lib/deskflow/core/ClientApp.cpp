@@ -8,6 +8,8 @@
 
 #include "ClientApp.h"
 
+#include "Screen.h"
+#include "ScreenException.h"
 #include "base/Event.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
@@ -15,8 +17,6 @@
 #include "common/ExitCodes.h"
 #include "common/PlatformInfo.h"
 #include "common/Settings.h"
-#include "Screen.h"
-#include "ScreenException.h"
 #include "ipc/CoreIpc.h"
 #include "net/NetworkAddress.h"
 #include "net/SocketException.h"

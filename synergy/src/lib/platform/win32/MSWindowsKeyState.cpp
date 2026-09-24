@@ -7,12 +7,12 @@
 
 #include "MSWindowsKeyState.h"
 
+#include "MSWindowsDesks.h"
+#include "MSWindowsHandle.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
-#include "MSWindowsDesks.h"
-#include "MSWindowsHandle.h"
 
 // extended mouse buttons
 #if !defined(VK_XBUTTON1)

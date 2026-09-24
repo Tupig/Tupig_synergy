@@ -38,7 +38,6 @@ public:
   /*!
   \return total content bytes streamed, or 0 when disabled / nothing accepted
   */
-  static uint64_t sendPaths(
-      const std::vector<std::string> &paths, const Options &options, const FileTransferSender::Emitter &emitter
-  );
+  static uint64_t
+  sendPaths(const std::vector<std::string> &paths, const Options &options, const FileTransferSender::Emitter &emitter);
 };

@@ -7,9 +7,9 @@
  */
 
 #include "server/InputFilter.h"
+#include "KeyMap.h"
 #include "base/EventQueue.h"
 #include "base/Log.h"
-#include "KeyMap.h"
 #include "server/PrimaryClient.h"
 #include "server/Server.h"
 

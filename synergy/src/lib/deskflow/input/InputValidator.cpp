@@ -21,8 +21,8 @@ Taken from KeyTypes.h rather than restated as literals, so this cannot drift
 away from the wire format the way the previous hand-written masks had.
 */
 constexpr KeyModifierMask kDefinedModifiers = //
-    KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierMeta |
-    KeyModifierSuper | KeyModifierAltGr | KeyModifierLevel5Lock | KeyModifierCapsLock;
+    KeyModifierShift | KeyModifierControl | KeyModifierAlt | KeyModifierMeta | KeyModifierSuper | KeyModifierAltGr |
+    KeyModifierLevel5Lock | KeyModifierCapsLock;
 } // namespace
 
 bool InputValidator::isValidModifierMask(KeyModifierMask mask)
@@ -35,7 +35,8 @@ KeyModifierMask InputValidator::sanitizeModifierMask(KeyModifierMask mask)
   return mask & kDefinedModifiers;
 }
 
-std::vector<InputValidator::KeyCombination> InputValidator::parseBlockedCombinations(const std::vector<std::string> &entries)
+std::vector<InputValidator::KeyCombination>
+InputValidator::parseBlockedCombinations(const std::vector<std::string> &entries)
 {
   std::vector<KeyCombination> combinations;
 
@@ -128,7 +129,8 @@ size_t InputValidator::blockedCombinationCount() const
   return m_blockedCombinations.size();
 }
 
-bool InputValidator::isKnownButtonId(ButtonID buttonId){
+bool InputValidator::isKnownButtonId(ButtonID buttonId)
+{
   // Documented ids only; see MouseTypes.h. Note kButtonNone and the X11 scroll
   // wheel ids (254/255) are all legitimate, which is why this is not a range.
   switch (buttonId) {
@@ -148,26 +150,19 @@ bool InputValidator::isKnownButtonId(ButtonID buttonId){
   }
 }
 
-bool InputValidator::isRateLimited(
-    KeyID keyCode, std::chrono::steady_clock::time_point now
-)
+bool InputValidator::isRateLimited(KeyID keyCode, std::chrono::steady_clock::time_point now)
 {
   auto &timestamps = m_eventTimestamps[keyCode];
 
   // Drop everything that has fallen out of the one-second window.
   const auto cutoff = now - std::chrono::seconds(1);
   timestamps.erase(
-      std::remove_if(
-          timestamps.begin(), timestamps.end(),
-          [cutoff](const auto &t) { return t < cutoff; }
-      ),
+      std::remove_if(timestamps.begin(), timestamps.end(), [cutoff](const auto &t) { return t < cutoff; }),
       timestamps.end()
   );
 
   if (timestamps.size() >= m_maxEventsPerSecond) {
-    LOG_WARN(
-        "rate limited key 0x%04x: %zu events in window", keyCode, timestamps.size()
-    );
+    LOG_WARN("rate limited key 0x%04x: %zu events in window", keyCode, timestamps.size());
     return true;
   }
 

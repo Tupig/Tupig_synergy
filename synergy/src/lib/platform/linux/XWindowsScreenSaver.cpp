@@ -10,10 +10,10 @@
 
 #include "XWindowsScreenSaver.h"
 
-#include "base/Event.h"
-#include "base/IEventQueue.h"
 #include "XWindowsConfig.h"
 #include "XWindowsUtil.h"
+#include "base/Event.h"
+#include "base/IEventQueue.h"
 
 #include <X11/Xatom.h>
 #if HAVE_X11_EXTENSIONS_XTEST_H

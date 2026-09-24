@@ -6,8 +6,8 @@
  */
 
 #include "PacketStreamFilter.h"
-#include "base/IEventQueue.h"
 #include "ProtocolTypes.h"
+#include "base/IEventQueue.h"
 
 #include <cstring>
 

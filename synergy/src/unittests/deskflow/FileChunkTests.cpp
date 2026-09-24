@@ -8,8 +8,8 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
-#include "deskflow/protocol/FileChunk.h"
 #include "deskflow/core/DeskflowException.h"
+#include "deskflow/protocol/FileChunk.h"
 #include "io/IStream.h"
 
 #include <algorithm>
@@ -301,9 +301,7 @@ void FileChunkTests::roundTripSingleChunkFile()
   const std::string content = "hello file transfer";
   std::string assembled;
 
-  QCOMPARE(
-      replayThrough(FileChunk::start(content.size()), content, assembled, true), TransferState::Finished
-  );
+  QCOMPARE(replayThrough(FileChunk::start(content.size()), content, assembled, true), TransferState::Finished);
   QCOMPARE(assembled, content);
 }
 
@@ -312,9 +310,7 @@ void FileChunkTests::roundTripFileSpanningSeveralChunks()
   const std::string content(FileChunk::chunkSize() + 1024, 'Z');
   std::string assembled;
 
-  QCOMPARE(
-      replayThrough(FileChunk::start(content.size()), content, assembled, true), TransferState::Finished
-  );
+  QCOMPARE(replayThrough(FileChunk::start(content.size()), content, assembled, true), TransferState::Finished);
   QCOMPARE(assembled.size(), content.size());
   QCOMPARE(assembled, content);
 }
@@ -335,9 +331,7 @@ void FileChunkTests::assembleRejectsDataChunkBeforeStart()
   std::string assembled;
   FileTransferAssemblyState state;
 
-  QCOMPARE(
-      FileChunk::assemble(&stream, assembled, state, 1024), TransferState::Error
-  );
+  QCOMPARE(FileChunk::assemble(&stream, assembled, state, 1024), TransferState::Error);
   QVERIFY(assembled.empty());
   QVERIFY(!state.active);
 }
@@ -442,16 +436,12 @@ void FileChunkTests::assembleDoesNotPreallocateDeclaredSize()
   std::string assembled;
   FileTransferAssemblyState state;
 
-  QCOMPARE(
-      FileChunk::assemble(&stream, assembled, state, 64 * 1024 * 1024), TransferState::Started
-  );
+  QCOMPARE(FileChunk::assemble(&stream, assembled, state, 64 * 1024 * 1024), TransferState::Started);
 
   // Nothing has arrived yet beyond a declaration, so capacity must be modest.
   QVERIFY(assembled.capacity() < 1024 * 1024);
 
-  QCOMPARE(
-      FileChunk::assemble(&stream, assembled, state, 64 * 1024 * 1024), TransferState::InProgress
-  );
+  QCOMPARE(FileChunk::assemble(&stream, assembled, state, 64 * 1024 * 1024), TransferState::InProgress);
   QCOMPARE(assembled.size(), static_cast<size_t>(4));
 }
 

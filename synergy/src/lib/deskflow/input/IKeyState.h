@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "base/IEventQueue.h"
 #include "KeyTypes.h"
+#include "base/IEventQueue.h"
 
 #include <set>
 #include <string>

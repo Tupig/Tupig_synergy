@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include "IApp.h"
 #include "base/EventQueue.h"
 #include "base/Log.h"
 #include "common/ExitCodes.h"
-#include "IApp.h"
 #include "net/SocketMultiplexer.h"
 
 #if defined(Q_OS_WIN)

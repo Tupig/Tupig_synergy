@@ -33,7 +33,8 @@ static void interrupt(Arch::ThreadSignal, void *data)
 //
 
 EventQueue::EventQueue()
-    : m_readyMutex(std::make_unique<Mutex>()), m_readyCondVar(std::make_unique<CondVar<bool>>(m_readyMutex.get(), false))
+    : m_readyMutex(std::make_unique<Mutex>()),
+      m_readyCondVar(std::make_unique<CondVar<bool>>(m_readyMutex.get(), false))
 {
   ARCH->setSignalHandler(Arch::ThreadSignal::Interrupt, &interrupt, this);
   ARCH->setSignalHandler(Arch::ThreadSignal::Terminate, &interrupt, this);

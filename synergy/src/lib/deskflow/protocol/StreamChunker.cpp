@@ -6,11 +6,11 @@
 
 #include "StreamChunker.h"
 
+#include "ClipboardChunk.h"
+#include "ProtocolTypes.h"
 #include "base/Event.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "ClipboardChunk.h"
-#include "ProtocolTypes.h"
 
 //! Clipboard payload size per chunk.
 /*!
@@ -23,8 +23,7 @@ and broke clipboard sync for any payload over 64 KB; ProtocolTypes.h's comment
 meanwhile claimed 32 KB. Deriving the value from the protocol constant keeps a
 single source of truth.
 */
-static const size_t g_chunkSize =
-    static_cast<size_t>(MessageSizeLimit::ClipboardChunk);
+static const size_t g_chunkSize = static_cast<size_t>(MessageSizeLimit::ClipboardChunk);
 
 static_assert(
     g_chunkSize <= static_cast<size_t>(MessageSizeLimit::ClipboardChunk),

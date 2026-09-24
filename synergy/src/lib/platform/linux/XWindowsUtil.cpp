@@ -7,8 +7,8 @@
 
 #include "base/Log.h" //Include First
 
-#include "base/String.h"
 #include "XWindowsUtil.h"
+#include "base/String.h"
 
 #include <X11/Xatom.h>
 

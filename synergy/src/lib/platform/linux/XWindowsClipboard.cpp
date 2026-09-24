@@ -10,13 +10,13 @@
 
 #include "XWindowsClipboard.h"
 
-#include "base/Stopwatch.h"
 #include "XWindowsClipboardBMPConverter.h"
 #include "XWindowsClipboardHTMLConverter.h"
 #include "XWindowsClipboardTextConverter.h"
 #include "XWindowsClipboardUCS2Converter.h"
 #include "XWindowsClipboardUTF8Converter.h"
 #include "XWindowsUtil.h"
+#include "base/Stopwatch.h"
 
 #include <X11/Xatom.h>
 #include <algorithm>

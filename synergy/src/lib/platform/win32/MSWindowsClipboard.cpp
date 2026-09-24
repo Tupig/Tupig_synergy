@@ -8,12 +8,12 @@
 
 #include "MSWindowsClipboard.h"
 
-#include "base/Log.h"
-#include "common/Constants.h"
 #include "MSWindowsClipboardBitmapConverter.h"
 #include "MSWindowsClipboardFacade.h"
 #include "MSWindowsClipboardHTMLConverter.h"
 #include "MSWindowsClipboardUTF16Converter.h"
+#include "base/Log.h"
+#include "common/Constants.h"
 
 //
 // MSWindowsClipboard

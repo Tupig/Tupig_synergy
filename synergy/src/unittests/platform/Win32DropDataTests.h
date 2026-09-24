@@ -48,13 +48,10 @@ private:
   offset, to exercise the offset validation
   */
   static std::vector<unsigned char> makeBlock(
-      const std::vector<std::wstring> &paths, bool wide = true, bool terminate = true,
-      uint32_t offsetOverride = 0
+      const std::vector<std::wstring> &paths, bool wide = true, bool terminate = true, uint32_t offsetOverride = 0
   );
 
-  static std::vector<unsigned char> makeAnsiBlock(
-      const std::vector<std::string> &paths, bool terminate = true
-  );
+  static std::vector<unsigned char> makeAnsiBlock(const std::vector<std::string> &paths, bool terminate = true);
 
   Log m_log;
 };
