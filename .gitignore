@@ -1,3 +1,52 @@
-# GitHubDesktop2Chinese 已拆分为独立仓库 https://github.com/Tupig/GitHubDesktop2Chinese
-# 本地目录保留为独立 git 仓库，此仓库不再跟踪
-GitHubDesktop2Chinese/
+# SPDX-FileCopyrightText: Copyright (C) 2024 Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-FileCopyrightText: Copyright (C) 2011 Symless Ltd.
+# SPDX-FileCopyrightText: Copyright (C) 2010 Jason Axelson <BostonVaulter@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Build output
+# The presets deliberately give special builds their own directory (build-asan,
+# build-linux-asan, build-linux-tsan, build-linux-coverage) so that configuring
+# one cannot clobber another's cache; all of them are covered here.
+/build/
+/build-*/
+/dist/
+/tmp/
+/vcpkg_installed/
+
+# vcpkg runtime (bootstrapped, never committed)
+/vendor/
+
+# IDE / editor
+.vscode/
+.vs/
+.idea/
+*.code-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+/.qtcreator/
+
+# CMake generated
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeUserPresets.json
+CMakeFiles/
+compile_commands.json
+
+# Platform temp files
+.DS_Store
+Thumbs.db
+**/*.directory
+
+# Environment / secrets
+.env*
+.env.local
+
+# AI session files
+/.claude/
+/.omo/
+opencode.jsonc
+
+# Spell check (local only)
+aqtinstall.log

@@ -9,8 +9,8 @@ runs:
       id: unit-tests
       env:
         QT_QPA_PLATFORM: offscreen
-      # Relative to the project directory, not the repository root.
-      working-directory: synergy
+      # Relative to the project directory (the repository root).
+      working-directory: .
       run: |
         # BUILD_TESTS=OFF legs (debian-12, ubuntu-24.04, rocky) and Qt5
         # fallback (debian-13-x86_64) produce no unittests directory.

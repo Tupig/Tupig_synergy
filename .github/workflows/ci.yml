@@ -1,8 +1,7 @@
 # All-in-one continuous integration (CI) workflow.
-# Free-tier plan (private repo): push/PR run only cheap Linux legs
-# (see .github/matrices/linux-targets.json "free"). Windows/macOS/flatpak
-# and the full Linux matrix run only on release or workflow_dispatch.
-# No schedule — nightly burns free minutes without a code change.
+# push/PR run a lean Linux subset (see .github/matrices/linux-targets.json
+# "free"); Windows/macOS/flatpak and the full Linux matrix run on release or
+# workflow_dispatch. No schedule — runs are event-driven.
 
 name: CI
 
@@ -32,21 +31,9 @@ on:
           - windows
           - macos
           - linux
-  # Path filters keep synergy CI independent of sibling projects
-  # (GitHubDesktop2Chinese has its own ghdesktop2chinese.yml workflow).
   push:
     branches: [main]
-    paths:
-      - "synergy/**"
-      - ".github/workflows/ci.yml"
-      - ".github/actions/**"
-      - ".github/matrices/**"
   pull_request:
-    paths:
-      - "synergy/**"
-      - ".github/workflows/ci.yml"
-      - ".github/actions/**"
-      - ".github/matrices/**"
   release:
     types: [published]
 
@@ -68,14 +55,6 @@ env:
   SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
   SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
-# The project lives in the `synergy/` subdirectory of a repository whose root also
-# holds unrelated content, so every `run` step below has to be anchored there. This
-# was implicit before - the workflows used to sit inside `synergy/`, where GitHub
-# never discovered them. Keep this in step with any move of the project directory.
-defaults:
-  run:
-    working-directory: synergy
-
 jobs:
   # Quality gate to allow PR merge, used in the branch protection rules.
   ci-passed:
@@ -90,10 +69,8 @@ jobs:
       # filters out, so requiring it catches a build skipped by its failure.
       # lint-clang has no platform filter: a failed lint used to be invisible here
       # (builds skip via needs:, skipped counted as ok) — always require it.
-      # No checkout: this job only inspects needs.* results. Override the
-      # workflow-level working-directory (synergy/) or bash can't start.
+      # No checkout: this job only inspects needs.* results.
       - name: Check all jobs passed or were intentionally skipped
-        working-directory: .
         run: |
           ok() {
             [[ "$1" == "success" || "$1" == "skipped" ]]
@@ -297,7 +274,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-macos:
     needs: [lint-clang, get-version]
@@ -451,7 +428,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-linux:
     needs: [lint-clang, get-version]
@@ -468,8 +445,7 @@ jobs:
 
     steps:
       # Containers don't ship git; everything else needs it for checkout + describe.
-      # Pre-checkout: synergy/ does not exist yet; override workflow cwd or the
-      # container fails chdir (same class as A-31 in codeql/sonar/valgrind).
+      # This pre-checkout step runs at the workspace root, which always exists.
       - name: Install Git on Container
         shell: bash
         working-directory: .
@@ -563,7 +539,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
-          path: ${{ github.workspace }}/synergy/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
 
   build-flatpak:
     needs: [lint-clang, get-version]
@@ -601,22 +577,21 @@ jobs:
       - name: Lint manifest
         run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
 
-      # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root),
-      # not from defaults.run.working-directory (ADR 0549). The builder therefore
-      # reads the manifest under synergy/ and writes repo/, .flatpak-builder/ and
-      # the bundle at the workspace root; Validate/Upload must anchor there too.
+      # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root).
+      # The builder reads the manifest from extra/ and writes repo/,
+      # .flatpak-builder/ and the bundle at the workspace root; Validate/Upload
+      # must anchor there too.
       - name: Build
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_linux_${{ matrix.flatpak.arch }}.flatpak
-          manifest-path: synergy/extra/deploy/linux/flatpak/com.tupig.synergy.yml
+          manifest-path: extra/deploy/linux/flatpak/com.tupig.synergy.yml
           cache-key: flatpak-builder-${{matrix.flatpak.arch}}-2.0
           arch: ${{matrix.flatpak.arch}}
           upload-artifact: false
 
       - name: Validate build
-        working-directory: .
-        run: flatpak-builder-lint --exceptions --user-exceptions synergy/extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
+        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
 
       - name: Upload
         uses: actions/upload-artifact@v7

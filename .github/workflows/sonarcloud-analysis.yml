@@ -11,11 +11,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# See ci.yml for why the work is anchored in the `synergy/` subdirectory.
-defaults:
-  run:
-    working-directory: synergy
-
 jobs:
   sonar:
     # This job would fail for contributors who open PRs as the workflow runs outside of our repo
@@ -30,8 +25,8 @@ jobs:
       CPU_CORE_COUNT: 4
 
     steps:
-      # Pre-checkout: synergy/ does not exist yet; override workflow cwd or
-      # the container fails chdir before Fancy Checkout runs.
+      # Pre-checkout: the workspace root always exists; keep the container from
+      # chdir-ing into a directory that is not there yet.
       - name: Install container dependencies
         working-directory: .
         run: |

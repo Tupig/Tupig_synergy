@@ -13,8 +13,8 @@ runs:
   steps:
     - name: Test package
       shell: bash
-      # Paths below are relative to the project directory, not the repository root.
-      working-directory: synergy
+      # Paths below are relative to the project directory (the repository root).
+      working-directory: .
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
           dmg=$(ls build/synergy[-_]*.dmg | head -1)

@@ -12,11 +12,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# See ci.yml for why the work is anchored in the `synergy/` subdirectory.
-defaults:
-  run:
-    working-directory: synergy
-
 jobs:
   codeql:
     runs-on: ubuntu-latest
@@ -24,8 +19,8 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      # Pre-checkout: synergy/ does not exist yet; override workflow cwd or
-      # the container fails chdir before Fancy Checkout runs.
+      # Pre-checkout: the workspace root always exists; keep the container from
+      # chdir-ing into a directory that is not there yet.
       - name: Install container dependencies
         working-directory: .
         run: |
@@ -46,11 +41,9 @@ jobs:
           languages: cpp
           build-mode: manual
 
-      # Autobuild fails at the repo root: two sibling projects (GitHubDesktop2Chinese
-      # and synergy) both look like build systems, so the autobuilder refuses to
-      # pick one. Build the actual project explicitly from synergy/.
+      # Build the project explicitly for CodeQL instead of relying on autobuild,
+      # so the analysis targets the actual build commands.
       - name: Build for CodeQL
-        working-directory: synergy
         run: |
           cmake -B build -G "Ninja" \
             -DCMAKE_BUILD_TYPE=Release \

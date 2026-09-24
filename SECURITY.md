@@ -1,21 +1,20 @@
-# Security Policy
+# Security Policy / 安全策略
 
-## Supported Versions
+## Supported Versions / 支持版本
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+| Version | Supported |
+| ------- | --------- |
+| latest `main` | :white_check_mark: |
+| older releases | :x: |
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Reporting a Vulnerability / 上报漏洞
 
-## Reporting a Vulnerability
+**Do not open a public issue for security problems.** Please use GitHub's private
+vulnerability reporting (repository **Security → Report a vulnerability**), or the
+process described in [`docs/security.md`](docs/security.md).
 
-Use this section to tell people how to report a vulnerability.
+**请勿用公开 issue 上报安全问题。** 请通过 GitHub 私有漏洞上报（仓库
+**Security → Report a vulnerability**），或见 [`docs/security.md`](docs/security.md)。
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+We aim to acknowledge reports within a few days and will coordinate a fix and
+disclosure timeline with you. / 我们会在数日内确认，并与你协调修复与披露时间线。

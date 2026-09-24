@@ -1,0 +1,5 @@
+[SEE ALSO]
+synergy(1), synergy-core(1)
+
+Project documentation lives in the repository under docs/
+(https://github.com/Tupig/Tupig_synergy).

@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2025 Chris Rizzitello <sithlord48@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# These files used to be declared by `synergy/REUSE.toml`, whose `.github/**`
-# entry was relative to the project directory. The directory was moved to the
-# repository root so that GitHub would discover the workflows (it only reads
-# `<repo-root>/.github`), and the declarations came with it: REUSE.toml paths are
-# relative to the file that holds them, so a copy here is what keeps these files
-# covered.
+# These files used to be declared by the project-local `REUSE.toml`, whose
+# `.github/**` entry was relative to the project directory. The project was moved
+# to the repository root so that GitHub would discover the workflows (it only
+# reads `<repo-root>/.github`), and the declarations came with it: REUSE.toml
+# paths are relative to the file that holds them, so a copy here is what keeps
+# these files covered.
 #
 # The licence and copyright are unchanged from the original declaration.
 

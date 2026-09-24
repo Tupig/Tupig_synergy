@@ -14,11 +14,6 @@ on:
         type: string
         default: ""
 
-# See ci.yml for why the work is anchored in the `synergy/` subdirectory.
-defaults:
-  run:
-    working-directory: synergy
-
 jobs:
   clang-tidy:
     name: clang-tidy
@@ -68,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: clang-tidy-results
-          path: synergy/clang-tidy-output.txt
+          path: clang-tidy-output.txt
           if-no-files-found: ignore
 
   cppcheck:
