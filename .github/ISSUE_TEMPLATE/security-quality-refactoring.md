@@ -98,10 +98,13 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | **A-21** | P3 | CMake 缺陷批：xkbfile `!` 死检查、多配置 NDEBUG 误加、`generate_app_man` 变量大小写、`PORTABLE_LIBS` 死语句、`SKIP_BUILD_TESTS` 双源、libportal/libei 版本文档不符、`build.sh:17` 残句 | `cmake/Libraries.cmake:271`、`CMakeLists.txt:320-323` 等 | ⬜ 待修复 |
 | **A-22** | P3 | 文档死链/幽灵：mingw-toolchain、`.pre-commit-config.yaml`、`bug_report.md`、security.md 无邮箱、ADR-0011 目录树、`build.md` 声称支持 `debug` 参数 | `build.md:198,437,506-507`、`contributing.md:26,102,356,431` 等 | ⬜ 待修复 |
 | **A-23** | P3 | 打包/CI 卫生：REUSE 死路径 ×4、build.md「无人消费 Flatpak」与 CI 矛盾、delivery 漏 flatpak+Arch、WiX 5/4/7 三角、Xcode 绝对路径、vcpkg `revision: master`、sonar 幽灵排除 | `REUSE.toml:20-22,36-37`、`build.md:182-186` 等 | ⬜ 待修复 |
-| **A-24** | P3 | 上游身份残留：`Synergy App Ltd` SPDX ×5、symless 下载链、AboutDialog「Deskflow」回退、`daemonName()` 上游名、manpage 上游 wiki、issue `config.yml` 全指 deskflow | 见审计报告 A-24 | ⬜ 待修复（版权策略需 Dev 一次拍板） |
+| **A-24** | P3 | 上游身份残留：`Synergy App Ltd` SPDX ×5、symless 下载链、AboutDialog「Deskflow」回退、`daemonName()` 上游名、manpage 上游 wiki、issue `config.yml` 全指 deskflow | 见审计报告 A-24 | 🔵 策略已定：**保留上游 SPDX 归属 + 加注释；仅改用户可见面**（AboutDialog/daemonName/manpage/config.yml → 本仓库）；待 CI 绿后执行 |
 | **A-25** | P3 | U-15 残留：metainfo `project_license` 与 flatpak SPDX 缺 OpenSSL exception | `metainfo.xml:7`、`com.tupig.synergy.yml:2` | ⬜ 待修复 |
 | **A-26** | P3 | A-10 追踪行过期（代码已修、状态仍「挂账」） | 本文档 §2.4 A-10 行 | ✅ 已修复（本登记提交补翻状态） |
 | **A-27** | P3 | 亮色主题缺 `places/64/user-trash`（Windows 亮色删除按钮无图标） | `synergy.qrc:90`、`synergy-light.theme:15` | ⬜ 待修复 |
+| **A-28** | P1 | CI 首跑（A-14 生效后）暴露：lint-clang 真实检出 105 文件 clang-format 漂移（A-12 门禁实证生效，非空转） | run `35948919314` lint artifact | ✅ 已修复（应用 CI `clang-format-diff` artifact，108 文件含 workflow/文档；本地 22.1.8 ≠ CI 20.1.0，以 CI diff 为准） |
+| **A-29** | P1 | `ci-passed`/`report`/`s3-upload` 无 Checkout 却继承 `defaults.run.working-directory: synergy`，bash 无法启动 → 三 job 必挂 | `ci.yml:63-65` vs `:69,752,710` | ✅ 已修复（三处 run 步补 `working-directory: .`；YAML 解析通过，待 CI 实证） |
+| **A-30** | P1 | `s3-upload` AWS secrets 为空（`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`），push 主干必挂 | `ci.yml:726-727`；`gh secret list` 空 | 🔵 需拍板：配置 secrets **或** 改为 secrets 缺失时 skip 不计失败 |
 
 ---
 
@@ -276,6 +279,8 @@ TuPig Synergy 代码库存在 23 个安全、质量、性能和技术债务问�
 | 2026-09-24 | 二轮全面审计（4 路并行）：报告落盘 `synergy/docs/audit-2026-09-24.md`；新发现 A-12～A-27 登记 §2.5；A-10 状态补翻；A-18/A-19 登记并随本提交刷新 HANDOFF 头部与本变更日志 | opencode |
 | 2026-09-24 | A-12/A-13 关闭（待 CI 实证）：lint-clang 补 `working-directory: synergy`；`ci-passed` 纳入 lint needs；flatpak `manifest-path`/Validate/Upload 统一 workspace 根锚定 | opencode |
 | 2026-09-24 | P2 关闭 A-14～A-19：ci push→main + static-analysis 注释如实；HANDOFF 回滚/工厂状态对齐现实；README 拖拽与配置键按 delivery/Settings 重写；consistency-audit U 详情节补 Resolution | opencode |
+| 2026-09-24 | A-24 策略拍板（保留上游 SPDX+注释，仅改用户可见面）、A-15 并入 plan-B Phase 1、P3 等 CI 绿；登记 A-28～A-30（CI 首跑新发现） | opencode |
+| 2026-09-24 | A-28 关闭：应用 CI clang-format-diff（105 源文件）；A-29 关闭：ci-passed/report/s3-upload 补 `working-directory: .`；A-30 待拍板（AWS secrets 空） | opencode |
 
 ---
 
