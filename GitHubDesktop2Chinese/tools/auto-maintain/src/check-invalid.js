@@ -74,5 +74,30 @@ export function checkInvalid(localization, mainJsText, rendererJsText) {
   checkArray('main_dev', mainJsText);
   checkArray('renderer_dev', rendererJsText);
 
+  // 检测 select 中的替换项（对应 C++ 的 invalidcheck 对 select 的遍历）
+  const selects = localization.select;
+  if (Array.isArray(selects)) {
+    for (let s = 0; s < selects.length; s++) {
+      const sel = selects[s];
+      const replaces = sel?.replace;
+      if (!Array.isArray(replaces)) continue;
+      const targetJs = sel.replaceFile === 'main.js' ? mainJsText : rendererJsText;
+      for (let j = 0; j < replaces.length; j++) {
+        total++;
+        const { ok, errors } = checkEntry(targetJs, replaces[j]);
+        if (ok) {
+          okCount++;
+        } else {
+          failed.push({
+            array: `select[${s}].replace`,
+            index: j,
+            item: replaces[j],
+            errors,
+          });
+        }
+      }
+    }
+  }
+
   return { total, ok: okCount, failed, failedCount: failed.length };
 }

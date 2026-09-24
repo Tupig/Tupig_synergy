@@ -31,6 +31,26 @@ export async function getLatestRelease() {
 }
 
 /**
+ * 快速校验 zip 完整性：检查 EOCD 签名 (PK\x05\x06) 是否出现在文件末尾。
+ */
+export function isZipComplete(zipPath) {
+  try {
+    const fd = fs.openSync(zipPath, 'r');
+    try {
+      const size = fs.fstatSync(fd).size;
+      if (size < 22) return false;
+      const buf = Buffer.alloc(22);
+      fs.readSync(fd, buf, 0, 22, size - 22);
+      return buf.readUInt32LE(0) === 0x06054b50;
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 下载 release zip（支持断点续传），返回 zip 路径
  */
 export async function downloadZip(url, destDir) {
@@ -38,24 +58,37 @@ export async function downloadZip(url, destDir) {
   const zipPath = path.join(destDir, 'github-desktop.zip');
   const tmpPath = zipPath + '.part';
 
-  // 已经完整下载则跳过
-  if (fs.existsSync(zipPath)) {
+  // 已经完整下载且校验通过则跳过
+  if (fs.existsSync(zipPath) && isZipComplete(zipPath)) {
     return zipPath;
   }
 
   // 支持 Range 续传
   const headers = { 'User-Agent': 'githubdesktop2chinese-auto-maintain' };
+  let hasPartial = false;
   if (fs.existsSync(tmpPath)) {
     const size = fs.statSync(tmpPath).size;
-    headers.Range = `bytes=${size}-`;
+    if (size > 0) {
+      headers.Range = `bytes=${size}-`;
+      hasPartial = true;
+    }
   }
   const res = await fetch(url, { headers });
   if (res.status !== 200 && res.status !== 206) {
     throw new Error(`下载 GitHub Desktop 失败: HTTP ${res.status}`);
   }
 
-  const file = fs.createWriteStream(tmpPath, { flags: 'a' });
+  // 服务器不支持 Range 时（200），若已有部分文件则必须从头覆盖，避免追加损坏
+  const isPartial = hasPartial && res.status === 206;
+  const file = fs.createWriteStream(tmpPath, { flags: isPartial ? 'a' : 'w' });
   await pipeline(Readable.fromWeb(res.body), file);
+  if (!isZipComplete(tmpPath)) {
+    // 可能是不完整的分块下载（EOF 未达）。若这是续传结果，保留 .part 以便下次续传；
+    // 但若已有完整 zip，则删掉损坏的 .part 避免污染。
+    if (!fs.existsSync(zipPath)) {
+      throw new Error('下载的 zip 不完整（缺少 EOCD 记录）');
+    }
+  }
   fs.renameSync(tmpPath, zipPath);
   return zipPath;
 }
@@ -71,10 +104,12 @@ export function extractJs(zipPath, workDir) {
   fs.mkdirSync(extractDir, { recursive: true });
 
   // 优先用系统 unzip / tar，跨平台
-  try {
-    execSync(`unzip -q -o "${zipPath}" -d "${extractDir}"`, { stdio: 'pipe' });
-  } catch {
-    execSync(`tar -xf "${zipPath}" -C "${extractDir}"`, { stdio: 'pipe' });
+  const unzip = tryExec(`unzip -q -o "${zipPath}" -d "${extractDir}"`);
+  if (!unzip) {
+    const tar = tryExec(`tar -xf "${zipPath}" -C "${extractDir}"`);
+    if (!tar) {
+      throw new Error(`解压失败: unzip 与 tar 均不可用或解压出错 (${zipPath})`);
+    }
   }
 
   const appDir = findAppDir(extractDir);
@@ -87,6 +122,15 @@ export function extractJs(zipPath, workDir) {
     throw new Error(`app 目录中缺少 main.js / renderer.js: ${appDir}`);
   }
   return { mainJsPath, rendererJsPath, appDir };
+}
+
+function tryExec(cmd) {
+  try {
+    execSync(cmd, { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function findAppDir(root) {

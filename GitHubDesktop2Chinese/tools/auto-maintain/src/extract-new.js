@@ -107,10 +107,11 @@ export function collectPatterns(localization) {
       }
     }
   }
-  // select 中的 replace 项也纳入
+  // select 中的 replace 项也纳入（仅 enable=true 的，因 enable=false 不生效，相关字符串仍为英文）
   const selects = localization.select;
   if (Array.isArray(selects)) {
     for (const sel of selects) {
+      if (sel?.enable !== true) continue;
       const replaces = sel?.replace;
       if (!Array.isArray(replaces)) continue;
       for (const item of replaces) {
@@ -132,14 +133,22 @@ export function collectPatterns(localization) {
 
 /**
  * 判断候选字符串是否已被任一现有映射正则覆盖。
+ *
+ * 注意：现有映射的 pattern 大多带引号（如 "\"Let's get started!\""），
+ * 而提取出的候选是无引号文本。因此需对候选的多种形态都做测试：
+ * 裸文本、双引号包裹、单引号包裹，任一被匹配即视为已覆盖。
  */
 export function isCoveredByPatterns(candidate, patterns) {
+  const forms = [candidate, '"' + candidate + '"', "'" + candidate + "'"];
   for (const p of patterns) {
+    let re;
     try {
-      const re = new RegExp(p);
-      if (re.test(candidate)) return true;
+      re = new RegExp(p);
     } catch {
-      /* ignore */
+      continue;
+    }
+    for (const f of forms) {
+      if (re.test(f)) return true;
     }
   }
   return false;

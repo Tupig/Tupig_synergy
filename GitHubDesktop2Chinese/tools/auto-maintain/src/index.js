@@ -154,7 +154,7 @@ function renderMarkdown(report) {
     lines.push(`| --- | --- | --- | --- |`);
     for (const f of failed) {
       const reason = f.errors.map(e => (e.reason === 'regex-error' ? 'regex-error' : 'not-found')).join('; ');
-      lines.push(`| ${f.array} | ${f.index} | ${reason} | \`${f.errors[0].pattern}\` |`);
+      lines.push(`| ${f.array} | ${f.index} | ${reason} | \`${f.errors[0].pattern.replace(/\|/g, '\\|')}\` |`);
     }
     lines.push('');
   }
