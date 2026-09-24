@@ -3,8 +3,8 @@
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
 > **仓库**: `https://github.com/Tupig/Tupig_synergy`（public，项目在仓库根目录）
-> **最新 Commit**: `478be74cc`（A-58 免费化瘦身）+ 本轮 A-59 仓库重构（改名/转 public/扁平化）
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；CI 历轮问题 A-12～A-58 已修；**A-59：仓库改名 `Tupig/Tupig_synergy` 并转 public，`synergy/` 内容迁到根目录，所有路径/URL 引用同步 —— public 后 Actions 分钟免费，可在 push 上跑 free 最小集实证 A-12～A-58**
+> **最新 Commit**: `47953e9af`（A-59 改名/转 public/扁平化）+ 后续 docs 回填
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；CI 历轮问题 A-12～A-58 已修；**A-59：仓库改名 `Tupig/Tupig_synergy` 并转 public，`synergy/` 内容迁到根目录，所有路径/URL 引用同步；转 public 后 run `35988655131` CI 全绿（lint/get-version/4 腿 free 矩阵/ci-passed），billing 硬锁解除**
 
 ---
 
@@ -95,6 +95,7 @@
 - [x] **A-58 推送后实测（run `35978730528`）**：瘦身结构生效（Windows/macOS/flatpak/s3-upload 正确 skip、无 CodeQL/Sonar 自动跑），但 **lint/get-version/ci-passed/report 仍 `runner_id:0`、`steps:[]` 9 秒失败 —— 账户 billing 硬锁未解除**。**用户须在 GitHub Settings → Billing & plans 处理（移除失败付款方式 / 调 spending limit）或将仓库转 public；代码侧免费化已完成，无法再省**
 - [x] **A-59 仓库重构（转 public + 扁平化）**：仓库由 `Tupig/TuPig_Product` 改名 **`Tupig/Tupig_synergy` 并转为 public**（public repo Actions 分钟免费，从根上绕开私仓 billing）；`synergy/` 下全部内容 `git mv` 到仓库根目录（`src/`、`docs/`、`cmake/`、`extra/`、`CMakeLists.txt`、`AGENTS.md` …），`synergy/` 目录消失；同步修正所有路径引用：workflows/actions 的 `working-directory`、`${{ github.workspace }}/synergy/build`、flatpak `manifest-path`/exceptions、artifact 路径、`ci.yml` 去掉 `paths` 过滤与 `defaults.working-directory`；仓库名 URL `Tupig/TuPig_Product`→`Tupig/Tupig_synergy`（含 README/REUSE/vcpkg/metainfo/UrlConstants/constants.h/AboutDialog/6 份 .ts/manpage）；`.gitignore` 合并；`.github/CONTRIBUTING.md`、`CODEOWNERS`、`AGENTS.md` 引用改根；`SECURITY.md` 由 GitHub 模板改为真实上报流程；flatpak metainfo「私仓 404」注释删除。**注意**：git 历史中仍含上游许可代码（`kOfflineActivationHex`/`web-muskoka`）与 billing 记录（转 public 前已向用户说明并获同意）。ghdesktop2chinese 工作流此前已拆出为独立仓库，本地目录由根 `.gitignore` 忽略
 - [x] **A-59 校验**：全部 workflow/action YAML 与 `linux-targets.json` 解析通过；`git grep` 确认无残留 `synergy/` 路径引用（追踪台账/历史的旧路径文字保留）；代码侧 `synergy/` 仅为 C++ include 命名空间与产品名，未改
+- [x] **A-59 实证（run `35988655131`，`47953e9af`）**：**CI 全绿 `success`** —— `lint-clang` ✅、`get-version` ✅、4 腿 free 矩阵（`ubuntu-26.04-x86_64`/`debian-12-x86_64`/`debian-13-x86_64`/`ubuntu-24.04-x86_64`）✅、`ci-passed` ✅；Windows/macOS/flatpak/s3-upload/report 按设计 skip。**转 public 后 Actions 不再 billing 硬锁、真实运行**，同时实证 A-12（lint）、A-52（xkbfile 探测）、A-53（debian-12 `<optional>`）、A-54（ubuntu-24.04 format）、A-55（测试目录）等历轮修复；A-56（macOS dyld）与全量 19 腿矩阵须手动 `workflow_dispatch`/release 覆盖
 
 ### main 分支提交记录 (最新 6 个)
 ```
@@ -269,7 +270,7 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **public 后 push CI**（free 最小集：lint + get-version + 4 腿 Linux + ci-passed）：A-59 转 public 后 Actions 分钟免费，push 应能真正跑起来 — 实证 A-12～A-13、A-20～A-27、A-28～A-55；A-56（macOS）与全量矩阵走手动 `workflow_dispatch` 或 release
+1. **CI 已全绿**（A-59，run `35988655131`）：free 最小集 lint/get-version/4 腿 Linux/ci-passed 通过；如需覆盖 A-56（macOS dyld）与全量 19 腿矩阵，手动 `workflow_dispatch`（`platform` 留空 / `package-type` 按需）或发 release
 2. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
 3. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
 
@@ -286,8 +287,8 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 所有权模型明确
 - [x] Step 2: 接口文档完整
 
-### 下一步: public CI 实证 → Step 5 / B 计划阶段 1 → G1 验证
-1. A-59 转 public + 扁平化已推送；观察 push CI（free 最小集）是否脱离 `runner_id:0` 并实证 A-12～A-13、A-20～A-27、A-28～A-55；A-56/全量矩阵走手动 dispatch
+### 下一步: CI 已全绿 → Step 5 / B 计划阶段 1 → G1 验证
+1. A-59 已完成并实证（run `35988655131` 全绿）；A-56/全量矩阵走手动 `workflow_dispatch` 或 release
 2. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15；见 §5.4）
 3. Windows 跨屏拖拽人工验证（清单 §5.6：IDropTarget 捕获 + IDropSource 投放到 Explorer）
 4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / §5.4 阶段 1）
