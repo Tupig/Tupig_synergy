@@ -22,12 +22,9 @@ if(TARGET gui)
   target_link_libraries(gui synergy-gui)
 endif()
 
-# Pick the gui app target name (Apple uses the proper-cased brand name).
-if(APPLE)
-  set(_synergy_gui_app ${CMAKE_PROJECT_PROPER_NAME})
-else()
-  set(_synergy_gui_app ${CMAKE_PROJECT_NAME})
-endif()
+# Pick the gui app target name. Always CMAKE_PROJECT_NAME: the target must be
+# a valid CMake identifier (no spaces), so it is never CMAKE_PROJECT_PROPER_NAME.
+set(_synergy_gui_app ${CMAKE_PROJECT_NAME})
 if(TARGET ${_synergy_gui_app})
   target_compile_definitions(${_synergy_gui_app} PRIVATE SYNERGY_EXTRA_HEADER)
   target_include_directories(${_synergy_gui_app} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/lib)

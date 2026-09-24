@@ -2,11 +2,10 @@
 # SPDX-FileCopyrightText: (C) 2024 Symless Ltd
 # SPDX-License-Identifier: MIT
 
-if(APPLE)
-  set(target ${CMAKE_PROJECT_PROPER_NAME})
-else()
-  set(target ${CMAKE_PROJECT_NAME})
-endif()
+# CMake target names must not contain spaces; "TuPig Synergy" is rejected for
+# add_executable and breaks every TARGET_BUNDLE_* generator expression. Keep the
+# brand only in display/bundle metadata (BUNDLE_* / OUTPUT_NAME), not the target.
+set(target ${CMAKE_PROJECT_NAME})
 set(filename deskflow-gui)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -17,12 +16,14 @@ if(WIN32)
   configure_file(${CMAKE_SOURCE_DIR}/src/apps/res/windows.rc.in deskflow.rc)
   set(platform_extra deskflow.rc)
 elseif(BUILD_OSX_BUNDLE)
-  #setup our bundle plist file
-  set(BUNDLE_EXECUTABLE_NAME "${target}")
-  set(BUNDLE_BUNDLE_NAME "${target}")
-  set(BUNDLE_DISPLAY_NAME "${target}")
+  # Bundle metadata carries the spaced brand name; the CMake target stays
+  # ${CMAKE_PROJECT_NAME} (no spaces). CFBundleExecutable must match the
+  # OUTPUT_NAME the bundle actually embeds.
+  set(BUNDLE_EXECUTABLE_NAME "${CMAKE_PROJECT_PROPER_NAME}")
+  set(BUNDLE_BUNDLE_NAME "${CMAKE_PROJECT_PROPER_NAME}")
+  set(BUNDLE_DISPLAY_NAME "${CMAKE_PROJECT_PROPER_NAME}")
   set(BUNDLE_GUI_IDENTIFIER "${CMAKE_PROJECT_REV_FQDN}")
-  set(BUNDLE_ICON_FILE ${target}.icns)
+  set(BUNDLE_ICON_FILE "${CMAKE_PROJECT_PROPER_NAME}.icns")
   set(BUNDLE_INFO_STRING "${CMAKE_PROJECT_DESCRIPTION}")
   set(BUNDLE_COPYRIGHT "${CMAKE_PROJECT_COPYRIGHT}")
 
@@ -32,7 +33,7 @@ elseif(BUILD_OSX_BUNDLE)
     @ONLY
   )
 
-  set(platform_extra ${CMAKE_SOURCE_DIR}/extra/deploy/mac/bundle/Contents/Resources/${target}.icns)
+  set(platform_extra ${CMAKE_SOURCE_DIR}/extra/deploy/mac/bundle/Contents/Resources/${CMAKE_PROJECT_PROPER_NAME}.icns)
   set_source_files_properties(${platform_extra} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 endif()
 
@@ -53,6 +54,11 @@ target_link_libraries(
 # Set output name with version
 include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
 set_output_name(${target})
+# On Apple the .app folder must be named "TuPig Synergy.app" (install/CPack
+# paths use CMAKE_PROJECT_PROPER_NAME); override set_output_name's synergy.
+if(APPLE AND BUILD_OSX_BUNDLE)
+  set_target_properties(${target} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_PROPER_NAME}")
+endif()
 
 install(
   TARGETS ${target}

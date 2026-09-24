@@ -58,9 +58,18 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: cpp
+          build-mode: manual
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
+      # Autobuild fails at the repo root: two sibling projects (GitHubDesktop2Chinese
+      # and synergy) both look like build systems, so the autobuilder refuses to
+      # pick one. Build the actual project explicitly from synergy/.
+      - name: Build for CodeQL
+        working-directory: synergy
+        run: |
+          cmake -B build -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSKIP_BUILD_TESTS=ON
+          cmake --build build -j"$(nproc)"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

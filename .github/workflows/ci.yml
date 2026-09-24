@@ -556,8 +556,11 @@ jobs:
 
     steps:
       # Containers don't ship git; everything else needs it for checkout + describe.
+      # Pre-checkout: synergy/ does not exist yet; override workflow cwd or the
+      # container fails chdir (same class as A-31 in codeql/sonar/valgrind).
       - name: Install Git on Container
         shell: bash
+        working-directory: .
         run: |
           if [ "${{ matrix.target.like }}" == "debian" ]; then
             apt update -qqq > /dev/null && apt install -qqq git devscripts > /dev/null
