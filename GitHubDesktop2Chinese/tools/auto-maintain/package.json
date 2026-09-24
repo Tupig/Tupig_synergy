@@ -1,0 +1,16 @@
+{
+  "name": "auto-maintain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "自动维护 GitHubDesktop2Chinese 的 localization.json：失效检测 + 未翻译候选提取",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node src/index.js check",
+    "extract": "node src/index.js extract",
+    "all": "node src/index.js check && node src/index.js extract"
+  },
+  "dependencies": {}
+}
