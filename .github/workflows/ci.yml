@@ -712,9 +712,11 @@ jobs:
   # on get-version, which supplies the path. Layout: <dir>/<dev|snapshot|release>/<version>/...
   # No checkout (download-artifact only), so run steps must override the
   # workflow working-directory; artifacts land at the workspace root under dist/.
+  # Skips entirely when AWS secrets are unset so the job shows "skipped"
+  # (not red) and report/ci-passed stay green until secrets are configured.
   s3-upload:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
-    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
+    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release') && secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' }}
     runs-on: ubuntu-latest
 
     steps:
