@@ -17,11 +17,6 @@
 
 namespace synergy {
 
-KeyMap::NameToKeyMap *KeyMap::s_nameToKeyMap = nullptr;
-KeyMap::NameToModifierMap *KeyMap::s_nameToModifierMap = nullptr;
-KeyMap::KeyToNameMap *KeyMap::s_keyToNameMap = nullptr;
-KeyMap::ModifierToNameMap *KeyMap::s_modifierToNameMap = nullptr;
-
 KeyMap::KeyMap() : m_numGroups(0), m_composeAcrossGroups(false)
 {
   m_modifierKeyItem.m_id = kKeyNone;
@@ -1077,20 +1072,18 @@ KeyID KeyMap::getDeadKey(KeyID key)
 
 std::string KeyMap::formatKey(KeyID key, KeyModifierMask mask)
 {
-  // initialize tables
-  initKeyNameMaps();
 
   std::string x;
   for (int32_t i = 0; i < kKeyModifierNumBits; ++i) {
     KeyModifierMask mod = (1u << i);
-    if ((mask & mod) != 0 && s_modifierToNameMap->contains(mod)) {
-      x += s_modifierToNameMap->find(mod)->second;
+    if ((mask & mod) != 0 && modifierToNameMap().contains(mod)) {
+      x += modifierToNameMap().find(mod)->second;
       x += "+";
     }
   }
   if (key != kKeyNone) {
-    if (s_keyToNameMap->contains(key)) {
-      x += s_keyToNameMap->find(key)->second;
+    if (keyToNameMap().contains(key)) {
+      x += keyToNameMap().find(key)->second;
     }
     // XXX -- we're assuming ASCII here
     else if (key >= 33 && key < 127) {
@@ -1107,13 +1100,11 @@ std::string KeyMap::formatKey(KeyID key, KeyModifierMask mask)
 
 bool KeyMap::parseKey(const std::string &x, KeyID &key)
 {
-  // initialize tables
-  initKeyNameMaps();
 
   // parse the key
   key = kKeyNone;
-  if (s_nameToKeyMap->contains(x)) {
-    key = s_nameToKeyMap->find(x)->second;
+  if (nameToKeyMap().contains(x)) {
+    key = nameToKeyMap().find(x)->second;
   }
   // XXX -- we're assuming ASCII encoding here
   else if (x.size() == 1) {
@@ -1139,8 +1130,6 @@ bool KeyMap::parseKey(const std::string &x, KeyID &key)
 
 bool KeyMap::parseModifiers(std::string &x, KeyModifierMask &mask)
 {
-  // initialize tables
-  initKeyNameMaps();
 
   mask = 0;
   std::string::size_type tb = x.find_first_not_of(" \t", 0);
@@ -1162,8 +1151,8 @@ bool KeyMap::parseModifiers(std::string &x, KeyModifierMask &mask)
       return false;
     }
 
-    if (s_nameToModifierMap->contains(c)) {
-      KeyModifierMask mod = s_nameToModifierMap->find(c)->second;
+    if (nameToModifierMap().contains(c)) {
+      KeyModifierMask mod = nameToModifierMap().find(c)->second;
       if ((mask & mod) != 0) {
         // modifier appears twice
         return false;
@@ -1198,25 +1187,52 @@ bool KeyMap::parseModifiers(std::string &x, KeyModifierMask &mask)
   return true;
 }
 
-void KeyMap::initKeyNameMaps()
+const KeyMap::NameToKeyMap &KeyMap::nameToKeyMap()
 {
-  // initialize tables
-  if (s_nameToKeyMap == nullptr) {
-    s_nameToKeyMap = new NameToKeyMap;
-    s_keyToNameMap = new KeyToNameMap;
+  static const NameToKeyMap map = [] {
+    NameToKeyMap m;
     for (const KeyNameMapEntry *i = kKeyNameMap; i->m_name != nullptr; ++i) {
-      (*s_nameToKeyMap)[i->m_name] = i->m_id;
-      (*s_keyToNameMap)[i->m_id] = i->m_name;
+      m[i->m_name] = i->m_id;
     }
-  }
-  if (s_nameToModifierMap == nullptr) {
-    s_nameToModifierMap = new NameToModifierMap;
-    s_modifierToNameMap = new ModifierToNameMap;
+    return m;
+  }();
+  return map;
+}
+
+const KeyMap::KeyToNameMap &KeyMap::keyToNameMap()
+{
+  static const KeyToNameMap map = [] {
+    KeyToNameMap m;
+    for (const KeyNameMapEntry *i = kKeyNameMap; i->m_name != nullptr; ++i) {
+      m[i->m_id] = i->m_name;
+    }
+    return m;
+  }();
+  return map;
+}
+
+const KeyMap::NameToModifierMap &KeyMap::nameToModifierMap()
+{
+  static const NameToModifierMap map = [] {
+    NameToModifierMap m;
     for (const KeyModifierNameMapEntry *i = kModifierNameMap; i->m_name != nullptr; ++i) {
-      (*s_nameToModifierMap)[i->m_name] = i->m_mask;
-      (*s_modifierToNameMap)[i->m_mask] = i->m_name;
+      m[i->m_name] = i->m_mask;
     }
-  }
+    return m;
+  }();
+  return map;
+}
+
+const KeyMap::ModifierToNameMap &KeyMap::modifierToNameMap()
+{
+  static const ModifierToNameMap map = [] {
+    ModifierToNameMap m;
+    for (const KeyModifierNameMapEntry *i = kModifierNameMap; i->m_name != nullptr; ++i) {
+      m[i->m_mask] = i->m_name;
+    }
+    return m;
+  }();
+  return map;
 }
 
 //

@@ -415,9 +415,6 @@ private:
   // Returns the number of modifiers indicated in \p state.
   static int32_t getNumModifiers(KeyModifierMask state);
 
-  // Initialize key name/id maps
-  static void initKeyNameMaps();
-
   // Ways to synthesize a KeyID over multiple keyboard groups
   using KeyGroupTable = std::vector<KeyEntryList>;
 
@@ -471,11 +468,11 @@ private:
   // Language sync data
   std::vector<std::string> m_keyboardLayouts;
 
-  // parsing/formatting tables
-  static NameToKeyMap *s_nameToKeyMap;
-  static NameToModifierMap *s_nameToModifierMap;
-  static KeyToNameMap *s_keyToNameMap;
-  static ModifierToNameMap *s_modifierToNameMap;
+  // parsing/formatting tables (function-local statics; defined in KeyMap.cpp)
+  static const NameToKeyMap &nameToKeyMap();
+  static const KeyToNameMap &keyToNameMap();
+  static const NameToModifierMap &nameToModifierMap();
+  static const ModifierToNameMap &modifierToNameMap();
 };
 
 } // namespace synergy
