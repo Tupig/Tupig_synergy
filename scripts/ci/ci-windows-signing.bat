@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  scripts\ci-windows-signing.bat
+REM  scripts\ci\ci-windows-signing.bat
 REM
 REM  Windows-only CI helpers for signing the release artifacts.
 REM
@@ -9,7 +9,7 @@ REM  R1 keeps Windows automation to a single scripting runtime, and the rest of
 REM  this repository is cmd. Putting the logic in a file also means it can be run
 REM  and reviewed locally, which inline YAML cannot.
 REM
-REM  Usage:  scripts\ci-windows-signing.bat <mode>
+REM  Usage:  scripts\ci\ci-windows-signing.bat <mode>
 REM
 REM    stage        Copy build\bin\*.exe (excluding tests) into the staging dir
 REM                 so they can be batch-signed with a single OTP.
@@ -182,5 +182,5 @@ exit /b 0
 
 REM ============================================================================
 :usage
-echo Usage: scripts\ci-windows-signing.bat ^<stage^|restore^|locate-msi^|verify-msi^>
+echo Usage: scripts\ci\ci-windows-signing.bat ^<stage^|restore^|locate-msi^|verify-msi^>
 exit /b 1

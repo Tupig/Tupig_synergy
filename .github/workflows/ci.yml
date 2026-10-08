@@ -119,7 +119,7 @@ jobs:
         uses: ./.github/actions/get-version
 
       - name: Check vcpkg version matches Version.cmake
-        run: python3 scripts/check-version-consistency.py
+        run: python3 scripts/ci/check-version-consistency.py
 
       # push/PR use the free-tier subset (x86_64 only, ~4 legs);
       # release/workflow_dispatch use the full distro matrix.
@@ -206,7 +206,7 @@ jobs:
       - name: Stage binaries for signing
         if: env.SYNERGY_VERSION_RELEASE == 'true'
         shell: cmd
-        run: scripts\ci-windows-signing.bat stage
+        run: scripts\ci\ci-windows-signing.bat stage
 
       - name: Sign inner binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true'
@@ -228,7 +228,7 @@ jobs:
       - name: Restore + verify signed binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true'
         shell: cmd
-        run: scripts\ci-windows-signing.bat restore
+        run: scripts\ci\ci-windows-signing.bat restore
 
       - name: Package
         shell: bash
@@ -238,7 +238,7 @@ jobs:
         if: env.SYNERGY_VERSION_RELEASE == 'true'
         id: locate-msi
         shell: cmd
-        run: scripts\ci-windows-signing.bat locate-msi
+        run: scripts\ci\ci-windows-signing.bat locate-msi
 
       - name: Sign MSI
         if: env.SYNERGY_VERSION_RELEASE == 'true'
@@ -261,7 +261,7 @@ jobs:
         shell: cmd
         env:
           MSI_PATH: ${{ steps.locate-msi.outputs.path }}
-        run: scripts\ci-windows-signing.bat verify-msi
+        run: scripts\ci\ci-windows-signing.bat verify-msi
 
       - name: Tests
         uses: ./.github/actions/run-tests
