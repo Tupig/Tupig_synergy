@@ -295,7 +295,7 @@ jobs:
             runs-on: macos-15
             timeout: 10
             qt-version: 6.11.1
-            # Deployment target is set once in extra/cmake/Synergy.cmake (single
+            # Deployment target is set once in cmake/Synergy.cmake (single
             # source of truth); don't pass -DCMAKE_OSX_DEPLOYMENT_TARGET here.
             config-args: '-DCMAKE_OSX_ARCHITECTURES="arm64"'
 
@@ -578,7 +578,7 @@ jobs:
         run: flatpak-builder-lint --exceptions --user-exceptions deploy/linux/flatpak/ci-build-lint-exceptions.json manifest deploy/linux/flatpak/com.tupig.synergy.yml
 
       # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root).
-      # The builder reads the manifest from extra/ and writes repo/,
+      # The builder reads the manifest from deploy/ and writes repo/,
       # .flatpak-builder/ and the bundle at the workspace root; Validate/Upload
       # must anchor there too.
       - name: Build

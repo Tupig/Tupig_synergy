@@ -1,6 +1,7 @@
 /*
  * Synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2025 - 2026 Synergy App Ltd
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy App Ltd
+ * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  *
  * This package is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

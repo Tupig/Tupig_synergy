@@ -138,15 +138,14 @@ Just re-run `setup.bat` — it's idempotent and only installs what's missing.
 
 ```
 TuPig Synergy (repo root)
-├── cmake/                      # CMake modules
-├── config/                     # Tool configs (SonarQube)
-├── deploy/                     # Platform packaging (DEB/RPM, DMG, MSI/7Z)
+├── cmake/                      # CMake modules (incl. version & Synergy helpers)
+├── config/                     # Tool configs (SonarQube, test settings sample)
+├── deploy/                     # Platform packaging (DEB/RPM, DMG, MSI/7Z, Flatpak)
 ├── docs/                       # Documentation
-├── extra/                      # Branding, deploy resources
-├── scripts/                    # Build scripts (build.bat, build.sh)
+├── scripts/                    # Build & CI scripts (build.bat, build.sh, ci/)
 ├── src/                        # Source code
-│   ├── apps/                   # Entry points (core, daemon, gui)
-│   ├── lib/                    # 12 core libraries
+│   ├── apps/                   # Entry points (core, daemon, gui) + res/ branding
+│   ├── lib/                    # 11 core libraries + synergy overlay
 │   └── unittests/              # Qt Test unit tests
 ├── translations/               # Qt .ts translation files
 ├── triplets/                   # vcpkg overlay triplets (static linking)
