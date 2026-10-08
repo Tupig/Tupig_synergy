@@ -31,6 +31,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 
 //
 // Client
@@ -250,7 +251,7 @@ void Client::grabClipboard(ClipboardID id)
 
 void Client::setClipboardDirty(ClipboardID, bool)
 {
-  assert(0 && "shouldn't be called");
+  throw std::logic_error("setClipboardDirty() is not valid for the client");
 }
 
 void Client::keyDown(KeyID id, KeyModifierMask mask, KeyButton button, const std::string &lang)

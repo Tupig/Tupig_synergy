@@ -596,8 +596,7 @@ float Server::mapToFraction(const BaseClientProxy *client, Direction dir, int32_
     return (x - sx + 0.5f) / static_cast<float>(sw);
 
   case NoDirection:
-    assert(0 && "bad direction");
-    break;
+    throw InvalidProtocolException();
   }
   return 0.0f;
 }
@@ -622,8 +621,7 @@ void Server::mapToPixel(const BaseClientProxy *client, Direction dir, float f, i
     break;
 
   case NoDirection:
-    assert(0 && "bad direction");
-    break;
+    throw InvalidProtocolException();
   }
 }
 
@@ -771,8 +769,7 @@ BaseClientProxy *Server::mapToNeighbor(BaseClientProxy *src, Direction srcSide, 
     break;
 
   case NoDirection:
-    assert(0 && "bad direction");
-    return nullptr;
+    throw InvalidProtocolException();
   }
 
   // save destination screen
@@ -830,7 +827,7 @@ void Server::avoidJumpZone(const BaseClientProxy *dst, Direction dir, int32_t &x
     break;
 
   case NoDirection:
-    assert(0 && "bad direction");
+    throw InvalidProtocolException();
   }
 }
 

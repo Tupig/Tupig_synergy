@@ -645,7 +645,7 @@ ArchNetAddress ArchNetworkWinsock::newAnyAddr(AddressFamily family)
   }
 
   default:
-    assert(0 && "invalid family");
+    throw ArchNetworkException("invalid family");
   }
   return addr;
 }
@@ -733,8 +733,7 @@ std::string ArchNetworkWinsock::addrToString(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return "";
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -772,8 +771,7 @@ void ArchNetworkWinsock::setAddrPort(ArchNetAddress addr, int port)
   }
 
   default:
-    assert(0 && "unknown address family");
-    break;
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -793,8 +791,7 @@ int ArchNetworkWinsock::getAddrPort(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return 0;
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -816,8 +813,7 @@ bool ArchNetworkWinsock::isAnyAddr(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return true;
+    throw ArchNetworkException("unknown address family");
   }
 }
 

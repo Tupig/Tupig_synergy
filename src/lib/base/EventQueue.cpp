@@ -177,8 +177,7 @@ bool EventQueue::processEvent(Event &event, double timeout, Stopwatch &timer)
   }
 
   default:
-    assert(0 && "invalid event type");
-    return false;
+    throw std::invalid_argument("invalid event type");
   }
 }
 

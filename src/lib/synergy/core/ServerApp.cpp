@@ -258,7 +258,7 @@ void ServerApp::retryHandler()
   case Uninitialized:
   case Initialized:
   case Started:
-    assert(0 && "bad internal server state");
+    LOG_ERR("retry: bad internal server state");
     break;
 
   case Initializing:

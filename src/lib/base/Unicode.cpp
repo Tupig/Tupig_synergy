@@ -322,7 +322,7 @@ uint32_t Unicode::fromUTF8(const uint8_t *&data, uint32_t &n)
     break;
 
   default:
-    assert(0 && "invalid size");
+    // not reachable: the lead-byte parsing above only yields 1..6
     return s_invalid;
   }
 
@@ -431,7 +431,7 @@ void Unicode::toUTF8(std::string &dst, uint32_t c, bool *errors)
     data[3] = static_cast<uint8_t>(((c >> 6) & 0x0000003f) + 0x80);
     data[4] = static_cast<uint8_t>((c & 0x0000003f) + 0x80);
     dst.append(reinterpret_cast<char *>(data), 5);
-  } else if (c < 0x80000000) {
+  } else {
     data[0] = static_cast<uint8_t>(((c >> 30) & 0x00000001) + 0xfc);
     data[1] = static_cast<uint8_t>(((c >> 24) & 0x0000003f) + 0x80);
     data[2] = static_cast<uint8_t>(((c >> 18) & 0x0000003f) + 0x80);
@@ -439,7 +439,5 @@ void Unicode::toUTF8(std::string &dst, uint32_t c, bool *errors)
     data[4] = static_cast<uint8_t>(((c >> 6) & 0x0000003f) + 0x80);
     data[5] = static_cast<uint8_t>((c & 0x0000003f) + 0x80);
     dst.append(reinterpret_cast<char *>(data), 6);
-  } else {
-    assert(0 && "character out of range");
   }
 }

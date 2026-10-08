@@ -200,8 +200,7 @@ bool ArchMultithreadPosix::waitCondVar(ArchCond cond, ArchMutex mutex, double ti
     return false;
 
   default:
-    assert(0 && "condition variable wait error");
-    return false;
+    throw std::runtime_error("condition variable wait error");
   }
 }
 
@@ -234,16 +233,13 @@ void ArchMultithreadPosix::lockMutex(ArchMutex mutex)
     return;
 
   case EDEADLK:
-    assert(0 && "lock already owned");
-    break;
+    throw std::runtime_error("lock already owned");
 
   case EAGAIN:
-    assert(0 && "too many recursive locks");
-    break;
+    throw std::runtime_error("too many recursive locks");
 
   default:
-    assert(0 && "unexpected error");
-    break;
+    throw std::runtime_error("unexpected lock error");
   }
 }
 
@@ -259,12 +255,10 @@ void ArchMultithreadPosix::unlockMutex(ArchMutex mutex)
     return;
 
   case EPERM:
-    assert(0 && "thread doesn't own a lock");
-    break;
+    throw std::runtime_error("thread doesn't own a lock");
 
   default:
-    assert(0 && "unexpected error");
-    break;
+    throw std::runtime_error("unexpected lock error");
   }
 }
 

@@ -478,8 +478,7 @@ ArchNetAddress ArchNetworkBSD::newAnyAddr(AddressFamily family)
   }
   default:
     delete addr;
-    addr = nullptr;
-    assert(0 && "invalid family");
+    throw ArchNetworkException("invalid family");
   }
 
   return addr;
@@ -593,8 +592,7 @@ std::string ArchNetworkBSD::addrToString(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return "";
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -635,8 +633,7 @@ void ArchNetworkBSD::setAddrPort(ArchNetAddress addr, int port)
   }
 
   default:
-    assert(0 && "unknown address family");
-    break;
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -658,8 +655,7 @@ int ArchNetworkBSD::getAddrPort(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return 0;
+    throw ArchNetworkException("unknown address family");
   }
 }
 
@@ -686,8 +682,7 @@ bool ArchNetworkBSD::isAnyAddr(ArchNetAddress addr)
   }
 
   default:
-    assert(0 && "unknown address family");
-    return true;
+    throw ArchNetworkException("unknown address family");
   }
 }
 
