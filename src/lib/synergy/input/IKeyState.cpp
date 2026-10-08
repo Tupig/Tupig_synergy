@@ -125,6 +125,13 @@ void IKeyState::KeyInfo::split(const char *screens, std::set<std::string> &dst)
   const char *i = screens + 1;
   while (*i != '\0') {
     const char *j = strchr(i, ':');
+    if (j == nullptr) {
+      // malformed list without the trailing separator: take the remainder as
+      // the final name instead of running past the end of the string (the
+      // previous code did pointer arithmetic on a null strchr result - UB).
+      dst.emplace(i);
+      break;
+    }
     dst.emplace(i, j - i);
     i = j + 1;
   }
