@@ -22,13 +22,13 @@ set (translations
 
 # Trees scanned for translatable strings.
 #
-# The Synergy overlay under extra/src carries user-visible strings of its own
+# The Synergy overlay under src/lib/synergy carries user-visible strings of its own
 # (the settings scope tab, the About dialog). lupdate only looks where it is
 # told, so omitting it left those strings English in every language while the
 # .ts files still reported themselves complete - an easy thing to miss.
+# src/ already covers src/lib/synergy recursively.
 set(TR_SOURCE_DIRS
   ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_SOURCE_DIR}/extra/src
 )
 
 set(TR_OPTIONS -no-ui-lines -locations none -silent)

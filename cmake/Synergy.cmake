@@ -51,7 +51,7 @@ endif()
 # -DSKIP_BUILD_TESTS=OFF if they want post-build ctest invocation.
 set(SKIP_BUILD_TESTS ON CACHE BOOL "Skip build time test")
 
-# Resource paths consumed by extra/src/lib/synergy/gui/CMakeLists.txt.
+# Resource paths consumed by src/lib/synergy/gui/CMakeLists.txt.
 set(GUI_RES_DIR "${CMAKE_SOURCE_DIR}/extra/src/apps/res")
 set(GUI_QRC_FILE "${GUI_RES_DIR}/synergy.qrc")
 

@@ -34,6 +34,10 @@ file(GLOB_RECURSE ui_files *.ui)
 
 add_library(${target} STATIC ${sources} ${ui_files} ${qrc_file})
 
+# Overlay sources include headers as "synergy/gui/..." and "common/...",
+# resolved from src/lib.
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/src/lib)
+
 target_link_libraries(
   ${target}
   gui

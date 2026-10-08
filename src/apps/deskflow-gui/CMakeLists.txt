@@ -51,6 +51,12 @@ target_link_libraries(
   Qt6::Widgets
   Qt6::Network)
 
+# synergy::hooks::* callsites in the app entry point (deskflow-gui.cpp), guarded
+# by SYNERGY_EXTRA_HEADER. Mirrors the wiring in src/lib/synergy/CMakeLists.txt;
+# the synergy-gui sublib arrives transitively via the gui target.
+target_compile_definitions(${target} PRIVATE SYNERGY_EXTRA_HEADER)
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/src/lib)
+
 # Set output name with version
 include(${CMAKE_SOURCE_DIR}/cmake/Synergy.cmake)
 set_output_name(${target})

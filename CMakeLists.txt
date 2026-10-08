@@ -375,7 +375,6 @@ if(BUILD_GUI AND NOT QT_VERSION_MAJOR EQUAL 5)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(extra)
 
 # Deploy the generated translation catalogues next to the executables.
 #

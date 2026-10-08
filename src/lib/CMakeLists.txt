@@ -15,4 +15,7 @@ add_subdirectory(platform)
 add_subdirectory(server)
 if(BUILD_GUI)
   add_subdirectory(gui)
+  # Synergy brand overlay (settings hooks, branded resources). Processed after
+  # gui: it links the gui library and sets the SYNERGY_EXTRA_HEADER wiring.
+  add_subdirectory(synergy)
 endif()
