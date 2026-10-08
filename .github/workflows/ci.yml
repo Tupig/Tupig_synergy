@@ -5,6 +5,9 @@
 
 name: CI
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
@@ -210,7 +213,7 @@ jobs:
 
       - name: Sign inner binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true'
-        uses: SSLcom/esigner-codesign@develop
+        uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
         with:
           command: batch_sign
           username: ${{ secrets.WINDOWS_SSL_USERNAME }}
@@ -242,7 +245,7 @@ jobs:
 
       - name: Sign MSI
         if: env.SYNERGY_VERSION_RELEASE == 'true'
-        uses: SSLcom/esigner-codesign@develop
+        uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
         with:
           command: sign
           username: ${{ secrets.WINDOWS_SSL_USERNAME }}
@@ -275,6 +278,7 @@ jobs:
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
           path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          retention-days: 14
 
   build-macos:
     needs: [lint-clang, get-version]
@@ -429,6 +433,7 @@ jobs:
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
           path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          retention-days: 14
 
   build-linux:
     needs: [lint-clang, get-version]
@@ -540,6 +545,7 @@ jobs:
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
           path: ${{ github.workspace }}/build/${{ env.PACKAGE_PREFIX }}[-_]*.*
+          retention-days: 14
 
   build-flatpak:
     needs: [lint-clang, get-version]
@@ -598,6 +604,7 @@ jobs:
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
           path: ${{github.workspace}}/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
+          retention-days: 14
 
   # Upload all packages that built to AWS S3 for distribution. Runs after the
   # build jobs on push/dispatch/release events (PRs skipped, no secrets), and

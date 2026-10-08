@@ -4,6 +4,9 @@ name: "SonarCloud Analysis"
 # because of how GitHub understands the code scanning workflows in it's UI.
 #
 # Free tier: no auto push/PR triggers — run manually only.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 

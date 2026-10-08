@@ -5,6 +5,9 @@ name: "CodeQL Analysis"
 #
 # Free tier: private-repo code scanning requires GitHub Advanced Security (paid).
 # Auto push/PR triggers are disabled; run manually only if GHAS is enabled.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 
@@ -14,6 +17,10 @@ concurrency:
 
 jobs:
   codeql:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     runs-on: ubuntu-latest
     container: debian:trixie-slim
     timeout-minutes: 20
