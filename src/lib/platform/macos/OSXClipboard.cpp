@@ -190,15 +190,13 @@ std::string OSXClipboard::get(Format format) const
   // get the clipboard data.
   CFDataRef buffer = nullptr;
   try {
-    OSStatus err = PasteboardCopyItemFlavorData(m_pboard, item, type, &buffer);
+    const OSStatus err = PasteboardCopyItemFlavorData(m_pboard, item, type, &buffer);
 
     if (err != noErr) {
-      throw err;
+      LOG_DEBUG("PasteboardCopyItemFlavorData failed, MacError (%d)", static_cast<int>(err));
+    } else {
+      result = std::string((char *)CFDataGetBytePtr(buffer), CFDataGetLength(buffer));
     }
-
-    result = std::string((char *)CFDataGetBytePtr(buffer), CFDataGetLength(buffer));
-  } catch (OSStatus err) {
-    LOG_DEBUG("exception thrown in OSXClipboard::get MacError (%d)", err);
   } catch (...) {
     LOG_DEBUG("unknown exception in OSXClipboard::get");
     RETHROW_THREADEXCEPTION

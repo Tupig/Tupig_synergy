@@ -467,7 +467,7 @@ Server *ServerApp::openServer(ServerConfig &config, PrimaryClient *primaryClient
 
   } catch (std::bad_alloc &ba) {
     delete server;
-    throw ba;
+    throw;
   }
 
   return server;

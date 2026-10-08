@@ -56,6 +56,6 @@ std::unique_ptr<IDataSocket> SecureListenSocket::accept()
     if (secureSocket) {
       setListeningJob();
     }
-    throw ex;
+    throw;
   }
 }

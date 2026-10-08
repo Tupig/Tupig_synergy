@@ -254,7 +254,7 @@ Client *ClientApp::openClient(const std::string &name, const NetworkAddress &add
 
   } catch (std::bad_alloc &ba) {
     delete client;
-    throw ba;
+    throw;
   }
 
   return client;
