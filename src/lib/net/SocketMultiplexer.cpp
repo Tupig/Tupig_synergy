@@ -17,6 +17,8 @@
 #include "mt/Thread.h"
 #include "net/ISocketMultiplexerJob.h"
 
+#include <exception>
+
 //
 // SocketMultiplexer
 //
@@ -228,7 +230,19 @@ void SocketMultiplexer::updateJobState(const JobSnapshot &snapshot)
 
         // run job
         ISocketMultiplexerJob *job = entry.job;
-        ISocketMultiplexerJob *newJob = job->run(read, write, error);
+        ISocketMultiplexerJob *newJob = nullptr;
+        try {
+          newJob = job->run(read, write, error);
+        } catch (const std::exception &e) {
+          // A job must never let an exception escape: this is the multiplexer's
+          // service loop, and an uncaught exception unwinds through
+          // Thread::threadFunc (which rethrows) into std::terminate, killing
+          // the process. Treat it like Break: log, drop this socket's job, and
+          // keep serving the other connections.
+          LOG_ERR("exception in socket job, dropping connection: %s", e.what());
+        } catch (...) {
+          LOG_ERR("unknown exception in socket job, dropping connection");
+        }
 
         if (newJob != job) {
           delete job;
