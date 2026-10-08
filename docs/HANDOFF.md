@@ -3,8 +3,8 @@
 > **最后更新**: 2026-09-24
 > **当前分支**: `main`
 > **仓库**: `https://github.com/Tupig/Tupig_synergy`（public，项目在仓库根目录）
-> **最新 Commit**: `47953e9af`（A-59 改名/转 public/扁平化）+ 后续 docs 回填
-> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07/09/17/18/19 已关（`1269e7cb9`，详情见追踪台账）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；CI 历轮问题 A-12～A-58 已修；**A-59：仓库改名 `Tupig/Tupig_synergy` 并转 public，`synergy/` 内容迁到根目录，所有路径/URL 引用同步；转 public 后 run `35988655131` CI 全绿（lint/get-version/4 腿 free 矩阵/ci-passed），billing 硬锁解除**
+> **最新 Commit**: `47953e9af`（A-59 (#83) 改名/转 public/扁平化）+ 后续 docs 回填
+> **状态**: Phase 0+1 完成；Phase 2 Step 1–4 完成；身份债 U-07 (#90) / U-09 (#92) / U-17 (#100) / U-18 (#101) / U-19 (#102) 已关（`1269e7cb9`，详情见 GitHub Issues）；B 计划进行中（EventQueue 已泵 Qt；IDataSocket 适配器 + TOFU + 默认 Qt + Step 5/6 待续 —— 阶段 1~3 数周级工程经拍板暂不执行，见 §5.4）；跨屏拖拽见 §5.6 清单（G1）；CI 历轮问题 A-12 (#36)～A-58 (#82) 已修；**A-59 (#83)：仓库改名 `Tupig/Tupig_synergy` 并转 public，`synergy/` 内容迁到根目录，所有路径/URL 引用同步；转 public 后 run `35988655131` CI 全绿（lint/get-version/4 腿 free 矩阵/ci-passed），billing 硬锁解除**
 
 ---
 
@@ -22,10 +22,10 @@
 
 | 优先级 | 数量 | 问题 |
 |--------|------|------|
-| P0 严重安全 | 5 | S-1~S-5 (TLS/协议/输入/X11) |
-| P1 高危质量 | 7 | Q-1~Q-7 (死锁/缓冲/断言/测试/CI) |
-| P2 性能瓶颈 | 5 | P-1~P-5 (轮询/拷贝/解析/Hook/转换器) |
-| P3 技术债 | 6 | T-1~T-6 (C++17→20/Qt语法/智能指针/平台抽象) |
+| P0 严重安全 | 5 | S-1 (#2)~S-5 (#6) (TLS/协议/输入/X11) |
+| P1 高危质量 | 7 | Q-1 (#7)~Q-7 (#13) (死锁/缓冲/断言/测试/CI) |
+| P2 性能瓶颈 | 5 | P-1 (#14)~P-5 (#18) (轮询/拷贝/解析/Hook/转换器) |
+| P3 技术债 | 6 | T-1 (#19)~T-6 (#24) (C++17→20/Qt语法/智能指针/平台抽象) |
 
 ### 1.3 用户约束 (原文)
 - "做任何改动前都需要先思考给出方案，选择最优的来做"
@@ -49,12 +49,12 @@
 - [x] 删除误提交的 `CMakeUserPresets.json`
 
 ### Phase 1: 安全基线 ✅
-- [x] **S-1 TLS 证书验证**: `verifyIgnoreCertCallback` → `verifyCertificateCallback` (链验证+过期+RSA≥2048)
-- [x] **S-2 协议消息大小限制**: `MessageSizeLimit` 枚举 (Control=256, InputEvent=4KB, ClipboardChunk=64KB, FileChunk=256KB, AbsoluteMaximum=4MB)
-- [x] **S-3 assert→异常**: 15 个 `assert(0)` 替换为 `throw BadClientException`/`throw DeskflowException`
-- [x] **S-4 InputValidator**: 新建 `InputValidator.h/.cpp` — 范围验证+频率限制+敏感键拦截
-- [x] **S-5 X11 降级**: `m_displayLost` 标记+`ioErrorHandler` 优雅处理+方法守卫
-- [x] **Issue tracking 文档**: `.github/ISSUE_TEMPLATE/security-quality-refactoring.md`
+- [x] **S-1 (#2) TLS 证书验证**: `verifyIgnoreCertCallback` → `verifyCertificateCallback` (链验证+过期+RSA≥2048)
+- [x] **S-2 (#3) 协议消息大小限制**: `MessageSizeLimit` 枚举 (Control=256, InputEvent=4KB, ClipboardChunk=64KB, FileChunk=256KB, AbsoluteMaximum=4MB)
+- [x] **S-3 (#4) assert→异常**: 15 个 `assert(0)` 替换为 `throw BadClientException`/`throw DeskflowException`
+- [x] **S-4 (#5) InputValidator**: 新建 `InputValidator.h/.cpp` — 范围验证+频率限制+敏感键拦截
+- [x] **S-5 (#6) X11 降级**: `m_displayLost` 标记+`ioErrorHandler` 优雅处理+方法守卫
+- [x] **Issue tracking**: 原 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 于 2026-10-08 **全量迁移到 GitHub Issues**（144 条 = 存量 103 + 四域审查新发现 41），本地台账已删除
 - [x] **docs/security.md**: 安全策略文档 (修复 README 断链)
 - [x] **README.md**: 移除伪造 Roadmap 和断链
 - [x] **3 个审查建议项修复**: 残留 assert、冗余赋值、注释说明
@@ -71,38 +71,38 @@
 
 ### 全面审计 ✅ (2026-09-23)
 - [x] 4 轮多角度审计完成（范围/文档对账/R1–R10 合规/源码与过程/CI 与交付）；报告见 git 历史（原 `docs/audit-2026-09-23.md`，已随 docs 清理删除）
-- [x] 新发现 A-01～A-11 登记至 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` §2.4；U 计数修正为 21 项
-- [x] 审计整改：A-01～A-11 已关闭；U-03 / U-10 / U-13 / U-15 已关闭；U-07 / U-09 已随后 `1269e7cb9` 关闭（D1/E2），状态以追踪台账为准
+- [x] 新发现 A-01 (#25)～A-11 (#35) 登记至原台账 §2.4（2026-10-08 迁移为 GitHub Issues）；U 计数修正为 21 项
+- [x] 审计整改：A-01 (#25)～A-11 (#35) 已关闭；U-03 (#86) / U-10 (#93) / U-13 (#96) / U-15 (#98) 已关闭；U-07 (#90) / U-09 (#92) 已随后 `1269e7cb9` 关闭（D1/E2），状态以 GitHub Issues 为准
 
 ### 二轮全面审计 🔄 (2026-09-24)
 - [x] 4 路并行只读取证 + P1/P2 独立复核；报告见 git 历史（原 `docs/audit-2026-09-24.md`，已随 docs 清理删除）
-- [x] 新发现 A-12～A-27 登记追踪文档 §2.5；A-10 状态补翻；变更日志补登 09-23 末 6 笔
-- [x] P1 A-12/A-13 代码已改（lint cwd + ci-passed needs；flatpak 路径统一 workspace 根）— **待下次 CI 运行实证**
-- [x] P2 A-14～A-19 已改（ci push→main；HANDOFF 回滚/工厂对齐；README 两处；U 详情节 Resolution）
-- [x] CI 首跑（`35948919314`）：A-14 push→main 触发生效；A-12 lint 实证生效（检出 105 文件漂移）；新发现 A-28～A-30 登记
-- [x] A-28 格式已修（应用 CI clang-format-diff，105 源文件）；A-29 已修（ci-passed/report/s3-upload 补 `working-directory: .`）— 待下次 CI 实证
-- [x] A-30 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
-- [x] A-31 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
-- [x] A-32～A-35 已修（Linux 矩阵首步 cwd 同 A-31 根因；macOS GUI target 名空格 + 五处 TARGET_BUNDLE 同步；CodeQL autobuild 双项目歧义改 manual；metainfo homepage 私仓 404 改公开 URL）— 待下次 CI 实证
-- [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36～A-41 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
-- [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42～A-47 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — **四轮已实证大部分腿绿（windows/flatpak/fedora/opensuse/archlinux/ubuntu-26.04/lint/get-version/s3/report）**
-- [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48～A-51 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
-- [x] 五轮 CI（`35964563457`，commit `25f848a25`）7 job 挂（macOS×2 dyld、debian-13-x86_64 测试目录、debian-12×2 `<optional>`、ubuntu-24.04×2 format、ci-passed 级联）；六轮 CI（`35970799694`，commit `3f140c029`）23 job 挂 —— 主因 A-21 xkbfile 探测符号错（`XkbGetKeyboard` 在 libX11）致 UNIX X11 腿 Configure 全灭 + CodeQL；macOS dyld 未愈；flatpak×2 上游 libei 503（瞬态）。已修 A-52～A-56：`find_library` xkbfile；`CoreProcess.h` `<optional>`；`qFatal` `qlonglong` + 拼写；run-tests 缺目录跳过 + `Qt6_DIR` 诊断；`QT_IS_SHARED` 补 `.framework/` — **待 CI 实证；flatpak 需重跑**
-- [x] P3 = A-20～A-27 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 行、light 回收站图标 — **待下次 CI 实证**；A-15 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）；docs 收敛六文件（`3f140c029`）
-- [x] A-57 已修：`ci.yml` push/PR 增加 `synergy/**` 等路径过滤，与 `ghdesktop2chinese.yml` 触发隔离（两工作流本体本无交叉）— 待 CI 实证
-- [x] **阻断→拍板**：五/六轮后所有 run job `runner_id:0`、`steps:[]`、日志空 — check annotation 实证 *「recent account payments have failed or your spending limit needs to be increased」*（GitHub Actions billing）。用户拍板「付费的不要了」→ **A-58 免费化瘦身**（见下）
-- [x] **A-58 免费化瘦身**：ci.yml 删 `schedule`；Windows(2×)/macOS(10×)/flatpak/s3-upload 仅 `release`+`workflow_dispatch`；Linux 矩阵拆 `free`（push/PR，4 腿 x86_64：ubuntu-26.04/debian-13/debian-12/ubuntu-24.04）与 `full`（19 腿，dispatch/release），源在 `.github/matrices/linux-targets.json`；CodeQL/Sonar 改仅 `workflow_dispatch`（私仓 CodeQL 需 GHAS 付费）；去掉 ci.yml 内 PR 自动 valgrind；ghdesktop2chinese 周定时用户已删（`3aaa92ed1`）— `478be74cc` 已推送
-- [x] **A-58 推送后实测（run `35978730528`）**：瘦身结构生效（Windows/macOS/flatpak/s3-upload 正确 skip、无 CodeQL/Sonar 自动跑），但 **lint/get-version/ci-passed/report 仍 `runner_id:0`、`steps:[]` 9 秒失败 —— 账户 billing 硬锁未解除**。**用户须在 GitHub Settings → Billing & plans 处理（移除失败付款方式 / 调 spending limit）或将仓库转 public；代码侧免费化已完成，无法再省**
-- [x] **A-59 仓库重构（转 public + 扁平化）**：仓库由 `Tupig/TuPig_Product` 改名 **`Tupig/Tupig_synergy` 并转为 public**（public repo Actions 分钟免费，从根上绕开私仓 billing）；`synergy/` 下全部内容 `git mv` 到仓库根目录（`src/`、`docs/`、`cmake/`、`extra/`、`CMakeLists.txt`、`AGENTS.md` …），`synergy/` 目录消失；同步修正所有路径引用：workflows/actions 的 `working-directory`、`${{ github.workspace }}/synergy/build`、flatpak `manifest-path`/exceptions、artifact 路径、`ci.yml` 去掉 `paths` 过滤与 `defaults.working-directory`；仓库名 URL `Tupig/TuPig_Product`→`Tupig/Tupig_synergy`（含 README/REUSE/vcpkg/metainfo/UrlConstants/constants.h/AboutDialog/6 份 .ts/manpage）；`.gitignore` 合并；`.github/CONTRIBUTING.md`、`CODEOWNERS`、`AGENTS.md` 引用改根；`SECURITY.md` 由 GitHub 模板改为真实上报流程；flatpak metainfo「私仓 404」注释删除。**注意**：git 历史中仍含上游许可代码（`kOfflineActivationHex`/`web-muskoka`）与 billing 记录（转 public 前已向用户说明并获同意）。ghdesktop2chinese 工作流此前已拆出为独立仓库，本地目录由根 `.gitignore` 忽略
-- [x] **A-59 校验**：全部 workflow/action YAML 与 `linux-targets.json` 解析通过；`git grep` 确认无残留 `synergy/` 路径引用（追踪台账/历史的旧路径文字保留）；代码侧 `synergy/` 仅为 C++ include 命名空间与产品名，未改
-- [x] **A-59 实证（run `35988655131`，`47953e9af`）**：**CI 全绿 `success`** —— `lint-clang` ✅、`get-version` ✅、4 腿 free 矩阵（`ubuntu-26.04-x86_64`/`debian-12-x86_64`/`debian-13-x86_64`/`ubuntu-24.04-x86_64`）✅、`ci-passed` ✅；Windows/macOS/flatpak/s3-upload/report 按设计 skip。**转 public 后 Actions 不再 billing 硬锁、真实运行**，同时实证 A-12（lint）、A-52（xkbfile 探测）、A-53（debian-12 `<optional>`）、A-54（ubuntu-24.04 format）、A-55（测试目录）等历轮修复；A-56（macOS dyld）与全量 19 腿矩阵须手动 `workflow_dispatch`/release 覆盖
+- [x] 新发现 A-12 (#36)～A-27 (#51) 登记追踪文档 §2.5；A-10 (#34) 状态补翻；变更日志补登 09-23 末 6 笔
+- [x] P1 A-12 (#36)/A-13 (#37) 代码已改（lint cwd + ci-passed needs；flatpak 路径统一 workspace 根）— **待下次 CI 运行实证**
+- [x] P2 A-14 (#38)～A-19 (#43) 已改（ci push→main；HANDOFF 回滚/工厂对齐；README 两处；U 详情节 Resolution）
+- [x] CI 首跑（`35948919314`）：A-14 (#38) push→main 触发生效；A-12 (#36) lint 实证生效（检出 105 文件漂移）；新发现 A-28 (#52)～A-30 (#54) 登记
+- [x] A-28 (#52) 格式已修（应用 CI clang-format-diff，105 源文件）；A-29 (#53) 已修（ci-passed/report/s3-upload 补 `working-directory: .`）— 待下次 CI 实证
+- [x] A-30 (#54) 已修（拍板：无 AWS secrets 时 s3-upload 上传步全 skip；注意 job 级 `if` 不可用 `secrets`，须 step 级判空）— 待下次 CI 实证
+- [x] A-31 (#55) 已修（CodeQL/Sonar/Valgrind 容器 job 首步补 `working-directory: .`，checkout 前 `synergy/` 不存在）— 待下次 CI 实证
+- [x] A-32 (#56)～A-35 (#59) 已修（Linux 矩阵首步 cwd 同 A-31 (#55) 根因；macOS GUI target 名空格 + 五处 TARGET_BUNDLE 同步；CodeQL autobuild 双项目歧义改 manual；metainfo homepage 私仓 404 改公开 URL）— 待下次 CI 实证
+- [x] 二轮 CI（`35952577862`）暴露 6 类 26 job 挂，A-36 (#60)～A-41 (#65) 已修：qtbase_en.qm 路径+翻译包；macOS ld 拒 -z；XWindowsConfig.h include path；tupig.com TLS 挂改 github 组织页；s3-upload Check AWS 步缺 cwd；report Slack token 判空 — **三轮已实证 10 job 绿（含 s3/report/lint）**
+- [x] 三轮 CI（`35957542966`，10 绿 / 19 挂）暴露 6 类根因，A-42 (#66)～A-47 (#71) 已修：aarch64 误开 AVX2（架构正则）；macOS `platform/` include 前缀错 ×6；Fedora 缺 qtbase_es.qm 硬 DEPENDS 改 EXISTS 软跳过；debian-12/ubuntu-24.04 Qt6 6.4<6.7 改 Qt5 回退（DependencyFallback + qtbase5-dev + 四腿 BUILD_TESTS=OFF）；rocky QSslServer 加 Qt6 守卫；flatpak Lint manifest 补 exceptions 标志 — **四轮已实证大部分腿绿（windows/flatpak/fedora/opensuse/archlinux/ubuntu-26.04/lint/get-version/s3/report）**
+- [x] 四轮 CI（`35961135433`，11 挂含级联 ci-passed）暴露 4 类根因，A-48 (#72)～A-51 (#75) 已修：AppUtilUnix `<platform/OSXAutoTypes.h>` 改裸文件名；Qt5 `sslErrors` 用 `qOverload`、`errorOccurred`/`QLocalSocket::error` 加 Qt 5.15 守卫（RHEL 8 floor 5.13）；`QSettingsProxy.h`/`Settings.h` 补 `<memory>`；debian-13 Qt5 误选根因（疑 slim 缺 OpenGL 致 Qt6 组件失败）→ debian 补 `libgl-dev` 等 + `src/CMakeLists.txt` BUILD_TESTS 门控 `QT_VERSION_MAJOR EQUAL 6`（Qt5 自愈跳过）— 待下次 CI 实证
+- [x] 五轮 CI（`35964563457`，commit `25f848a25`）7 job 挂（macOS×2 dyld、debian-13-x86_64 测试目录、debian-12×2 `<optional>`、ubuntu-24.04×2 format、ci-passed 级联）；六轮 CI（`35970799694`，commit `3f140c029`）23 job 挂 —— 主因 A-21 (#45) xkbfile 探测符号错（`XkbGetKeyboard` 在 libX11）致 UNIX X11 腿 Configure 全灭 + CodeQL；macOS dyld 未愈；flatpak×2 上游 libei 503（瞬态）。已修 A-52 (#76)～A-56 (#80)：`find_library` xkbfile；`CoreProcess.h` `<optional>`；`qFatal` `qlonglong` + 拼写；run-tests 缺目录跳过 + `Qt6_DIR` 诊断；`QT_IS_SHARED` 补 `.framework/` — **待 CI 实证；flatpak 需重跑**
+- [x] P3 = A-20 (#44)～A-27 (#51) 已修（`365f64cb7`）：GoogleTest 幽灵、CMake 批、文档死链、打包卫生、身份残留、许可残留、A-10 (#34) 行、light 回收站图标 — **待下次 CI 实证**；A-15 (#39) 工厂接线归入 B 计划阶段 1（§5.4，暂不执行）；docs 收敛六文件（`3f140c029`）
+- [x] A-57 (#81) 已修：`ci.yml` push/PR 增加 `synergy/**` 等路径过滤，与 `ghdesktop2chinese.yml` 触发隔离（两工作流本体本无交叉）— 待 CI 实证
+- [x] **阻断→拍板**：五/六轮后所有 run job `runner_id:0`、`steps:[]`、日志空 — check annotation 实证 *「recent account payments have failed or your spending limit needs to be increased」*（GitHub Actions billing）。用户拍板「付费的不要了」→ **A-58 (#82) 免费化瘦身**（见下）
+- [x] **A-58 (#82) 免费化瘦身**：ci.yml 删 `schedule`；Windows(2×)/macOS(10×)/flatpak/s3-upload 仅 `release`+`workflow_dispatch`；Linux 矩阵拆 `free`（push/PR，4 腿 x86_64：ubuntu-26.04/debian-13/debian-12/ubuntu-24.04）与 `full`（19 腿，dispatch/release），源在 `.github/matrices/linux-targets.json`；CodeQL/Sonar 改仅 `workflow_dispatch`（私仓 CodeQL 需 GHAS 付费）；去掉 ci.yml 内 PR 自动 valgrind；ghdesktop2chinese 周定时用户已删（`3aaa92ed1`）— `478be74cc` 已推送
+- [x] **A-58 (#82) 推送后实测（run `35978730528`）**：瘦身结构生效（Windows/macOS/flatpak/s3-upload 正确 skip、无 CodeQL/Sonar 自动跑），但 **lint/get-version/ci-passed/report 仍 `runner_id:0`、`steps:[]` 9 秒失败 —— 账户 billing 硬锁未解除**。**用户须在 GitHub Settings → Billing & plans 处理（移除失败付款方式 / 调 spending limit）或将仓库转 public；代码侧免费化已完成，无法再省**
+- [x] **A-59 (#83) 仓库重构（转 public + 扁平化）**：仓库由 `Tupig/TuPig_Product` 改名 **`Tupig/Tupig_synergy` 并转为 public**（public repo Actions 分钟免费，从根上绕开私仓 billing）；`synergy/` 下全部内容 `git mv` 到仓库根目录（`src/`、`docs/`、`cmake/`、`extra/`、`CMakeLists.txt`、`AGENTS.md` …），`synergy/` 目录消失；同步修正所有路径引用：workflows/actions 的 `working-directory`、`${{ github.workspace }}/synergy/build`、flatpak `manifest-path`/exceptions、artifact 路径、`ci.yml` 去掉 `paths` 过滤与 `defaults.working-directory`；仓库名 URL `Tupig/TuPig_Product`→`Tupig/Tupig_synergy`（含 README/REUSE/vcpkg/metainfo/UrlConstants/constants.h/AboutDialog/6 份 .ts/manpage）；`.gitignore` 合并；`.github/CONTRIBUTING.md`、`CODEOWNERS`、`AGENTS.md` 引用改根；`SECURITY.md` 由 GitHub 模板改为真实上报流程；flatpak metainfo「私仓 404」注释删除。**注意**：git 历史中仍含上游许可代码（`kOfflineActivationHex`/`web-muskoka`）与 billing 记录（转 public 前已向用户说明并获同意）。ghdesktop2chinese 工作流此前已拆出为独立仓库，本地目录由根 `.gitignore` 忽略
+- [x] **A-59 (#83) 校验**：全部 workflow/action YAML 与 `linux-targets.json` 解析通过；`git grep` 确认无残留 `synergy/` 路径引用（历史文档中的旧路径文字保留）；代码侧 `synergy/` 仅为 C++ include 命名空间与产品名，未改
+- [x] **A-59 (#83) 实证（run `35988655131`，`47953e9af`）**：**CI 全绿 `success`** —— `lint-clang` ✅、`get-version` ✅、4 腿 free 矩阵（`ubuntu-26.04-x86_64`/`debian-12-x86_64`/`debian-13-x86_64`/`ubuntu-24.04-x86_64`）✅、`ci-passed` ✅；Windows/macOS/flatpak/s3-upload/report 按设计 skip。**转 public 后 Actions 不再 billing 硬锁、真实运行**，同时实证 A-12 (#36)（lint）、A-52 (#76)（xkbfile 探测）、A-53 (#77)（debian-12 `<optional>`）、A-54 (#78)（ubuntu-24.04 format）、A-55 (#79)（测试目录）等历轮修复；A-56 (#80)（macOS dyld）与全量 19 腿矩阵须手动 `workflow_dispatch`/release 覆盖
 
 ### main 分支提交记录 (最新 6 个)
 ```
-478be74cc fix(ci): A-58 免费化瘦身，去掉定时与高计费 CI 步骤
+478be74cc fix(ci): A-58 (#82) 免费化瘦身，去掉定时与高计费 CI 步骤
 3aaa92ed1 fix(ci): 移除定时自动运行，全部改为手动触发
 f73989c0e docs: HANDOFF 回填 2539f1932/53e343692 与 billing 阻断记录
-53e343692 fix(ci): A-57 ci.yml 路径过滤隔离 synergy 与 ghdesktop2chinese 触发
+53e343692 fix(ci): A-57 (#81) ci.yml 路径过滤隔离 synergy 与 ghdesktop2chinese 触发
 4ac6d21f5 fix(ci): 重构统一工作流，去除 changes 前置 job
 a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 ```
@@ -123,7 +123,7 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 ### 3.2 Phase 2 方案 (Step 1–4 已落地，Step 5–6 待实施)
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
-- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 / §5.4 阶段 1）。默认仍走 legacy `TCPSocketFactory`。
+- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 (#39) / §5.4 阶段 1）。默认仍走 legacy `TCPSocketFactory`。
 - **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；方案已落地 Step 1-4，剩余步骤见第 5 节
 
 ---
@@ -133,28 +133,28 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 ### 4.1 核心变更文件 (已在 main)
 | 文件 | Phase | 变更内容 |
 |------|-------|----------|
-| `src/lib/net/SecureSocket.cpp` | S-1 | `verifyCertificateCallback` (行 68-108) |
-| `src/lib/deskflow/protocol/ProtocolTypes.h` | S-2 | `MessageSizeLimit` 枚举 (行 125-166) |
-| `src/lib/deskflow/protocol/ProtocolUtil.cpp` | S-3 | 15 处 assert→throw |
-| `src/lib/deskflow/input/InputValidator.h` | S-4 | 校验器（已接入客户端入站路径） |
-| `src/lib/deskflow/input/InputValidator.cpp` | S-4 | 同上 |
-| `src/lib/client/ServerProxy.cpp` | S-4 | 入站按键事件接入校验 (keyDown/keyRepeat/keyUp) |
-| `src/unittests/deskflow/InputValidatorTests.cpp` | S-4 | 新增单元测试 |
-| `src/lib/platform/linux/XWindowsScreen.h` | S-5 | `m_displayLost` 成员 (行 252) |
-| `src/lib/platform/linux/XWindowsScreen.cpp` | S-5 | `ioErrorHandler` + 守卫 (行 1638-1651) |
+| `src/lib/net/SecureSocket.cpp` | S-1 (#2) | `verifyCertificateCallback` (行 68-108) |
+| `src/lib/deskflow/protocol/ProtocolTypes.h` | S-2 (#3) | `MessageSizeLimit` 枚举 (行 125-166) |
+| `src/lib/deskflow/protocol/ProtocolUtil.cpp` | S-3 (#4) | 15 处 assert→throw |
+| `src/lib/deskflow/input/InputValidator.h` | S-4 (#5) | 校验器（已接入客户端入站路径） |
+| `src/lib/deskflow/input/InputValidator.cpp` | S-4 (#5) | 同上 |
+| `src/lib/client/ServerProxy.cpp` | S-4 (#5) | 入站按键事件接入校验 (keyDown/keyRepeat/keyUp) |
+| `src/unittests/deskflow/InputValidatorTests.cpp` | S-4 (#5) | 新增单元测试 |
+| `src/lib/platform/linux/XWindowsScreen.h` | S-5 (#6) | `m_displayLost` 成员 (行 252) |
+| `src/lib/platform/linux/XWindowsScreen.cpp` | S-5 (#6) | `ioErrorHandler` + 守卫 (行 1638-1651) |
 
 ### 4.2 基础设施文件
 | 文件 | 用途 |
 |------|------|
 | `.github/workflows/static-analysis.yml` | clang-tidy + cppcheck CI |
 | `CMakePresets.json` | ASan/TSan/Coverage 预设 |
-| `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` | 问题追踪台账（A/U 条目） |
+| GitHub Issues（`Tupig/Tupig_synergy`） | 问题追踪（原台账 A/U/S/Q/P/T 144 条已全量迁移，2026-10-08 删除本地文件） |
 | `docs/security.md` | 安全策略文档 |
 | `docs/HANDOFF.md` | 本文件 — 会话交接文档 |
 
 > 注：原 `docs/delivery.md`（交付矩阵）、`docs/consistency-audit.md`（U 条目审计）与两份
 > audit 报告已按 docs 清理计划删除；交付要点迁入本文件 §5.5～§5.6，结构性约束见
-> `AGENTS.md`「交付约束」，U 条目状态以追踪台账为准。
+> `AGENTS.md`「交付约束」，U 条目状态以 GitHub Issues 为准。
 
 ### 4.3 Phase 2 涉及文件
 | 文件 | 用途 | 操作 | 状态 |
@@ -163,7 +163,7 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 | `src/lib/net/INetworkTransport.h` | 统一传输接口 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/LegacyNetworkTransport.cpp/h` | Legacy 包装器 | Step 2 新增 | ✅ 已完成 |
 | `src/lib/net/QtNetworkTransport.cpp/h` | Qt QTcpSocket 传输（完整实现） | Step 2–3 | ✅ 已完成 |
-| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15：无生产调用者，见 §5.4 阶段 1） |
+| `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15 (#39)：无生产调用者，见 §5.4 阶段 1） |
 | `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
 | `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
 | `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换 | 待实施 |
@@ -213,14 +213,14 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 |---|---|---|
 | B | Qt 默认 + Step 5 + Step 6 删除 Legacy | 阶段 1~3 暂不执行 |
 | D1 | 仅保留 synergy 图标主题（deskflow SVG 以别名并入 `synergy.qrc`） | ✅ 已完成 |
-| E2 | U-09 路径有意保留（`kUpstreamId` 供上游同步 / i18n 边界） | ✅ 已关闭（有意设计） |
-| F1 | 关闭 U-17/18/19（显示名 / i18n 耦合 / 文档化） | ✅ 已完成（`1269e7cb9`） |
+| E2 | U-09 (#92) 路径有意保留（`kUpstreamId` 供上游同步 / i18n 边界） | ✅ 已关闭（有意设计） |
+| F1 | 关闭 U-17 (#100) / U-18 (#101) / U-19 (#102)（显示名 / i18n 耦合 / 文档化） | ✅ 已完成（`1269e7cb9`） |
 | G1 | 用户执行双机拖拽；agent 提供清单 | 清单见 §5.6，待用户执行 |
 
 阶段状态：
 
-- **阶段 0（命名/图标/文档）**: ✅ 完成 —— D1 别名折叠、U-17 显示名 `TuPig Synergy`、U-18 保持内部 deskflow 名、U-09/U-19 文档化、G1 清单迁入 §5.6。
-- **阶段 1（Qt 适配器 + 指纹 TOFU，A-15 工厂接线）**: ⏸ 暂不执行 —— `QtDataSocket`/`QtListenSocket` 适配器、TOFU 对齐、经 factory 接线 apps 并以 `USE_LEGACY_NETWORK=0` 实证后再切默认。
+- **阶段 0（命名/图标/文档）**: ✅ 完成 —— D1 别名折叠、U-17 (#100) 显示名 `TuPig Synergy`、U-18 (#101) 保持内部 deskflow 名、U-09 (#92)/U-19 (#102) 文档化、G1 清单迁入 §5.6。
+- **阶段 1（Qt 适配器 + 指纹 TOFU，A-15 (#39) 工厂接线）**: ⏸ 暂不执行 —— `QtDataSocket`/`QtListenSocket` 适配器、TOFU 对齐、经 factory 接线 apps 并以 `USE_LEGACY_NETWORK=0` 实证后再切默认。
 - **阶段 2（默认 Qt + Step 5 智能指针）**: ⏸ 暂不执行。
 - **阶段 3（Step 6 删除 Legacy 栈）**: ⏸ 暂不执行。
 
@@ -232,7 +232,7 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 
 - 构建与打包成功，便携归档（7Z）正常产出；MSI 已构建并经 Windows Installer 数据库 API 检查（File/ServiceInstall/ServiceControl 三表），**未执行实际安装**。
 - `dumpbin /DEPENDENTS` 确认不依赖 MSVC 运行库 DLL（`/MT` 静态链接，vcpkg 静态 triplet）。
-- GUI→core 握手：`gui/startCoreWithGui=true` + 服务端 `coreMode` 下，GUI 约 3 秒内拉起 `synergy-core.exe`（端到端实证 U-01 修复）。
+- GUI→core 握手：`gui/startCoreWithGui=true` + 服务端 `coreMode` 下，GUI 约 3 秒内拉起 `synergy-core.exe`（端到端实证 U-01 (#84) 修复）。
 - 界面语言随系统区域解析（`initial language: zh_CN`）。
 - 单元测试：Release 与 AddressSanitizer 两种配置均 25/25 通过。
 
@@ -263,15 +263,15 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 3. **拖拽中按 Escape / 取消**：任一侧不得崩溃。
 4. **反例**：`fileTransfer/enabled=false` 时，按住左键离开主屏不得发送文件。
 
-将 OS、`synergy-core --version`、通过/失败记入追踪台账或本文件。
+将 OS、`synergy-core --version`、通过/失败记入对应 GitHub issue 或本文件。
 
 ---
 
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **CI 已全绿**（A-59，run `35988655131`）：free 最小集 lint/get-version/4 腿 Linux/ci-passed 通过；如需覆盖 A-56（macOS dyld）与全量 19 腿矩阵，手动 `workflow_dispatch`（`platform` 留空 / `package-type` 按需）或发 release
-2. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
+1. **CI 已全绿**（A-59 (#83)，run `35988655131`）：free 最小集 lint/get-version/4 腿 Linux/ci-passed 通过；如需覆盖 A-56 (#80)（macOS dyld）与全量 19 腿矩阵，手动 `workflow_dispatch`（`platform` 留空 / `package-type` 按需）或发 release
+2. **Step 5 / B 计划阶段 1**: 网络层智能指针化，或 Qt 适配器 + TOFU + 工厂接线（闭合 A-15 (#39)；阶段 1~3 经拍板暂不执行，恢复前先读 §5.4）
 3. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
 
 ### Step 1 具体操作 ✅ 已完成
@@ -288,16 +288,16 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 - [x] Step 2: 接口文档完整
 
 ### 下一步: CI 已全绿 → Step 5 / B 计划阶段 1 → G1 验证
-1. A-59 已完成并实证（run `35988655131` 全绿）；A-56/全量矩阵走手动 `workflow_dispatch` 或 release
-2. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15；见 §5.4）
+1. A-59 (#83) 已完成并实证（run `35988655131` 全绿）；A-56 (#80)/全量矩阵走手动 `workflow_dispatch` 或 release
+2. 网络层智能指针化（Step 5）或 B 计划阶段 1（适配器 + TOFU + 工厂接线，闭合 A-15 (#39)；见 §5.4）
 3. Windows 跨屏拖拽人工验证（清单 §5.6：IDropTarget 捕获 + IDropSource 投放到 Explorer）
-4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 / §5.4 阶段 1）
+4. 默认切到 Qt 传输前，用 `USE_LEGACY_NETWORK=0` 做 TLS 互通冒烟（注：工厂尚未接线，见 A-15 (#39) / §5.4 阶段 1）
 
 ---
 
 ## 7. 关键约束提醒
 
-1. **同步更新 Issue tracking**: `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 必须与代码变更同步
+1. **同步更新 Issue tracking**: GitHub Issues（<https://github.com/Tupig/Tupig_synergy/issues>）必须与代码变更同步
 2. **跨平台兼容**: 所有代码必须 Win/Mac/Linux 三平台编译通过
 3. **中英文双语**: 所有文档必须中英文合并
 4. **不上传 GitHub 的内容**: 不要出现在可上传内容里
@@ -306,4 +306,4 @@ Commit: bb0e7bb33 — fix(net): resolve use-after-free in SocketMultiplexer::rem
 
 ---
 
-> **交接完成**。Phase 0+1 与 Phase 2 Step 1–4 已完成（含 Windows IDropSource、U-10/U-13/U-15/A-10）；P3（A-20～A-27）已修待 CI 实证。下一步优先下次 CI 实证，或跨屏拖拽人工验证（§5.6）。
+> **交接完成**。Phase 0+1 与 Phase 2 Step 1–4 已完成（含 Windows IDropSource、U-10 (#93)/U-13 (#96)/U-15 (#98)/A-10 (#34)）；P3（A-20 (#44)～A-27 (#51)）已修待 CI 实证。下一步优先下次 CI 实证，或跨屏拖拽人工验证（§5.6）。

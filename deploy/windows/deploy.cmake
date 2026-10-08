@@ -33,7 +33,7 @@ list(APPEND CPACK_GENERATOR "7Z")
 
 # If WiX 4+ is installed make a package. CPack drives the WiX v4 toolchain
 # schema; CI installs wix 5.0.2 which still accepts v4 documents. Keep this
-# in step with .github/actions/install-dependencies/action.yml (A-23).
+# in step with .github/actions/install-dependencies/action.yml (A-23 (#47)).
 find_program(WIX_APP wix)
 if (NOT "${WIX_APP}" STREQUAL "")
   set(CPACK_WIX_VERSION 4)

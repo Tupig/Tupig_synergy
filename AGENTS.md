@@ -3,7 +3,8 @@
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
 > 本文件是本仓库对**所有 AI 协作代理与贡献者**的统一约束。与 `docs/HANDOFF.md`（会话交接）、
-> `.github/ISSUE_TEMPLATE/security-quality-refactoring.md`（问题追踪）配套使用。
+> GitHub Issues（问题追踪，<https://github.com/Tupig/Tupig_synergy/issues>；原台账
+> `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 已于 2026-10-08 全量迁移并删除）配套使用。
 >
 > This file defines the binding rules for **all AI agents and contributors** working in this
 > repository. It complements `docs/HANDOFF.md` and the issue tracker.
@@ -202,7 +203,7 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
 1. 动手改代码前先给出方案，优先选择最小且正确的改动。
 2. 一个提交只做一件逻辑独立的事，做完立即提交。
 3. 必须有证据验证（构建日志、命令输出、真实运行）。严禁仅凭推理声称通过。
-4. 代码变更须同步更新 `docs/HANDOFF.md` 与问题追踪文档。
+4. 代码变更须同步更新 `docs/HANDOFF.md` 与 GitHub Issues（问题追踪；关联 issue 验证通过后关闭并附证据）。
 
 ### 已知环境陷阱
 

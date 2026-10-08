@@ -572,7 +572,7 @@ jobs:
         run: flatpak-builder-lint appstream extra/deploy/linux/com.tupig.synergy.metainfo.xml
 
       # appid-url-not-reachable: the linter probes https://tupig.com (app-id
-      # namespace), which fails TLS from CI — same class as A-39. Covered by
+      # namespace), which fails TLS from CI — same class as A-39 (#63). Covered by
       # ci-build-lint-exceptions.json; without --exceptions this step hard-fails.
       - name: Lint manifest
         run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
@@ -608,7 +608,7 @@ jobs:
   # workflow working-directory; artifacts land at the workspace root under dist/.
   # Secrets cannot be referenced from a job-level `if` (context unavailable
   # there), so gate each AWS step individually: when secrets are unset the
-  # job still runs but every upload step is skipped - job stays green (A-30).
+  # job still runs but every upload step is skipped - job stays green (A-30 (#54)).
   s3-upload:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
     # Free tier: no push auto-upload; snapshot S3 only via release / manual dispatch.
