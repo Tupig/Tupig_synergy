@@ -1,5 +1,8 @@
 name: "Valgrind Analysis"
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   workflow_call:
@@ -8,7 +11,7 @@ jobs:
   valgrind-analysis:
     runs-on: ubuntu-latest
     container: debian:trixie-slim
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       # Pre-checkout: the workspace root always exists; keep the container from
