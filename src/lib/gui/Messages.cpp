@@ -13,9 +13,11 @@
 #include "common/VersionInfo.h"
 
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QThread>
 #include <memory>
 
 namespace synergy::gui::messages {
@@ -38,7 +40,7 @@ void raiseCriticalDialog()
 
 void showErrorDialog(const QString &message, const QString &fileLine, QtMsgType type)
 {
-  auto errorType = QtFatalMsg ? QObject::tr("fatal error") : QObject::tr("error");
+  auto errorType = (type == QtFatalMsg) ? QObject::tr("fatal error") : QObject::tr("error");
   auto title = QStringLiteral("%1 %2").arg(kAppName, errorType);
   auto text = QObject::tr(
                   R"(<p>Please <a href="%1">report a bug</a>)"
@@ -93,7 +95,18 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
   Logger::instance()->handleMessage(type, fileLine, message);
 
   if (type == QtFatalMsg || type == QtCriticalMsg) {
-    showErrorDialog(message, fileLine, type);
+    if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
+      showErrorDialog(message, fileLine, type);
+    } else {
+      // QMessageBox is a widget and may only live on the GUI thread; this
+      // handler runs on whichever thread logged the message, so hop over
+      // with a queued invocation instead of creating widgets here. For
+      // fatal errors the abort() below still runs on the logging thread.
+      QMetaObject::invokeMethod(
+          QCoreApplication::instance(), [message, fileLine, type] { showErrorDialog(message, fileLine, type); },
+          Qt::QueuedConnection
+      );
+    }
   }
 
   if (type == QtFatalMsg) {
