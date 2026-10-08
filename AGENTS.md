@@ -33,6 +33,22 @@ conflict instead of silently breaking the convention.
 | R9 | Documentation is bilingual in a single file (sectioned `## English` + `## 中文`). | One document, two audiences. |
 | R10 | Commit messages are written in Chinese. | Project convention. |
 
+### Directory layout
+
+The current tree is normative for new files:
+
+- `src/apps/` — executables (`synergy-gui`/`synergy-core`/`synergy-daemon`) plus shared
+  resources (`res/branding`, `res/icons`).
+- `src/lib/` — libraries: `arch/`, `base/`, `client/`, `common/`, `gui/`, `io/`, `mt/`,
+  `net/`, `platform/`, `server/`, and `synergy/` (the application library plus the
+  TuPig overlay under `gui/`/`hooks/`).
+- `src/unittests/` — one directory per tested module plus `gui/`.
+- `cmake/` — CMake modules (`Synergy.cmake`, `Version.cmake`, …); `deploy/` — packaging;
+  `config/` — tool and test configuration; `scripts/` — user entry points, with
+  `scripts/ci/` for CI-only helpers.
+- `extra/` no longer exists — do not reintroduce it; put assets at the location above
+  that owns them.
+
 ### Build & dependency policy
 
 - The user-visible entry points are `setup.bat` (one-time host toolchain) and `scripts/build.bat` /
@@ -146,6 +162,19 @@ The following are deliberate, not defects:
 | R8 | 代码必须能在 Windows、macOS、Linux 三平台编译。平台相关代码放在 `src/lib/platform/<os>/`。 | 单一源码树 + 条件编译。 |
 | R9 | 文档在单一文件内中英双语（分节 `## English` + `## 中文`）。 | 一份文档，两类读者。 |
 | R10 | 提交信息使用中文。 | 项目约定。 |
+
+### 目录结构
+
+新文件一律以下列现有结构为准：
+
+- `src/apps/` —— 可执行程序（`synergy-gui`/`synergy-core`/`synergy-daemon`）与共享资源
+  （`res/branding`、`res/icons`）。
+- `src/lib/` —— 库：`arch/`、`base/`、`client/`、`common/`、`gui/`、`io/`、`mt/`、`net/`、
+  `platform/`、`server/`，以及 `synergy/`（应用库本身 + TuPig overlay，见其 `gui/`/`hooks/`）。
+- `src/unittests/` —— 每个被测模块一个目录，另有 `gui/`。
+- `cmake/` —— CMake 模块（`Synergy.cmake`、`Version.cmake` 等）；`deploy/` —— 打包；
+  `config/` —— 工具与测试配置；`scripts/` —— 用户入口，CI 专用辅助脚本放 `scripts/ci/`。
+- `extra/` 已不存在 —— 不要恢复；资源放到上述真正拥有它的位置。
 
 ### 构建与依赖策略
 
