@@ -28,7 +28,7 @@ if (OSX_BUNDLE)
   # before the DMG is built; otherwise the notary service rejects it as Invalid.
   if(APPLE_CODESIGN_ID)
     configure_file(
-      ${CMAKE_SOURCE_DIR}/extra/deploy/mac/codesign.cmake.in
+      ${CMAKE_SOURCE_DIR}/deploy/mac/codesign.cmake.in
       ${CMAKE_CURRENT_BINARY_DIR}/mac-codesign.cmake
       @ONLY
     )
@@ -36,10 +36,10 @@ if (OSX_BUNDLE)
   endif()
 
   set(CPACK_PACKAGE_ICON "${MY_DIR}/dmg-volume.icns")
-  set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/extra/deploy/mac/dmg-background.tiff")
+  set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/deploy/mac/dmg-background.tiff")
   set(CPACK_DMG_DS_STORE_SETUP_SCRIPT "${MY_DIR}/generate_ds_store.applescript")
   set(CPACK_DMG_VOLUME_NAME "${CMAKE_PROJECT_PROPER_NAME}")
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/extra/deploy/mac/synergy-eula.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/deploy/mac/synergy-eula.txt")
   set(CPACK_DMG_SLA_USE_RESOURCE_FILE_LICENSE ON)
   set(CPACK_GENERATOR "DragNDrop")
 endif()

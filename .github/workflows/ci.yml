@@ -569,13 +569,13 @@ jobs:
       - run: git config --global protocol.file.allow always
 
       - name: Lint appsteam
-        run: flatpak-builder-lint appstream extra/deploy/linux/com.tupig.synergy.metainfo.xml
+        run: flatpak-builder-lint appstream deploy/linux/com.tupig.synergy.metainfo.xml
 
       # appid-url-not-reachable: the linter probes https://tupig.com (app-id
       # namespace), which fails TLS from CI — same class as A-39 (#63). Covered by
       # ci-build-lint-exceptions.json; without --exceptions this step hard-fails.
       - name: Lint manifest
-        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json manifest extra/deploy/linux/flatpak/com.tupig.synergy.yml
+        run: flatpak-builder-lint --exceptions --user-exceptions deploy/linux/flatpak/ci-build-lint-exceptions.json manifest deploy/linux/flatpak/com.tupig.synergy.yml
 
       # uses: steps resolve relative paths from GITHUB_WORKSPACE (the repo root).
       # The builder reads the manifest from extra/ and writes repo/,
@@ -585,13 +585,13 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: ${{ env.PACKAGE_PREFIX }}_${{ needs.get-version.outputs.version }}_linux_${{ matrix.flatpak.arch }}.flatpak
-          manifest-path: extra/deploy/linux/flatpak/com.tupig.synergy.yml
+          manifest-path: deploy/linux/flatpak/com.tupig.synergy.yml
           cache-key: flatpak-builder-${{matrix.flatpak.arch}}-2.0
           arch: ${{matrix.flatpak.arch}}
           upload-artifact: false
 
       - name: Validate build
-        run: flatpak-builder-lint --exceptions --user-exceptions extra/deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
+        run: flatpak-builder-lint --exceptions --user-exceptions deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
 
       - name: Upload
         uses: actions/upload-artifact@v7

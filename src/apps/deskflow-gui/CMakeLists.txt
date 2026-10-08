@@ -33,7 +33,7 @@ elseif(BUILD_OSX_BUNDLE)
     @ONLY
   )
 
-  set(platform_extra ${CMAKE_SOURCE_DIR}/extra/deploy/mac/bundle/Contents/Resources/${CMAKE_PROJECT_PROPER_NAME}.icns)
+  set(platform_extra ${CMAKE_SOURCE_DIR}/deploy/mac/bundle/Contents/Resources/${CMAKE_PROJECT_PROPER_NAME}.icns)
   set_source_files_properties(${platform_extra} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 endif()
 

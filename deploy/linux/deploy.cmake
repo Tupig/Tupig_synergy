@@ -7,7 +7,7 @@ set(MY_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Install our desktop file
 install(
-  FILES ${CMAKE_SOURCE_DIR}/extra/deploy/linux/${CMAKE_PROJECT_REV_FQDN}.desktop
+  FILES ${CMAKE_SOURCE_DIR}/deploy/linux/${CMAKE_PROJECT_REV_FQDN}.desktop
   DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 
@@ -27,7 +27,7 @@ install(
 
 # Install our metainfo
 install(
-  FILES ${CMAKE_SOURCE_DIR}/extra/deploy/linux/${CMAKE_PROJECT_REV_FQDN}.metainfo.xml
+  FILES ${CMAKE_SOURCE_DIR}/deploy/linux/${CMAKE_PROJECT_REV_FQDN}.metainfo.xml
   DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo/
 )
 

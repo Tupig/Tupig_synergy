@@ -52,8 +52,8 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_PROPER_NAME}")
 
 # Wix Specific Values
 set(CPACK_WIX_UPGRADE_GUID "027D1C8A-E7A5-4754-BB93-B2D45BFDBDC8")
-set(CPACK_WIX_UI_BANNER "${CMAKE_SOURCE_DIR}/extra/deploy/windows/wix-banner.png")
-set(CPACK_WIX_UI_DIALOG "${CMAKE_SOURCE_DIR}/extra/deploy/windows/wix-dialog.png")
+set(CPACK_WIX_UI_BANNER "${CMAKE_SOURCE_DIR}/deploy/windows/wix-banner.png")
+set(CPACK_WIX_UI_DIALOG "${CMAKE_SOURCE_DIR}/deploy/windows/wix-dialog.png")
 
 # Required Extra Extenstions
 list(APPEND CPACK_WIX_EXTENSIONS "WixToolset.Util.wixext" "WixToolset.Firewall.wixext")

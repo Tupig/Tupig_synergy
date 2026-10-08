@@ -40,7 +40,7 @@ endif()
 # OS_STRING/CN_STRING work feeding it in the per-platform scripts - had no effect.
 # Removed rather than left in place: a dead assignment reads like the naming scheme
 # still comes from here.
-include(${CMAKE_SOURCE_DIR}/extra/deploy/PackageFileName.cmake)
+include(${CMAKE_SOURCE_DIR}/deploy/PackageFileName.cmake)
 
 message(STATUS "Package Basename: ${CPACK_PACKAGE_FILE_NAME}")
 
