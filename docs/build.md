@@ -23,7 +23,6 @@ The following components are enabled by default:
 - ✅ TuPig Synergy GUI Application (`synergy`)
 - ✅ TuPig Synergy Core Service (`synergy-core`)
 - ✅ Daemon for Windows UAC handling (`synergy-daemon`, Windows only)
-- ✅ Doxygen Documentation (if Doxygen installed)
 - ✅ Build-time Unit Tests (Qt Test + CTest)
 
 ### CMake Configuration Options
@@ -122,7 +121,6 @@ sudo apt update && sudo apt install -y \
   libxinerama-dev libxrandr-dev \
   libxkbcommon-dev libglib2.0-dev \
   libportal-dev libei-dev \
-  doxygen graphviz  # optional: for docs
 ```
 
 #### Fedora / RHEL
@@ -260,7 +258,6 @@ cmake --build build --target coverage
 - ✅ TuPig Synergy GUI 程序 (`synergy`)
 - ✅ TuPig Synergy 核心服务 (`synergy-core`)
 - ✅ Windows UAC 守护进程 (`synergy-daemon`，仅 Windows)
-- ✅ Doxygen 文档 (检测到 Doxygen 时)
 - ✅ 编译时单元测试 (Qt Test + CTest)
 
 ### CMake 配置选项
@@ -358,7 +355,6 @@ sudo apt update && sudo apt install -y \
   libxinerama-dev libxrandr-dev \
   libxkbcommon-dev libglib2.0-dev \
   libportal-dev libei-dev \
-  doxygen graphviz  # 可选：生成文档用
 ```
 
 #### Fedora / RHEL

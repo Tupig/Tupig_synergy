@@ -76,6 +76,10 @@ release builds and for every local build. The exception carries three requiremen
 3. Any divergence that has to be kept (for example a Qt-version-specific workaround) must be
    recorded here or in `docs/build.md` — an undocumented difference between CI and release is how
    the two drift apart silently.
+4. On Windows, CI runs with a **dynamic CRT (`/MD`)**, while the manifest's Windows triplets use a
+   **static CRT (`/MT`)**. CI's Windows legs never exercise `/MT`; verify that path locally with
+   `scripts/build.bat release` (the runtime block in `CMakeLists.txt` derives the CRT from the
+   triplet).
 
 ### Delivery constraints — do not "fix" these
 
@@ -178,6 +182,9 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
    把 CI 绿灯当作**逻辑**上的证据，而非静态链接模型的证据；后者由本地 `scripts/build.bat release` 覆盖。
 3. 任何必须保留的差异（例如针对某个 Qt 版本的适配）都须记录在此处或 `docs/build.md` ——
    CI 与发布之间未记录的差异，正是二者静默漂移的成因。
+4. Windows 上 CI 使用**动态 CRT（`/MD`）**，而 manifest 的 Windows triplet 使用**静态 CRT（`/MT`）**；
+   CI 的 Windows 腿从不覆盖 `/MT`。该路径请用本地 `scripts\build.bat release` 验证
+   （运行库由 `CMakeLists.txt` 的运行库块依据 triplet 推导）。
 
 ### 交付约束 —— 不要把这些当缺陷「修复」
 

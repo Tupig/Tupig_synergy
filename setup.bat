@@ -123,8 +123,7 @@ echo   Environment Setup Complete
 echo ========================================
 echo.
 echo Next steps:
-echo   1. cd synergy
-echo   2. scripts\build.bat release
+echo   scripts\build.bat release
 echo.
 echo Advanced equivalent:
 echo   cmake --preset windows-msvc-release
