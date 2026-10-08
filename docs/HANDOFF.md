@@ -4,7 +4,7 @@
 > **当前分支**: `main`
 > **仓库**: `https://github.com/Tupig/Tupig_synergy`（public，项目在仓库根目录）
 > **最新 Commit**: 以 `git log -1` 为准；阶段 2 关键提交：T1 `a7541a6`、T2 `68c61a5`、T3 `610d0e8`，批1/批2 修复随后（见 §2 提交记录）
-> **状态**: Phase 0+1 完成；**阶段 2（结构整理）完成** — extra/ 溶解（cmake/、deploy/、config/、src/lib/synergy）、REUSE 全绿（893/893）、deskflow→synergy 全仓改名（issue #146）、CI 脚本归置 scripts/ci/；**批1 源码修复（C-01～C-09）与批2 CI 修复（B-01～B-11）已落地并关闭对应 issue**；**网络层（N-01/N-03/N-04/N-05/N-06 + A-15）已完成并默认切换 Qt**（环回端到端测试：明文/TOFU 拒绝/TOFU 信任+TLS；`USE_LEGACY_NETWORK=1` 回退 raw 栈）；批3 文档完成；**N-07（删遗留栈）按验收条件保留一个稳定期**；阶段 4 回归已重跑（见下）。GitHub Issues 为唯一问题追踪载体（144 条）。**阶段 4 回归完成**：free 子集 run 37754662586 与全量 19 腿矩阵 run 37755828508 均 SUCCESS（Windows x64/arm64、macOS x64/arm64、Flatpak x86_64/aarch64、全 Linux 矩阵含 rocky Qt5 腿、lint/get-version/ci-passed/s3-upload；commit d4e57c1 起）。
+> **状态**: Phase 0+1 完成；**阶段 2（结构整理）完成** — extra/ 溶解（cmake/、deploy/、config/、src/lib/synergy）、REUSE 全绿（893/893）、deskflow→synergy 全仓改名（issue #146）、CI 脚本归置 scripts/ci/；**批1 源码修复（C-01～C-09）与批2 CI 修复（B-01～B-11）已落地并关闭对应 issue**；**网络层（N-01/N-03/N-04/N-05/N-06 + A-15）已完成并默认切换 Qt**（环回端到端测试：明文/TOFU 拒绝/TOFU 信任+TLS；`USE_LEGACY_NETWORK=1` 回退 raw 栈）；批3 文档完成；**N-07（删遗留栈）按验收条件保留一个稳定期**；阶段 4 回归已重跑（见下）。GitHub Issues 为唯一问题追踪载体（144 条）。**阶段 4 回归完成**：free 子集 run 37754662586/37768850901 与全量 19 腿矩阵 run 37755828508/37770107215 均 SUCCESS（后者含 Qt 默认传输切换后的全网回归：Windows x64+arm64、macOS x64+arm64、Flatpak x2、全 Linux 矩阵含 rocky/debian Qt5 腿）（Windows x64/arm64、macOS x64/arm64、Flatpak x86_64/aarch64、全 Linux 矩阵含 rocky Qt5 腿、lint/get-version/ci-passed/s3-upload；commit d4e57c1 起）。
 
 ---
 
