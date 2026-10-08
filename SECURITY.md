@@ -1,5 +1,10 @@
 # Security Policy / 安全策略
 
+## Scope / 范围
+
+This policy covers the code in this repository, including inherited upstream code
+that ships in our builds. / 本策略覆盖本仓库中的代码（包括随本构建发布的、继承自上游的代码）。
+
 ## Supported Versions / 支持版本
 
 | Version | Supported |

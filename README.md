@@ -39,7 +39,7 @@
 | 🌐 **Cross-Platform / 跨平台** | Windows, macOS, Linux (X11/Wayland) | ✅ Native / 原生 |
 | 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
 | 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
-| 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was — see delivery matrix / Win/mac 已实现，Linux 从未实现（见交付矩阵） | ⚠️ Platform-dependent / 视平台而定 |
+| 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was — see `docs/HANDOFF.md` §5.5 / Win/mac 已实现，Linux 从未实现（见 `docs/HANDOFF.md` §5.5） | ⚠️ Platform-dependent / 视平台而定 |
 | ⌨️ **Hotkey Switching / 热键切屏** | Instant screen switching via custom hotkeys / 自定义热键瞬间切换 | ✅ Configurable / 可配置 |
 | 🚫 **No License Required / 无需许可证** | Completely free, no serial keys or activation / 完全免费，无序列号/激活 | ✅ Forever / 永久 |
 | 🎨 **Modern Qt6 UI / 现代 Qt6 界面** | Beautiful, responsive graphical interface / 美观、响应式图形界面 | ✅ Polished / 打磨完成 |

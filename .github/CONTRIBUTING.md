@@ -99,4 +99,4 @@ PR 检查清单：
 - [ ] 提交遵循 Conventional Commits（中文信息）
 - [ ] 代码通过 `clang-format`
 - [ ] 测试全部通过（`ctest --output-on-failure`）
-- [ ] 状态有变化时同步更新文档 / 追踪台账（HANDOFF §1.3）
+- [ ] 状态有变化时同步更新文档 / GitHub Issues（HANDOFF §1.3）

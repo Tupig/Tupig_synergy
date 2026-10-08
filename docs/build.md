@@ -224,7 +224,7 @@ ctest --test-dir build --output-on-failure
 ctest --test-dir build -R "ClipboardTests" --output-on-failure
 
 # With coverage (requires ENABLE_COVERAGE=ON)
-cmake --build build --target coverage
+cmake --build build --target coverage-StringTests
 ```
 
 ---
@@ -452,7 +452,7 @@ ctest --test-dir build --output-on-failure
 ctest --test-dir build -R "ClipboardTests" --output-on-failure
 
 # 生成覆盖率报告 (需 ENABLE_COVERAGE=ON)
-cmake --build build --target coverage
+cmake --build build --target coverage-StringTests
 ```
 
 ---
