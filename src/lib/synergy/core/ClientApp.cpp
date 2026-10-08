@@ -19,9 +19,9 @@
 #include "common/Settings.h"
 #include "ipc/CoreIpc.h"
 #include "net/NetworkAddress.h"
+#include "net/QtSocketFactory.h"
 #include "net/SocketException.h"
 #include "net/SocketMultiplexer.h"
-#include "net/QtSocketFactory.h"
 #include "net/TCPSocketFactory.h"
 
 #if defined(Q_OS_WIN)
