@@ -8,8 +8,8 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
-#include "deskflow/core/DeskflowException.h"
-#include "deskflow/protocol/FileChunk.h"
+#include "synergy/core/DeskflowException.h"
+#include "synergy/protocol/FileChunk.h"
 #include "io/IStream.h"
 
 #include <algorithm>

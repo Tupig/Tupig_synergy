@@ -26,7 +26,7 @@
 #include "server/PrimaryClient.h"
 
 #include "common/Settings.h"
-#include "deskflow/protocol/FileTransferOutbound.h"
+#include "synergy/protocol/FileTransferOutbound.h"
 
 #ifdef _WIN32
 #include <algorithm>

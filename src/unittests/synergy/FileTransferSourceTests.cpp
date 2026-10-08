@@ -6,9 +6,9 @@
 
 #include "FileTransferSourceTests.h"
 
-#include "deskflow/protocol/FileChunk.h"
-#include "deskflow/protocol/FileTransferPath.h"
-#include "deskflow/protocol/FileTransferSource.h"
+#include "synergy/protocol/FileChunk.h"
+#include "synergy/protocol/FileTransferPath.h"
+#include "synergy/protocol/FileTransferSource.h"
 
 #include <QDir>
 #include <QFile>

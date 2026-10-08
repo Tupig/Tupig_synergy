@@ -12,8 +12,8 @@
 #include "ClipboardTypes.h"
 #include "KeyTypes.h"
 #include "KeyboardLayoutManager.h"
-#include "deskflow/input/InputValidator.h"
-#include "deskflow/protocol/FileTransferReceiver.h"
+#include "synergy/input/InputValidator.h"
+#include "synergy/protocol/FileTransferReceiver.h"
 
 #include <memory>
 

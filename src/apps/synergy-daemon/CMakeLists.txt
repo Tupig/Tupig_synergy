@@ -6,7 +6,7 @@
 # Daemon is only needed on Windows for elevating processes to deal with UAC.
 if(WIN32)
   set(target ${CMAKE_PROJECT_NAME}-daemon)
-  set(filename deskflow-daemon)
+  set(filename synergy-daemon)
 
   # Generate rc file
   set(EXE_DESCRIPTION "${CMAKE_PROJECT_PROPER_NAME} Daemon for handling secure desktops (UAC prompts, login screen, etc)")

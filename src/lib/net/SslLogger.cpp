@@ -9,7 +9,7 @@
 #include <sstream>
 
 #include <base/Log.h>
-#include <deskflow/ipc/CoreIpc.h>
+#include <synergy/ipc/CoreIpc.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 

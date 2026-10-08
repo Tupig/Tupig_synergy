@@ -193,8 +193,8 @@ Client                                    Server
 
 | File | Purpose |
 |------|---------|
-| `src/lib/deskflow/protocol/ProtocolTypes.h` | Complete message definitions, incl. `ClientInfo` |
-| `src/lib/deskflow/protocol/ProtocolUtil.h` | Serialization/parsing utilities |
+| `src/lib/synergy/protocol/ProtocolTypes.h` | Complete message definitions, incl. `ClientInfo` |
+| `src/lib/synergy/protocol/ProtocolUtil.h` | Serialization/parsing utilities |
 | `src/lib/net/SecureSocket.h` | TLS wrapper |
 
 ---
@@ -410,8 +410,8 @@ Client                                    Server
 
 | 文件 | 用途 |
 |------|------|
-| `src/lib/deskflow/protocol/ProtocolTypes.h` | 完整消息定义（含 `ClientInfo`） |
-| `src/lib/deskflow/protocol/ProtocolUtil.h` | 序列化/解析工具 |
+| `src/lib/synergy/protocol/ProtocolTypes.h` | 完整消息定义（含 `ClientInfo`） |
+| `src/lib/synergy/protocol/ProtocolUtil.h` | 序列化/解析工具 |
 | `src/lib/net/SecureSocket.h` | TLS 封装 |
 
 ---

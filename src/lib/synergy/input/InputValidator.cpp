@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#include "deskflow/input/InputValidator.h"
+#include "synergy/input/InputValidator.h"
 
 #include "base/Log.h"
 

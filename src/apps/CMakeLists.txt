@@ -49,8 +49,8 @@ if(WIN32)
   endif()
 endif()
 
-add_subdirectory(deskflow-core)
-add_subdirectory(deskflow-daemon) #Only used on windows
+add_subdirectory(synergy-core)
+add_subdirectory(synergy-daemon) #Only used on windows
 if(BUILD_GUI)
-  add_subdirectory(deskflow-gui)
+  add_subdirectory(synergy-gui)
 endif()

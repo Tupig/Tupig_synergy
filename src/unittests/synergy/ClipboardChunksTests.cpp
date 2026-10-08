@@ -11,7 +11,7 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
-#include "deskflow/core/DeskflowException.h"
+#include "synergy/core/DeskflowException.h"
 #include "io/IStream.h"
 
 #include <algorithm>

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/Log.h"
-#include "deskflow/protocol/FileTransferReceiver.h"
+#include "synergy/protocol/FileTransferReceiver.h"
 
 #include <QTemporaryDir>
 #include <QTest>

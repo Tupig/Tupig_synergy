@@ -34,9 +34,9 @@ path = [
  , "**/*.md"
  , "docs/**"
   , "deploy/windows/wix-patch.xml.in"
-  , "src/apps/deskflow-core/deskflow-core.exe.manifest"
+  , "src/apps/synergy-core/synergy-core.exe.manifest"
   , "src/apps/res/manpage.txt"
-  , "src/apps/res/deskflow.plist.in"
+  , "src/apps/res/synergy.plist.in"
   , "src/apps/res/entitlements-dev.plist"
   , "translations/*.ts"
 ]

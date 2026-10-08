@@ -82,7 +82,7 @@ find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Test)
 
 add_subdirectory(base)
 add_subdirectory(common)
-add_subdirectory(deskflow)
+add_subdirectory(synergy)
 add_subdirectory(gui)
 add_subdirectory(net)
 add_subdirectory(platform)
@@ -97,7 +97,7 @@ endif()
 get_property(PROJECT_TESTS GLOBAL PROPERTY ${CMAKE_PROJECT_NAME}_tests)
 
 # The GUI target is always CMAKE_PROJECT_NAME (no spaces in CMake target names)
-# on every platform - see src/apps/deskflow-gui/CMakeLists.txt.
+# on every platform - see src/apps/synergy-gui/CMakeLists.txt.
 # This used to read "Deskflow"/"deskflow", which is not a target in this tree, so
 # the DEPENDS below named a file with no rule to make it and the build broke as
 # soon as SKIP_BUILD_TESTS was turned off - which is exactly what

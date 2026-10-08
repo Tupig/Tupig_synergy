@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "deskflow/input/KeyTypes.h"
-#include "deskflow/input/MouseTypes.h"
+#include "synergy/input/KeyTypes.h"
+#include "synergy/input/MouseTypes.h"
 
 #include <chrono>
 #include <cstdint>

@@ -6,15 +6,15 @@
 # add_executable and breaks every TARGET_BUNDLE_* generator expression. Keep the
 # brand only in display/bundle metadata (BUNDLE_* / OUTPUT_NAME), not the target.
 set(target ${CMAKE_PROJECT_NAME})
-set(filename deskflow-gui)
+set(filename synergy-gui)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(WIN32)
   set(EXE_DESCRIPTION "${CMAKE_PROJECT_PROPER_NAME} GUI configuration tool")
   set(EXE_ICON "IDI_ICON1 ICON DISCARDABLE \"${CMAKE_SOURCE_DIR}/src/apps/res/branding/synergy.ico\" ")
-  configure_file(${CMAKE_SOURCE_DIR}/src/apps/res/windows.rc.in deskflow.rc)
-  set(platform_extra deskflow.rc)
+  configure_file(${CMAKE_SOURCE_DIR}/src/apps/res/windows.rc.in synergy.rc)
+  set(platform_extra synergy.rc)
 elseif(BUILD_OSX_BUNDLE)
   # Bundle metadata carries the spaced brand name; the CMake target stays
   # ${CMAKE_PROJECT_NAME} (no spaces). CFBundleExecutable must match the
@@ -28,8 +28,8 @@ elseif(BUILD_OSX_BUNDLE)
   set(BUNDLE_COPYRIGHT "${CMAKE_PROJECT_COPYRIGHT}")
 
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../res/deskflow.plist.in
-    ${CMAKE_CURRENT_BINARY_DIR}/deskflow.plist
+    ${CMAKE_CURRENT_SOURCE_DIR}/../res/synergy.plist.in
+    ${CMAKE_CURRENT_BINARY_DIR}/synergy.plist
     @ONLY
   )
 
@@ -51,7 +51,7 @@ target_link_libraries(
   Qt6::Widgets
   Qt6::Network)
 
-# synergy::hooks::* callsites in the app entry point (deskflow-gui.cpp), guarded
+# synergy::hooks::* callsites in the app entry point (synergy-gui.cpp), guarded
 # by SYNERGY_EXTRA_HEADER. Mirrors the wiring in src/lib/synergy/CMakeLists.txt;
 # the synergy-gui sublib arrives transitively via the gui target.
 target_compile_definitions(${target} PRIVATE SYNERGY_EXTRA_HEADER)
@@ -121,7 +121,7 @@ elseif(APPLE)
   if (BUILD_OSX_BUNDLE)
     set_target_properties(${target} PROPERTIES
       INSTALL_RPATH "@loader_path/../Libraries;@loader_path/../Frameworks"
-      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/deskflow.plist"
+      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/synergy.plist"
     )
     if (APPLE_CODESIGN_DEV)
       configure_mac_codesign(${target})

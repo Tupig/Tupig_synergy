@@ -8,10 +8,10 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
-#include "deskflow/protocol/FileTransferPath.h"
-#include "deskflow/protocol/FileTransferReceiver.h"
-#include "deskflow/protocol/FileTransferSender.h"
-#include "deskflow/protocol/FileTransferSource.h"
+#include "synergy/protocol/FileTransferPath.h"
+#include "synergy/protocol/FileTransferReceiver.h"
+#include "synergy/protocol/FileTransferSender.h"
+#include "synergy/protocol/FileTransferSource.h"
 #include "io/IStream.h"
 
 #include <QDir>

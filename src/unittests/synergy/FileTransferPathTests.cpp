@@ -6,7 +6,7 @@
 
 #include "FileTransferPathTests.h"
 
-#include "deskflow/protocol/FileTransferPath.h"
+#include "synergy/protocol/FileTransferPath.h"
 
 #include <string>
 #include <string_view>

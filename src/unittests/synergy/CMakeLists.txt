@@ -10,7 +10,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE ClipboardTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -18,7 +18,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE ClipboardChunksTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -26,7 +26,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE ProtocolUtilTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -34,7 +34,7 @@ create_test(
   DEPENDS app
   LIBS arch base ${extra_libs}
   SOURCE IKeyStateTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -42,7 +42,7 @@ create_test(
   DEPENDS app
   LIBS arch base ${extra_libs}
   SOURCE KeyMapTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -50,7 +50,7 @@ create_test(
   DEPENDS app
   LIBS arch base mt ${extra_libs}
   SOURCE KeyStateTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -58,7 +58,7 @@ create_test(
   DEPENDS app
   LIBS arch base ${extra_libs}
   SOURCE KeyboardLayoutManagerTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -66,7 +66,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE InputValidatorTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -74,7 +74,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileChunkTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -82,7 +82,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferPathTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -90,7 +90,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferReceiverTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -98,7 +98,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferSourceTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -106,7 +106,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferSenderTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 create_test(
@@ -114,7 +114,7 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferOutboundTests.cpp
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
 if(BUILD_X11_SUPPORT)
@@ -123,7 +123,7 @@ if(BUILD_X11_SUPPORT)
     DEPENDS app
     LIBS arch base ${extra_libs}
     SOURCE X11LayoutParserTests.cpp
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/deskflow"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
   )
 endif()
 

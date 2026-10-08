@@ -6,7 +6,7 @@
 
 #include "FileTransferOutboundTests.h"
 
-#include "deskflow/protocol/FileTransferOutbound.h"
+#include "synergy/protocol/FileTransferOutbound.h"
 
 #include <QFile>
 #include <string>

@@ -6,9 +6,9 @@
 
 #include "InputValidatorTests.h"
 
-#include "deskflow/input/InputValidator.h"
-#include "deskflow/input/KeyTypes.h"
-#include "deskflow/input/MouseTypes.h"
+#include "synergy/input/InputValidator.h"
+#include "synergy/input/KeyTypes.h"
+#include "synergy/input/MouseTypes.h"
 
 #include <chrono>
 

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 set(target ${CMAKE_PROJECT_NAME}-core)
-set(filename deskflow-core)
+set(filename synergy-core)
 
 add_executable(${target}
   "${filename}.cpp"
