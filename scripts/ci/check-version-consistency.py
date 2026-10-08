@@ -10,7 +10,8 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+# This script lives in scripts/ci/, so the repository root is two levels up.
+ROOT = Path(__file__).resolve().parents[2]
 VERSION_CMAKE = ROOT / "cmake" / "Version.cmake"
 VCPKG_JSON = ROOT / "vcpkg.json"
 
