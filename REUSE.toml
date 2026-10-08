@@ -14,6 +14,7 @@ path = [
  , ".gitignore"
  ,    "cspell.json"
  ,    "config/sonar-project.properties"
+ , "config/Synergy.test.example.conf"
  , "deploy/linux/flatpak/ci-build-lint-exceptions.json"
  , "deploy/mac/synergy-eula.txt"
  , "**/*.md"
