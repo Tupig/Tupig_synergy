@@ -77,7 +77,7 @@ void ClientListener::start()
   m_listen = m_socketFactory->createListen(ARCH->getAddrFamily(m_address.getAddress()), m_securityLevel);
 
   // setup event handler
-  m_events->addHandler(EventTypes::ListenSocketConnecting, m_listen, [this](const auto &) {
+  m_events->addHandler(EventTypes::ListenSocketConnecting, m_listen.get(), [this](const auto &) {
     handleClientConnecting();
   });
 
@@ -107,7 +107,7 @@ void ClientListener::stop()
     client = getNextClient();
   }
 
-  m_events->removeHandler(ListenSocketConnecting, m_listen);
+  m_events->removeHandler(ListenSocketConnecting, m_listen.get());
   cleanupListenSocket();
   cleanupClientSockets();
 }
@@ -237,7 +237,7 @@ void ClientListener::removeClientSocket(IDataSocket *socket)
 
 void ClientListener::cleanupListenSocket()
 {
-  delete m_listen;
+  m_listen.reset();
 }
 
 void ClientListener::cleanupClientSockets()

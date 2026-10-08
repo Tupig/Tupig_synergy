@@ -106,17 +106,19 @@ void Client::connect(size_t addressIndex)
     }
 
     // create the socket
-    IDataSocket *socket = m_socketFactory->create(ARCH->getAddrFamily(m_serverAddress.getAddress()), securityLevel);
-    bindNetworkInterface(socket);
+    std::unique_ptr<IDataSocket> socket =
+        m_socketFactory->create(ARCH->getAddrFamily(m_serverAddress.getAddress()), securityLevel);
+    bindNetworkInterface(socket.get());
 
-    // filter socket messages, including a packetizing filter
-    m_stream = new PacketStreamFilter(m_events, socket, true);
+    // filter socket messages, including a packetizing filter (adopts the socket)
+    IDataSocket *socketPtr = socket.release();
+    m_stream = new PacketStreamFilter(m_events, socketPtr, true);
 
     // connect
     LOG_VERBOSE("connecting to server");
     setupConnecting();
     setupTimer();
-    socket->connect(m_serverAddress);
+    socketPtr->connect(m_serverAddress);
   } catch (BaseException &e) {
     cleanupTimer();
     cleanupConnecting();

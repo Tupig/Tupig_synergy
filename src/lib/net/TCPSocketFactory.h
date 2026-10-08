@@ -22,11 +22,11 @@ public:
   ~TCPSocketFactory() override = default;
 
   // ISocketFactory overrides
-  IDataSocket *create(
+  std::unique_ptr<IDataSocket> create(
       IArchNetwork::AddressFamily family = IArchNetwork::AddressFamily::INet,
       SecurityLevel securityLevel = SecurityLevel::PlainText
   ) const override;
-  IListenSocket *createListen(
+  std::unique_ptr<IListenSocket> createListen(
       IArchNetwork::AddressFamily family = IArchNetwork::AddressFamily::INet,
       SecurityLevel securityLevel = SecurityLevel::PlainText
   ) const override;

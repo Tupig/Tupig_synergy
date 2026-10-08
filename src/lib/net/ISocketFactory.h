@@ -14,6 +14,8 @@
 class IDataSocket;
 class IListenSocket;
 
+#include <memory>
+
 //! Socket factory
 /*!
 This interface defines the methods common to all factories used to
@@ -27,13 +29,13 @@ public:
   //@{
 
   //! Create data socket
-  virtual IDataSocket *create(
+  virtual std::unique_ptr<IDataSocket> create(
       IArchNetwork::AddressFamily family = IArchNetwork::AddressFamily::INet,
       SecurityLevel securityLevel = SecurityLevel::PlainText
   ) const = 0;
 
   //! Create listen socket
-  virtual IListenSocket *createListen(
+  virtual std::unique_ptr<IListenSocket> createListen(
       IArchNetwork::AddressFamily family = IArchNetwork::AddressFamily::INet,
       SecurityLevel securityLevel = SecurityLevel::PlainText
   ) const = 0;

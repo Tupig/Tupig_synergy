@@ -23,25 +23,22 @@ TCPSocketFactory::TCPSocketFactory(IEventQueue *events, SocketMultiplexer *socke
   // do nothing
 }
 
-IDataSocket *TCPSocketFactory::create(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
+std::unique_ptr<IDataSocket>
+TCPSocketFactory::create(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
 {
   if (securityLevel != SecurityLevel::PlainText) {
-    auto *secureSocket = new SecureSocket(m_events, m_socketMultiplexer, family, securityLevel);
+    auto secureSocket = std::make_unique<SecureSocket>(m_events, m_socketMultiplexer, family, securityLevel);
     secureSocket->initSsl(false);
     return secureSocket;
-  } else {
-    return new TCPSocket(m_events, m_socketMultiplexer, family);
   }
+  return std::make_unique<TCPSocket>(m_events, m_socketMultiplexer, family);
 }
 
-IListenSocket *TCPSocketFactory::createListen(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
+std::unique_ptr<IListenSocket>
+TCPSocketFactory::createListen(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
 {
-  IListenSocket *socket = nullptr;
   if (securityLevel != SecurityLevel::PlainText) {
-    socket = new SecureListenSocket(m_events, m_socketMultiplexer, family, securityLevel);
-  } else {
-    socket = new TCPListenSocket(m_events, m_socketMultiplexer, family);
+    return std::make_unique<SecureListenSocket>(m_events, m_socketMultiplexer, family, securityLevel);
   }
-
-  return socket;
+  return std::make_unique<TCPListenSocket>(m_events, m_socketMultiplexer, family);
 }

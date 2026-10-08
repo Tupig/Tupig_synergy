@@ -83,7 +83,7 @@ private:
   using WaitingClients = std::deque<ClientProxy *>;
   using ClientSockets = std::set<IDataSocket *>;
 
-  IListenSocket *m_listen;
+  std::unique_ptr<IListenSocket> m_listen;
   std::unique_ptr<ISocketFactory> m_socketFactory;
   NewClients m_newClients;
   WaitingClients m_waitingClients;
