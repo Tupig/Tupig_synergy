@@ -32,7 +32,7 @@ path = [
  , "deploy/windows/wix-banner.png"
  , "deploy/windows/wix-dialog.png"
  , "src/apps/res/icons/deskflow-**/apps/64/org.deskflow.deskflow*.svg"
- , "extra/src/apps/res/synergy.qrc"
+ , "src/apps/res/branding/synergy.qrc"
 ]
 SPDX-FileCopyrightText = "TuPig"
 SPDX-License-Identifier = "GPL-2.0-only"

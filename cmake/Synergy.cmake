@@ -52,7 +52,7 @@ endif()
 set(SKIP_BUILD_TESTS ON CACHE BOOL "Skip build time test")
 
 # Resource paths consumed by src/lib/synergy/gui/CMakeLists.txt.
-set(GUI_RES_DIR "${CMAKE_SOURCE_DIR}/extra/src/apps/res")
+set(GUI_RES_DIR "${CMAKE_SOURCE_DIR}/src/apps/res/branding")
 set(GUI_QRC_FILE "${GUI_RES_DIR}/synergy.qrc")
 
 # Override deskflow's project name. This cascades into binary names

@@ -12,7 +12,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(WIN32)
   set(EXE_DESCRIPTION "${CMAKE_PROJECT_PROPER_NAME} GUI configuration tool")
-  set(EXE_ICON "IDI_ICON1 ICON DISCARDABLE \"${CMAKE_SOURCE_DIR}/extra/src/apps/res/synergy.ico\" ")
+  set(EXE_ICON "IDI_ICON1 ICON DISCARDABLE \"${CMAKE_SOURCE_DIR}/src/apps/res/branding/synergy.ico\" ")
   configure_file(${CMAKE_SOURCE_DIR}/src/apps/res/windows.rc.in deskflow.rc)
   set(platform_extra deskflow.rc)
 elseif(BUILD_OSX_BUNDLE)
@@ -39,7 +39,7 @@ endif()
 
 add_executable(${target} WIN32 MACOSX_BUNDLE
   ${platform_extra}
-  ${CMAKE_SOURCE_DIR}/extra/src/apps/res/synergy.qrc
+  ${CMAKE_SOURCE_DIR}/src/apps/res/branding/synergy.qrc
   ${filename}.cpp
 )
 
