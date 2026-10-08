@@ -14,6 +14,8 @@
 
 #include "gui/config/Screen.h"
 
+#include <algorithm>
+
 const QString ScreenSetupModel::m_MimeType = "application/x-synergy-screen";
 
 ScreenSetupModel::ScreenSetupModel(ScreenList &screens, int numColumns, int numRows)
@@ -26,23 +28,25 @@ ScreenSetupModel::ScreenSetupModel(ScreenList &screens, int numColumns, int numR
   // bound rows and columns to prevent multiply overflow.
   // this is unlikely to happen, as the grid size is only 3x9.
   if (m_NumColumns > 100 || m_NumRows > 100) {
-    qFatal("grid size out of bounds: %d columns x %d rows", m_NumColumns, m_NumRows);
-    return;
+    qWarning("grid size out of bounds: %d columns x %d rows, clamping to 100", m_NumColumns, m_NumRows);
+    m_NumColumns = std::min(m_NumColumns, 100);
+    m_NumRows = std::min(m_NumRows, 100);
   }
 
   const long span = static_cast<long>(m_NumColumns) * m_NumRows;
   if (span > screens.size()) {
-    qFatal(
-        "screen list (%lld) too small for %d columns x %d rows", static_cast<qlonglong>(screens.size()), m_NumColumns,
-        m_NumRows
+    qWarning(
+        "screen list (%lld) too small for %d columns x %d rows, clamping the grid",
+        static_cast<qlonglong>(screens.size()), m_NumColumns, m_NumRows
     );
+    m_NumRows = static_cast<int>(screens.size() / std::max(1, m_NumColumns));
   }
 }
 
 QVariant ScreenSetupModel::data(const QModelIndex &index, int role) const
 {
-  if (!index.isValid() || index.row() > m_NumRows || index.row() < 0 || index.column() < 0 ||
-      index.column() > m_NumColumns)
+  if (!index.isValid() || index.row() >= m_NumRows || index.row() < 0 || index.column() < 0 ||
+      index.column() >= m_NumColumns)
     return QVariant();
 
   if (screen(index).isNull())

@@ -80,8 +80,8 @@ protected:
 
 private:
   ScreenList &m_Screens;
-  const int m_NumColumns;
-  const int m_NumRows;
+  int m_NumColumns;
+  int m_NumRows;
 
   static const QString m_MimeType;
 };
