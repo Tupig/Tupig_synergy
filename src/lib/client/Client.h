@@ -18,6 +18,7 @@
 #include <climits>
 #include <string>
 #include <vector>
+#include <memory>
 
 class Event;
 class EventQueueTimer;
@@ -59,8 +60,8 @@ public:
   to create the socket.  \p screen is    the local screen.
   */
   Client(
-      IEventQueue *events, const std::string &name, const NetworkAddress &address, ISocketFactory *socketFactory,
-      synergy::Screen *screen
+      IEventQueue *events, const std::string &name, const NetworkAddress &address,
+      std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen
   );
   Client(Client const &) = delete;
   Client(Client &&) = delete;
@@ -190,7 +191,7 @@ private:
 private:
   std::string m_name;
   NetworkAddress m_serverAddress;
-  ISocketFactory *m_socketFactory = nullptr;
+  std::unique_ptr<ISocketFactory> m_socketFactory;
   synergy::Screen *m_screen = nullptr;
   synergy::IStream *m_stream = nullptr;
   EventQueueTimer *m_timer = nullptr;

@@ -12,6 +12,7 @@
 #include "net/NetworkAddress.h"
 
 #include <QList>
+#include <memory>
 
 namespace synergy {
 class Screen;
@@ -85,7 +86,7 @@ public:
   double retryTime() const;
 
 private:
-  ISocketFactory *getSocketFactory() const;
+  std::unique_ptr<ISocketFactory> getSocketFactory() const;
   NetworkAddress &getCurrentServerAddress();
   void tryNextServer();
 

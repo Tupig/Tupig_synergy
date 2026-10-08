@@ -386,9 +386,9 @@ void ClientApp::startNode()
   }
 }
 
-ISocketFactory *ClientApp::getSocketFactory() const
+std::unique_ptr<ISocketFactory> ClientApp::getSocketFactory() const
 {
-  return new TCPSocketFactory(getEvents(), getSocketMultiplexer());
+  return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer());
 }
 
 double ClientApp::retryTime() const

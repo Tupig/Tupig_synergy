@@ -38,12 +38,12 @@
 //
 
 Client::Client(
-    IEventQueue *events, const std::string &name, const NetworkAddress &address, ISocketFactory *socketFactory,
-    synergy::Screen *screen
+    IEventQueue *events, const std::string &name, const NetworkAddress &address,
+    std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen
 )
     : m_name(name),
       m_serverAddress(address),
-      m_socketFactory(socketFactory),
+      m_socketFactory(std::move(socketFactory)),
       m_screen(screen),
       m_events(events),
       m_useSecureNetwork(Settings::value(Settings::Security::TlsEnabled).toBool()),
@@ -68,7 +68,6 @@ Client::~Client()
   cleanupScreen();
   cleanupConnecting();
   cleanupConnection();
-  delete m_socketFactory;
 }
 
 void Client::setServerAddress(const NetworkAddress &address)
