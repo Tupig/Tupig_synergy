@@ -29,4 +29,12 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/net"
 )
 
+create_test(
+  NAME NetworkTransportFactoryTests
+  DEPENDS net
+  LIBS base arch mt io ${extra_libs}
+  SOURCE NetworkTransportFactoryTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/net"
+)
+
 
