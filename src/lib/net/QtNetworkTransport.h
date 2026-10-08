@@ -65,6 +65,15 @@ public:
   void onErrorOccurred(QAbstractSocket::SocketError socketError);
   void onSslErrors(const QList<QSslError> &errors);
 
+Q_SIGNALS:
+  // Bridged by the QtSocketFactory adapters into IEventQueue events. The
+  // adapter owns the transport, so a plain receiver context (the transport
+  // itself) is enough to keep the connection lifecycles coupled.
+  void transportConnected();
+  void transportDisconnected();
+  void transportDataReady();
+  void transportError(const QString &message, bool fatal);
+
 private:
   void createSocket();
   void connectSignals();
@@ -93,9 +102,19 @@ public:
   std::unique_ptr<INetworkTransport> accept() override;
   ArchSocket getSocket() const override;
 
-  void bindAndListen(const NetworkAddress &address);
+  //! Bind and start listening. Returns false on any failure (bind or TLS config).
+  bool bindAndListen(const NetworkAddress &address);
 
   int getServerSocketDescriptor() const;
+
+  //! Port actually bound (useful with port 0).
+  quint16 serverPort() const;
+
+  //! The underlying server; the adapter connects its newConnection signal.
+  QTcpServer *getServer() const
+  {
+    return m_server;
+  }
 
 private:
   bool wantsTls() const;

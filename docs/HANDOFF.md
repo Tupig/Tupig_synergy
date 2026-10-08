@@ -4,7 +4,7 @@
 > **当前分支**: `main`
 > **仓库**: `https://github.com/Tupig/Tupig_synergy`（public，项目在仓库根目录）
 > **最新 Commit**: 以 `git log -1` 为准；阶段 2 关键提交：T1 `a7541a6`、T2 `68c61a5`、T3 `610d0e8`，批1/批2 修复随后（见 §2 提交记录）
-> **状态**: Phase 0+1 完成；**阶段 2（结构整理）完成** — extra/ 溶解（cmake/、deploy/、config/、src/lib/synergy）、REUSE 全绿（893/893）、deskflow→synergy 全仓改名（issue #146）、CI 脚本归置 scripts/ci/；**批1 源码修复（C-01～C-09）与批2 CI 修复（B-01～B-11）已落地并关闭对应 issue**；**待办：批3 文档剩余项、网络层（N-01～N-07）、阶段 4 推送 + 19 腿矩阵回归**。GitHub Issues 为唯一问题追踪载体（144 条）。**阶段 4 回归完成**：free 子集 run 37754662586 与全量 19 腿矩阵 run 37755828508 均 SUCCESS（Windows x64/arm64、macOS x64/arm64、Flatpak x86_64/aarch64、全 Linux 矩阵含 rocky Qt5 腿、lint/get-version/ci-passed/s3-upload；commit d4e57c1 起）。
+> **状态**: Phase 0+1 完成；**阶段 2（结构整理）完成** — extra/ 溶解（cmake/、deploy/、config/、src/lib/synergy）、REUSE 全绿（893/893）、deskflow→synergy 全仓改名（issue #146）、CI 脚本归置 scripts/ci/；**批1 源码修复（C-01～C-09）与批2 CI 修复（B-01～B-11）已落地并关闭对应 issue**；**网络层（N-01/N-03/N-04/N-05/N-06 + A-15）已完成并默认切换 Qt**（环回端到端测试：明文/TOFU 拒绝/TOFU 信任+TLS；`USE_LEGACY_NETWORK=1` 回退 raw 栈）；批3 文档完成；**N-07（删遗留栈）按验收条件保留一个稳定期**；阶段 4 回归已重跑（见下）。GitHub Issues 为唯一问题追踪载体（144 条）。**阶段 4 回归完成**：free 子集 run 37754662586 与全量 19 腿矩阵 run 37755828508 均 SUCCESS（Windows x64/arm64、macOS x64/arm64、Flatpak x86_64/aarch64、全 Linux 矩阵含 rocky Qt5 腿、lint/get-version/ci-passed/s3-upload；commit d4e57c1 起）。
 
 ---
 
@@ -171,9 +171,9 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 | `src/lib/net/QtNetworkTransport.cpp/h` | Qt QTcpSocket 传输（完整实现） | Step 2–3 | ✅ 已完成 |
 | `src/lib/net/NetworkTransportFactory.cpp/h` | 运行时切换工厂 | Step 2 新增 | ⚠️ 未接线（A-15 (#39)：无生产调用者，见 §5.4 阶段 1） |
 | `src/lib/net/IDataSocket.h` | 数据 socket 接口 | Step 2 修改 (添加 getSocket) | ✅ 已完成 |
-| `src/lib/net/TCPSocket.cpp/h` | TCP 传输 | Step 3 替换 | 待实施 |
-| `src/lib/net/SecureSocket.cpp/h` | TLS 传输 | Step 4 替换 | 待实施 |
-| `src/lib/net/TCPSocketFactory.cpp/h` | 工厂 | Step 2 替换，Step 6 删除 | 待实施 |
+| `src/lib/net/TCPSocket.cpp/h` | TCP 传输（回滚路径） | 保留至 N-07 稳定期 | ⏸ 回滚用 |
+| `src/lib/net/SecureSocket.cpp/h` | TLS 传输（回滚路径） | 保留至 N-07 稳定期 | ⏸ 回滚用 |
+| `src/lib/net/TCPSocketFactory.cpp/h` | raw 工厂（`USE_LEGACY_NETWORK=1`） | 保留至 N-07 | ⏸ 回滚用 |
 | `src/lib/net/ISocketMultiplexerJob.h` | Job 接口 | Step 6 删除 | 待实施 |
 | `src/lib/net/TSocketMultiplexerMethodJob.h` | Job 模板 | Step 6 删除 | 待实施 |
 | `src/lib/net/TCPListenSocket.cpp/h` | 监听套接字 | Step 6 删除 | 待实施 |
@@ -191,8 +191,8 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 | 2 | QtNetwork 抽象层 + Legacy/Qt 双实现 | ✅ 已完成 |
 | 3 | `QtNetworkTransport` 用 QTcpSocket 完整实现（工厂可选；`TCPSocket` 仍并存） | ✅ 已完成 |
 | 4 | Qt TLS（`QSslSocket` / `QSslServer`）路径（`SecureSocket` 仍并存，Legacy 回滚可用） | ✅ 已完成 |
-| 5 | 网络层智能指针化 | 待实施 |
-| 6 | 移除旧 `TCPSocket` / Multiplexer Job 等遗留代码 | 待实施 |
+| 5 | 网络层智能指针化（N-04：ISocketFactory 全链 unique_ptr） | ✅ 已完成 |
+| 6 | 移除旧 `TCPSocket` / Multiplexer Job 等遗留代码 | ⏸ 稳定期后（N-07；当前为 `USE_LEGACY_NETWORK=1` 回滚路径） |
 
 说明：追踪文档里的「Step 3 完成」指 QTcpSocket 集成，**不是**「已删除 TCPSocket」。二者勿混用。
 
@@ -227,9 +227,9 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 阶段状态：
 
 - **阶段 0（命名/图标/文档）**: ✅ 完成 —— D1 别名折叠、U-17 (#100) 显示名 `TuPig Synergy`、U-18 (#101)（**后经 #146 决议改为全仓统一 synergy**）、U-09 (#92)/U-19 (#102) 文档化、G1 清单迁入 §5.6。
-- **阶段 1（Qt 适配器 + 指纹 TOFU，A-15 (#39) 工厂接线）**: 🔄 已批准恢复执行（N-01～N-06）—— 先补 net 层测试，再工厂接线、TLS 冒烟与默认切换；`USE_LEGACY_NETWORK=0` 实证。
-- **阶段 2（默认 Qt + Step 5 智能指针）**: 🔄 已批准恢复执行（Step 5a 智能指针化，N-04 #142）。
-- **阶段 3（Step 6 删除 Legacy 栈）**: 🔄 已批准恢复执行（N-07 #145）。
+- **阶段 1（Qt 适配器 + 指纹 TOFU，A-15 (#39) 工厂接线）**: ✅ 完成 —— QtSocketFactory/QtDataSocket/QtListenSocket 适配器落地，TOFU 与 SecureSocket 对齐（客户端校验 trusted-servers、服务端 PeerAuth 校验 trusted-clients、RSA≥2048、peerFingerprint IPC），Qt5 手动 TLS 升级到位（N-05），工厂接线 apps 且默认 Qt（`USE_LEGACY_NETWORK=1` 回退）。
+- **阶段 2（默认 Qt + Step 5 智能指针）**: ✅ 完成（N-04：ISocketFactory 全链 unique_ptr；默认 Qt 已切换）。
+- **阶段 3（Step 6 删除 Legacy 栈）**: ⏸ 稳定期后执行（N-07 #145；当前保留为回滚路径）。
 
 验证方式（恢复执行时适用）：每阶段 `scripts\build.bat release` + 单测 + 推送；G1 由用户按 §5.6 执行。
 

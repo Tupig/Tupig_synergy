@@ -56,6 +56,47 @@ bool loadPemIdentity(QSslConfiguration &config, const QString &path)
   return true;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+//! Qt 5 has no QSslServer; upgrade every accepted socket manually.
+/*!
+`incomingConnection` adopts the raw descriptor into a QSslSocket, queues it
+and starts the server-side handshake.  QSslSocket requires a QCoreApplication
+event loop, which the process already has.
+*/
+class Qt5TlsTcpServer : public QTcpServer
+{
+public:
+  using QTcpServer::QTcpServer;
+
+  QSslConfiguration sslConfiguration;
+
+protected:
+  void incomingConnection(qintptr socketDescriptor) override
+  {
+    auto *socket = new QSslSocket(this);
+    if (!socket->setSocketDescriptor(socketDescriptor)) {
+      LOG_ERR("QtTransportListenSocket: cannot adopt incoming socket");
+      delete socket;
+      return;
+    }
+    socket->setSslConfiguration(sslConfiguration);
+    // The handshake must tolerate self-signed client certificates (the raw
+    // stack's cert callback behaves the same); trust is fingerprint-based.
+    QObject::connect(
+        socket, qOverload<const QList<QSslError> &>(&QSslSocket::sslErrors), socket,
+        [socket](const QList<QSslError> &errors) {
+          for (const auto &err : errors) {
+            LOG_DEBUG("QtTransportListenSocket: ignoring SSL error: %s", err.errorString().toStdString().c_str());
+          }
+          socket->ignoreSslErrors();
+        }
+    );
+    addPendingConnection(socket);
+    socket->startServerEncryption();
+  }
+};
+#endif
+
 } // namespace
 
 //
@@ -79,6 +120,10 @@ QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securit
     if (auto *ssl = qobject_cast<QSslSocket *>(m_socket)) {
       if (wantsTls() && ssl->isEncrypted()) {
         m_connected = true;
+        // QSslServer (Qt 6) hands out sockets only after the TLS handshake,
+        // so encrypted() has already fired by the time we can subscribe.
+        // Replay the connected notification once subscribers are wired up.
+        QMetaObject::invokeMethod(this, [this] { Q_EMIT transportConnected(); }, Qt::QueuedConnection);
       }
     }
     connectSignals();
@@ -300,12 +345,14 @@ void QtNetworkTransport::onConnected()
   LOG_INFO("QtNetworkTransport: connected%s", wantsTls() ? " (TLS)" : "");
   m_connected = true;
   m_fatalError = false;
+  Q_EMIT transportConnected();
 }
 
 void QtNetworkTransport::onDisconnected()
 {
   LOG_INFO("QtNetworkTransport: disconnected");
   m_connected = false;
+  Q_EMIT transportDisconnected();
 }
 
 void QtNetworkTransport::onReadyRead()
@@ -317,6 +364,7 @@ void QtNetworkTransport::onReadyRead()
   QByteArray data = m_socket->readAll();
   if (!data.isEmpty()) {
     m_readBuffer.append(data);
+    Q_EMIT transportDataReady();
   }
 }
 
@@ -338,26 +386,20 @@ void QtNetworkTransport::onErrorOccurred(QAbstractSocket::SocketError socketErro
   } else {
     m_fatalError = true;
   }
+  Q_EMIT transportError(m_socket ? m_socket->errorString() : QString(), m_fatalError);
 }
 
 void QtNetworkTransport::onSslErrors(const QList<QSslError> &errors)
 {
-  // Encrypted mode intentionally skips Qt peer verification (fingerprint UI
-  // lives elsewhere). PeerAuth keeps errors fatal.
-  if (m_securityLevel == SecurityLevel::Encrypted) {
-    if (auto *ssl = qobject_cast<QSslSocket *>(m_socket)) {
-      for (const auto &err : errors) {
-        LOG_DEBUG("QtNetworkTransport: ignoring SSL error: %s", err.errorString().toStdString().c_str());
-      }
-      ssl->ignoreSslErrors();
+  // Chain/self-signed errors are tolerated like the raw stack's cert verify
+  // callback: the handshake proceeds and the fingerprint database is the
+  // actual trust gate (checked by the adapter once encrypted).
+  if (auto *ssl = qobject_cast<QSslSocket *>(m_socket)) {
+    for (const auto &err : errors) {
+      LOG_DEBUG("QtNetworkTransport: ignoring SSL error: %s", err.errorString().toStdString().c_str());
     }
-    return;
+    ssl->ignoreSslErrors();
   }
-
-  for (const auto &err : errors) {
-    LOG_ERR("QtNetworkTransport: SSL error: %s", err.errorString().toStdString().c_str());
-  }
-  m_fatalError = true;
 }
 
 void QtNetworkTransport::processWriteQueue()
@@ -383,12 +425,29 @@ QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : 
   // TLS listen on Qt 5 is rejected in configureSslServer() below.
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   if (wantsTls()) {
-    m_server = new QSslServer(this);
+    auto *sslServer = new QSslServer(this);
+    // Self-signed client certificates must not abort the handshake (raw-stack
+    // parity); the fingerprint database is the trust gate.
+    QObject::connect(
+        sslServer, &QSslServer::sslErrors, sslServer,
+        [](QSslSocket *socket, const QList<QSslError> &errors) {
+          for (const auto &err : errors) {
+            LOG_DEBUG("QtTransportListenSocket: ignoring SSL error: %s", err.errorString().toStdString().c_str());
+          }
+          socket->ignoreSslErrors();
+          LOG_DEBUG("QtTransportListenSocket: handshake errors ignored, continuing");
+        }
+    );
+    m_server = sslServer;
   } else {
     m_server = new QTcpServer(this);
   }
 #else
-  m_server = new QTcpServer(this);
+  if (wantsTls()) {
+    m_server = new Qt5TlsTcpServer(this);
+  } else {
+    m_server = new QTcpServer(this);
+  }
 #endif
   LOG_DEBUG("QtTransportListenSocket: created (tls=%d)", wantsTls() ? 1 : 0);
 }
@@ -424,19 +483,39 @@ bool QtTransportListenSocket::configureSslServer()
     return false;
   }
 
-  if (m_securityLevel == SecurityLevel::PeerAuth) {
-    config.setPeerVerifyMode(QSslSocket::VerifyPeer);
-  } else {
-    config.setPeerVerifyMode(QSslSocket::VerifyNone);
-  }
+  // Always request the peer certificate, like the raw stack's
+  // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT. Chain errors are
+  // ignored (see onSslErrors); trust is decided by the fingerprint database.
+  config.setPeerVerifyMode(QSslSocket::VerifyPeer);
 
   sslServer->setSslConfiguration(config);
   return true;
 #else
-  if (wantsTls()) {
-    LOG_ERR("QtTransportListenSocket: TLS listen requires Qt 6 QSslServer (Qt 5 build)");
+  if (!wantsTls()) {
+    return true;
   }
-  return !wantsTls();
+
+  auto *tlsServer = qobject_cast<Qt5TlsTcpServer *>(m_server);
+  if (tlsServer == nullptr) {
+    return false;
+  }
+
+  const QString path = Settings::value(Settings::Security::Certificate).toString();
+  if (path.isEmpty()) {
+    LOG_ERR("QtTransportListenSocket: security/certificate setting is empty");
+    return false;
+  }
+
+  QSslConfiguration config;
+  if (!loadPemIdentity(config, path)) {
+    return false;
+  }
+
+  // Always request the peer certificate, like the raw stack.
+  config.setPeerVerifyMode(QSslSocket::VerifyPeer);
+
+  tlsServer->sslConfiguration = config;
+  return true;
 #endif
 }
 
@@ -460,15 +539,15 @@ ArchSocket QtTransportListenSocket::getSocket() const
   return nullptr;
 }
 
-void QtTransportListenSocket::bindAndListen(const NetworkAddress &address)
+bool QtTransportListenSocket::bindAndListen(const NetworkAddress &address)
 {
   if (!m_server) {
     LOG_ERR("QtTransportListenSocket: no server");
-    return;
+    return false;
   }
 
   if (wantsTls() && !configureSslServer()) {
-    return;
+    return false;
   }
 
   QHostAddress addr =
@@ -476,12 +555,19 @@ void QtTransportListenSocket::bindAndListen(const NetworkAddress &address)
 
   if (!m_server->listen(addr, static_cast<quint16>(address.getPort()))) {
     LOG_ERR("QtTransportListenSocket: failed to listen: %s", m_server->errorString().toStdString().c_str());
-  } else {
-    LOG_INFO(
-        "QtTransportListenSocket: listening on %s:%d (tls=%d)", address.getHostname().c_str(), address.getPort(),
-        wantsTls() ? 1 : 0
-    );
+    return false;
   }
+
+  LOG_INFO(
+      "QtTransportListenSocket: listening on %s:%d (tls=%d)", address.getHostname().c_str(), address.getPort(),
+      wantsTls() ? 1 : 0
+  );
+  return true;
+}
+
+quint16 QtTransportListenSocket::serverPort() const
+{
+  return m_server ? m_server->serverPort() : 0;
 }
 
 int QtTransportListenSocket::getServerSocketDescriptor() const

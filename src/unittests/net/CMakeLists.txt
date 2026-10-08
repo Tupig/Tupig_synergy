@@ -30,10 +30,10 @@ create_test(
 )
 
 create_test(
-  NAME NetworkTransportFactoryTests
+  NAME QtSocketFactoryTests
   DEPENDS net
   LIBS base arch mt io ${extra_libs}
-  SOURCE NetworkTransportFactoryTests.cpp
+  SOURCE QtSocketFactoryTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/net"
 )
 

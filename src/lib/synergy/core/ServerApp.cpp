@@ -21,6 +21,7 @@
 #include "ipc/CoreIpc.h"
 #include "net/SocketException.h"
 #include "net/SocketMultiplexer.h"
+#include "net/QtSocketFactory.h"
 #include "net/TCPSocketFactory.h"
 #include "server/ClientListener.h"
 #include "server/ClientProxy.h"
@@ -480,7 +481,13 @@ void ServerApp::handleScreenSwitched() const
 
 std::unique_ptr<ISocketFactory> ServerApp::getSocketFactory() const
 {
-  return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer());
+  // Qt is the default transport; USE_LEGACY_NETWORK=1 rolls back to the
+  // raw-socket stack for one release cycle.
+  if (shouldUseLegacyNetwork()) {
+    LOG_DEBUG("using the legacy network stack (USE_LEGACY_NETWORK=1)");
+    return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer());
+  }
+  return std::make_unique<QtSocketFactory>(getEvents());
 }
 
 NetworkAddress ServerApp::getAddress(const NetworkAddress &address) const
