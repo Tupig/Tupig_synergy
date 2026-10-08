@@ -495,7 +495,9 @@ bool QtTransportListenSocket::configureSslServer()
     return true;
   }
 
-  auto *tlsServer = qobject_cast<Qt5TlsTcpServer *>(m_server);
+  // m_server is created as Qt5TlsTcpServer in this branch; static_cast avoids
+  // requiring Q_OBJECT on the private subclass.
+  auto *tlsServer = static_cast<Qt5TlsTcpServer *>(m_server);
   if (tlsServer == nullptr) {
     return false;
   }
