@@ -96,4 +96,13 @@ private:
   bool m_secureReady = false;
   bool m_fatal = false;
   SecurityLevel m_securityLevel = SecurityLevel::Encrypted;
+
+  // Per-socket write-retry state. These used to be function-level statics in
+  // doWrite(), shared by every SecureSocket on the multiplexer: a pending
+  // retry on one socket made the next socket's write skip its buffer refill
+  // and send the previous peer's data, and the realloc result went unchecked.
+  bool m_writeRetry = false;
+  int m_writeRetrySize = 0;
+  void *m_writeBuffer = nullptr;
+  int m_writeBufferSize = 0;
 };

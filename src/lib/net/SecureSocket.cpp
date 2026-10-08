@@ -129,6 +129,7 @@ SecureSocket::SecureSocket(
 SecureSocket::~SecureSocket()
 {
   freeSSL();
+  free(m_writeBuffer);
 }
 
 void SecureSocket::close()
@@ -237,26 +238,27 @@ TCPSocket::JobResult SecureSocket::doRead()
 TCPSocket::JobResult SecureSocket::doWrite()
 {
   using enum JobResult;
-  static bool s_retry = false;
-  static int s_retrySize = 0;
-  static int s_staticBufferSize = 0;
-  static void *s_staticBuffer = nullptr;
 
   // write data
   int bufferSize = 0;
   int bytesWrote = 0;
   int status = 0;
 
-  if (s_retry) {
-    bufferSize = s_retrySize;
+  if (m_writeRetry) {
+    bufferSize = m_writeRetrySize;
   } else {
     bufferSize = m_outputBuffer.getSize();
     if (bufferSize != 0) {
-      if (bufferSize > s_staticBufferSize) {
-        s_staticBuffer = realloc(s_staticBuffer, bufferSize);
-        s_staticBufferSize = bufferSize;
+      if (bufferSize > m_writeBufferSize) {
+        void *newBuffer = realloc(m_writeBuffer, bufferSize);
+        if (newBuffer == nullptr) {
+          LOG_ERR("secure write buffer allocation failed (%d bytes)", bufferSize);
+          return Break;
+        }
+        m_writeBuffer = newBuffer;
+        m_writeBufferSize = bufferSize;
       }
-      memcpy(s_staticBuffer, m_outputBuffer.peek(bufferSize), bufferSize);
+      memcpy(m_writeBuffer, m_outputBuffer.peek(bufferSize), bufferSize);
     }
   }
 
@@ -265,14 +267,14 @@ TCPSocket::JobResult SecureSocket::doWrite()
   }
 
   if (isSecureReady()) {
-    status = secureWrite(s_staticBuffer, bufferSize, bytesWrote);
+    status = secureWrite(m_writeBuffer, bufferSize, bytesWrote);
     if (status > 0) {
-      s_retry = false;
+      m_writeRetry = false;
     } else if (status < 0) {
       return Break;
     } else if (status == 0) {
-      s_retry = true;
-      s_retrySize = bufferSize;
+      m_writeRetry = true;
+      m_writeRetrySize = bufferSize;
       return New;
     }
   } else {
