@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -466,7 +466,7 @@ void MSWindowsScreen::checkClipboards()
   // next reboot we do this double check.  clipboard ownership
   // won't be reflected on other screens until we leave but at
   // least the clipboard itself will work.
-  if (m_ownClipboard && !MSWindowsClipboard::isOwnedByDeskflow()) {
+  if (m_ownClipboard && !MSWindowsClipboard::isOwnedBySynergy()) {
     LOG_DEBUG("clipboard changed: lost ownership and no notification received");
     m_ownClipboard = false;
     sendClipboardEvent(EventTypes::ClipboardGrabbed, kClipboardClipboard);
@@ -1339,7 +1339,7 @@ bool MSWindowsScreen::onMouseButton(WPARAM wParam, LPARAM lParam)
 }
 
 // here's how mouse movements are sent across the network to a client:
-//   1. deskflow checks the mouse position on server screen
+//   1. Synergy checks the mouse position on server screen
 //   2. records the delta (current x,y minus last x,y)
 //   3. records the current x,y as "last" (so we can calc delta next time)
 //   4. on the server, puts the cursor back to the center of the screen
@@ -1471,7 +1471,7 @@ void MSWindowsScreen::onClipboardChange()
 {
   // now notify client that somebody changed the clipboard (unless
   // we're the owner).
-  if (!MSWindowsClipboard::isOwnedByDeskflow()) {
+  if (!MSWindowsClipboard::isOwnedBySynergy()) {
     if (m_ownClipboard) {
       LOG_DEBUG("clipboard changed: lost ownership");
       m_ownClipboard = false;

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2024 Chris Rizzitello <sithord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2012 - 2024 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <vl@fidra.de>
@@ -177,7 +177,7 @@ bool checkMacAssistiveDevices()
   // new in mavericks, applications are trusted individually
   // with use of the accessibility api. this call will show a
   // prompt which can show the security/privacy/accessibility
-  // tab, with a list of allowed applications. deskflow should
+  // tab, with a list of allowed applications. Synergy should
   // show up there automatically, but will be unchecked.
 
   if (AXIsProcessTrusted()) {

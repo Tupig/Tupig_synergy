@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -72,7 +72,7 @@ bool MSWindowsClipboard::empty()
     return false;
   }
 
-  // mark clipboard as being owned by deskflow
+  // mark clipboard as being owned by Synergy
   HGLOBAL data = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, 1);
   if (nullptr == SetClipboardData(getOwnershipFormat(), data)) {
     LOG_WARN("failed to set clipboard data");
@@ -204,7 +204,7 @@ void MSWindowsClipboard::clearConverters()
   m_converters.clear();
 }
 
-bool MSWindowsClipboard::isOwnedByDeskflow()
+bool MSWindowsClipboard::isOwnedBySynergy()
 {
   // create ownership format if we haven't yet
   if (s_ownershipFormat == 0) {

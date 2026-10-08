@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -444,7 +444,7 @@ void MSWindowsDesks::deskMouseRelativeMove(int32_t dx, int32_t dy) const
   // restore acceleration.  there's a slight chance we'll end up in
   // the wrong place if the user moves the cursor using this system's
   // mouse while simultaneously moving the mouse on the server
-  // system.  that defeats the purpose of deskflow so we'll assume
+  // system.  that defeats the purpose of Synergy so we'll assume
   // that won't happen.  even if it does, the next mouse move will
   // correct the position.
 

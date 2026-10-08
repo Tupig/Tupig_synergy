@@ -35,8 +35,10 @@ Code standards:
 - Windows automation is `.bat` only — no `.ps1` anywhere (AGENTS R1).
 
 Upstream sync: this repository is grafted onto and periodically merged with
-[deskflow/deskflow](https://github.com/deskflow/deskflow); internal identifiers
-deliberately keep the `deskflow` spelling to stay mergeable.
+[deskflow/deskflow](https://github.com/deskflow/deskflow). Internal identifiers
+were unified under the `synergy` name in 2026-10 (directories, namespaces,
+strings); upstream references remain only where they are attribution (SPDX
+headers, thanks) or historical notes.
 
 Reporting:
 
@@ -80,8 +82,8 @@ PR checklist:
 - Windows 自动化脚本只允许 `.bat` —— 全仓库禁止 `.ps1`（AGENTS R1）。
 
 上游同步：本仓库嫁接自并定期合并
-[deskflow/deskflow](https://github.com/deskflow/deskflow)；内部标识有意保留
-`deskflow` 拼写以便合并。
+[deskflow/deskflow](https://github.com/deskflow/deskflow)。内部标识已于 2026-10
+统一为 `synergy`（目录、命名空间、字符串）；上游引用仅保留在归属署名（SPDX、致谢）与历史说明中。
 
 提交渠道：
 

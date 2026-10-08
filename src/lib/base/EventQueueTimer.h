@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2023 Inputleap Contributors
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.

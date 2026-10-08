@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -10,12 +10,12 @@
 #include <cstdint>
 /**
  * @file ProtocolTypes.h
- * @brief Deskflow Network Protocol Specification and Implementation
+ * @brief Synergy Network Protocol Specification and Implementation
  *
  * @section protocol_overview Protocol Overview
  *
  * This file defines the data types, constants, and message structures for the
- * Deskflow network protocol. For a high-level conceptual overview of the protocol,
+ * Synergy network protocol. For a high-level conceptual overview of the protocol,
  * including the distinction between Client/Server and Primary/Secondary roles,
  * please see the @ref protocol_reference "Protocol Reference" document.
  */
@@ -42,13 +42,13 @@ inline constexpr int16_t kProtocolMajorVersion = 1;
  * The minor version indicates feature availability within the same major version.
  * Higher minor versions are backward compatible with lower minor versions.
  *
- * @note When incrementing the minor version, the Deskflow application version should also increment
+ * @note When incrementing the minor version, the Synergy application version should also increment
  * @since Protocol version 1.0
  */
 inline constexpr int16_t kProtocolMinorVersion = 8;
 
 /**
- * @brief Default TCP port for Deskflow connections
+ * @brief Default TCP port for Synergy connections
  *
  * Clients connect to this port on the server by default.
  * Can be overridden in configuration.
@@ -1280,7 +1280,7 @@ extern const char *const kMsgEIncompatible;
  *
  * Sent when the client name provided during connection is already
  * in use by another connected client. Client names must be unique
- * within a Deskflow network.
+ * within a Synergy network.
  *
  * After receiving this message, the client should:
  * 1. Disconnect from the server

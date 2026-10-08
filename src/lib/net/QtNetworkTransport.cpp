@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
  * SPDX-FileCopyrightText: (C) 2026 TuPig
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <vl@fidra.de>
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -11,7 +11,7 @@
 #include <QSettings>
 
 // this table originally comes from Qt sources (gui/kernel/qkeysequence.cpp)
-// and is heavily modified for Deskflow
+// and is heavily modified for Synergy
 static const struct
 {
   int key;
@@ -220,6 +220,6 @@ QString KeySequence::keyToString(int key)
 #endif
   }
 
-  // give up, deskflow probably won't handle this
+  // give up, Synergy probably won't handle this
   return "";
 }

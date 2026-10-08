@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2003 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -205,7 +205,7 @@ void XWindowsKeyState::pollPressedKeys(KeyButtonSet &pressedKeys) const
 void XWindowsKeyState::getKeyMap(synergy::KeyMap &keyMap)
 {
   // get autorepeat info.  we must use the global_auto_repeat told to
-  // us because it may have modified by deskflow.
+  // us because it may have modified by Synergy.
   int oldGlobalAutoRepeat = m_keyboardState.global_auto_repeat;
   XGetKeyboardControl(m_display, &m_keyboardState);
   m_keyboardState.global_auto_repeat = oldGlobalAutoRepeat;
@@ -774,7 +774,7 @@ void XWindowsKeyState::updateKeysymMapXKB(synergy::KeyMap &keyMap)
     }
   }
 
-  // change all modifier masks to deskflow masks from X masks
+  // change all modifier masks to Synergy masks from X masks
   keyMap.foreachKey(&XWindowsKeyState::remapKeyModifiers, this);
 
   // allow composition across groups

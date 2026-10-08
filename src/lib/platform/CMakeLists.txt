@@ -183,7 +183,7 @@ add_library(platform STATIC ${PLATFORM_SOURCES})
 
 # Add platform subdirectories to include path so files can include each other
 # using just the filename (e.g., #include "EiClipboard.h" instead of #include "linux/EiClipboard.h")
-# PUBLIC so other libraries (deskflow, etc.) can also find platform headers.
+# PUBLIC so other libraries (Synergy, etc.) can also find platform headers.
 # The binary dir carries XWindowsConfig.h (configure_file); without it on the
 # path, every Linux translation unit that includes XWindowsScreen.h fails with
 # "XWindowsConfig.h: No such file or directory" (hit on rocky CI legs first).

@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -35,9 +35,9 @@ desk at a time, you can't switch desks if the thread has any hooks
 installed or owns any windows, windows cannot exist on multiple
 desks at once, etc.  Basically, they're useless except for running
 the login window or the screensaver, which is what they're used
-for.  Deskflow must deal with them mainly because of the login
+for.  Synergy must deal with them mainly because of the login
 window and screensaver but users can create their own desks and
-deskflow should work on those too.
+Synergy should work on those too.
 
 This class encapsulates all the desk nastiness.  Clients of this
 object don't have to know anything about desks.

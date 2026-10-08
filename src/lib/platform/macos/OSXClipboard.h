@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -22,8 +22,8 @@ public:
   OSXClipboard();
   virtual ~OSXClipboard();
 
-  //! Test if clipboard is owned by deskflow
-  static bool isOwnedByDeskflow();
+  //! Test if clipboard is owned by Synergy
+  static bool isOwnedBySynergy();
 
   // IClipboard overrides
   bool empty() override;

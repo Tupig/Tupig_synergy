@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -44,7 +44,7 @@ extern "C"
 #if HAVE_X11_EXTENSIONS_XTEST_H
 #include <X11/extensions/XTest.h>
 #else
-#error The XTest extension is required to build deskflow
+#error The XTest extension is required to build Synergy
 #endif
 #if HAVE_X11_EXTENSIONS_XINERAMA_H
 // Xinerama.h may lack extern "C" for inclusion by C++
@@ -933,7 +933,7 @@ void XWindowsScreen::setShape(int32_t width, int32_t height)
   // 0,0 to Wm,Hm where Wm (Hm) is the minimum width (height) over
   // all physical screens.  this warp only seems to happen if the
   // pointer wasn't in that region before the XWarpPointer().  the
-  // second (unexpected) warp causes deskflow to think the pointer
+  // second (unexpected) warp causes Synergy to think the pointer
   // has been moved when it hasn't.  to work around the problem,
   // we warp the pointer to the center of the first physical
   // screen instead of the logical screen.
@@ -1024,7 +1024,7 @@ void XWindowsScreen::openIM()
     return;
   }
 
-  // find the appropriate style.  deskflow supports XIMPreeditNothing
+  // find the appropriate style.  Synergy supports XIMPreeditNothing
   // only at the moment.
   XIMStyles *styles;
   if (XGetIMValues(im, XNQueryInputStyle, &styles, nullptr) != nullptr || styles == nullptr) {

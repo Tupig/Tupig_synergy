@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2011 Nick Bolton
  * SPDX-FileCopyrightText: (C) 2009 Sorin Sbarnea
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman

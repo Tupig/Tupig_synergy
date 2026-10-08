@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <vl@fidra.de>
@@ -481,10 +481,10 @@ bool ServerConfigDialog::browseConfigFile()
 {
   //: %1 is replaced with the application names
   //: (*.conf) and (*.*) should not be translated
-  const auto deskflowConfigFilter = tr("%1 Configurations (*.conf);;All files (*.*)");
+  const auto configFilter = tr("%1 Configurations (*.conf);;All files (*.*)");
 
   QString fileName =
-      QFileDialog::getOpenFileName(this, tr("Browse for a config file"), "", deskflowConfigFilter.arg(kAppName));
+      QFileDialog::getOpenFileName(this, tr("Browse for a config file"), "", configFilter.arg(kAppName));
 
   if (!fileName.isEmpty()) {
     ui->lineConfigFile->setText(fileName);

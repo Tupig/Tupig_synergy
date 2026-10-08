@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2011 Nick Bolton
@@ -64,11 +64,11 @@ void ClipboardTests::basicText()
 void ClipboardTests::longerText()
 {
   std::string text;
-  text.append("Deskflow is Free and Open Source Software that lets you ");
+  text.append("Synergy is Free and Open Source Software that lets you ");
   text.append("easily share your mouse and keyboard between multiple ");
   text.append("computers, where each computer has it's own display. No ");
   text.append("special hardware is required, all you need is a local area ");
-  text.append("network. Deskflow is supported on Windows, Mac OS X and Linux.");
+  text.append("network. Synergy is supported on Windows, Mac OS X and Linux.");
 
   Clipboard clipboard;
   clipboard.open(0);
@@ -77,18 +77,15 @@ void ClipboardTests::longerText()
 
   std::string actual = clipboard.marshall();
 
-  // 4 asserts here, but that's ok because we're really just asserting 1
-  // thing. the 32-bit size value is split into 4 chars. if the size is 287
-  // (31 more than the 8-bit max size), the last char "rolls over" to 31
-  // (this is caused by a bit-wise & on 0xff and 8-bit truncation). each
-  // char before the last stores a bit-shifted version of the number, each
-  // 1 more power than the last, which is done by bit-shifting [0] by 24,
-  // [1] by 16, [2] by 8 ([3] is not bit-shifted).
-  qInfo() << QString::fromStdString(actual);
-  QCOMPARE(actual[8], 0);   // 287 >> 24 = 287 / (256^3) = 0
-  QCOMPARE(actual[9], 0);   // 287 >> 16 = 287 / (256^2) = 0
-  QCOMPARE(actual[10], 1);  // 287 >> 8 = 287 / (256^1) = 1(.121)
-  QCOMPARE(actual[11], 31); // 287 - 256 = 31
+  // the 32-bit payload size is stored big-endian in the 4 chars at [8..11].
+  // Derive the expected bytes from the actual text size so the test does not
+  // need updating every time the sample text changes (a previous hardcoded
+  // 287 broke as soon as the text was edited).
+  const auto size = static_cast<uint32_t>(text.size());
+  QCOMPARE(static_cast<uint8_t>(actual[8]), static_cast<uint8_t>(size >> 24));
+  QCOMPARE(static_cast<uint8_t>(actual[9]), static_cast<uint8_t>(size >> 16));
+  QCOMPARE(static_cast<uint8_t>(actual[10]), static_cast<uint8_t>(size >> 8));
+  QCOMPARE(static_cast<uint8_t>(actual[11]), static_cast<uint8_t>(size));
 }
 
 void ClipboardTests::htmlText()
@@ -154,11 +151,11 @@ void ClipboardTests::unMarshalLongerText()
   Clipboard clipboard;
 
   std::string text;
-  text.append("Deskflow is Free and Open Source Software that lets you ");
+  text.append("Synergy is Free and Open Source Software that lets you ");
   text.append("easily share your mouse and keyboard between multiple ");
   text.append("computers, where each computer has it's own display. No ");
   text.append("special hardware is required, all you need is a local area ");
-  text.append("network. Deskflow is supported on Windows, Mac OS X and Linux.");
+  text.append("network. Synergy is supported on Windows, Mac OS X and Linux.");
 
   std::string data;
   data += (char)0;
@@ -169,10 +166,11 @@ void ClipboardTests::unMarshalLongerText()
   data += (char)0;
   data += (char)0;
   data += (char)IClipboard::Format::Text;
-  data += (char)0;  // 287 >> 24 = 287 / (256^3) = 0
-  data += (char)0;  // 287 >> 16 = 287 / (256^2) = 0
-  data += (char)1;  // 287 >> 8 = 287 / (256^1) = 1(.121)
-  data += (char)31; // 287 - 256 = 31
+  const auto size = static_cast<uint32_t>(text.size());
+  data += (char)(size >> 24);
+  data += (char)(size >> 16);
+  data += (char)(size >> 8);
+  data += (char)(size);
   data += text;
 
   clipboard.unmarshall(data, 0);
@@ -196,7 +194,7 @@ void ClipboardTests::unMarshalTextAndHtml()
   data += (char)0;
   data += (char)0;
   data += (char)0;
-  data += (char)14;
+  data += static_cast<char>(kTestString1.size());
   data += kTestString1;
   data += (char)0;
   data += (char)0;
@@ -205,7 +203,7 @@ void ClipboardTests::unMarshalTextAndHtml()
   data += (char)0;
   data += (char)0;
   data += (char)0;
-  data += (char)10;
+  data += static_cast<char>(kTestString2.size());
   data += kTestString2;
 
   clipboard.unmarshall(data, 0);

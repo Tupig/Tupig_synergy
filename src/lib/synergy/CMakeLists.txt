@@ -109,7 +109,7 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   ipc/IpcServer.h
 )
 
-# Add deskflow subdirectories to include path so files can include each other
+# Add the library's subdirectories to the include path so files can include each other
 # using just the filename (e.g., #include "App.h" instead of #include "core/App.h")
 target_include_directories(${lib_name} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}

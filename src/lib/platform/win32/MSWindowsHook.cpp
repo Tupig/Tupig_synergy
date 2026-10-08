@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2011 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -305,7 +305,7 @@ static bool keyboardHookHandler(WPARAM wParam, LPARAM lParam)
   // if mapping failed and ctrl and alt are pressed then try again
   // with both not pressed.  this handles the case where ctrl and
   // alt are being used as individual modifiers rather than AltGr.
-  // we note that's the case in the message sent back to deskflow
+  // we note that's the case in the message sent back to Synergy
   // because there's no simple way to deduce it after the fact.
   // we have to put the dead key back first, if there was one.
   bool noAltGr = false;

@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2024, 2026 Synergy App Ltd
  * SPDX-FileCopyrightText: (C) 2022, 2026 Red Hat, Inc.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -440,8 +440,8 @@ PortalInputCapture::mapPortalActivationToScreenPosition(guint barrierId, double 
     y = std::clamp(y, zoneTop, zoneBottom);
   }
 
-  // The portal reports per-output zones, while Deskflow models the whole computer as one screen.
-  // Use the activated barrier to preserve the intended switch direction in Deskflow's aggregate coordinates.
+  // The portal reports per-output zones, while Synergy models the whole computer as one screen.
+  // Use the activated barrier to preserve the intended switch direction in Synergy's aggregate coordinates.
   using enum BarrierSide;
   switch (it->side) {
   case Left:

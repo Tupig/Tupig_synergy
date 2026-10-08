@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -32,17 +32,17 @@ public:
   This must be called between a successful open() and close().
   Return false if the clipboard ownership could not be taken;
   the clipboard should not be emptied in this case.  Unlike
-  empty(), isOwnedByDeskflow() will return false when emptied
-  this way.  This is useful when deskflow wants to put data on
+  empty(), isOwnedBySynergy() will return false when emptied
+  this way.  This is useful when Synergy wants to put data on
   clipboard but pretend (to itself) that some other app did it.
-  When using empty(), deskflow assumes the data came from the
+  When using empty(), Synergy assumes the data came from the
   server and doesn't need to be sent back.  emptyUnowned()
-  makes deskflow send the data to the server.
+  makes Synergy send the data to the server.
   */
   bool emptyUnowned();
 
-  //! Test if clipboard is owned by deskflow
-  static bool isOwnedByDeskflow();
+  //! Test if clipboard is owned by Synergy
+  static bool isOwnedBySynergy();
 
   // IClipboard overrides
   bool empty() override;

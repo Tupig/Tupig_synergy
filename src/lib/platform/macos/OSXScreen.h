@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -132,14 +132,14 @@ private:
   void showCursor();
   void hideCursor();
 
-  // map deskflow mouse button to mac buttons
-  ButtonID mapDeskflowButtonToMac(uint16_t) const;
+  // map Synergy mouse button to mac buttons
+  ButtonID mapSynergyButtonToMac(uint16_t) const;
 
-  // map mac mouse button to deskflow buttons
-  ButtonID mapMacButtonToDeskflow(uint16_t) const;
+  // map mac mouse button to Synergy buttons
+  ButtonID mapMacButtonToSynergy(uint16_t) const;
 
-  // map mac scroll wheel value to a deskflow scroll wheel value
-  int32_t mapScrollWheelToDeskflow(int32_t) const;
+  // map mac scroll wheel value to a Synergy scroll wheel value
+  int32_t mapScrollWheelToSynergy(int32_t) const;
 
   // get the current scroll wheel speed
   double getScrollSpeed() const;

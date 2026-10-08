@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2014 - 2016 Symless Ltd.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -62,8 +62,8 @@ void ServerConfigTests::equalityCheck()
   addr1.resolve();
   NetworkAddress addr2("localhost", 8080);
   addr2.resolve();
-  a.setDeskflowAddress(addr1);
-  b.setDeskflowAddress(addr2);
+  a.setSynergyAddress(addr1);
+  b.setSynergyAddress(addr2);
   */
   QVERIFY(a == b);
 }
@@ -114,8 +114,8 @@ void ServerConfigTests::equalityCheck_diff_address()
   Config b(nullptr);
   QVERIFY(a.addScreen("screenA"));
   QVERIFY(b.addScreen("screenA"));
-  a.setDeskflowAddress(NetworkAddress(8000));
-  b.setDeskflowAddress(NetworkAddress(9000));
+  a.setSynergyAddress(NetworkAddress(8000));
+  b.setSynergyAddress(NetworkAddress(9000));
   QVERIFY(a != b);
 }
 */

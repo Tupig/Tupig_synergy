@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -64,13 +64,13 @@ ServerApp::ServerApp(IEventQueue *events, const QString &processName) : App(even
 void ServerApp::parseArgs()
 {
   if (const auto address = Settings::value(Settings::Core::Interface).toString(); !address.isEmpty()) {
-    *m_deskflowAddress = NetworkAddress(address.toStdString(), Settings::value(Settings::Core::Port).toInt());
+    *m_synergyAddress = NetworkAddress(address.toStdString(), Settings::value(Settings::Core::Port).toInt());
   } else {
-    *m_deskflowAddress = NetworkAddress(Settings::value(Settings::Core::Port).toInt());
+    *m_synergyAddress = NetworkAddress(Settings::value(Settings::Core::Port).toInt());
   }
 
   try {
-    m_deskflowAddress->resolve();
+    m_synergyAddress->resolve();
   } catch (SocketAddressException &e) {
     LOG_CRIT("%s: %s" BYE, qPrintable(processName()), e.what(), qPrintable(processName()));
     bye(s_exitArgs);
@@ -366,7 +366,7 @@ bool ServerApp::startServer()
 
   ClientListener *listener = nullptr;
   try {
-    listener = openClientListener(m_config->getDeskflowAddress());
+    listener = openClientListener(m_config->getSynergyAddress());
     m_server = openServer(*m_config, m_primaryClient);
     listener->setServer(m_server);
     m_server->setListener(listener);
@@ -503,10 +503,10 @@ int ServerApp::mainLoop()
   // set the contact address, if provided, in the config.
   // otherwise, if the config doesn't have an address, use
   // the default.
-  if (m_deskflowAddress->isValid()) {
-    m_config->setDeskflowAddress(*m_deskflowAddress);
-  } else if (!m_config->getDeskflowAddress().isValid()) {
-    m_config->setDeskflowAddress(NetworkAddress(kDefaultPort));
+  if (m_synergyAddress->isValid()) {
+    m_config->setSynergyAddress(*m_synergyAddress);
+  } else if (!m_config->getSynergyAddress().isValid()) {
+    m_config->setSynergyAddress(NetworkAddress(kDefaultPort));
   }
 
   // canonicalize the primary screen name
@@ -562,13 +562,13 @@ void ServerApp::resetServer()
 int ServerApp::runInner(StartupFunc startup)
 {
   // general initialization
-  m_deskflowAddress = new NetworkAddress;
+  m_synergyAddress = new NetworkAddress;
   m_config = std::make_shared<Config>(getEvents());
 
   // run
   int result = startup();
 
-  delete m_deskflowAddress;
+  delete m_synergyAddress;
   return result;
 }
 

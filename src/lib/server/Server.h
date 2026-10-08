@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -33,9 +33,9 @@ class IEventQueue;
 class Thread;
 class ClientListener;
 
-//! Deskflow server
+//! Synergy server
 /*!
-This class implements the top-level server algorithms for deskflow.
+This class implements the top-level server algorithms for Synergy.
 */
 class Server
 {

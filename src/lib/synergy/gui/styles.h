@@ -21,7 +21,7 @@
 #include <QString>
 
 // Style constants used by Synergy UI. Previously lived in upstream's
-// `gui/styles.h`; that header was removed during the deskflow gui refactor,
+// `gui/styles.h`; that header was removed during the upstream gui refactor,
 // so we keep our own copy here in the overlay.
 
 const auto kColorWhite = "#ffffff";

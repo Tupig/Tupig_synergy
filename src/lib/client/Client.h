@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016, 2026 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -34,9 +34,9 @@ class IEventQueue;
 class Thread;
 class TCPSocket;
 
-//! Deskflow client
+//! Synergy client
 /*!
-This class implements the top-level client algorithms for deskflow.
+This class implements the top-level client algorithms for Synergy.
 */
 class Client : public IClient
 {

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2005 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -462,7 +462,7 @@ private:
   bool m_composeAcrossGroups;
 
   // half-duplex info
-  KeyButtonSet m_halfDuplex; // half-duplex set by deskflow
+  KeyButtonSet m_halfDuplex; // half-duplex set by Synergy
   KeySet m_halfDuplexMods;   // half-duplex set by user
 
   // dummy KeyItem for changing modifiers

@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -244,9 +244,9 @@ bool Config::disconnect(const std::string &srcName, Direction srcSide, float pos
   return true;
 }
 
-void Config::setDeskflowAddress(const NetworkAddress &addr)
+void Config::setSynergyAddress(const NetworkAddress &addr)
 {
-  m_deskflowAddress = addr;
+  m_synergyAddress = addr;
 }
 
 bool Config::addOption(const std::string &name, OptionID option, OptionValue value)
@@ -461,9 +461,9 @@ Config::link_const_iterator Config::endNeighbor(const std::string &srcName) cons
   return index->second.end();
 }
 
-const NetworkAddress &Config::getDeskflowAddress() const
+const NetworkAddress &Config::getSynergyAddress() const
 {
-  return m_deskflowAddress;
+  return m_synergyAddress;
 }
 
 const Config::ScreenOptions *Config::getOptions(const std::string &name) const
@@ -490,7 +490,7 @@ bool Config::hasLockToScreenAction() const
 
 bool Config::operator==(const Config &x) const
 {
-  if (m_deskflowAddress != x.m_deskflowAddress) {
+  if (m_synergyAddress != x.m_synergyAddress) {
     return false;
   }
   if (m_map.size() != x.m_map.size()) {
@@ -643,8 +643,8 @@ void Config::readSectionOptions(ConfigReadContext &s)
 
     if (name == "address") {
       try {
-        m_deskflowAddress = NetworkAddress(value, kDefaultPort);
-        m_deskflowAddress.resolve();
+        m_synergyAddress = NetworkAddress(value, kDefaultPort);
+        m_synergyAddress.resolve();
       } catch (SocketAddressException &e) {
         throw ServerConfigReadException(s, std::string("invalid address argument ") + e.what());
       }
@@ -1645,8 +1645,8 @@ std::ostream &operator<<(std::ostream &s, const Config &config)
       }
     }
   }
-  if (config.m_deskflowAddress.isValid()) {
-    s << "\taddress = " << config.m_deskflowAddress.getHostname().c_str() << std::endl;
+  if (config.m_synergyAddress.isValid()) {
+    s << "\taddress = " << config.m_synergyAddress.getHostname().c_str() << std::endl;
   }
   s << config.m_inputFilter.format("\t");
   s << "end" << std::endl;

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -558,7 +558,7 @@ void ArchMultithreadPosix::insert(ArchThreadImpl *thread)
 
   // set thread id.  note that we don't worry about m_nextID
   // wrapping back to 0 and duplicating thread ID's since the
-  // likelihood of deskflow running that long is vanishingly
+  // likelihood of Synergy running that long is vanishingly
   // small.
   thread->m_id = ++m_nextID;
 

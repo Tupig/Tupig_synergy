@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
@@ -26,7 +26,7 @@ private Q_SLOTS:
   void equalClipboards();
 
 private:
-  const std::string kTestString1 = "deskflow rocks";
+  const std::string kTestString1 = "synergy rocks";
   const std::string kTestString2 = "String 020";
   Log m_log;
 };

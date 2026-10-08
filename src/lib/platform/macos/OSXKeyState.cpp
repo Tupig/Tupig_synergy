@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -797,7 +797,7 @@ bool OSXKeyState::getKeyMap(synergy::KeyMap &keyMap, int32_t group, const IOSXKe
   return true;
 }
 
-bool OSXKeyState::mapDeskflowHotKeyToMac(
+bool OSXKeyState::mapSynergyHotKeyToMac(
     KeyID key, KeyModifierMask mask, uint32_t &macVirtualKey, uint32_t &macModifierMask
 ) const
 {

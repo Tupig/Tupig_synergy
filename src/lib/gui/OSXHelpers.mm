@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2015 Symless Ltd.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
@@ -43,7 +43,7 @@ void requestOSXNotificationPermission()
 bool isOSXDevelopmentBuild()
 {
   std::string bundleURL = [[[NSBundle mainBundle] bundleURL].absoluteString UTF8String];
-  return (bundleURL.find("Applications/Deskflow.app") == std::string::npos);
+  return (bundleURL.find("Applications/TuPig Synergy.app") == std::string::npos);
 }
 
 bool showOSXNotification(const QString &title, const QString &body)

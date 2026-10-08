@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -293,10 +293,10 @@ public:
 
   //! Set server address
   /*!
-  Set the deskflow listen addresses.  There is no default address so
+  Set the Synergy listen addresses.  There is no default address so
   this must be called to run a server using this configuration.
   */
-  void setDeskflowAddress(const NetworkAddress &);
+  void setSynergyAddress(const NetworkAddress &);
 
   //! Add a screen option
   /*!
@@ -397,7 +397,7 @@ public:
   link_const_iterator endNeighbor(const std::string &) const;
 
   //! Get the server address
-  const NetworkAddress &getDeskflowAddress() const;
+  const NetworkAddress &getSynergyAddress() const;
 
   //! Get the screen options
   /*!
@@ -470,7 +470,7 @@ private:
 private:
   CellMap m_map;
   NameMap m_nameToCanonicalName;
-  NetworkAddress m_deskflowAddress;
+  NetworkAddress m_synergyAddress;
   ScreenOptions m_globalOptions;
   InputFilter m_inputFilter;
   bool m_hasLockToScreenAction = false;

@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -19,7 +19,7 @@
 #if HAVE_X11_EXTENSIONS_XTEST_H
 #include <X11/extensions/XTest.h>
 #else
-#error The XTest extension is required to build deskflow
+#error The XTest extension is required to build Synergy
 #endif
 #if HAVE_X11_EXTENSIONS_DPMS_H
 extern "C"

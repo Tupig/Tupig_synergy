@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2012 - 2026 TuPig
 # SPDX-License-Identifier: MIT
 
-# Must be included after deskflow's project() call and the CMAKE_PROJECT_*
+# Must be included after the project() call and the CMAKE_PROJECT_*
 # defaults are set, so these overrides take effect.
 set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
 set(CMAKE_PROJECT_VENDOR "TuPig")
@@ -55,7 +55,8 @@ set(SKIP_BUILD_TESTS ON CACHE BOOL "Skip build time test")
 set(GUI_RES_DIR "${CMAKE_SOURCE_DIR}/src/apps/res/branding")
 set(GUI_QRC_FILE "${GUI_RES_DIR}/synergy.qrc")
 
-# Override deskflow's project name. This cascades into binary names
+# Project name. project() above already sets it; repeated here so this file
+# stays correct regardless of include order. The name cascades into binary names
 # (${CMAKE_PROJECT_NAME}-core, etc.), install paths, package names,
 # translation file naming, and CPack metadata. Source files in src/apps/*/
 # are patched to use literal filenames since they previously assumed

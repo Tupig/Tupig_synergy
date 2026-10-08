@@ -61,7 +61,7 @@ graph TB
 
     subgraph "Core Libraries / 核心库"
         APP[Application Layer<br/>app, common]
-        DESKFLOW[Deskflow Core<br/>core, clipboard, input, protocol, screen]
+        SYNERGY[Synergy Core<br/>core, clipboard, input, protocol, screen]
         NET[Network Stack<br/>net, io, mt]
         PLATFORM[Platform Abstraction<br/>arch, platform/*]
         SERVER[Server Implementation<br/>server]
@@ -76,11 +76,11 @@ graph TB
 
     GUI --> APP
     CLI --> APP
-    APP --> DESKFLOW
-    DESKFLOW --> NET
-    DESKFLOW --> PLATFORM
-    DESKFLOW --> SERVER
-    DESKFLOW --> CLIENT
+    APP --> SYNERGY
+    SYNERGY --> NET
+    SYNERGY --> PLATFORM
+    SYNERGY --> SERVER
+    SYNERGY --> CLIENT
     NET --> SSL
     PLATFORM --> QT
     APP --> QT

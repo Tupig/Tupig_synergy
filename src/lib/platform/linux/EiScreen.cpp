@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2024, 2026 Synergy App Ltd
  * SPDX-FileCopyrightText: (C) 2022, 2026 Red Hat, Inc.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -329,7 +329,7 @@ void EiScreen::fakeMouseWheel(ScrollDelta delta) const
     return;
 
   delta = applyScrollModifier(delta);
-  // libei and deskflow seem to use opposite directions, so we have
+  // libei and Synergy seem to use opposite directions, so we have
   // to send EI the opposite of the value received if we want to remain
   // compatible with other platforms (including X11).
   ei_device_scroll_discrete(m_eiPointer, -delta.x, -delta.y);
@@ -722,7 +722,7 @@ void EiScreen::onPointerScrollEvent(ei_event *event)
   assert(!std::isnan(x) && !std::isinf(x));
   assert(!std::isnan(y) && !std::isinf(y));
 
-  // libei and deskflow seem to use opposite directions, so we have
+  // libei and Synergy seem to use opposite directions, so we have
   // to send the opposite of the value reported by EI if we want to
   // remain compatible with other platforms (including X11).
   if (x != 0 || y != 0)
@@ -737,7 +737,7 @@ void EiScreen::onPointerScrollEvent(ei_event *event)
 
 void EiScreen::onPointerScrollDiscreteEvent(ei_event *event)
 {
-  // both libei and deskflow use multiples of 120 to represent
+  // both libei and Synergy use multiples of 120 to represent
   // one scroll wheel click event so we can just forward things
   // as-is.
 
@@ -748,7 +748,7 @@ void EiScreen::onPointerScrollDiscreteEvent(ei_event *event)
 
   LOG_VERBOSE("event: scroll discrete (%d, %d)", dx, dy);
 
-  // libei and deskflow seem to use opposite directions, so we have
+  // libei and Synergy seem to use opposite directions, so we have
   // to send the opposite of the value reported by EI if we want to
   // remain compatible with other platforms (including X11).
   sendEvent(EventTypes::PrimaryScreenWheel, WheelInfo::alloc(-dx, -dy));
@@ -855,7 +855,7 @@ void EiScreen::handleSystemEvent(const Event &)
       // so by the time we get here our EiScreen should be in a neutral state.
       //
       // We must release the xdg-portal InputCapture in case it is still active
-      // so that the cursor is usable and not stuck on the deskflow server.
+      // so that the cursor is usable and not stuck on the Synergy server.
       LOG_WARN("disconnected from eis, will afterwards commence attempt to reconnect");
       if (m_isPrimary) {
         LOG_DEBUG("re-allocating portal input capture connection and releasing active captures");

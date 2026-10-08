@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2003 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -17,7 +17,7 @@
 #if HAVE_X11_EXTENSIONS_XTEST_H
 #include <X11/extensions/XTest.h>
 #else
-#error The XTest extension is required to build deskflow
+#error The XTest extension is required to build Synergy
 #endif
 #if HAVE_XKB_EXTENSION
 #include <X11/extensions/XKBstr.h>
@@ -63,24 +63,24 @@ public:
   //! @name accessors
   //@{
 
-  //! Convert X modifier mask to deskflow mask
+  //! Convert X modifier mask to Synergy mask
   /*!
-  Returns the deskflow modifier mask corresponding to the X modifier
+  Returns the Synergy modifier mask corresponding to the X modifier
   mask in \p state.
   */
   KeyModifierMask mapModifiersFromX(unsigned int state) const;
 
-  //! Convert deskflow modifier mask to X mask
+  //! Convert Synergy modifier mask to X mask
   /*!
-  Converts the deskflow modifier mask to the corresponding X modifier
+  Converts the Synergy modifier mask to the corresponding X modifier
   mask.  Returns \c true if successful and \c false if any modifier
   could not be converted.
   */
   bool mapModifiersToX(KeyModifierMask, unsigned int &) const;
 
-  //! Convert deskflow key to all corresponding X keycodes
+  //! Convert Synergy key to all corresponding X keycodes
   /*!
-  Converts the deskflow key \p key to all of the keycodes that map to
+  Converts the Synergy key \p key to all of the keycodes that map to
   that key.
   */
   void mapKeyToKeycodes(KeyID key, KeycodeList &keycodes) const;
@@ -139,10 +139,10 @@ private:
   XKBModifierMap m_lastGoodXKBModifiers;
   NonXKBModifierMap m_lastGoodNonXKBModifiers;
 
-  // X modifier (bit number) to deskflow modifier (mask) mapping
+  // X modifier (bit number) to Synergy modifier (mask) mapping
   KeyModifierMaskList m_modifierFromX = {};
 
-  // deskflow modifier (mask) to X modifier (mask)
+  // Synergy modifier (mask) to X modifier (mask)
   KeyModifierToXMask m_modifierToX;
 
   // map KeyID to all keycodes that can synthesize that KeyID

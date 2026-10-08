@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -44,9 +44,9 @@ public:
   //! @name accessors
   //@{
 
-  //! Convert OS X modifier mask to deskflow mask
+  //! Convert OS X modifier mask to Synergy mask
   /*!
-  Returns the deskflow modifier mask corresponding to the OS X modifier
+  Returns the Synergy modifier mask corresponding to the OS X modifier
   mask in \p mask.
   */
   KeyModifierMask mapModifiersFromOSX(uint32_t mask) const;
@@ -73,7 +73,7 @@ public:
   \p mask.  Returns \c true if the key can be mapped, \c false otherwise.
   */
   bool
-  mapDeskflowHotKeyToMac(KeyID key, KeyModifierMask mask, uint32_t &macVirtualKey, uint32_t &macModifierMask) const;
+  mapSynergyHotKeyToMac(KeyID key, KeyModifierMask mask, uint32_t &macVirtualKey, uint32_t &macModifierMask) const;
 
   //@}
 
@@ -141,7 +141,7 @@ private:
   void postKeyboardKey(CGKeyCode virtualKey, bool keyDown);
 
 private:
-  // OS X uses a physical key if 0 for the 'A' key.  deskflow reserves
+  // OS X uses a physical key if 0 for the 'A' key.  Synergy reserves
   // KeyButton 0 so we offset all OS X physical key ids by this much
   // when used as a KeyButton and by minus this much to map a KeyButton
   // to a physical button.

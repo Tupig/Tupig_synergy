@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2012 - 2022, 2025 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2003 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -24,7 +24,7 @@
 // MSWindowsKeyState
 //
 
-// map virtual keys to deskflow key enumeration
+// map virtual keys to Synergy key enumeration
 const KeyID MSWindowsKeyState::s_virtualKey[] = {
     /* 0x000 */ {kKeyNone},             // reserved
     /* 0x001 */ {kKeyNone},             // VK_LBUTTON

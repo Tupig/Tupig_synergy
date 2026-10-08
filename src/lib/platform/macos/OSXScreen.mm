@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 - 2026 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 - 2026 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2004 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -55,9 +55,9 @@ __attribute__((used)) __attribute__((section("__CGPreLoginApp,__cgpreloginapp"))
 // This isn't in any Apple SDK that I know of as of yet.
 enum
 {
-  kDeskflowEventMouseScroll = 11,
-  kDeskflowMouseScrollAxisX = 'saxx',
-  kDeskflowMouseScrollAxisY = 'saxy'
+  kSynergyEventMouseScroll = 11,
+  kSynergyMouseScrollAxisX = 'saxx',
+  kSynergyMouseScrollAxisY = 'saxy'
 };
 
 static const double kCarbonLoopWaitTimeout = 10.0;
@@ -316,9 +316,9 @@ void OSXScreen::getCursorCenter(int32_t &x, int32_t &y) const
 
 uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
 {
-  // get mac virtual key and modifier mask matching deskflow key and mask
+  // get mac virtual key and modifier mask matching Synergy key and mask
   uint32_t macKey, macMask;
-  if (!m_keyState->mapDeskflowHotKeyToMac(key, mask, macKey, macMask)) {
+  if (!m_keyState->mapSynergyHotKeyToMac(key, mask, macKey, macMask)) {
     LOG_DEBUG("could not map hotkey id=%04x mask=%04x", key, mask);
     return 0;
   }
@@ -495,7 +495,7 @@ void OSXScreen::postMouseEvent(CGPoint &pos) const
 void OSXScreen::fakeMouseButton(ButtonID id, bool press)
 {
   // Buttons are indexed from one, but the button down array is indexed from zero
-  uint32_t index = mapDeskflowButtonToMac(id) - kButtonLeft;
+  uint32_t index = mapSynergyButtonToMac(id) - kButtonLeft;
   if (index >= NumButtonIDs) {
     return;
   }
@@ -929,27 +929,27 @@ void OSXScreen::handleSystemEvent(const Event &event)
   switch (eventClass) {
   case kEventClassMouse:
     switch (GetEventKind(*carbonEvent)) {
-    case kDeskflowEventMouseScroll: {
+    case kSynergyEventMouseScroll: {
       OSStatus r;
       long xScroll;
       long yScroll;
 
       // get scroll amount
       r = GetEventParameter(
-          *carbonEvent, kDeskflowMouseScrollAxisX, typeSInt32, nullptr, sizeof(xScroll), nullptr, &xScroll
+          *carbonEvent, kSynergyMouseScrollAxisX, typeSInt32, nullptr, sizeof(xScroll), nullptr, &xScroll
       );
       if (r != noErr) {
         xScroll = 0;
       }
       r = GetEventParameter(
-          *carbonEvent, kDeskflowMouseScrollAxisY, typeSInt32, nullptr, sizeof(yScroll), nullptr, &yScroll
+          *carbonEvent, kSynergyMouseScrollAxisY, typeSInt32, nullptr, sizeof(yScroll), nullptr, &yScroll
       );
       if (r != noErr) {
         yScroll = 0;
       }
 
       if (xScroll != 0 || yScroll != 0) {
-        onMouseWheel(-mapScrollWheelToDeskflow(xScroll), mapScrollWheelToDeskflow(yScroll));
+        onMouseWheel(-mapScrollWheelToSynergy(xScroll), mapScrollWheelToSynergy(yScroll));
       }
     }
     }
@@ -1062,7 +1062,7 @@ bool OSXScreen::onMouseMove()
 bool OSXScreen::onMouseButton(bool pressed, uint16_t macButton)
 {
   // Buttons 2 and 3 are inverted on the mac
-  ButtonID button = mapMacButtonToDeskflow(macButton);
+  ButtonID button = mapMacButtonToSynergy(macButton);
 
   if (pressed) {
     LOG_VERBOSE("event: button press button=%d", button);
@@ -1258,7 +1258,7 @@ bool OSXScreen::onHotKey(EventRef event) const
   return true;
 }
 
-ButtonID OSXScreen::mapDeskflowButtonToMac(uint16_t button) const
+ButtonID OSXScreen::mapSynergyButtonToMac(uint16_t button) const
 {
   switch (button) {
   case 1:
@@ -1276,7 +1276,7 @@ ButtonID OSXScreen::mapDeskflowButtonToMac(uint16_t button) const
   }
 }
 
-ButtonID OSXScreen::mapMacButtonToDeskflow(uint16_t macButton) const
+ButtonID OSXScreen::mapMacButtonToSynergy(uint16_t macButton) const
 {
   switch (macButton) {
   case 1:
@@ -1294,7 +1294,7 @@ ButtonID OSXScreen::mapMacButtonToDeskflow(uint16_t macButton) const
   }
 }
 
-int32_t OSXScreen::mapScrollWheelToDeskflow(int32_t x) const
+int32_t OSXScreen::mapScrollWheelToSynergy(int32_t x) const
 {
   // return accelerated scrolling
   double d = (1.0 + getScrollSpeed()) * x;
@@ -1685,7 +1685,7 @@ bool OSXScreen::HotKeyItem::operator<(const HotKeyItem &x) const
 }
 
 // Quartz event tap support for the secondary display. This makes sure that we
-// will show the cursor if a local event comes in while deskflow has the cursor
+// will show the cursor if a local event comes in while Synergy has the cursor
 // off the screen.
 CGEventRef
 OSXScreen::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
@@ -1739,8 +1739,8 @@ CGEventRef OSXScreen::handleCGInputEvent(CGEventTapProxy proxy, CGEventType type
     break;
   case kCGEventScrollWheel:
     screen->onMouseWheel(
-        screen->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
-        screen->mapScrollWheelToDeskflow(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
+        screen->mapScrollWheelToSynergy(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2)),
+        screen->mapScrollWheelToSynergy(CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1))
     );
     break;
   case kCGEventKeyDown:

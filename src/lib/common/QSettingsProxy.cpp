@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2024 Symless Ltd.
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
@@ -12,7 +12,7 @@
  * @brief The base dir for the system settings file.
  *
  * Important: Qt will append the org name as a dir, and the app name as the
- * settings filename, i.e.: `{base-dir}/Deskflow/Deskflow.ini`
+ * settings filename, i.e.: `{base-dir}/TuPig Synergy/TuPig Synergy.conf`
  */
 QString getSystemSettingsBaseDir()
 {

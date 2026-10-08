@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 - 2016 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -56,7 +56,7 @@ using ArchThread = ArchThreadImpl *;
 //! Interface for architecture dependent multithreading
 /*!
 This interface defines the multithreading operations required by
-deskflow.  Each architecture must implement this interface.
+Synergy.  Each architecture must implement this interface.
 */
 class IArchMultithread
 {

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
@@ -27,8 +27,8 @@ private Q_SLOTS:
 
 private:
   inline static const QString m_settingsPathTemp = QStringLiteral("tmp/test");
-  inline static const QString m_settingsFile = QStringLiteral("%1/Deskflow.conf").arg(m_settingsPathTemp);
-  inline static const QString m_stateFile = QStringLiteral("%1/Deskflow.state").arg(m_settingsPathTemp);
+  inline static const QString m_settingsFile = QStringLiteral("%1/Synergy.conf").arg(m_settingsPathTemp);
+  inline static const QString m_stateFile = QStringLiteral("%1/Synergy.state").arg(m_settingsPathTemp);
 
 // Gotcha: On Windows non-portable mode, additional config files such as TLS config are saved
 // in 'Program Data' and are not stored in the same place as the settings file.

@@ -1,5 +1,5 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
+ * Synergy -- mouse and keyboard sharing utility
  * SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
  * SPDX-FileCopyrightText: (C) 2012 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <vl@fidra.de>
@@ -14,7 +14,7 @@
 
 #include "gui/config/Screen.h"
 
-const QString ScreenSetupModel::m_MimeType = "application/x-deskflow-screen";
+const QString ScreenSetupModel::m_MimeType = "application/x-synergy-screen";
 
 ScreenSetupModel::ScreenSetupModel(ScreenList &screens, int numColumns, int numRows)
     : QAbstractTableModel(nullptr),

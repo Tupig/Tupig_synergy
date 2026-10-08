@@ -1,6 +1,6 @@
 /*
- * Deskflow -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2025 Deskflow Developers
+ * Synergy -- mouse and keyboard sharing utility
+ * SPDX-FileCopyrightText: (C) 2025 Synergy Developers
  * SPDX-FileCopyrightText: (C) 2012 Symless Ltd.
  * SPDX-FileCopyrightText: (C) 2002 Chris Schoeneman
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
@@ -113,7 +113,7 @@ private:
   PrimaryClient *m_primaryClient = nullptr;
   ClientListener *m_listener = nullptr;
   EventQueueTimer *m_timer = nullptr;
-  NetworkAddress *m_deskflowAddress = nullptr;
+  NetworkAddress *m_synergyAddress = nullptr;
   std::string m_name;
   std::shared_ptr<synergy::server::Config> m_config;
 };
