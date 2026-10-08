@@ -14,13 +14,14 @@
 # 「相对仓库根目录」恰好解析正确；若日后 configure_libs 改由子目录调用，两处都需改为
 # 文件作用域或使用 CMAKE_CURRENT_FUNCTION_LIST_DIR。
 include("${CMAKE_CURRENT_LIST_DIR}/DependencyFallback.cmake")
+include(CheckCXXSourceCompiles)
 
 macro(configure_libs)
 
   set(libs)
   if(UNIX)
     configure_unix_libs()
-  elseif(WIN32)
+  elseif(MSVC)
     # /MP for parallel compilation; /MT for static CRT (vcpkg x64-windows-static triplet).
     # Do NOT add /MD here — it conflicts with vcpkg static triplets.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
