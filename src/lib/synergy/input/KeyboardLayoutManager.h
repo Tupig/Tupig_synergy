@@ -9,7 +9,7 @@
 #include "AppUtil.h"
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 
 class KeyboardLayoutManager
 {
@@ -60,4 +60,4 @@ public:
   bool isLayoutInstalled(const std::string &layout) const;
 };
 
-} // namespace deskflow
+} // namespace synergy

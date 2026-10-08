@@ -26,7 +26,7 @@ class BaseClientProxy;
 class EventQueueTimer;
 class PrimaryClient;
 class InputFilter;
-namespace deskflow {
+namespace synergy {
 class Screen;
 }
 class IEventQueue;
@@ -39,7 +39,7 @@ This class implements the top-level server algorithms for deskflow.
 */
 class Server
 {
-  using ServerConfig = deskflow::server::Config;
+  using ServerConfig = synergy::server::Config;
 
 public:
   //! Lock cursor to screen data
@@ -135,7 +135,7 @@ public:
   client (local screen) \p primaryClient.  The client retains
   ownership of \p primaryClient.
   */
-  Server(ServerConfig &config, PrimaryClient *primaryClient, deskflow::Screen *screen, IEventQueue *events);
+  Server(ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events);
   Server(Server const &) = delete;
   Server(Server &&) = delete;
   ~Server();
@@ -425,7 +425,7 @@ private:
   double m_switchTwoTapDelay = 0.0;
 
   // server screen
-  deskflow::Screen *m_screen;
+  synergy::Screen *m_screen;
 
   IEventQueue *m_events = nullptr;
   size_t m_maximumClipboardSize = INT_MAX;

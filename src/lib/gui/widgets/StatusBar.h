@@ -13,8 +13,8 @@
 class QPushButton;
 class QLabel;
 
-using ProcessState = deskflow::core::ProcessState;
-using ConnectionState = deskflow::core::ConnectionState;
+using ProcessState = synergy::core::ProcessState;
+using ConnectionState = synergy::core::ConnectionState;
 
 class StatusBar : public QStatusBar
 {

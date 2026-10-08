@@ -8,7 +8,7 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
-#include "synergy/core/DeskflowException.h"
+#include "synergy/core/SynergyException.h"
 #include "io/IStream.h"
 
 #include <algorithm>
@@ -17,7 +17,7 @@
 
 namespace {
 
-class MemoryStream : public deskflow::IStream
+class MemoryStream : public synergy::IStream
 {
 public:
   void push(const std::string &bytes)

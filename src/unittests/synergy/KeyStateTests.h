@@ -33,5 +33,5 @@ private Q_SLOTS:
 private:
   Arch m_arch;
   Log m_log;
-  deskflow::KeyMap m_keymap;
+  synergy::KeyMap m_keymap;
 };

@@ -8,7 +8,7 @@
 
 #include "server/ClientProxyUnknown.h"
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "base/IEventQueue.h"
@@ -29,7 +29,7 @@
 // ClientProxyUnknown
 //
 
-ClientProxyUnknown::ClientProxyUnknown(deskflow::IStream *stream, double timeout, Server *server, IEventQueue *events)
+ClientProxyUnknown::ClientProxyUnknown(synergy::IStream *stream, double timeout, Server *server, IEventQueue *events)
     : m_stream(stream),
       m_server(server),
       m_events(events)

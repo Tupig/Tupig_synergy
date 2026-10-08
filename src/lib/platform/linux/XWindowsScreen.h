@@ -241,7 +241,7 @@ private:
   int m_xrandrEventBase;
 
   IEventQueue *m_events = nullptr;
-  deskflow::KeyMap m_keyMap;
+  synergy::KeyMap m_keyMap;
 
   // pointer to (singleton) screen.  this is only needed by
   // ioErrorHandler().

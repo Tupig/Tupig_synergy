@@ -14,7 +14,7 @@
 #include <QSet>
 #include <QTimer>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 namespace {
 
@@ -159,4 +159,4 @@ void NetworkMonitor::updateNetworkState()
   setIpAddresses(validAddresses());
 }
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

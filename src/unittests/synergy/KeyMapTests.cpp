@@ -8,7 +8,7 @@
 
 #include "KeyMap.h"
 
-using namespace deskflow;
+using namespace synergy;
 using KeyItemList = KeyMap::KeyItemList;
 using KeyEntryList = std::vector<KeyItemList>;
 

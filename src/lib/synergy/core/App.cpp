@@ -7,7 +7,7 @@
 
 #include "App.h"
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "DisplayInvalidException.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
@@ -30,7 +30,7 @@
 #include "XDGPortalRegistry.h"
 #endif
 
-using namespace deskflow;
+using namespace synergy;
 
 App *App::s_instance = nullptr;
 
@@ -47,7 +47,7 @@ App::App(IEventQueue *events, const QString &processName)
   assert(s_instance == nullptr);
   s_instance = this;
 #if defined(WINAPI_XWINDOWS) or defined(WINAPI_LIBEI)
-  deskflow::platform::setAppId();
+  synergy::platform::setAppId();
 #endif
 }
 

@@ -14,7 +14,7 @@
 #include <QFile>
 #include <QSignalSpy>
 
-using namespace deskflow::gui;
+using namespace synergy::gui;
 
 void LoggerTests::initTestCase()
 {

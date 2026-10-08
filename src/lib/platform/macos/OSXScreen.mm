@@ -354,7 +354,7 @@ uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
     m_oldHotKeyIDs.push_back(id);
     m_hotKeyToIDMap.erase(HotKeyItem(macKey, macMask));
     LOG_WARN(
-        "failed to register hotkey %s (id=%04x mask=%04x)", deskflow::KeyMap::formatKey(key, mask).c_str(), key, mask
+        "failed to register hotkey %s (id=%04x mask=%04x)", synergy::KeyMap::formatKey(key, mask).c_str(), key, mask
     );
     return 0;
   }
@@ -362,7 +362,7 @@ uint32_t OSXScreen::registerHotKey(KeyID key, KeyModifierMask mask)
   m_hotKeys.insert(std::make_pair(id, HotKeyItem(ref, macKey, macMask)));
 
   LOG_DEBUG(
-      "registered hotkey %s (id=%04x mask=%04x) as id=%d", deskflow::KeyMap::formatKey(key, mask).c_str(), key, mask, id
+      "registered hotkey %s (id=%04x mask=%04x) as id=%d", synergy::KeyMap::formatKey(key, mask).c_str(), key, mask, id
   );
   return id;
 }

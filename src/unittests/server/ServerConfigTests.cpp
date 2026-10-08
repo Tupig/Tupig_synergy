@@ -28,7 +28,7 @@ public:
   }
 };
 
-using namespace deskflow::server;
+using namespace synergy::server;
 
 void ServerConfigTests::equalityCheck()
 {

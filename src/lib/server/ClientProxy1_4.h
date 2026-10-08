@@ -15,7 +15,7 @@ class Server;
 class ClientProxy1_4 : public ClientProxy1_3
 {
 public:
-  ClientProxy1_4(const std::string &name, deskflow::IStream *adoptedStream, Server *server, IEventQueue *events);
+  ClientProxy1_4(const std::string &name, synergy::IStream *adoptedStream, Server *server, IEventQueue *events);
   ~ClientProxy1_4() override = default;
 
   //! @name accessors

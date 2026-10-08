@@ -11,7 +11,7 @@
 #include <QObject>
 
 class QTimer;
-namespace deskflow::gui {
+namespace synergy::gui {
 
 /**
  * @brief Monitor network activity changes and provide IP address updates
@@ -79,4 +79,4 @@ private:
   bool m_isMonitoring = false; ///< Flag indicating if monitoring is active
 };
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

@@ -10,7 +10,7 @@
 
 #include "Clipboard.h"
 #include "ClipboardChunk.h"
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "OptionTypes.h"
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
@@ -31,7 +31,7 @@
 // ServerProxy
 //
 
-ServerProxy::ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue *events)
+ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *events)
     : m_client(client),
       m_stream(stream),
       m_events(events)
@@ -163,7 +163,7 @@ void ServerProxy::handleData()
 ServerProxy::ConnectionResult ServerProxy::parseHandshakeMessage(const uint8_t *code)
 {
   using enum ConnectionResult;
-  using enum deskflow::core::ConnectionRefusal;
+  using enum synergy::core::ConnectionRefusal;
 
   if (memcmp(code, kMsgQInfo, 4) == 0) {
     queryInfo();

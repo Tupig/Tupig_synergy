@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent), ui{std::make_unique
 
   setWindowTitle(windowTitle().arg(kAppName));
   ui->lblIcon->hide();
-  ui->lblName->setPixmap(QPixmap(QStringLiteral(":/image/logo-%1.png").arg(deskflow::gui::iconMode())));
+  ui->lblName->setPixmap(QPixmap(QStringLiteral(":/image/logo-%1.png").arg(synergy::gui::iconMode())));
   ui->lblName->setContentsMargins(0, 0, 0, 10);
   ui->linkContributors->hide();
 

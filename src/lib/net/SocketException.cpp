@@ -49,7 +49,7 @@ QString SocketAddressException::getWhat() const throw()
   };
   const auto index = static_cast<int>(m_error);
   return format(
-      s_errorID[index], s_errorMsg[index], m_hostname.c_str(), deskflow::string::sprintf("%d", m_port).c_str()
+      s_errorID[index], s_errorMsg[index], m_hostname.c_str(), synergy::string::sprintf("%d", m_port).c_str()
   );
 }
 

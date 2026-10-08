@@ -28,7 +28,7 @@
 #include <QMutexLocker>
 #include <QRegularExpression>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 const int kRetryDelay = 1000;
 const auto kLineSplitRegex = QRegularExpression("\r|\n|\r\n");
@@ -631,10 +631,10 @@ void CoreProcess::onCoreIpcMessageReceived(const QString &command, const QString
   } else if (command == "unrecognisedClient") {
     Q_EMIT unrecognisedClient(args);
   } else if (command == "connectionRefused") {
-    const auto metaEnum = QMetaEnum::fromType<deskflow::core::ConnectionRefusal>();
+    const auto metaEnum = QMetaEnum::fromType<synergy::core::ConnectionRefusal>();
     bool ok = false;
     const auto reason =
-        static_cast<deskflow::core::ConnectionRefusal>(metaEnum.keyToValue(args.toUtf8().constData(), &ok));
+        static_cast<synergy::core::ConnectionRefusal>(metaEnum.keyToValue(args.toUtf8().constData(), &ok));
     if (ok) {
       Q_EMIT connectionRefused(reason);
     } else {
@@ -714,4 +714,4 @@ void CoreProcess::retryDaemon()
   m_daemonIpcClient->connectToServer();
 }
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

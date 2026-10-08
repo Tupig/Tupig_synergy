@@ -97,15 +97,15 @@ void ClientApp::parseArgs()
 
 const char *ClientApp::daemonName() const
 {
-  if (deskflow::platform::isWindows())
+  if (synergy::platform::isWindows())
     return "TuPig Synergy Client";
   return "synergy-client";
 }
 
-deskflow::Screen *ClientApp::createScreen()
+synergy::Screen *ClientApp::createScreen()
 {
 #if defined(Q_OS_WIN)
-  return new deskflow::Screen(
+  return new synergy::Screen(
       new MSWindowsScreen(
           false, Settings::value(Settings::Core::UseHooks).toBool(), getEvents(),
           Settings::value(Settings::Client::LanguageSync).toBool()
@@ -113,21 +113,21 @@ deskflow::Screen *ClientApp::createScreen()
       getEvents()
   );
 #elif defined(Q_OS_MAC)
-  return new deskflow::Screen(
+  return new synergy::Screen(
       new OSXScreen(getEvents(), false, Settings::value(Settings::Client::LanguageSync).toBool()), getEvents()
   );
 #else
-  if (deskflow::platform::isWayland()) {
+  if (synergy::platform::isWayland()) {
 #if WINAPI_LIBEI
     LOG_INFO("using ei screen for wayland");
-    return new deskflow::Screen(new deskflow::EiScreen(false, getEvents(), true), getEvents());
+    return new synergy::Screen(new synergy::EiScreen(false, getEvents(), true), getEvents());
 #else
     throw XNoEiSupport();
 #endif
   }
 #if WINAPI_XWINDOWS
   LOG_INFO("using legacy x windows screen");
-  return new deskflow::Screen(
+  return new synergy::Screen(
       new XWindowsScreen(qPrintable(Settings::value(Settings::Core::Display).toString()), false, getEvents()),
       getEvents()
   );
@@ -135,16 +135,16 @@ deskflow::Screen *ClientApp::createScreen()
 #endif // end os check
 }
 
-deskflow::Screen *ClientApp::openClientScreen()
+synergy::Screen *ClientApp::openClientScreen()
 {
-  deskflow::Screen *screen = createScreen();
+  synergy::Screen *screen = createScreen();
   getEvents()->addHandler(EventTypes::ScreenError, screen->getEventTarget(), [this](const auto &) {
     handleScreenError();
   });
   return screen;
 }
 
-void ClientApp::closeClientScreen(deskflow::Screen *screen)
+void ClientApp::closeClientScreen(synergy::Screen *screen)
 {
   if (screen != nullptr) {
     getEvents()->removeHandler(EventTypes::ScreenError, screen->getEventTarget());
@@ -174,7 +174,7 @@ void ClientApp::scheduleClientRestart(double retryTime)
 void ClientApp::handleClientConnected()
 {
   LOG_DEBUG("connected to server");
-  ipcSendConnectionState(deskflow::core::ConnectionState::Connected);
+  ipcSendConnectionState(synergy::core::ConnectionState::Connected);
   // Reset server index on successful connection
   m_currentServerIndex = 0;
   m_lastServerAddressIndex = 0;
@@ -228,13 +228,13 @@ void ClientApp::handleClientDisconnected()
 {
   m_retryCount = 0;
   LOG_DEBUG("disconnected from server");
-  ipcSendConnectionState(deskflow::core::ConnectionState::Disconnected);
+  ipcSendConnectionState(synergy::core::ConnectionState::Disconnected);
   if (!m_suspended) {
     scheduleClientRestart(retryTime());
   }
 }
 
-Client *ClientApp::openClient(const std::string &name, const NetworkAddress &address, deskflow::Screen *screen)
+Client *ClientApp::openClient(const std::string &name, const NetworkAddress &address, synergy::Screen *screen)
 {
   auto *client = new Client(getEvents(), name, address, getSocketFactory(), screen);
 
@@ -275,7 +275,7 @@ void ClientApp::closeClient(Client *client)
 
 bool ClientApp::startClient()
 {
-  deskflow::Screen *clientScreen = nullptr;
+  synergy::Screen *clientScreen = nullptr;
   try {
     if (m_clientScreen == nullptr) {
       clientScreen = openClientScreen();

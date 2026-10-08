@@ -22,7 +22,7 @@ struct ei_event;
 struct ei_seat;
 struct ei_device;
 
-namespace deskflow {
+namespace synergy {
 
 class EiKeyState;
 class PortalRemoteDesktop;
@@ -212,4 +212,4 @@ private:
   [[no_unique_address]] XDGPowerManager m_powerManager;
 };
 
-} // namespace deskflow
+} // namespace synergy

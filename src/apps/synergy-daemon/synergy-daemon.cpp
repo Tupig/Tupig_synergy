@@ -27,7 +27,7 @@
 #include <QCoreApplication>
 #include <QThread>
 
-using namespace deskflow::core;
+using namespace synergy::core;
 
 void handleError(const char *message = "Unrecognized error.");
 

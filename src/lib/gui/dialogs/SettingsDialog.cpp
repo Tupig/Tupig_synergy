@@ -28,7 +28,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-using namespace deskflow::gui;
+using namespace synergy::gui;
 
 SettingsDialog::SettingsDialog(QWidget *parent, const ServerConfig &serverConfig)
     : QDialog(parent),
@@ -302,7 +302,7 @@ void SettingsDialog::loadFromConfig()
   const auto processMode = Settings::value(Settings::Core::ProcessMode).value<Settings::ProcessMode>();
   ui->groupService->setChecked(processMode == Settings::ProcessMode::Service);
 
-  if (!deskflow::platform::isWindows())
+  if (!synergy::platform::isWindows())
     ui->groupService->setVisible(false);
 
   if (Settings::value(Settings::Gui::SymbolicTrayIcon).toBool())
@@ -533,7 +533,7 @@ void SettingsDialog::resetToDefault()
   const auto processMode = Settings::defaultValue(Settings::Core::ProcessMode).value<Settings::ProcessMode>();
   ui->groupService->setChecked(processMode == Settings::ProcessMode::Service);
 
-  if (!deskflow::platform::isWindows())
+  if (!synergy::platform::isWindows())
     ui->groupService->setVisible(false);
 
   if (Settings::defaultValue(Settings::Gui::SymbolicTrayIcon).toBool())

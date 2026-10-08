@@ -23,11 +23,11 @@ class QString;
 class QFile;
 class ServerConfigDialog;
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 const auto kDefaultProtocol = NetworkProtocol::Synergy;
 
-} // namespace deskflow::gui
+} // namespace synergy::gui
 
 class ServerConfig : public ScreenConfig
 {
@@ -236,7 +236,7 @@ private:
 private:
   bool m_HasHeartbeat = false;
   int m_Heartbeat = 0;
-  NetworkProtocol m_Protocol = deskflow::gui::kDefaultProtocol;
+  NetworkProtocol m_Protocol = synergy::gui::kDefaultProtocol;
   bool m_RelativeMouseMoves = false;
   bool m_Win32KeepForeground = false;
   bool m_HasSwitchDelay = false;

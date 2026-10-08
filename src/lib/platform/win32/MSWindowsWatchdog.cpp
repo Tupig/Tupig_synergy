@@ -275,7 +275,7 @@ void MSWindowsWatchdog::startProcess()
     m_process.reset();
   }
 
-  m_process = std::make_unique<deskflow::platform::MSWindowsProcess>(m_command, m_outputWritePipe, m_outputWritePipe);
+  m_process = std::make_unique<synergy::platform::MSWindowsProcess>(m_command, m_outputWritePipe, m_outputWritePipe);
 
   LOG_INFO("running command (%s): %ls", m_elevateProcess ? "elevated" : "not elevated", m_command.c_str());
 
@@ -411,7 +411,7 @@ void MSWindowsWatchdog::shutdownExistingProcesses()
 
     if (HANDLE handle = openProcessForKill(entry); handle != nullptr) {
       LOG_DEBUG("shutting down process, name=%s, pid=%d", entry.szExeFile, entry.th32ProcessID);
-      deskflow::platform::MSWindowsProcess::shutdown(handle, entry.th32ProcessID);
+      synergy::platform::MSWindowsProcess::shutdown(handle, entry.th32ProcessID);
       CloseHandle(handle);
     }
 

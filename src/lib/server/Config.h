@@ -19,15 +19,15 @@
 #include <map>
 #include <set>
 
-namespace deskflow::server {
+namespace synergy::server {
 class Config;
 class ConfigReadContext;
-} // namespace deskflow::server
+} // namespace synergy::server
 
 class IEventQueue;
 
 namespace std {
-template <> struct iterator_traits<deskflow::server::Config>
+template <> struct iterator_traits<synergy::server::Config>
 {
   using value_type = std::string;
   using difference_type = ptrdiff_t;
@@ -37,7 +37,7 @@ template <> struct iterator_traits<deskflow::server::Config>
 };
 } // namespace std
 
-namespace deskflow::server {
+namespace synergy::server {
 
 //! Server configuration
 /*!
@@ -134,8 +134,8 @@ private:
   public:
     ScreenOptions m_options;
   };
-  using CellMap = std::map<std::string, Cell, deskflow::string::CaselessCmp>;
-  using NameMap = std::map<std::string, std::string, deskflow::string::CaselessCmp>;
+  using CellMap = std::map<std::string, Cell, synergy::string::CaselessCmp>;
+  using NameMap = std::map<std::string, std::string, synergy::string::CaselessCmp>;
 
 public:
   using link_const_iterator = Cell::const_iterator;
@@ -544,4 +544,4 @@ private:
   std::string m_error;
 };
 
-} // namespace deskflow::server
+} // namespace synergy::server

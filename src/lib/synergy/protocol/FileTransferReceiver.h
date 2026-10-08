@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -67,14 +67,14 @@ public:
   The stream must be positioned just past the 4-byte message code.
   \return true if the announce was accepted
   */
-  bool onDragInfo(deskflow::IStream *stream);
+  bool onDragInfo(synergy::IStream *stream);
 
   //! Read and apply one `DFTR` body from \p stream.
   /*!
   The stream must be positioned just past the 4-byte message code.
   \return what happened; `Finished` means a file was written
   */
-  TransferState onFileChunk(deskflow::IStream *stream);
+  TransferState onFileChunk(synergy::IStream *stream);
 
   //! Discard any in-flight transfer and clear per-drag bookkeeping.
   void reset();

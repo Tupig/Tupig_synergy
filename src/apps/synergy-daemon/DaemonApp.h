@@ -15,7 +15,7 @@ class FileLogOutputter;
 class QLocalServer;
 class QCoreApplication;
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 class DaemonIpcServer;
 }
 
@@ -36,7 +36,7 @@ public:
   void run(QThread &daemonThread);
   void setForeground();
   void initLogging();
-  void connectIpcServer(const deskflow::core::ipc::DaemonIpcServer *ipcServer) const;
+  void connectIpcServer(const synergy::core::ipc::DaemonIpcServer *ipcServer) const;
 
   static QString logFilename();
 
@@ -59,7 +59,7 @@ private:
 
   IEventQueue &m_events;
   FileLogOutputter *m_pFileLogOutputter = nullptr;
-  deskflow::core::ipc::DaemonIpcServer *m_ipcServer = nullptr;
+  synergy::core::ipc::DaemonIpcServer *m_ipcServer = nullptr;
   QString m_configFile;
   bool m_foreground = false;
 };

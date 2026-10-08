@@ -15,7 +15,7 @@ void StringTests::formatWithArgs()
   const char *arg1 = "answer";
   const char *arg2 = "42";
 
-  std::string result = deskflow::string::format(format, arg1, arg2);
+  std::string result = synergy::string::format(format, arg1, arg2);
 
   QCOMPARE(result, "%answer=42");
 }
@@ -26,7 +26,7 @@ void StringTests::formatedString()
   const char *arg1 = "answer";
   int arg2 = 42;
 
-  std::string result = deskflow::string::sprintf(format, arg1, arg2);
+  std::string result = synergy::string::sprintf(format, arg1, arg2);
 
   QCOMPARE("answer=42", result);
 }

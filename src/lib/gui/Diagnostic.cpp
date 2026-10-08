@@ -12,7 +12,7 @@
 #include <QDir>
 #include <QProcess>
 
-namespace deskflow::gui::diagnostic {
+namespace synergy::gui::diagnostic {
 
 void restart()
 {
@@ -66,4 +66,4 @@ void clearSettings(bool enableRestart)
   }
 }
 
-} // namespace deskflow::gui::diagnostic
+} // namespace synergy::gui::diagnostic

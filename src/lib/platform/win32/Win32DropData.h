@@ -13,7 +13,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-namespace deskflow::win32 {
+namespace synergy::win32 {
 
 //! Read the file paths out of a `CF_HDROP` memory block.
 /*!
@@ -62,4 +62,4 @@ Blocks until the user drops or cancels. Returns true if `DoDragDrop` reported
 */
 bool startDraggingFiles(const std::vector<std::string> &utf8Paths);
 
-} // namespace deskflow::win32
+} // namespace synergy::win32

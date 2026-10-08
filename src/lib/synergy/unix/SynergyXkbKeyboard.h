@@ -12,23 +12,23 @@
 #include <X11/XKBlib.h>
 #include <X11/extensions/XKBrules.h>
 
-namespace deskflow::linux {
+namespace synergy::linux {
 
-class DeskflowXkbKeyboard
+class SynergyXkbKeyboard
 {
   XkbRF_VarDefsRec m_data = {};
 
 public:
-  DeskflowXkbKeyboard();
-  DeskflowXkbKeyboard(const DeskflowXkbKeyboard &) = delete;
-  DeskflowXkbKeyboard &operator=(const DeskflowXkbKeyboard &) = delete;
+  SynergyXkbKeyboard();
+  SynergyXkbKeyboard(const SynergyXkbKeyboard &) = delete;
+  SynergyXkbKeyboard &operator=(const SynergyXkbKeyboard &) = delete;
 
   const char *getLayout() const;
   const char *getVariant() const;
 
-  ~DeskflowXkbKeyboard();
+  ~SynergyXkbKeyboard();
 };
 
-} // namespace deskflow::linux
+} // namespace synergy::linux
 
 #endif // WINAPI_XWINDOWS

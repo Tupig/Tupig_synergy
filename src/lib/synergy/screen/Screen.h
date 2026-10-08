@@ -20,7 +20,7 @@ class IClipboard;
 class IPlatformScreen;
 class IEventQueue;
 
-namespace deskflow {
+namespace synergy {
 
 //! Platform independent screen
 /*!
@@ -320,4 +320,4 @@ private:
   IEventQueue *m_events = nullptr;
 };
 
-} // namespace deskflow
+} // namespace synergy

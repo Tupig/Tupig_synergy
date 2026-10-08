@@ -37,7 +37,7 @@ public:
   inline static const auto s_groupPollAndSet = -2;
 
   XWindowsKeyState(Display *, bool useXKB, IEventQueue *events);
-  XWindowsKeyState(Display *, bool useXKB, IEventQueue *events, deskflow::KeyMap &keyMap);
+  XWindowsKeyState(Display *, bool useXKB, IEventQueue *events, synergy::KeyMap &keyMap);
   ~XWindowsKeyState() override;
 
   //! @name modifiers
@@ -95,13 +95,13 @@ public:
 
 protected:
   // KeyState overrides
-  void getKeyMap(deskflow::KeyMap &keyMap) override;
+  void getKeyMap(synergy::KeyMap &keyMap) override;
   void fakeKey(const Keystroke &keystroke) override;
 
 private:
   void init(bool useXKB);
-  void updateKeysymMap(deskflow::KeyMap &);
-  void updateKeysymMapXKB(deskflow::KeyMap &);
+  void updateKeysymMap(synergy::KeyMap &);
+  void updateKeysymMapXKB(synergy::KeyMap &);
   bool hasModifiersXKB() const;
   int getEffectiveGroup(KeyCode, int group) const;
   uint32_t getGroupFromState(unsigned int state) const;
@@ -112,7 +112,7 @@ private:
   */
   bool setCurrentLanguageWithDBus(int32_t group) const;
 
-  static void remapKeyModifiers(KeyID, int32_t, deskflow::KeyMap::KeyItem &, void *);
+  static void remapKeyModifiers(KeyID, int32_t, synergy::KeyMap::KeyItem &, void *);
 
 private:
   struct XKBModifierInfo

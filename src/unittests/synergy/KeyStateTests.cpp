@@ -21,7 +21,7 @@ void KeyStateTests::initTestCase()
 
 void KeyStateTests::keyDown()
 {
-  deskflow::KeyMap keyMap;
+  synergy::KeyMap keyMap;
   EventQueue eventQueue;
   MockKeyState keyState(eventQueue, keyMap);
 
@@ -127,7 +127,7 @@ void KeyStateTests::isKeyDown_keyDown_retrunsTrue()
   MockEventQueue eventQueue;
   MockKeyState keyState(eventQueue, keyMap);
 
-  deskflow::KeyMap::KeyItem key;
+  synergy::KeyMap::KeyItem key;
   key.m_button = 1;
   keyState.fakeKeyDown(1, 0, 1, "en");
 
@@ -140,7 +140,7 @@ void KeyStateTests::updateKeyState_pollInsertsSingleKey_keyIsDown()
   MockEventQueue eventQueue;
   MockKeyState keyState(eventQueue, keyMap);
 
-  deskflow::KeyMap::KeyItem key;
+  synergy::KeyMap::KeyItem key;
   key.m_button = 1;
   keyState.fakeKeyDown(1, 0, 1, "en");
 

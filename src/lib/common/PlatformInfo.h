@@ -10,7 +10,7 @@
 #include <QFileInfo>
 #include <QSysInfo>
 
-namespace deskflow::platform {
+namespace synergy::platform {
 
 inline bool isWayland()
 {
@@ -62,4 +62,4 @@ inline bool isSandboxed()
   return isFlatpak() || isSnap();
 }
 
-} // namespace deskflow::platform
+} // namespace synergy::platform

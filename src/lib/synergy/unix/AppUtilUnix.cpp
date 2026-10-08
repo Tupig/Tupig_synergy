@@ -106,7 +106,7 @@ std::vector<std::string> AppUtilUnix::getKeyboardLayoutList()
 std::string AppUtilUnix::getCurrentLanguageCode()
 {
   std::string result = "";
-  if (deskflow::platform::isWayland())
+  if (synergy::platform::isWayland())
     return result;
 
 #if WINAPI_XWINDOWS

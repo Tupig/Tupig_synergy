@@ -99,7 +99,7 @@ void Win32DropDataTests::initTestCase()
 void Win32DropDataTests::readsSingleWidePath()
 {
   const auto block = makeBlock({L"C:\\Temp\\a.txt"});
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), size_t{1});
   QCOMPARE(QString::fromStdString(paths[0]), QStringLiteral("C:\\Temp\\a.txt"));
 }
@@ -107,7 +107,7 @@ void Win32DropDataTests::readsSingleWidePath()
 void Win32DropDataTests::readsSeveralWidePaths()
 {
   const auto block = makeBlock({L"C:\\a.txt", L"D:\\b\\c.bin", L"E:\\d"});
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), size_t{3});
   QCOMPARE(QString::fromStdString(paths[0]), QStringLiteral("C:\\a.txt"));
   QCOMPARE(QString::fromStdString(paths[1]), QStringLiteral("D:\\b\\c.bin"));
@@ -118,7 +118,7 @@ void Win32DropDataTests::preservesNonAsciiPath()
 {
   // The old wcstombs path mangled anything outside the active code page.
   const auto block = makeBlock({L"C:\\Temp\\照片.png"});
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), size_t{1});
   QCOMPARE(QString::fromStdString(paths[0]), QStringLiteral("C:\\Temp\\照片.png"));
 }
@@ -126,7 +126,7 @@ void Win32DropDataTests::preservesNonAsciiPath()
 void Win32DropDataTests::readsAnsiPathList()
 {
   const auto block = makeAnsiBlock({"C:\\Temp\\ansi.txt", "D:\\other.dat"});
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), size_t{2});
   QCOMPARE(QString::fromStdString(paths[0]), QStringLiteral("C:\\Temp\\ansi.txt"));
   QCOMPARE(QString::fromStdString(paths[1]), QStringLiteral("D:\\other.dat"));
@@ -134,20 +134,20 @@ void Win32DropDataTests::readsAnsiPathList()
 
 void Win32DropDataTests::rejectsNullBlock()
 {
-  QVERIFY(deskflow::win32::readDropFilePaths(nullptr, 64).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(nullptr, 64).empty());
 }
 
 void Win32DropDataTests::rejectsBlockSmallerThanAHeader()
 {
   unsigned char tiny[sizeof(DROPFILES) - 1] = {};
-  QVERIFY(deskflow::win32::readDropFilePaths(tiny, sizeof(tiny)).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(tiny, sizeof(tiny)).empty());
 }
 
 void Win32DropDataTests::rejectsHeaderOnlyBlock()
 {
   // A header with pFiles pointing at sizeof(DROPFILES) but no list bytes left.
   const auto block = makeBlock({}, true, false);
-  QVERIFY(deskflow::win32::readDropFilePaths(block.data(), block.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(block.data(), block.size()).empty());
 }
 
 void Win32DropDataTests::rejectsZeroFilesOffset()
@@ -159,7 +159,7 @@ void Win32DropDataTests::rejectsZeroFilesOffset()
   std::memcpy(&header, mutated.data(), sizeof(DROPFILES));
   header.pFiles = 0;
   std::memcpy(mutated.data(), &header, sizeof(DROPFILES));
-  QVERIFY(deskflow::win32::readDropFilePaths(mutated.data(), mutated.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(mutated.data(), mutated.size()).empty());
 }
 
 void Win32DropDataTests::rejectsOffsetAtEndOfBlock()
@@ -169,13 +169,13 @@ void Win32DropDataTests::rejectsOffsetAtEndOfBlock()
   std::memcpy(&header, block.data(), sizeof(DROPFILES));
   header.pFiles = static_cast<DWORD>(block.size());
   std::memcpy(block.data(), &header, sizeof(DROPFILES));
-  QVERIFY(deskflow::win32::readDropFilePaths(block.data(), block.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(block.data(), block.size()).empty());
 }
 
 void Win32DropDataTests::rejectsOffsetBeyondBlock()
 {
   const auto block = makeBlock({L"C:\\x"}, true, true, /*offsetOverride=*/0x7fffffff);
-  QVERIFY(deskflow::win32::readDropFilePaths(block.data(), block.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(block.data(), block.size()).empty());
 }
 
 void Win32DropDataTests::ignoresUnterminatedTrailingPath()
@@ -187,7 +187,7 @@ void Win32DropDataTests::ignoresUnterminatedTrailingPath()
   // (one wchar_t NUL) so only the path characters remain.
   QVERIFY(block.size() >= sizeof(DROPFILES) + sizeof(wchar_t));
   block.resize(block.size() - sizeof(wchar_t));
-  QVERIFY(deskflow::win32::readDropFilePaths(block.data(), block.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(block.data(), block.size()).empty());
 }
 
 void Win32DropDataTests::stopsAtTheDoubleNulTerminator()
@@ -196,7 +196,7 @@ void Win32DropDataTests::stopsAtTheDoubleNulTerminator()
   auto block = makeBlock({L"C:\\only.txt"});
   const unsigned char junk[] = {'X', 'Y', 'Z', 0, 0};
   block.insert(block.end(), junk, junk + sizeof(junk));
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), size_t{1});
   QCOMPARE(QString::fromStdString(paths[0]), QStringLiteral("C:\\only.txt"));
 }
@@ -218,7 +218,7 @@ void Win32DropDataTests::ignoresLeadingEmptyEntry()
   std::memcpy(block.data(), &header, sizeof(DROPFILES));
   std::memcpy(block.data() + sizeof(DROPFILES), list.data(), list.size());
 
-  QVERIFY(deskflow::win32::readDropFilePaths(block.data(), block.size()).empty());
+  QVERIFY(synergy::win32::readDropFilePaths(block.data(), block.size()).empty());
 }
 
 void Win32DropDataTests::capsTheNumberOfPaths()
@@ -229,7 +229,7 @@ void Win32DropDataTests::capsTheNumberOfPaths()
     many.push_back(L"C:\\f" + std::to_wstring(i) + L".txt");
   }
   const auto block = makeBlock(many);
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), kCap);
 }
 
@@ -239,9 +239,9 @@ void Win32DropDataTests::buildDropFileBlockRoundTrips()
       "C:\\Users\\test\\a.txt",
       "D:\\文档\\file.bin",
   };
-  const auto block = deskflow::win32::buildDropFileBlock(original);
+  const auto block = synergy::win32::buildDropFileBlock(original);
   QVERIFY(!block.empty());
-  const auto paths = deskflow::win32::readDropFilePaths(block.data(), block.size());
+  const auto paths = synergy::win32::readDropFilePaths(block.data(), block.size());
   QCOMPARE(paths.size(), original.size());
   QCOMPARE(QString::fromStdString(paths[0]), QString::fromStdString(original[0]));
   QCOMPARE(QString::fromStdString(paths[1]), QString::fromStdString(original[1]));
@@ -249,7 +249,7 @@ void Win32DropDataTests::buildDropFileBlockRoundTrips()
 
 void Win32DropDataTests::buildDropFileBlockRejectsEmpty()
 {
-  QVERIFY(deskflow::win32::buildDropFileBlock({}).empty());
+  QVERIFY(synergy::win32::buildDropFileBlock({}).empty());
 }
 
 QTEST_MAIN(Win32DropDataTests)

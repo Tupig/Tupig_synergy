@@ -21,7 +21,7 @@ class Client;
 class ClientInfo;
 class EventQueueTimer;
 class IClipboard;
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 class IEventQueue;
@@ -38,7 +38,7 @@ public:
   Process messages from the server on \p stream and forward to
   \p client.
   */
-  ServerProxy(Client *client, deskflow::IStream *stream, IEventQueue *events);
+  ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *events);
   ServerProxy(ServerProxy const &) = delete;
   ServerProxy(ServerProxy &&) = delete;
   ~ServerProxy();
@@ -113,7 +113,7 @@ private:
   using MessageParser = ConnectionResult (ServerProxy::*)(const uint8_t *);
 
   Client *m_client = nullptr;
-  deskflow::IStream *m_stream = nullptr;
+  synergy::IStream *m_stream = nullptr;
 
   //! Validates input arriving from the server before it reaches the platform layer.
   InputValidator m_inputValidator;
@@ -140,7 +140,7 @@ private:
   std::string m_clipboardDataCached;
   ClipboardChunkAssemblyState m_clipboardChunkState;
   bool m_isUserNotifiedAboutLayoutSyncError = false;
-  deskflow::KeyboardLayoutManager m_layoutManager;
+  synergy::KeyboardLayoutManager m_layoutManager;
 
   //! Receives drag-and-drop files, subject to the fileTransfer settings.
   /*!

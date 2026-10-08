@@ -9,7 +9,7 @@
 
 #include "server/BaseClientProxy.h"
 
-namespace deskflow {
+namespace synergy {
 class Screen;
 }
 
@@ -25,7 +25,7 @@ public:
   /*!
   \c name is the name of the server and \p screen is primary screen.
   */
-  PrimaryClient(const std::string &name, deskflow::Screen *screen);
+  PrimaryClient(const std::string &name, synergy::Screen *screen);
   ~PrimaryClient() override = default;
 
   //! @name manipulators
@@ -130,7 +130,7 @@ public:
   std::string getSecureInputApp() const override;
   void secureInputNotification(const std::string &app) const override;
 
-  deskflow::IStream *getStream() const override
+  synergy::IStream *getStream() const override
   {
     return nullptr;
   }
@@ -140,7 +140,7 @@ public:
   }
 
 private:
-  deskflow::Screen *m_screen;
+  synergy::Screen *m_screen;
   bool m_clipboardDirty[kClipboardEnd] = {false, false};
   int32_t m_fakeInputCount = 0;
 };

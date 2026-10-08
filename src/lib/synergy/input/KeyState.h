@@ -19,7 +19,7 @@ class KeyState : public IKeyState
 {
 public:
   KeyState(IEventQueue *events, std::vector<std::string> layouts, bool isLangSyncEnabled);
-  KeyState(IEventQueue *events, deskflow::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled);
+  KeyState(IEventQueue *events, synergy::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled);
   ~KeyState() override;
 
   //! @name manipulators
@@ -50,7 +50,7 @@ public:
 
   //@}
 
-  void updateKeyMap(deskflow::KeyMap *existing);
+  void updateKeyMap(synergy::KeyMap *existing);
   // IKeyState overrides
   void updateKeyMap() override
   {
@@ -78,7 +78,7 @@ public:
   }
 
 protected:
-  using Keystroke = deskflow::KeyMap::Keystroke;
+  using Keystroke = synergy::KeyMap::Keystroke;
 
   //! @name protected manipulators
   //@{
@@ -87,7 +87,7 @@ protected:
   /*!
   Fills \p keyMap with the current keyboard map.
   */
-  virtual void getKeyMap(deskflow::KeyMap &keyMap) = 0;
+  virtual void getKeyMap(synergy::KeyMap &keyMap) = 0;
 
   //! Fake a key event
   /*!
@@ -129,8 +129,8 @@ protected:
   //@}
 
 private:
-  using Keystrokes = deskflow::KeyMap::Keystrokes;
-  using ModifierToKeys = deskflow::KeyMap::ModifierToKeys;
+  using Keystrokes = synergy::KeyMap::Keystrokes;
+  using ModifierToKeys = synergy::KeyMap::ModifierToKeys;
 
 public:
   struct AddActiveModifierContext
@@ -154,7 +154,7 @@ private:
   {
   public:
     bool operator()(
-        const deskflow::KeyMap::ButtonToKeyMap::value_type &a, const deskflow::KeyMap::ButtonToKeyMap::value_type b
+        const synergy::KeyMap::ButtonToKeyMap::value_type &a, const synergy::KeyMap::ButtonToKeyMap::value_type b
     ) const
     {
       return (a.first < b.first);
@@ -186,14 +186,14 @@ private:
   void updateModifierKeyState(KeyButton button, const ModifierToKeys &oldModifiers, const ModifierToKeys &newModifiers);
 
   // active modifiers collection callback
-  static void addActiveModifierCB(KeyID id, int32_t group, deskflow::KeyMap::KeyItem &keyItem, void *vcontext);
+  static void addActiveModifierCB(KeyID id, int32_t group, synergy::KeyMap::KeyItem &keyItem, void *vcontext);
 
 private:
   // must be declared before m_keyMap. used when this class owns the key map.
-  deskflow::KeyMap *m_keyMapPtr;
+  synergy::KeyMap *m_keyMapPtr;
 
   // the keyboard map
-  deskflow::KeyMap &m_keyMap;
+  synergy::KeyMap &m_keyMap;
 
   // current modifier state
   KeyModifierMask m_mask;

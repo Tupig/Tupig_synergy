@@ -21,7 +21,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-namespace deskflow {
+namespace synergy {
 
 namespace {
 
@@ -224,4 +224,4 @@ QString generateFingerprintArt(const QByteArray &rawDigest)
   return result;
 }
 
-} // namespace deskflow
+} // namespace synergy

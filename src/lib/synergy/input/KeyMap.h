@@ -14,7 +14,7 @@
 #include <set>
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 
 //! Key map
 /*!
@@ -448,8 +448,8 @@ private:
   using KeyButtonSet = std::set<KeyButton>;
 
   // Key maps for parsing/formatting
-  using NameToKeyMap = std::map<std::string, KeyID, deskflow::string::CaselessCmp>;
-  using NameToModifierMap = std::map<std::string, KeyModifierMask, deskflow::string::CaselessCmp>;
+  using NameToKeyMap = std::map<std::string, KeyID, synergy::string::CaselessCmp>;
+  using NameToModifierMap = std::map<std::string, KeyModifierMask, synergy::string::CaselessCmp>;
   using KeyToNameMap = std::map<KeyID, std::string>;
   using ModifierToNameMap = std::map<KeyModifierMask, std::string>;
 
@@ -478,4 +478,4 @@ private:
   static ModifierToNameMap *s_modifierToNameMap;
 };
 
-} // namespace deskflow
+} // namespace synergy

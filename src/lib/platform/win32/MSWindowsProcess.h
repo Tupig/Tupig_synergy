@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace deskflow::platform {
+namespace synergy::platform {
 
 namespace { // NOSONAR -- Deliberate anonymous
 const auto kDefaultShutdownTimeout = 10;
@@ -56,4 +56,4 @@ private:
   BOOL m_createProcessResult = FALSE;
 };
 
-} // namespace deskflow::platform
+} // namespace synergy::platform

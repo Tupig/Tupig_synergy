@@ -12,7 +12,7 @@
 #include <QLocalSocket>
 #include <QTimer>
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 
 // QLocalSocket::errorOccurred was added in Qt 5.15; the pre-5.15 signal is
 // error(QLocalSocket::LocalSocketError), which is overloaded against the
@@ -240,4 +240,4 @@ void IpcClient::sendMessage(const QString &message)
   qDebug().noquote() << QStringLiteral("%1 ipc client sent message: %2").arg(m_typeName, message);
 }
 
-} // namespace deskflow::gui::ipc
+} // namespace synergy::gui::ipc

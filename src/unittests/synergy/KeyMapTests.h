@@ -7,7 +7,7 @@
 
 #include <QTest>
 
-namespace deskflow {
+namespace synergy {
 class KeyMapTests : public QObject
 {
   Q_OBJECT
@@ -27,4 +27,4 @@ private Q_SLOTS:
 private:
   Log m_log;
 };
-} // namespace deskflow
+} // namespace synergy

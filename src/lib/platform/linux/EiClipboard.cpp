@@ -7,7 +7,7 @@
 #include "EiClipboard.h"
 #include "base/Log.h"
 
-namespace deskflow {
+namespace synergy {
 
 EiClipboard::EiClipboard(ClipboardID id) : m_id(id)
 {
@@ -99,4 +99,4 @@ std::string EiClipboard::get(Format format) const
   return m_data[static_cast<int>(format)];
 }
 
-} // namespace deskflow
+} // namespace synergy

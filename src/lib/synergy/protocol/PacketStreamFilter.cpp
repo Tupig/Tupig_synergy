@@ -15,7 +15,7 @@
 // PacketStreamFilter
 //
 
-PacketStreamFilter::PacketStreamFilter(IEventQueue *events, deskflow::IStream *stream, bool adoptStream)
+PacketStreamFilter::PacketStreamFilter(IEventQueue *events, synergy::IStream *stream, bool adoptStream)
     : StreamFilter(events, stream, adoptStream),
       m_events(events)
 {

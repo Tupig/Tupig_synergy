@@ -12,7 +12,7 @@
 class QLocalServer;
 class QLocalSocket;
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 class IpcServer : public QObject
 {
@@ -56,4 +56,4 @@ private:
   QByteArray m_typeName;
 };
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc

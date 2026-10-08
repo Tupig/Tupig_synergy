@@ -7,7 +7,7 @@
  */
 
 #include "ProtocolUtil.h"
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "ProtocolTypes.h"
 #include "base/Log.h"
 #include "io/IStream.h"
@@ -40,7 +40,7 @@ void writeInt(uint32_t Value, uint32_t Length, std::vector<uint8_t> &Buffer)
     Buffer.push_back(static_cast<uint8_t>(Value & 0xffU));
     break;
   default:
-    throw DeskflowException("Invalid integer format length");
+    throw SynergyException("Invalid integer format length");
     return;
   }
 }
@@ -67,7 +67,7 @@ void writeString(const std::string *StringData, std::vector<uint8_t> &Buffer)
 
 } // namespace
 
-void ProtocolUtil::writef(deskflow::IStream *stream, const char *fmt, ...)
+void ProtocolUtil::writef(synergy::IStream *stream, const char *fmt, ...)
 {
   assert(stream != nullptr);
   assert(fmt != nullptr);
@@ -82,7 +82,7 @@ void ProtocolUtil::writef(deskflow::IStream *stream, const char *fmt, ...)
   va_end(args);
 }
 
-bool ProtocolUtil::readf(deskflow::IStream *stream, const char *fmt, ...)
+bool ProtocolUtil::readf(synergy::IStream *stream, const char *fmt, ...)
 {
   bool result = false;
 
@@ -104,7 +104,7 @@ bool ProtocolUtil::readf(deskflow::IStream *stream, const char *fmt, ...)
   return result;
 }
 
-void ProtocolUtil::vwritef(deskflow::IStream *stream, const char *fmt, uint32_t size, va_list args)
+void ProtocolUtil::vwritef(synergy::IStream *stream, const char *fmt, uint32_t size, va_list args)
 {
   assert(stream != nullptr);
   assert(fmt != nullptr);
@@ -128,7 +128,7 @@ void ProtocolUtil::vwritef(deskflow::IStream *stream, const char *fmt, uint32_t 
   }
 }
 
-void ProtocolUtil::vreadf(deskflow::IStream *stream, const char *fmt, va_list args)
+void ProtocolUtil::vreadf(synergy::IStream *stream, const char *fmt, va_list args)
 {
   assert(stream != nullptr);
   assert(fmt != nullptr);
@@ -243,7 +243,7 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       case 'i':
         if (len != 1 && len != 2 && len != 4) {
           LOG_ERR("getLength: invalid integer format length: '%d'", len);
-          throw DeskflowException("Invalid protocol integer format length");
+          throw SynergyException("Invalid protocol integer format length");
         }
         (void)va_arg(args, uint32_t);
         break;
@@ -251,7 +251,7 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       case 'I':
         if (len != 1 && len != 2 && len != 4) {
           LOG_ERR("getLength: invalid integer vector format length: '%d'", len);
-          throw DeskflowException("Invalid protocol integer vector format length");
+          throw SynergyException("Invalid protocol integer vector format length");
         }
         switch (len) {
         case 1:
@@ -275,7 +275,7 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       case 's':
         if (len != 0) {
           LOG_ERR("getLength: string format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol string format length");
+          throw SynergyException("Invalid protocol string format length");
         }
         len = (uint32_t)(va_arg(args, std::string *))->size() + 4;
         break;
@@ -283,7 +283,7 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       case 'S':
         if (len != 0) {
           LOG_ERR("getLength: raw string format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol raw string format length");
+          throw SynergyException("Invalid protocol raw string format length");
         }
         len = va_arg(args, uint32_t) + 4;
         break;
@@ -291,14 +291,14 @@ uint32_t ProtocolUtil::getLength(const char *fmt, va_list args)
       case '%':
         if (len != 0) {
           LOG_ERR("getLength: %% format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol %% format specifier length");
+          throw SynergyException("Invalid protocol %% format specifier length");
         }
         len = 1;
         break;
 
       default:
         LOG_ERR("getLength: invalid format specifier: '%c'", *fmt);
-        throw DeskflowException("Invalid protocol format specifier");
+        throw SynergyException("Invalid protocol format specifier");
       }
 
       // accumulate size
@@ -352,7 +352,7 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
 
         default:
           LOG_ERR("writef: invalid integer vector format length: '%d'", len);
-          throw DeskflowException("Invalid protocol integer vector format length");
+          throw SynergyException("Invalid protocol integer vector format length");
         }
         break;
       }
@@ -360,7 +360,7 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
       case 's': {
         if (len != 0) {
           LOG_ERR("writef: string format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol string format length");
+          throw SynergyException("Invalid protocol string format length");
         }
         const std::string *src = va_arg(args, std::string *);
         writeString(src, buffer);
@@ -370,7 +370,7 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
       case 'S': {
         if (len != 0) {
           LOG_ERR("writef: raw string format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol raw string format length");
+          throw SynergyException("Invalid protocol raw string format length");
         }
         const uint32_t len = va_arg(args, uint32_t);
         const uint8_t *src = va_arg(args, uint8_t *);
@@ -382,14 +382,14 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
       case '%':
         if (len != 0) {
           LOG_ERR("writef: %% format specifier with unexpected length: '%d'", len);
-          throw DeskflowException("Invalid protocol %% format specifier length");
+          throw SynergyException("Invalid protocol %% format specifier length");
         }
         buffer.push_back('%');
         break;
 
       default:
         LOG_ERR("writef: invalid format specifier: '%c'", *fmt);
-        throw DeskflowException("Invalid protocol format specifier");
+        throw SynergyException("Invalid protocol format specifier");
       }
 
       // next format character
@@ -447,7 +447,7 @@ uint32_t ProtocolUtil::eatLength(const char **pfmt)
   }
 }
 
-void ProtocolUtil::read(deskflow::IStream *stream, void *vbuffer, uint32_t count)
+void ProtocolUtil::read(synergy::IStream *stream, void *vbuffer, uint32_t count)
 {
   assert(stream != nullptr);
   assert(vbuffer != nullptr);
@@ -469,7 +469,7 @@ void ProtocolUtil::read(deskflow::IStream *stream, void *vbuffer, uint32_t count
   }
 }
 
-uint8_t ProtocolUtil::read1ByteInt(deskflow::IStream *stream)
+uint8_t ProtocolUtil::read1ByteInt(synergy::IStream *stream)
 {
   const uint32_t BufferSize = 1;
   std::array<uint8_t, 1> buffer = {};
@@ -481,7 +481,7 @@ uint8_t ProtocolUtil::read1ByteInt(deskflow::IStream *stream)
   return Result;
 }
 
-uint16_t ProtocolUtil::read2BytesInt(deskflow::IStream *stream)
+uint16_t ProtocolUtil::read2BytesInt(synergy::IStream *stream)
 {
   const uint32_t BufferSize = 2;
   std::array<uint8_t, BufferSize> buffer = {};
@@ -493,7 +493,7 @@ uint16_t ProtocolUtil::read2BytesInt(deskflow::IStream *stream)
   return Result;
 }
 
-uint32_t ProtocolUtil::read4BytesInt(deskflow::IStream *stream)
+uint32_t ProtocolUtil::read4BytesInt(synergy::IStream *stream)
 {
   const int BufferSize = 4;
   std::array<uint8_t, BufferSize> buffer = {};
@@ -507,7 +507,7 @@ uint32_t ProtocolUtil::read4BytesInt(deskflow::IStream *stream)
   return Result;
 }
 
-void ProtocolUtil::readVector1ByteInt(deskflow::IStream *stream, std::vector<uint8_t> &destination)
+void ProtocolUtil::readVector1ByteInt(synergy::IStream *stream, std::vector<uint8_t> &destination)
 {
   auto size = readVectorSize(stream);
   for (auto i = 0; i < size; ++i) {
@@ -515,7 +515,7 @@ void ProtocolUtil::readVector1ByteInt(deskflow::IStream *stream, std::vector<uin
   }
 }
 
-void ProtocolUtil::readVector2BytesInt(deskflow::IStream *stream, std::vector<uint16_t> &destination)
+void ProtocolUtil::readVector2BytesInt(synergy::IStream *stream, std::vector<uint16_t> &destination)
 {
   auto size = readVectorSize(stream);
   for (auto i = 0; i < size; ++i) {
@@ -523,7 +523,7 @@ void ProtocolUtil::readVector2BytesInt(deskflow::IStream *stream, std::vector<ui
   }
 }
 
-void ProtocolUtil::readVector4BytesInt(deskflow::IStream *stream, std::vector<uint32_t> &destination)
+void ProtocolUtil::readVector4BytesInt(synergy::IStream *stream, std::vector<uint32_t> &destination)
 {
   auto size = readVectorSize(stream);
   for (auto i = 0; i < size; ++i) {
@@ -531,7 +531,7 @@ void ProtocolUtil::readVector4BytesInt(deskflow::IStream *stream, std::vector<ui
   }
 }
 
-uint32_t ProtocolUtil::readVectorSize(deskflow::IStream *stream)
+uint32_t ProtocolUtil::readVectorSize(synergy::IStream *stream)
 {
   auto size = read4BytesInt(stream);
 
@@ -543,7 +543,7 @@ uint32_t ProtocolUtil::readVectorSize(deskflow::IStream *stream)
   return size;
 }
 
-void ProtocolUtil::readBytes(deskflow::IStream *stream, uint32_t len, std::string *destination)
+void ProtocolUtil::readBytes(synergy::IStream *stream, uint32_t len, std::string *destination)
 {
   // read the string length
   uint8_t buffer[128];

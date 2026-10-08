@@ -8,7 +8,7 @@
 
 #include <QObject>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 class Logger : public QObject
 {
@@ -33,4 +33,4 @@ private:
   bool m_guiDebug = false;
 };
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

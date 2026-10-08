@@ -17,7 +17,7 @@
 // ClientProxy1_4
 //
 
-ClientProxy1_4::ClientProxy1_4(const std::string &name, deskflow::IStream *stream, Server *server, IEventQueue *events)
+ClientProxy1_4::ClientProxy1_4(const std::string &name, synergy::IStream *stream, Server *server, IEventQueue *events)
     : ClientProxy1_3(name, stream, events),
       m_server(server)
 {

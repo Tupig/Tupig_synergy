@@ -8,7 +8,7 @@
 
 #include "server/ClientProxy1_0.h"
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "ProtocolUtil.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
@@ -20,7 +20,7 @@
 // ClientProxy1_0
 //
 
-ClientProxy1_0::ClientProxy1_0(const std::string &name, deskflow::IStream *stream, IEventQueue *events)
+ClientProxy1_0::ClientProxy1_0(const std::string &name, synergy::IStream *stream, IEventQueue *events)
     : ClientProxy(name, stream),
       m_events(events)
 {

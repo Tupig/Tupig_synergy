@@ -12,7 +12,7 @@
 
 class QFileSystemWatcher;
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 class FileTail : public QObject
 {
@@ -34,4 +34,4 @@ private:
   qint64 m_lastPos;
 };
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

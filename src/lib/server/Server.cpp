@@ -9,7 +9,7 @@
 #include "server/Server.h"
 
 #include "AppUtil.h"
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "IPlatformScreen.h"
 #include "OptionTypes.h"
 #include "PacketStreamFilter.h"
@@ -37,13 +37,13 @@
 #include <cstring>
 #include <ctime>
 
-using namespace deskflow::server;
+using namespace synergy::server;
 
 //
 // Server
 //
 
-Server::Server(ServerConfig &config, PrimaryClient *primaryClient, deskflow::Screen *screen, IEventQueue *events)
+Server::Server(ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events)
     : m_primaryClient(primaryClient),
       m_active(primaryClient),
       m_config(&config),
@@ -256,7 +256,7 @@ void Server::adoptClient(BaseClientProxy *client)
     return;
   }
   LOG_DEBUG("client \"%s\" has connected", getName(client).c_str());
-  ipcSendConnectionState(deskflow::core::ConnectionState::Connected);
+  ipcSendConnectionState(synergy::core::ConnectionState::Connected);
   sendConnectedClientsIpc();
 
   // send configuration options to client
@@ -1368,7 +1368,7 @@ void Server::handleClientDisconnected(BaseClientProxy *client)
   removeOldClient(client);
 
   // m_clients always contains the primary (server) screen, so 1 means no remote clients.
-  using enum deskflow::core::ConnectionState;
+  using enum synergy::core::ConnectionState;
   ipcSendConnectionState(m_clients.size() <= 1 ? Listening : Connected);
   sendConnectedClientsIpc();
 
@@ -1784,7 +1784,7 @@ void Server::onMouseMoveSecondary(int32_t dx, int32_t dy)
   LOG_VERBOSE("mouse move on secondary: %+d,%+d", dx, dy);
 
   // TODO: move this to client side and use a qt setting or cli arg instead of env var.
-  const static auto adjustEnv = "DESKFLOW_MOUSE_ADJUSTMENT";
+  const static auto adjustEnv = "SYNERGY_MOUSE_ADJUSTMENT";
   if (const char *envVal = std::getenv(adjustEnv); envVal) {
     try {
       double multiplier = std::stod(envVal);

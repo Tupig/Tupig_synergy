@@ -49,7 +49,7 @@
 
 #include <fstream>
 
-using namespace deskflow::server;
+using namespace synergy::server;
 
 //
 // ServerApp
@@ -216,7 +216,7 @@ void ServerApp::closePrimaryClient(PrimaryClient *primaryClient)
   delete primaryClient;
 }
 
-void ServerApp::closeServerScreen(deskflow::Screen *screen)
+void ServerApp::closeServerScreen(synergy::Screen *screen)
 {
   if (screen != nullptr) {
     using enum EventTypes;
@@ -300,7 +300,7 @@ bool ServerApp::initServer()
     return true;
   }
 
-  deskflow::Screen *serverScreen = nullptr;
+  synergy::Screen *serverScreen = nullptr;
   PrimaryClient *primaryClient = nullptr;
   try {
     std::string name = m_config->getCanonicalName(m_name);
@@ -329,9 +329,9 @@ bool ServerApp::initServer()
   return false;
 }
 
-deskflow::Screen *ServerApp::openServerScreen()
+synergy::Screen *ServerApp::openServerScreen()
 {
-  deskflow::Screen *screen = createScreen();
+  synergy::Screen *screen = createScreen();
   getEvents()->addHandler(EventTypes::ScreenError, screen->getEventTarget(), [this](const auto &) {
     handleScreenError();
   });
@@ -372,7 +372,7 @@ bool ServerApp::startServer()
     m_server->setListener(listener);
     m_listener = listener;
     LOG_DEBUG("started server, waiting for clients");
-    ipcSendConnectionState(deskflow::core::ConnectionState::Listening);
+    ipcSendConnectionState(synergy::core::ConnectionState::Listening);
     m_serverState = Started;
     return true;
   } catch (SocketAddressInUseException &e) {
@@ -387,26 +387,26 @@ bool ServerApp::startServer()
   return false;
 }
 
-deskflow::Screen *ServerApp::createScreen()
+synergy::Screen *ServerApp::createScreen()
 {
 #if defined(Q_OS_WIN)
-  return new deskflow::Screen(
+  return new synergy::Screen(
       new MSWindowsScreen(true, Settings::value(Settings::Core::UseHooks).toBool(), getEvents()), getEvents()
   );
 #elif defined(Q_OS_MAC)
-  return new deskflow::Screen(new OSXScreen(getEvents(), true), getEvents());
+  return new synergy::Screen(new OSXScreen(getEvents(), true), getEvents());
 #else
-  if (deskflow::platform::isWayland()) {
+  if (synergy::platform::isWayland()) {
 #if WINAPI_LIBEI
     LOG_INFO("using ei screen for wayland");
-    return new deskflow::Screen(new deskflow::EiScreen(true, getEvents(), true), getEvents());
+    return new synergy::Screen(new synergy::EiScreen(true, getEvents(), true), getEvents());
 #else
     throw XNoEiSupport();
 #endif
   }
 #if WINAPI_XWINDOWS
   LOG_INFO("using legacy x windows screen");
-  return new deskflow::Screen(
+  return new synergy::Screen(
       new XWindowsScreen(qPrintable(Settings::value(Settings::Core::Display).toString()), true, getEvents()),
       getEvents()
   );
@@ -414,7 +414,7 @@ deskflow::Screen *ServerApp::createScreen()
 #endif // end os check
 }
 
-PrimaryClient *ServerApp::openPrimaryClient(const std::string &name, deskflow::Screen *screen)
+PrimaryClient *ServerApp::openPrimaryClient(const std::string &name, synergy::Screen *screen)
 {
   LOG_VERBOSE("creating primary screen");
   return new PrimaryClient(name, screen);
@@ -580,7 +580,7 @@ int ServerApp::start()
 
 const char *ServerApp::daemonName() const
 {
-  if (deskflow::platform::isWindows())
+  if (synergy::platform::isWindows())
     return "TuPig Synergy Server";
   return "synergy-server";
 }

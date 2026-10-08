@@ -10,7 +10,7 @@
 
 class QLocalSocket;
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 
 class IpcClient : public QObject
 {
@@ -67,4 +67,4 @@ private:
   QString m_typeName;
 };
 
-} // namespace deskflow::gui::ipc
+} // namespace synergy::gui::ipc

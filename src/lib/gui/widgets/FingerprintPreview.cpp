@@ -55,12 +55,12 @@ QLayout *FingerprintPreview::sha256Layout(const Fingerprint &fingerprint, const 
   labelTitle->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   labelTitle->setVisible(!titleText.isEmpty());
 
-  m_lblHash = new QLabel(deskflow::formatSSLFingerprintColumns(fingerprint.data), this);
+  m_lblHash = new QLabel(synergy::formatSSLFingerprintColumns(fingerprint.data), this);
   m_lblHash->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
   m_lblHash->setTextInteractionFlags(Qt::TextSelectableByMouse);
   m_lblHash->setVisible(hashMode);
 
-  m_lblArt = new QLabel(deskflow::generateFingerprintArt(fingerprint.data), this);
+  m_lblArt = new QLabel(synergy::generateFingerprintArt(fingerprint.data), this);
   m_lblArt->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
   m_lblArt->setTextInteractionFlags(Qt::TextSelectableByMouse);
   m_lblArt->setVisible(!hashMode);

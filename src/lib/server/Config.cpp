@@ -8,7 +8,7 @@
 
 #include "server/Config.h"
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "KeyMap.h"
 #include "KeyTypes.h"
 #include "OptionTypes.h"
@@ -22,9 +22,9 @@
 #include <istream>
 #include <ostream>
 
-using namespace deskflow::string;
+using namespace synergy::string;
 
-namespace deskflow::server {
+namespace synergy::server {
 //
 // Config
 //
@@ -566,7 +566,7 @@ std::string Config::formatInterval(const Interval &x)
   if (x.first == 0.0f && x.second == 1.0f) {
     return "";
   }
-  return deskflow::string::sprintf("(%d,%d)", (int)(x.first * 100.0f + 0.5f), (int)(x.second * 100.0f + 0.5f));
+  return synergy::string::sprintf("(%d,%d)", (int)(x.first * 100.0f + 0.5f), (int)(x.second * 100.0f + 0.5f));
 }
 
 void Config::readSection(ConfigReadContext &s)
@@ -1299,7 +1299,7 @@ std::string Config::getOptionValue(OptionID id, OptionValue value)
   }
   if (id == kOptionHeartbeat || id == kOptionScreenSwitchCornerSize || id == kOptionScreenSwitchDelay ||
       id == kOptionScreenSwitchTwoTap) {
-    return deskflow::string::sprintf("%d", value);
+    return synergy::string::sprintf("%d", value);
   }
   if (id == kOptionScreenSwitchCorners) {
     std::string result("none");
@@ -1688,7 +1688,7 @@ bool ConfigReadContext::readLine(std::string &line)
       // make sure there are no invalid characters
       for (i = 0; i < line.length(); ++i) {
         if (!isgraph(line[i]) && line[i] != ' ' && line[i] != '\t') {
-          throw ServerConfigReadException(*this, "invalid character %{1}", deskflow::string::sprintf("%#2x", line[i]));
+          throw ServerConfigReadException(*this, "invalid character %{1}", synergy::string::sprintf("%#2x", line[i]));
         }
       }
 
@@ -1979,12 +1979,12 @@ ConfigReadContext::parseKeystroke(const std::string &keystroke, const std::set<s
   std::string s = keystroke;
 
   KeyModifierMask mask;
-  if (!deskflow::KeyMap::parseModifiers(s, mask)) {
+  if (!synergy::KeyMap::parseModifiers(s, mask)) {
     throw ServerConfigReadException(*this, "unable to parse key modifiers");
   }
 
   KeyID key;
-  if (!deskflow::KeyMap::parseKey(s, key)) {
+  if (!synergy::KeyMap::parseKey(s, key)) {
     throw ServerConfigReadException(*this, "unable to parse key");
   }
 
@@ -2000,7 +2000,7 @@ IPlatformScreen::ButtonInfo ConfigReadContext::parseMouse(const std::string &mou
   std::string s = mouse;
 
   KeyModifierMask mask;
-  if (!deskflow::KeyMap::parseModifiers(s, mask)) {
+  if (!synergy::KeyMap::parseModifiers(s, mask)) {
     throw ServerConfigReadException(*this, "unable to parse button modifiers");
   }
 
@@ -2021,7 +2021,7 @@ KeyModifierMask ConfigReadContext::parseModifier(const std::string &modifiers) c
   std::string s = modifiers;
 
   KeyModifierMask mask;
-  if (!deskflow::KeyMap::parseModifiers(s, mask)) {
+  if (!synergy::KeyMap::parseModifiers(s, mask)) {
     throw ServerConfigReadException(*this, "unable to parse modifiers");
   }
 
@@ -2050,7 +2050,7 @@ std::string ConfigReadContext::concatArgs(const ArgList &args)
 //
 
 ServerConfigReadException::ServerConfigReadException(const ConfigReadContext &context, const std::string &error)
-    : m_error(deskflow::string::sprintf("line %d: %s", context.getLineNumber(), error.c_str()))
+    : m_error(synergy::string::sprintf("line %d: %s", context.getLineNumber(), error.c_str()))
 {
   // do nothing
 }
@@ -2059,8 +2059,8 @@ ServerConfigReadException::ServerConfigReadException(
     const ConfigReadContext &context, const char *errorFmt, const std::string &arg
 )
     : m_error(
-          deskflow::string::sprintf("line %d: ", context.getLineNumber()) +
-          deskflow::string::format(errorFmt, arg.c_str())
+          synergy::string::sprintf("line %d: ", context.getLineNumber()) +
+          synergy::string::format(errorFmt, arg.c_str())
       )
 {
   // do nothing
@@ -2071,4 +2071,4 @@ QString ServerConfigReadException::getWhat() const throw()
   return format("ServerConfigReadException", "read error: %{1}", m_error.c_str());
 }
 
-} // namespace deskflow::server
+} // namespace synergy::server

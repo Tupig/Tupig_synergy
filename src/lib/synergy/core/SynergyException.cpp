@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "base/String.h"
 
 //
@@ -51,8 +51,8 @@ int IncompatibleClientException::getMinor() const noexcept
 QString IncompatibleClientException::getWhat() const throw()
 {
   return format(
-      "IncompatibleClientException", "incompatible client %{1}.%{2}", deskflow::string::sprintf("%d", m_major).c_str(),
-      deskflow::string::sprintf("%d", m_minor).c_str()
+      "IncompatibleClientException", "incompatible client %{1}.%{2}", synergy::string::sprintf("%d", m_major).c_str(),
+      synergy::string::sprintf("%d", m_minor).c_str()
   );
 }
 
@@ -110,5 +110,5 @@ int ExitAppException::getCode() const noexcept
 
 QString ExitAppException::getWhat() const throw()
 {
-  return format("ExitAppException", "exiting with code %{1}", deskflow::string::sprintf("%d", m_code).c_str());
+  return format("ExitAppException", "exiting with code %{1}", synergy::string::sprintf("%d", m_code).c_str());
 }

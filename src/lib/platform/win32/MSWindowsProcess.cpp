@@ -20,7 +20,7 @@
 
 #include <string>
 
-namespace deskflow::platform {
+namespace synergy::platform {
 
 MSWindowsProcess::MSWindowsProcess(const std::wstring &command, HANDLE stdOutput, HANDLE stdError)
     : m_command(command),
@@ -299,4 +299,4 @@ std::wstring MSWindowsProcess::readOutput(HANDLE handle)
   return std::wstring(buffer, bytesRead);
 }
 
-} // namespace deskflow::platform
+} // namespace synergy::platform

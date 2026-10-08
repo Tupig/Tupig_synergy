@@ -27,7 +27,7 @@ enum class ServerState
 };
 
 class Server;
-namespace deskflow {
+namespace synergy {
 class Screen;
 }
 class ClientListener;
@@ -36,13 +36,13 @@ class ILogOutputter;
 class IEventQueue;
 class ISocketFactory;
 
-namespace deskflow {
+namespace synergy {
 class ServerArgs;
 }
 
 class ServerApp : public App
 {
-  using ServerConfig = deskflow::server::Config;
+  using ServerConfig = synergy::server::Config;
 
 public:
   explicit ServerApp(IEventQueue *events, const QString &processName = QString());
@@ -56,7 +56,7 @@ public:
   const char *daemonName() const override;
   void loadConfig() override;
   bool loadConfig(const QString &filename) override;
-  deskflow::Screen *createScreen() override;
+  synergy::Screen *createScreen() override;
   int mainLoop() override;
   int runInner(StartupFunc startup) override;
   int start() override;
@@ -75,12 +75,12 @@ public:
   void closeClientListener(ClientListener *listen);
   void stopServer();
   void closePrimaryClient(PrimaryClient *primaryClient);
-  void closeServerScreen(deskflow::Screen *screen);
+  void closeServerScreen(synergy::Screen *screen);
   void cleanupServer();
   bool initServer();
   void retryHandler();
-  deskflow::Screen *openServerScreen();
-  PrimaryClient *openPrimaryClient(const std::string &name, deskflow::Screen *screen);
+  synergy::Screen *openServerScreen();
+  PrimaryClient *openPrimaryClient(const std::string &name, synergy::Screen *screen);
   void handleSuspend();
   void handleResume();
   ClientListener *openClientListener(const NetworkAddress &address);
@@ -109,11 +109,11 @@ private:
   bool m_suspended = false;
   Server *m_server = nullptr;
   ServerState m_serverState = ServerState::Uninitialized;
-  deskflow::Screen *m_serverScreen = nullptr;
+  synergy::Screen *m_serverScreen = nullptr;
   PrimaryClient *m_primaryClient = nullptr;
   ClientListener *m_listener = nullptr;
   EventQueueTimer *m_timer = nullptr;
   NetworkAddress *m_deskflowAddress = nullptr;
   std::string m_name;
-  std::shared_ptr<deskflow::server::Config> m_config;
+  std::shared_ptr<synergy::server::Config> m_config;
 };

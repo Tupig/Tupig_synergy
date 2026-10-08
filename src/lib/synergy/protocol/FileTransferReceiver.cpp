@@ -74,7 +74,7 @@ FileTransferReceiver::FileTransferReceiver(Options options) : m_options(std::mov
   }
 }
 
-bool FileTransferReceiver::onDragInfo(deskflow::IStream *stream)
+bool FileTransferReceiver::onDragInfo(synergy::IStream *stream)
 {
   // A new announce starts a new drag: drop anything left from the previous one.
   reset();
@@ -139,7 +139,7 @@ bool FileTransferReceiver::onDragInfo(deskflow::IStream *stream)
   return true;
 }
 
-TransferState FileTransferReceiver::onFileChunk(deskflow::IStream *stream)
+TransferState FileTransferReceiver::onFileChunk(synergy::IStream *stream)
 {
   // assemble() reads the message body, so it runs even when disabled: the body has
   // to come out of the stream either way or the next message is read as garbage.

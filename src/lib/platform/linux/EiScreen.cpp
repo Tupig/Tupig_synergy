@@ -35,7 +35,7 @@ struct ScrollRemainder
   double y;
 };
 
-namespace deskflow {
+namespace synergy {
 
 EiScreen::EiScreen(bool isPrimary, IEventQueue *events, bool usePortal)
     : PlatformScreen{events},
@@ -977,4 +977,4 @@ std::uint32_t EiScreen::HotKeySet::findByMask(std::uint32_t mask) const
   return 0;
 }
 
-} // namespace deskflow
+} // namespace synergy

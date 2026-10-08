@@ -42,7 +42,7 @@
 #include "XDGPortalRegistry.h"
 #endif
 
-using namespace deskflow::gui;
+using namespace synergy::gui;
 
 #if defined(Q_OS_MACOS)
 bool checkMacAssistiveDevices();
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-  deskflow::platform::setAppId();
+  synergy::platform::setAppId();
 #endif
 
   QCoreApplication::setApplicationName(kAppName);
@@ -128,14 +128,14 @@ int main(int argc, char *argv[])
     return s_exitDuplicate;
   }
 
-  if (!deskflow::platform::isMac() && qEnvironmentVariable("XDG_CURRENT_DESKTOP") != QLatin1String("KDE")) {
+  if (!synergy::platform::isMac() && qEnvironmentVariable("XDG_CURRENT_DESKTOP") != QLatin1String("KDE")) {
     QApplication::setStyle("fusion");
   }
 
   // Sets the fallback icon path and fallback theme
   updateIconTheme();
 
-  qInstallMessageHandler(deskflow::gui::messages::messageHandler);
+  qInstallMessageHandler(synergy::gui::messages::messageHandler);
   qInfo("%s v%s", kAppName, kDisplayVersion);
 
 #if defined(Q_OS_MACOS)

@@ -17,7 +17,7 @@
 #include <memory>
 #include <unistd.h>
 
-namespace deskflow {
+namespace synergy {
 
 EiKeyState::EiKeyState(EiScreen *screen, IEventQueue *events)
     : KeyState(
@@ -189,7 +189,7 @@ std::uint32_t EiKeyState::convertModMask(xkb_mod_mask_t xkbModMaskIn) const
 // Only way to figure out whether a key is a modifier key is to press it,
 // check if a modifier changed state and then release it again.
 // Luckily xkbcommon allows us to do this in a separate state.
-void EiKeyState::assignGeneratedModifiers(std::uint32_t keycode, deskflow::KeyMap::KeyItem &item)
+void EiKeyState::assignGeneratedModifiers(std::uint32_t keycode, synergy::KeyMap::KeyItem &item)
 {
   xkb_mod_mask_t xkbModMask = 0;
   auto state = xkb_state_new(m_xkbKeymap);
@@ -210,7 +210,7 @@ void EiKeyState::assignGeneratedModifiers(std::uint32_t keycode, deskflow::KeyMa
   item.m_generates = convertModMask(xkbModMask);
 }
 
-void EiKeyState::getKeyMap(deskflow::KeyMap &keyMap)
+void EiKeyState::getKeyMap(synergy::KeyMap &keyMap)
 {
   auto minKeycode = xkb_keymap_min_keycode(m_xkbKeymap);
   auto maxKeycode = xkb_keymap_max_keycode(m_xkbKeymap);
@@ -249,7 +249,7 @@ void EiKeyState::getKeyMap(deskflow::KeyMap &keyMap)
           continue;
         }
 
-        deskflow::KeyMap::KeyItem item{};
+        synergy::KeyMap::KeyItem item{};
         KeySym sym = keysym;
         item.m_id = XDGKeyUtil::mapKeySymToKeyID(sym);
         item.m_button = static_cast<KeyButton>(keycode) - 8; // X keycode offset
@@ -353,4 +353,4 @@ void EiKeyState::clearStaleModifiers()
   }
   m_xkbState = xkb_state_new(m_xkbKeymap);
 }
-} // namespace deskflow
+} // namespace synergy

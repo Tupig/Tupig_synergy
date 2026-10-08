@@ -9,11 +9,11 @@
 #include "base/Log.h"
 #include <memory>
 
-#include "DeskflowXkbKeyboard.h" // Include last due to X11 use
+#include "SynergyXkbKeyboard.h" // Include last due to X11 use
 
-namespace deskflow::linux {
+namespace synergy::linux {
 
-DeskflowXkbKeyboard::DeskflowXkbKeyboard()
+SynergyXkbKeyboard::SynergyXkbKeyboard()
 {
   using XkbDisplay = std::unique_ptr<Display, decltype(&XCloseDisplay)>;
   XkbDisplay display(XkbOpenDisplay(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr), &XCloseDisplay);
@@ -27,17 +27,17 @@ DeskflowXkbKeyboard::DeskflowXkbKeyboard()
   }
 }
 
-const char *DeskflowXkbKeyboard::getLayout() const
+const char *SynergyXkbKeyboard::getLayout() const
 {
   return m_data.layout ? m_data.layout : "us";
 }
 
-const char *DeskflowXkbKeyboard::getVariant() const
+const char *SynergyXkbKeyboard::getVariant() const
 {
   return m_data.variant ? m_data.variant : "";
 }
 
-DeskflowXkbKeyboard::~DeskflowXkbKeyboard()
+SynergyXkbKeyboard::~SynergyXkbKeyboard()
 {
   std::free(m_data.model);
   std::free(m_data.layout);
@@ -45,6 +45,6 @@ DeskflowXkbKeyboard::~DeskflowXkbKeyboard()
   std::free(m_data.options);
 }
 
-} // namespace deskflow::linux
+} // namespace synergy::linux
 
 #endif // WINAPI_XWINDOWS

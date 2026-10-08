@@ -45,9 +45,9 @@ std::string MSWindowsClipboardHTMLConverter::doFromIClipboard(const std::string 
   // StartHTML is constant by the design of the prefix
   uint32_t EndHTML = EndFragment + (uint32_t)suffix.size();
 
-  prefix.replace(prefix.find("XXXXXXXXXX"), 10, deskflow::string::sprintf("%010u", StartFragment));
-  prefix.replace(prefix.find("YYYYYYYYYY"), 10, deskflow::string::sprintf("%010u", EndFragment));
-  prefix.replace(prefix.find("ZZZZZZZZZZ"), 10, deskflow::string::sprintf("%010u", EndHTML));
+  prefix.replace(prefix.find("XXXXXXXXXX"), 10, synergy::string::sprintf("%010u", StartFragment));
+  prefix.replace(prefix.find("YYYYYYYYYY"), 10, synergy::string::sprintf("%010u", EndFragment));
+  prefix.replace(prefix.find("ZZZZZZZZZZ"), 10, synergy::string::sprintf("%010u", EndHTML));
 
   // concatenate
   prefix += data;

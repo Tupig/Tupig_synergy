@@ -17,7 +17,7 @@ void KeyboardLayoutManagerTests::initTestCase()
 void KeyboardLayoutManagerTests::remoteLayouts()
 {
   std::string remoteLayouts = "ruenuk";
-  deskflow::KeyboardLayoutManager manager({"ru", "en", "uk"});
+  synergy::KeyboardLayoutManager manager({"ru", "en", "uk"});
 
   manager.setRemoteLayouts(remoteLayouts);
   QCOMPARE(manager.getRemoteLayouts(), (std::vector<std::string>{"ru", "en", "uk"}));
@@ -28,7 +28,7 @@ void KeyboardLayoutManagerTests::remoteLayouts()
 
 void KeyboardLayoutManagerTests::remoteLayouts_tooShort_returnsEmpty()
 {
-  deskflow::KeyboardLayoutManager manager({"ru", "en", "uk"});
+  synergy::KeyboardLayoutManager manager({"ru", "en", "uk"});
 
   manager.setRemoteLayouts("a");
   QVERIFY(manager.getRemoteLayouts().empty());
@@ -36,7 +36,7 @@ void KeyboardLayoutManagerTests::remoteLayouts_tooShort_returnsEmpty()
 
 void KeyboardLayoutManagerTests::remoteLayouts_oddLength_returnsEmpty()
 {
-  deskflow::KeyboardLayoutManager manager({"ru", "en", "uk"});
+  synergy::KeyboardLayoutManager manager({"ru", "en", "uk"});
 
   manager.setRemoteLayouts("rue");
   QVERIFY(manager.getRemoteLayouts().empty());
@@ -45,7 +45,7 @@ void KeyboardLayoutManagerTests::remoteLayouts_oddLength_returnsEmpty()
 void KeyboardLayoutManagerTests::localLayout()
 {
   std::vector<std::string> localLayouts = {"ru", "en", "uk"};
-  deskflow::KeyboardLayoutManager manager(localLayouts);
+  synergy::KeyboardLayoutManager manager(localLayouts);
   QCOMPARE(manager.getLocalLayouts(), (std::vector<std::string>{"ru", "en", "uk"}));
 }
 
@@ -53,7 +53,7 @@ void KeyboardLayoutManagerTests::missedLayout()
 {
   std::string remoteLayouts = "ruenuk";
   std::vector<std::string> localLayouts = {"en"};
-  deskflow::KeyboardLayoutManager manager(localLayouts);
+  synergy::KeyboardLayoutManager manager(localLayouts);
 
   manager.setRemoteLayouts(remoteLayouts);
   QCOMPARE(manager.getMissedLayouts(), "ru, uk");
@@ -62,7 +62,7 @@ void KeyboardLayoutManagerTests::missedLayout()
 void KeyboardLayoutManagerTests::layoutInstall()
 {
   std::vector<std::string> localLayouts = {"ru", "en", "uk"};
-  deskflow::KeyboardLayoutManager manager(localLayouts);
+  synergy::KeyboardLayoutManager manager(localLayouts);
 
   QVERIFY(!manager.isLayoutInstalled("us"));
   QVERIFY(manager.isLayoutInstalled("en"));
@@ -71,7 +71,7 @@ void KeyboardLayoutManagerTests::layoutInstall()
 void KeyboardLayoutManagerTests::serializeLocalLayouts()
 {
   std::vector<std::string> localLayouts = {"ru", "en", "uk"};
-  deskflow::KeyboardLayoutManager manager(localLayouts);
+  synergy::KeyboardLayoutManager manager(localLayouts);
 
   QCOMPARE(manager.getSerializedLocalLayouts(), "ruenuk");
 }

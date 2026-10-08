@@ -58,7 +58,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-using namespace deskflow::gui;
+using namespace synergy::gui;
 
 MainWindow::MainWindow()
     : ui{std::make_unique<Ui::MainWindow>()},
@@ -98,7 +98,7 @@ MainWindow::MainWindow()
   m_actionMinimize->setIcon(QIcon::fromTheme(QStringLiteral("window-minimize-pip")));
   m_actionRestore->setIcon(QIcon::fromTheme(QStringLiteral("window-restore-pip")));
 
-  if (!deskflow::platform::isWindows()) {
+  if (!synergy::platform::isWindows()) {
     m_actionQuit->setShortcut(QKeySequence::Quit);
     m_actionTrayQuit->setShortcut(QKeySequence::Quit);
   }
@@ -224,7 +224,7 @@ void MainWindow::setupControls()
   ui->lineEditName->setVisible(false);
   ui->lineEditName->installEventFilter(this);
 
-  if (deskflow::platform::isMac()) {
+  if (synergy::platform::isMac()) {
     ui->rbModeServer->setAttribute(Qt::WA_MacShowFocusRect, false);
     ui->rbModeClient->setAttribute(Qt::WA_MacShowFocusRect, false);
     ui->btnSaveServerConfig->setFixedWidth(ui->btnSaveServerConfig->height());
@@ -273,7 +273,7 @@ void MainWindow::connectSlots()
   connect(m_actionStopCore, &QAction::triggered, this, &MainWindow::stopCore);
 
   // Mac os tray will only show a menu
-  if (!deskflow::platform::isMac())
+  if (!synergy::platform::isMac())
     connect(m_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::trayIconActivated);
 
   connect(&m_coreProcess, &CoreProcess::connectedClientsChanged, this, &MainWindow::serverClientsChanged);
@@ -635,7 +635,7 @@ void MainWindow::open()
 {
   if (!Settings::value(Settings::Gui::Autohide).toBool())
     showAndActivate();
-  else if (deskflow::platform::isMac())
+  else if (synergy::platform::isMac())
     // macOS to call hide after this function ends
     QTimer::singleShot(1, this, &MainWindow::hide);
   else
@@ -745,7 +745,7 @@ void MainWindow::setTrayIcon()
 
   QString themeIcon = kRevFqdnName;
   if (!Settings::value(Settings::Gui::SymbolicTrayIcon).toBool()) {
-    if (deskflow::platform::isMac())
+    if (synergy::platform::isMac())
       m_trayIcon->setIcon(QIcon::fromTheme(themeIcon));
     else
 #ifdef SYNERGY_EXTRA_HEADER
@@ -758,7 +758,7 @@ void MainWindow::setTrayIcon()
 
   themeIcon.append(QStringLiteral("-symbolic"));
 
-  if (deskflow::platform::isWindows()) {
+  if (synergy::platform::isWindows()) {
     QSettings settings(
         QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
         QSettings::NativeFormat
@@ -804,7 +804,7 @@ void MainWindow::handleUnrecognisedClient(const QString &clientName)
 
   showAndActivate();
 
-  if (deskflow::gui::messages::showNewClientPrompt(this, clientName)) {
+  if (synergy::gui::messages::showNewClientPrompt(this, clientName)) {
     serverConnectionConfigureClient(clientName);
   } else {
     m_ignoredClients.insert(clientName);
@@ -813,9 +813,9 @@ void MainWindow::handleUnrecognisedClient(const QString &clientName)
   m_newClientPromptShowing = false;
 }
 
-void MainWindow::handleConnectionRefused(deskflow::core::ConnectionRefusal reason)
+void MainWindow::handleConnectionRefused(synergy::core::ConnectionRefusal reason)
 {
-  if (reason != deskflow::core::ConnectionRefusal::AlreadyConnected)
+  if (reason != synergy::core::ConnectionRefusal::AlreadyConnected)
     return;
 
   if (!isVisible() || m_clientErrorVisible)
@@ -1085,7 +1085,7 @@ void MainWindow::updateText()
   //: stop core shortcut
   m_actionStopCore->setShortcut(QKeySequence(tr("Ctrl+T")));
 
-  if (deskflow::platform::isWindows()) {
+  if (synergy::platform::isWindows()) {
     //: Quit shortcut
     m_actionQuit->setShortcut(QKeySequence(tr("Ctrl+Q")));
     m_actionTrayQuit->setShortcut(QKeySequence(tr("Ctrl+Q")));
@@ -1221,7 +1221,7 @@ void MainWindow::serverClientsChanged(const QStringList &clients)
 
 void MainWindow::daemonIpcClientConnectionFailed()
 {
-  if (deskflow::gui::messages::showDaemonOffline(this)) {
+  if (synergy::gui::messages::showDaemonOffline(this)) {
     m_coreProcess.retryDaemon();
   }
 }

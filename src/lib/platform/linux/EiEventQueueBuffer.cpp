@@ -18,7 +18,7 @@
 #include <poll.h>
 #include <unistd.h>
 
-namespace deskflow {
+namespace synergy {
 
 EiEventQueueBuffer::EiEventQueueBuffer(ei *ei, IEventQueue *events) : m_ei{ei_ref(ei)}, m_events{events}
 {
@@ -132,4 +132,4 @@ bool EiEventQueueBuffer::isEmpty() const
   return m_queue.empty();
 }
 
-} // namespace deskflow
+} // namespace synergy

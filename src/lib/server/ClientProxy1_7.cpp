@@ -13,7 +13,7 @@
 // ClientProxy1_7
 //
 
-ClientProxy1_7::ClientProxy1_7(const std::string &name, deskflow::IStream *stream, Server *server, IEventQueue *events)
+ClientProxy1_7::ClientProxy1_7(const std::string &name, synergy::IStream *stream, Server *server, IEventQueue *events)
     : ClientProxy1_6(name, stream, server, events)
 {
   // do nothing

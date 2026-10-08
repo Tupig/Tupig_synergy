@@ -9,7 +9,7 @@
 #include "win32/AppUtilWindows.h"
 
 #include "App.h"
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "MSWindowsScreen.h"
 #include "Screen.h"
 #include "arch/Arch.h"

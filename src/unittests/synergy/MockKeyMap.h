@@ -11,7 +11,7 @@
 
 // NOTE: do not mock methods that are not pure virtual. this mock exists only
 // to provide an implementation of the KeyMap abstract class.
-class MockKeyMap : public deskflow::KeyMap
+class MockKeyMap : public synergy::KeyMap
 {
 public:
   void swap(KeyMap &) noexcept override

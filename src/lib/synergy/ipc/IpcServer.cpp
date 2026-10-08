@@ -12,7 +12,7 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 // QLocalSocket::errorOccurred was added in Qt 5.15; pre-5.15 uses error(),
 // which is overloaded against the error() const getter — qOverload disambiguates.
@@ -198,4 +198,4 @@ void IpcServer::writeToClientSocket(QLocalSocket *&clientSocket, const QString &
   }
 }
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc

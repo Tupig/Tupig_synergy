@@ -219,7 +219,7 @@ std::vector<std::string> MSWindowsScreen::takeDraggingPaths()
 
 bool MSWindowsScreen::startDraggingFiles(const std::vector<std::string> &paths)
 {
-  return deskflow::win32::startDraggingFiles(paths);
+  return synergy::win32::startDraggingFiles(paths);
 }
 
 void MSWindowsScreen::offerDropWindowAtCursor()
@@ -640,7 +640,7 @@ void MSWindowsScreen::warpCursor(int32_t x, int32_t y)
 
   // remove all input events before and including warp
   MSG msg;
-  while (PeekMessage(&msg, nullptr, DESKFLOW_MSG_INPUT_FIRST, DESKFLOW_MSG_INPUT_LAST, PM_REMOVE)) {
+  while (PeekMessage(&msg, nullptr, SYNERGY_MSG_INPUT_FIRST, SYNERGY_MSG_INPUT_LAST, PM_REMOVE)) {
     // do nothing
   }
 
@@ -721,14 +721,14 @@ uint32_t MSWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask)
     m_oldHotKeyIDs.push_back(id);
     m_hotKeys.erase(id);
     LOG_WARN(
-        "failed to register hotkey %s (id=%04x mask=%04x)", deskflow::KeyMap::formatKey(key, mask).c_str(), key, mask
+        "failed to register hotkey %s (id=%04x mask=%04x)", synergy::KeyMap::formatKey(key, mask).c_str(), key, mask
     );
 
     return 0;
   }
 
   LOG_DEBUG(
-      "registered hotkey %s (id=%04x mask=%04x) as id=%d", deskflow::KeyMap::formatKey(key, mask).c_str(), key, mask, id
+      "registered hotkey %s (id=%04x mask=%04x) as id=%d", synergy::KeyMap::formatKey(key, mask).c_str(), key, mask, id
   );
   return id;
 }
@@ -996,10 +996,10 @@ bool MSWindowsScreen::onPreDispatch(HWND hwnd, UINT message, WPARAM wParam, LPAR
 {
   // handle event
   switch (message) {
-  case DESKFLOW_MSG_SCREEN_SAVER:
+  case SYNERGY_MSG_SCREEN_SAVER:
     return onScreensaver(wParam != 0);
 
-  case DESKFLOW_MSG_DEBUG:
+  case SYNERGY_MSG_DEBUG:
     LOG_VERBOSE("hook: 0x%08x 0x%08x", wParam, lParam);
     return true;
   }
@@ -1017,22 +1017,22 @@ bool MSWindowsScreen::onPreDispatchPrimary(HWND, UINT message, WPARAM wParam, LP
 
   // handle event
   switch (message) {
-  case DESKFLOW_MSG_MARK:
+  case SYNERGY_MSG_MARK:
     return onMark(static_cast<uint32_t>(wParam));
 
-  case DESKFLOW_MSG_KEY:
+  case SYNERGY_MSG_KEY:
     return onKey(wParam, lParam);
 
-  case DESKFLOW_MSG_MOUSE_BUTTON:
+  case SYNERGY_MSG_MOUSE_BUTTON:
     return onMouseButton(wParam, lParam);
 
-  case DESKFLOW_MSG_MOUSE_MOVE:
+  case SYNERGY_MSG_MOUSE_MOVE:
     return onMouseMove(static_cast<int32_t>(wParam), static_cast<int32_t>(lParam));
 
-  case DESKFLOW_MSG_MOUSE_WHEEL:
+  case SYNERGY_MSG_MOUSE_WHEEL:
     return onMouseWheel(static_cast<int32_t>(lParam), static_cast<int32_t>(wParam));
 
-  case DESKFLOW_MSG_PRE_WARP: {
+  case SYNERGY_MSG_PRE_WARP: {
     // save position to compute delta of next motion
     saveMousePosition(static_cast<int32_t>(wParam), static_cast<int32_t>(lParam));
 
@@ -1043,12 +1043,12 @@ bool MSWindowsScreen::onPreDispatchPrimary(HWND, UINT message, WPARAM wParam, LP
     // event.
     MSG msg;
     do {
-      GetMessage(&msg, nullptr, DESKFLOW_MSG_MOUSE_MOVE, DESKFLOW_MSG_POST_WARP);
-    } while (msg.message != DESKFLOW_MSG_POST_WARP);
+      GetMessage(&msg, nullptr, SYNERGY_MSG_MOUSE_MOVE, SYNERGY_MSG_POST_WARP);
+    } while (msg.message != SYNERGY_MSG_POST_WARP);
   }
     return true;
 
-  case DESKFLOW_MSG_POST_WARP:
+  case SYNERGY_MSG_POST_WARP:
     LOG_WARN("unmatched post warp");
     return true;
 
@@ -1417,12 +1417,12 @@ bool MSWindowsScreen::onScreensaver(bool activated)
   // send SC_SCREENSAVE until the screen saver starts, even if
   // the screen saver is disabled!
   MSG msg;
-  if (PeekMessage(&msg, nullptr, DESKFLOW_MSG_SCREEN_SAVER, DESKFLOW_MSG_SCREEN_SAVER, PM_NOREMOVE)) {
+  if (PeekMessage(&msg, nullptr, SYNERGY_MSG_SCREEN_SAVER, SYNERGY_MSG_SCREEN_SAVER, PM_NOREMOVE)) {
     return true;
   }
 
   if (activated) {
-    if (!m_screensaverActive && m_screensaver->checkStarted(DESKFLOW_MSG_SCREEN_SAVER, FALSE, 0)) {
+    if (!m_screensaverActive && m_screensaver->checkStarted(SYNERGY_MSG_SCREEN_SAVER, FALSE, 0)) {
       m_screensaverActive = true;
       sendEvent(EventTypes::PrimaryScreenSaverActivated);
     }
@@ -1487,7 +1487,7 @@ void MSWindowsScreen::onClipboardChange()
 void MSWindowsScreen::warpCursorNoFlush(int32_t x, int32_t y)
 {
   // send an event that we can recognize before the mouse warp
-  PostThreadMessage(GetCurrentThreadId(), DESKFLOW_MSG_PRE_WARP, x, y);
+  PostThreadMessage(GetCurrentThreadId(), SYNERGY_MSG_PRE_WARP, x, y);
 
   // warp mouse.  hopefully this inserts a mouse motion event
   // between the previous message and the following message.
@@ -1534,7 +1534,7 @@ void MSWindowsScreen::warpCursorNoFlush(int32_t x, int32_t y)
   Arch::sleep(0.0);
 
   // send an event that we can recognize after the mouse warp
-  PostThreadMessage(GetCurrentThreadId(), DESKFLOW_MSG_POST_WARP, 0, 0);
+  PostThreadMessage(GetCurrentThreadId(), SYNERGY_MSG_POST_WARP, 0, 0);
 }
 
 void MSWindowsScreen::nextMark()
@@ -1543,7 +1543,7 @@ void MSWindowsScreen::nextMark()
   ++m_mark;
 
   // mark point in message queue where the mark was changed
-  PostThreadMessage(GetCurrentThreadId(), DESKFLOW_MSG_MARK, m_mark, 0);
+  PostThreadMessage(GetCurrentThreadId(), SYNERGY_MSG_MARK, m_mark, 0);
 }
 
 bool MSWindowsScreen::ignore() const

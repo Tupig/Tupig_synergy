@@ -20,14 +20,14 @@ LogWidget::LogWidget(QWidget *parent) : QWidget{parent}, m_textLog{new QPlainTex
   m_textLog->setLineWrapMode(QPlainTextEdit::NoWrap);
 
   // setup the log font
-  if (deskflow::platform::isWindows()) {
+  if (synergy::platform::isWindows()) {
     QFont f = font();
     f.setFamilies({"Hack", "Liberation Mono", "Monospace", "Andale Mono"});
     f.setStyleHint(QFont::Monospace);
     m_textLog->setFont(f);
   } else {
     m_textLog->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    if (deskflow::platform::isMac()) {
+    if (synergy::platform::isMac()) {
       auto f = m_textLog->font();
       f.setPixelSize(12);
       m_textLog->setFont(f);
@@ -41,7 +41,7 @@ LogWidget::LogWidget(QWidget *parent) : QWidget{parent}, m_textLog{new QPlainTex
   setLayout(layout);
 
   connect(
-      deskflow::gui::Logger::instance(), &deskflow::gui::Logger::newLine, m_textLog, &QPlainTextEdit::appendPlainText
+      synergy::gui::Logger::instance(), &synergy::gui::Logger::newLine, m_textLog, &QPlainTextEdit::appendPlainText
   );
 }
 

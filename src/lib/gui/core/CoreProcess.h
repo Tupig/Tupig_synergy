@@ -19,7 +19,7 @@
 
 #include <optional>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 namespace ipc {
 class CoreIpcClient;
@@ -28,9 +28,9 @@ class DaemonIpcClient;
 
 class CoreProcess : public QObject
 {
-  using ConnectionState = deskflow::core::ConnectionState;
+  using ConnectionState = synergy::core::ConnectionState;
   using ProcessMode = Settings::ProcessMode;
-  using ProcessState = deskflow::core::ProcessState;
+  using ProcessState = synergy::core::ProcessState;
   Q_OBJECT
 
 public:
@@ -83,16 +83,16 @@ public:
   }
 
 Q_SIGNALS:
-  void error(deskflow::gui::CoreProcess::Error error);
+  void error(synergy::gui::CoreProcess::Error error);
   void logLine(const QString &line);
-  void connectionStateChanged(deskflow::core::ConnectionState state);
-  void processStateChanged(deskflow::core::ProcessState state);
+  void connectionStateChanged(synergy::core::ConnectionState state);
+  void processStateChanged(synergy::core::ProcessState state);
   void secureSocket(bool enabled);
   void daemonIpcClientConnectionFailed();
   void connectedClientsChanged(const QStringList &clients);
   void securityLevelChanged(QString securityLevel);
   void unrecognisedClient(const QString &clientName);
-  void connectionRefused(deskflow::core::ConnectionRefusal reason);
+  void connectionRefused(synergy::core::ConnectionRefusal reason);
   void retryIn(int seconds);
   void peerFingerprint(const QString &fingerprint);
   void missingKeyboardLayouts(const QString &layouts);
@@ -131,11 +131,11 @@ private:
   QString m_secureSocketVersion;
   std::optional<ProcessMode> m_lastProcessMode = std::nullopt;
   QTimer m_retryTimer;
-  deskflow::gui::ipc::CoreIpcClient *m_coreIpcClient = nullptr;
-  deskflow::gui::ipc::DaemonIpcClient *m_daemonIpcClient = nullptr;
+  synergy::gui::ipc::CoreIpcClient *m_coreIpcClient = nullptr;
+  synergy::gui::ipc::DaemonIpcClient *m_daemonIpcClient = nullptr;
   FileTail *m_daemonFileTail = nullptr;
   QProcess *m_process = nullptr;
   QString m_appPath;
 };
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

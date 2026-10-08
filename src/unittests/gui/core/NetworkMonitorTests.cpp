@@ -10,7 +10,7 @@
 
 #include <QSignalSpy>
 
-using namespace deskflow::gui;
+using namespace synergy::gui;
 void NetworkMonitorTests::testVirtualInterface()
 {
   QVERIFY(NetworkMonitor::isVirtualInterface(QStringLiteral("vboxnet0")));

@@ -12,7 +12,7 @@
 #include <QDomDocument>
 #include <QFile>
 
-#include "DeskflowXkbKeyboard.h"
+#include "SynergyXkbKeyboard.h"
 #include "ISO639Table.h"
 #include "X11LayoutsParser.h"
 #include "base/Log.h"
@@ -159,7 +159,7 @@ std::vector<std::string> X11LayoutsParser::getX11LanguageList(const std::string 
   std::vector<std::string> layoutNames;
   std::vector<std::string> layoutVariantNames;
 
-  deskflow::linux::DeskflowXkbKeyboard keyboard;
+  synergy::linux::SynergyXkbKeyboard keyboard;
   splitLine(layoutNames, keyboard.getLayout(), ',');
   splitLine(layoutVariantNames, keyboard.getVariant(), ',');
 

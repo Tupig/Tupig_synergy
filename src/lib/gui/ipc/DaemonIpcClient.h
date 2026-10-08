@@ -10,7 +10,7 @@
 
 #include <QObject>
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 
 class DaemonIpcClient : public IpcClient
 {
@@ -32,4 +32,4 @@ protected:
   void processCommand(const QString &command, const QStringList &parts) override;
 };
 
-} // namespace deskflow::gui::ipc
+} // namespace synergy::gui::ipc

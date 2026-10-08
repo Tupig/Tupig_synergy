@@ -24,7 +24,7 @@
 #include <QVarLengthArray>
 #include <QtEndian>
 
-namespace deskflow {
+namespace synergy {
 
 static constexpr int kBmpSignatureSize = 2;
 static constexpr quint32 kBmpFileHeaderSize = 14;
@@ -329,4 +329,4 @@ bool PortalClipboard::readSelectionIntoCache(
   return true;
 }
 
-} // namespace deskflow
+} // namespace synergy

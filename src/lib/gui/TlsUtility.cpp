@@ -16,7 +16,7 @@
 #include <QSslKey>
 #include <QString>
 
-namespace deskflow::gui::TlsUtility {
+namespace synergy::gui::TlsUtility {
 
 bool isEnabled()
 {
@@ -116,7 +116,7 @@ bool generateCertificate()
   }
 
   try {
-    deskflow::generatePemSelfSignedCert(certPath, keyLength);
+    synergy::generatePemSelfSignedCert(certPath, keyLength);
   } catch (const std::exception &e) {
     qCritical() << "failed to generate self-signed pem cert:" << e.what();
     return false;
@@ -125,4 +125,4 @@ bool generateCertificate()
   return true;
 }
 
-} // namespace deskflow::gui::TlsUtility
+} // namespace synergy::gui::TlsUtility

@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace deskflow::gui::diagnostic {
+namespace synergy::gui::diagnostic {
 
 void clearSettings(bool enableRestart);
 

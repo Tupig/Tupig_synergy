@@ -40,7 +40,7 @@ bool parseDeclaredSize(const std::string &payload, uint64_t &size)
 // ClientProxy1_5
 //
 
-ClientProxy1_5::ClientProxy1_5(const std::string &name, deskflow::IStream *stream, Server *server, IEventQueue *events)
+ClientProxy1_5::ClientProxy1_5(const std::string &name, synergy::IStream *stream, Server *server, IEventQueue *events)
     : ClientProxy1_4(name, stream, server, events)
 {
   // do nothing

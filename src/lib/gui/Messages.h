@@ -13,7 +13,7 @@
 
 class QWidget;
 
-namespace deskflow::gui::messages {
+namespace synergy::gui::messages {
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
@@ -33,4 +33,4 @@ void showReadOnlySettings(QWidget *parent, const QString &systemSettingsPath);
 
 bool showDaemonOffline(QWidget *parent);
 
-} // namespace deskflow::gui::messages
+} // namespace synergy::gui::messages

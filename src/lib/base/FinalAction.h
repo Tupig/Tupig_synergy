@@ -9,7 +9,7 @@
 
 #include <utility>
 
-namespace deskflow {
+namespace synergy {
 
 /**
  * @brief The `FinalAction` class implements a common pattern for calling an action at the end of a function.
@@ -49,4 +49,4 @@ template <class Callable> inline FinalAction<Callable> finally(Callable &&callab
   return FinalAction<Callable>(std::forward<Callable>(callable));
 }
 
-} // namespace deskflow
+} // namespace synergy

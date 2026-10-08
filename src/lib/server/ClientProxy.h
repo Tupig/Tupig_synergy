@@ -9,7 +9,7 @@
 
 #include "server/BaseClientProxy.h"
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -20,7 +20,7 @@ public:
   /*!
   \c name is the name of the client.
   */
-  ClientProxy(const std::string &name, deskflow::IStream *adoptedStream);
+  ClientProxy(const std::string &name, synergy::IStream *adoptedStream);
   ClientProxy(ClientProxy const &) = delete;
   ClientProxy(ClientProxy &&) = delete;
   ~ClientProxy() override;
@@ -45,7 +45,7 @@ public:
   /*!
   Returns the original stream passed to the c'tor.
   */
-  deskflow::IStream *getStream() const override;
+  synergy::IStream *getStream() const override;
 
   //@}
 
@@ -77,5 +77,5 @@ public:
   void secureInputNotification(const std::string &app) const override = 0;
 
 private:
-  deskflow::IStream *m_stream;
+  synergy::IStream *m_stream;
 };

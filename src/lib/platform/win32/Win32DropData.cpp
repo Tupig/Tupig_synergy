@@ -118,7 +118,7 @@ void collectAnsi(const unsigned char *list, size_t listSize, std::vector<std::st
 
 } // namespace
 
-std::vector<std::string> deskflow::win32::readDropFilePaths(const void *data, std::size_t size)
+std::vector<std::string> synergy::win32::readDropFilePaths(const void *data, std::size_t size)
 {
   std::vector<std::string> paths;
 
@@ -175,7 +175,7 @@ std::wstring utf8ToWide(std::string_view text)
 
 } // namespace
 
-std::vector<unsigned char> deskflow::win32::buildDropFileBlock(const std::vector<std::string> &utf8Paths)
+std::vector<unsigned char> synergy::win32::buildDropFileBlock(const std::vector<std::string> &utf8Paths)
 {
   if (utf8Paths.empty() || utf8Paths.size() > kMaxDropPaths) {
     return {};
@@ -203,7 +203,7 @@ std::vector<unsigned char> deskflow::win32::buildDropFileBlock(const std::vector
   return block;
 }
 
-HGLOBAL deskflow::win32::createDropFilesHGlobal(const std::vector<std::string> &utf8Paths)
+HGLOBAL synergy::win32::createDropFilesHGlobal(const std::vector<std::string> &utf8Paths)
 {
   const auto block = buildDropFileBlock(utf8Paths);
   if (block.empty()) {

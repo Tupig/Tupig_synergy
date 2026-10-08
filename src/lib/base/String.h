@@ -15,7 +15,7 @@
 /*!
 Provides functions for string manipulation.
 */
-namespace deskflow::string {
+namespace synergy::string {
 
 //! Format positional arguments
 /*!
@@ -61,4 +61,4 @@ public:
   static bool cmpLess(const std::string::value_type &a, const std::string::value_type &b);
 };
 
-} // namespace deskflow::string
+} // namespace synergy::string

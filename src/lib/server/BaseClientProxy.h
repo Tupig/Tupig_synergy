@@ -9,7 +9,7 @@
 
 #include "IClient.h"
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -81,7 +81,7 @@ public:
   virtual std::string getSecureInputApp() const = 0;
   virtual void secureInputNotification(const std::string &app) const = 0;
   std::string getName() const override;
-  virtual deskflow::IStream *getStream() const = 0;
+  virtual synergy::IStream *getStream() const = 0;
 
 private:
   std::string m_name;

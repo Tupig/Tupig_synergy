@@ -11,7 +11,7 @@
 
 #include <QLocalSocket>
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 static CoreIpcServer *s_instance = nullptr;
 
@@ -40,4 +40,4 @@ void CoreIpcServer::processCommand(QLocalSocket *clientSocket, const QString &co
   LOG_WARN("core ipc server got unknown command: %s", command.toUtf8().constData());
 }
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc

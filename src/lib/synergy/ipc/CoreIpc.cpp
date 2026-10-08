@@ -14,15 +14,15 @@ void ipcSendToClient(const QString &command, const QString &args)
 {
   // Queued because callers may not be on the main thread,
   // and QLocalSocket can only be written to from its owning thread.
-  auto &server = deskflow::core::ipc::CoreIpcServer::instance();
+  auto &server = synergy::core::ipc::CoreIpcServer::instance();
   QMetaObject::invokeMethod(
-      &server, [command, args] { deskflow::core::ipc::CoreIpcServer::instance().broadcastCommand(command, args); },
+      &server, [command, args] { synergy::core::ipc::CoreIpcServer::instance().broadcastCommand(command, args); },
       Qt::QueuedConnection
   );
 }
 
-void ipcSendConnectionState(deskflow::core::ConnectionState state)
+void ipcSendConnectionState(synergy::core::ConnectionState state)
 {
-  const auto metaEnum = QMetaEnum::fromType<deskflow::core::ConnectionState>();
+  const auto metaEnum = QMetaEnum::fromType<synergy::core::ConnectionState>();
   ipcSendToClient(QStringLiteral("connectionState"), metaEnum.valueToKey(static_cast<int>(state)));
 }

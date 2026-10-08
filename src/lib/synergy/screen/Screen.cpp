@@ -19,14 +19,14 @@
 #include "arch/win32/ArchMiscWindows.h"
 #endif
 
-namespace deskflow {
+namespace synergy {
 
 namespace {
 
 bool runScreenCommand(const QString &commandLine)
 {
 #ifdef Q_OS_WIN
-  using deskflow::platform::MSWindowsProcess;
+  using synergy::platform::MSWindowsProcess;
   if (ArchMiscWindows::isProcessElevated()) {
     LOG_DEBUG("current process is elevated, starting detached process as session user");
     return MSWindowsProcess::startDetachedAsSessionUser(commandLine.toStdWString());
@@ -485,4 +485,4 @@ std::string Screen::getSecureInputApp() const
   return m_screen->getSecureInputApp();
 }
 
-} // namespace deskflow
+} // namespace synergy

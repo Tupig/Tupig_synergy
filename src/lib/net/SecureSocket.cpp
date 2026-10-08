@@ -687,7 +687,7 @@ void SecureSocket::disconnect()
 bool SecureSocket::verifyCertFingerprint(const QString &FingerprintDatabasePath) const
 {
   const auto cert = SSL_get_peer_certificate(m_ssl->m_ssl);
-  const auto sha256 = deskflow::sslCertFingerprint(cert, QCryptographicHash::Sha256);
+  const auto sha256 = synergy::sslCertFingerprint(cert, QCryptographicHash::Sha256);
 
   if (cert)
     X509_free(cert);
@@ -695,7 +695,7 @@ bool SecureSocket::verifyCertFingerprint(const QString &FingerprintDatabasePath)
   if (!sha256.isValid())
     return false;
 
-  const auto fingerprint = deskflow::formatSSLFingerprint(sha256.data, false);
+  const auto fingerprint = synergy::formatSSLFingerprint(sha256.data, false);
   LOG_DEBUG("peer fingerprint: %s", qPrintable(fingerprint));
   ipcSendToClient("peerFingerprint", fingerprint);
 

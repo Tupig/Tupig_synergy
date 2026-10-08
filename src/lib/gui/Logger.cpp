@@ -17,7 +17,7 @@
 #include <Windows.h>
 #endif
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 const auto kForceDebugMessages = QStringList{
     QStringLiteral("No functional TLS backend was found"), QStringLiteral("No TLS backend is available"),
@@ -105,4 +105,4 @@ void Logger::settingChanged(const QString &key)
   m_guiDebug = Settings::value(Settings::Log::GuiDebug).toBool();
 }
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

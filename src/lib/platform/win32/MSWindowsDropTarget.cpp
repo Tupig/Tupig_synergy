@@ -38,7 +38,7 @@ std::vector<std::string> pathsFromHGlobal(HGLOBAL handle)
     return {};
   }
 
-  auto paths = deskflow::win32::readDropFilePaths(locked, static_cast<std::size_t>(size));
+  auto paths = synergy::win32::readDropFilePaths(locked, static_cast<std::size_t>(size));
   ::GlobalUnlock(handle);
   return paths;
 }

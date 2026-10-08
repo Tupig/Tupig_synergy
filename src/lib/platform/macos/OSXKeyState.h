@@ -27,7 +27,7 @@ public:
   using KeyIDs = std::vector<KeyID>;
 
   OSXKeyState(IEventQueue *events, std::vector<std::string> layouts, bool isLangSyncEnabled);
-  OSXKeyState(IEventQueue *events, deskflow::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled);
+  OSXKeyState(IEventQueue *events, synergy::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled);
   ~OSXKeyState() override = default;
 
   //! @name modifiers
@@ -88,17 +88,17 @@ public:
 
 protected:
   // KeyState overrides
-  void getKeyMap(deskflow::KeyMap &keyMap) override;
+  void getKeyMap(synergy::KeyMap &keyMap) override;
   void fakeKey(const Keystroke &keystroke) override;
 
 private:
   class KeyResource;
 
-  // Add hard coded special keys to a deskflow::KeyMap.
-  void getKeyMapForSpecialKeys(deskflow::KeyMap &keyMap, int32_t group) const;
+  // Add hard coded special keys to a synergy::KeyMap.
+  void getKeyMapForSpecialKeys(synergy::KeyMap &keyMap, int32_t group) const;
 
   // Convert keyboard resource to a key map
-  bool getKeyMap(deskflow::KeyMap &keyMap, int32_t group, const IOSXKeyResource &r) const;
+  bool getKeyMap(synergy::KeyMap &keyMap, int32_t group, const IOSXKeyResource &r) const;
 
   // Get the available keyboard groups
   bool getGroups(AutoCFArray &) const;

@@ -14,7 +14,7 @@
 
 #include "common/Constants.h"
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 /**
  * @brief Detects dark mode in a universal manner (all Qt versions).
@@ -48,4 +48,4 @@ inline void updateIconTheme()
     QIcon::setFallbackThemeName(themeName);
   QIcon::setFallbackSearchPaths({QStringLiteral(":/icons/%1").arg(themeName)});
 }
-} // namespace deskflow::gui
+} // namespace synergy::gui

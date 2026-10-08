@@ -13,7 +13,7 @@
 // StreamFilter
 //
 
-StreamFilter::StreamFilter(IEventQueue *events, deskflow::IStream *stream, bool adoptStream)
+StreamFilter::StreamFilter(IEventQueue *events, synergy::IStream *stream, bool adoptStream)
     : m_stream(stream),
       m_adopted(adoptStream),
       m_events(events)
@@ -76,7 +76,7 @@ uint32_t StreamFilter::getSize() const
   return getStream()->getSize();
 }
 
-deskflow::IStream *StreamFilter::getStream() const
+synergy::IStream *StreamFilter::getStream() const
 {
   return m_stream;
 }

@@ -37,7 +37,7 @@
 #include <QImage>
 #include <QtEndian>
 
-namespace deskflow {
+namespace synergy {
 
 const char *PortalInputCapture::barrierSideName(BarrierSide side)
 {
@@ -837,4 +837,4 @@ void PortalInputCapture::glibThread(const void *)
   LOG_DEBUG("shutting down glib thread");
 }
 
-} // namespace deskflow
+} // namespace synergy

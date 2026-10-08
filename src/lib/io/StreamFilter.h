@@ -16,7 +16,7 @@
 This class wraps a stream.  Subclasses provide indirect access
 to the wrapped stream, typically performing some filtering.
 */
-class StreamFilter : public deskflow::IStream
+class StreamFilter : public synergy::IStream
 {
 public:
   /*!
@@ -24,7 +24,7 @@ public:
   this object takes ownership of the stream and will delete it in the
   d'tor.
   */
-  StreamFilter(IEventQueue *events, deskflow::IStream *stream, bool adoptStream = true);
+  StreamFilter(IEventQueue *events, synergy::IStream *stream, bool adoptStream = true);
   StreamFilter(StreamFilter const &) = delete;
   StreamFilter(StreamFilter &&) = delete;
   ~StreamFilter() override;
@@ -49,7 +49,7 @@ public:
   /*!
   Returns the stream passed to the c'tor.
   */
-  deskflow::IStream *getStream() const;
+  synergy::IStream *getStream() const;
 
   bool adoptedStream() const;
 
@@ -62,7 +62,7 @@ protected:
   virtual void filterEvent(const Event &);
 
 private:
-  deskflow::IStream *m_stream;
+  synergy::IStream *m_stream;
   bool m_adopted;
   IEventQueue *m_events;
 };

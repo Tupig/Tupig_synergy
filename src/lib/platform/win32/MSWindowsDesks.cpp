@@ -58,29 +58,29 @@
 #endif
 
 // <unused>; <unused>
-#define DESKFLOW_MSG_SWITCH DESKFLOW_HOOK_LAST_MSG + 1
+#define SYNERGY_MSG_SWITCH SYNERGY_HOOK_LAST_MSG + 1
 // <unused>; <unused>
-#define DESKFLOW_MSG_ENTER DESKFLOW_HOOK_LAST_MSG + 2
+#define SYNERGY_MSG_ENTER SYNERGY_HOOK_LAST_MSG + 2
 // <unused>; <unused>
-#define DESKFLOW_MSG_LEAVE DESKFLOW_HOOK_LAST_MSG + 3
+#define SYNERGY_MSG_LEAVE SYNERGY_HOOK_LAST_MSG + 3
 // wParam = flags, HIBYTE(lParam) = virtual key, LOBYTE(lParam) = scan code
-#define DESKFLOW_MSG_FAKE_KEY DESKFLOW_HOOK_LAST_MSG + 4
+#define SYNERGY_MSG_FAKE_KEY SYNERGY_HOOK_LAST_MSG + 4
 // flags, XBUTTON id
-#define DESKFLOW_MSG_FAKE_BUTTON DESKFLOW_HOOK_LAST_MSG + 5
+#define SYNERGY_MSG_FAKE_BUTTON SYNERGY_HOOK_LAST_MSG + 5
 // x; y
-#define DESKFLOW_MSG_FAKE_MOVE DESKFLOW_HOOK_LAST_MSG + 6
+#define SYNERGY_MSG_FAKE_MOVE SYNERGY_HOOK_LAST_MSG + 6
 // xDelta; yDelta
-#define DESKFLOW_MSG_FAKE_WHEEL DESKFLOW_HOOK_LAST_MSG + 7
+#define SYNERGY_MSG_FAKE_WHEEL SYNERGY_HOOK_LAST_MSG + 7
 // POINT*; <unused>
-#define DESKFLOW_MSG_CURSOR_POS DESKFLOW_HOOK_LAST_MSG + 8
+#define SYNERGY_MSG_CURSOR_POS SYNERGY_HOOK_LAST_MSG + 8
 // IKeyState*; <unused>
-#define DESKFLOW_MSG_SYNC_KEYS DESKFLOW_HOOK_LAST_MSG + 9
+#define SYNERGY_MSG_SYNC_KEYS SYNERGY_HOOK_LAST_MSG + 9
 // install; <unused>
-#define DESKFLOW_MSG_SCREENSAVER DESKFLOW_HOOK_LAST_MSG + 10
+#define SYNERGY_MSG_SCREENSAVER SYNERGY_HOOK_LAST_MSG + 10
 // dx; dy
-#define DESKFLOW_MSG_FAKE_REL_MOVE DESKFLOW_HOOK_LAST_MSG + 11
+#define SYNERGY_MSG_FAKE_REL_MOVE SYNERGY_HOOK_LAST_MSG + 11
 // enable; <unused>
-#define DESKFLOW_MSG_FAKE_INPUT DESKFLOW_HOOK_LAST_MSG + 12
+#define SYNERGY_MSG_FAKE_INPUT SYNERGY_HOOK_LAST_MSG + 12
 
 static void send_keyboard_input(WORD wVk, WORD wScan, DWORD dwFlags)
 {
@@ -183,12 +183,12 @@ void MSWindowsDesks::disable()
 
 void MSWindowsDesks::enter()
 {
-  sendMessage(DESKFLOW_MSG_ENTER, 0, 0);
+  sendMessage(SYNERGY_MSG_ENTER, 0, 0);
 }
 
 void MSWindowsDesks::leave(HKL keyLayout)
 {
-  sendMessage(DESKFLOW_MSG_LEAVE, (WPARAM)keyLayout, 0);
+  sendMessage(SYNERGY_MSG_LEAVE, (WPARAM)keyLayout, 0);
 }
 
 void MSWindowsDesks::resetOptions()
@@ -208,7 +208,7 @@ void MSWindowsDesks::setOptions(const OptionsList &options)
 
 void MSWindowsDesks::updateKeys()
 {
-  sendMessage(DESKFLOW_MSG_SYNC_KEYS, 0, 0);
+  sendMessage(SYNERGY_MSG_SYNC_KEYS, 0, 0);
 }
 
 void MSWindowsDesks::setShape(
@@ -228,31 +228,31 @@ void MSWindowsDesks::installScreensaverHooks(bool install)
 {
   if (m_isPrimary && m_screensaverNotify != install) {
     m_screensaverNotify = install;
-    sendMessage(DESKFLOW_MSG_SCREENSAVER, install, 0);
+    sendMessage(SYNERGY_MSG_SCREENSAVER, install, 0);
   }
 }
 
 void MSWindowsDesks::fakeInputBegin()
 {
-  sendMessage(DESKFLOW_MSG_FAKE_INPUT, 1, 0);
+  sendMessage(SYNERGY_MSG_FAKE_INPUT, 1, 0);
 }
 
 void MSWindowsDesks::fakeInputEnd()
 {
-  sendMessage(DESKFLOW_MSG_FAKE_INPUT, 0, 0);
+  sendMessage(SYNERGY_MSG_FAKE_INPUT, 0, 0);
 }
 
 void MSWindowsDesks::getCursorPos(int32_t &x, int32_t &y) const
 {
   POINT pos{0, 0};
-  sendMessage(DESKFLOW_MSG_CURSOR_POS, reinterpret_cast<WPARAM>(&pos), 0);
+  sendMessage(SYNERGY_MSG_CURSOR_POS, reinterpret_cast<WPARAM>(&pos), 0);
   x = pos.x;
   y = pos.y;
 }
 
 void MSWindowsDesks::fakeKeyEvent(WORD virtualKey, WORD scanCode, DWORD flags, bool /*isAutoRepeat*/) const
 {
-  sendMessage(DESKFLOW_MSG_FAKE_KEY, flags, MAKELPARAM(scanCode, virtualKey));
+  sendMessage(SYNERGY_MSG_FAKE_KEY, flags, MAKELPARAM(scanCode, virtualKey));
 }
 
 void MSWindowsDesks::fakeMouseButton(ButtonID button, bool press)
@@ -304,22 +304,22 @@ void MSWindowsDesks::fakeMouseButton(ButtonID button, bool press)
   }
 
   // do it
-  sendMessage(DESKFLOW_MSG_FAKE_BUTTON, flags, data);
+  sendMessage(SYNERGY_MSG_FAKE_BUTTON, flags, data);
 }
 
 void MSWindowsDesks::fakeMouseMove(int32_t x, int32_t y) const
 {
-  sendMessage(DESKFLOW_MSG_FAKE_MOVE, static_cast<WPARAM>(x), static_cast<LPARAM>(y));
+  sendMessage(SYNERGY_MSG_FAKE_MOVE, static_cast<WPARAM>(x), static_cast<LPARAM>(y));
 }
 
 void MSWindowsDesks::fakeMouseRelativeMove(int32_t dx, int32_t dy) const
 {
-  sendMessage(DESKFLOW_MSG_FAKE_REL_MOVE, static_cast<WPARAM>(dx), static_cast<LPARAM>(dy));
+  sendMessage(SYNERGY_MSG_FAKE_REL_MOVE, static_cast<WPARAM>(dx), static_cast<LPARAM>(dy));
 }
 
 void MSWindowsDesks::fakeMouseWheel(int32_t xDelta, int32_t yDelta) const
 {
-  sendMessage(DESKFLOW_MSG_FAKE_WHEEL, xDelta, yDelta);
+  sendMessage(SYNERGY_MSG_FAKE_WHEEL, xDelta, yDelta);
 }
 
 void MSWindowsDesks::sendMessage(UINT msg, WPARAM wParam, LPARAM lParam) const
@@ -563,7 +563,7 @@ void MSWindowsDesks::deskLeave(Desk *desk, HKL keyLayout)
     // if not using low-level hooks we have to also activate the
     // window to ensure we don't lose keyboard focus.
     // FIXME -- see if this can be avoided.  if so then always
-    // disable the window (see handling of DESKFLOW_MSG_SWITCH).
+    // disable the window (see handling of SYNERGY_MSG_SWITCH).
     if (!desk->m_lowLevel) {
       SetActiveWindow(desk->m_window);
     }
@@ -650,7 +650,7 @@ void MSWindowsDesks::deskThread(const void *vdesk)
       DispatchMessage(&msg);
       continue;
 
-    case DESKFLOW_MSG_SWITCH:
+    case SYNERGY_MSG_SWITCH:
       if (m_useHooks) {
         MSWindowsHook::uninstall();
         if (m_screensaverNotify) {
@@ -679,37 +679,37 @@ void MSWindowsDesks::deskThread(const void *vdesk)
       }
       break;
 
-    case DESKFLOW_MSG_ENTER:
+    case SYNERGY_MSG_ENTER:
       m_isOnScreen = true;
       deskEnter(desk);
       break;
 
-    case DESKFLOW_MSG_LEAVE:
+    case SYNERGY_MSG_LEAVE:
       m_isOnScreen = false;
       m_keyLayout = (HKL)msg.wParam;
       deskLeave(desk, m_keyLayout);
       break;
 
-    case DESKFLOW_MSG_FAKE_KEY:
+    case SYNERGY_MSG_FAKE_KEY:
       // Note, this is intended to be HI/LOWORD and not HI/LOBYTE
       send_keyboard_input(HIWORD(msg.lParam), LOWORD(msg.lParam), (DWORD)msg.wParam);
       break;
 
-    case DESKFLOW_MSG_FAKE_BUTTON:
+    case SYNERGY_MSG_FAKE_BUTTON:
       if (msg.wParam != 0) {
         send_mouse_input((DWORD)msg.wParam, 0, 0, (DWORD)msg.lParam);
       }
       break;
 
-    case DESKFLOW_MSG_FAKE_MOVE:
+    case SYNERGY_MSG_FAKE_MOVE:
       deskMouseMove(static_cast<int32_t>(msg.wParam), static_cast<int32_t>(msg.lParam));
       break;
 
-    case DESKFLOW_MSG_FAKE_REL_MOVE:
+    case SYNERGY_MSG_FAKE_REL_MOVE:
       deskMouseRelativeMove(static_cast<int32_t>(msg.wParam), static_cast<int32_t>(msg.lParam));
       break;
 
-    case DESKFLOW_MSG_FAKE_WHEEL:
+    case SYNERGY_MSG_FAKE_WHEEL:
       // XXX -- add support for x-axis scrolling
       if (msg.lParam != 0) {
         send_mouse_input(MOUSEEVENTF_WHEEL, 0, 0, (DWORD)msg.lParam);
@@ -719,7 +719,7 @@ void MSWindowsDesks::deskThread(const void *vdesk)
       }
       break;
 
-    case DESKFLOW_MSG_CURSOR_POS: {
+    case SYNERGY_MSG_CURSOR_POS: {
       POINT *pos = reinterpret_cast<POINT *>(msg.wParam);
       if (!GetCursorPos(pos)) {
         pos->x = m_xCenter;
@@ -728,11 +728,11 @@ void MSWindowsDesks::deskThread(const void *vdesk)
       break;
     }
 
-    case DESKFLOW_MSG_SYNC_KEYS:
+    case SYNERGY_MSG_SYNC_KEYS:
       m_updateKeys->run();
       break;
 
-    case DESKFLOW_MSG_SCREENSAVER:
+    case SYNERGY_MSG_SCREENSAVER:
       if (m_useHooks) {
         if (msg.wParam != 0) {
           MSWindowsHook::installScreenSaver();
@@ -742,9 +742,9 @@ void MSWindowsDesks::deskThread(const void *vdesk)
       }
       break;
 
-    case DESKFLOW_MSG_FAKE_INPUT:
+    case SYNERGY_MSG_FAKE_INPUT:
       send_keyboard_input(
-          DESKFLOW_HOOK_FAKE_INPUT_VIRTUAL_KEY, DESKFLOW_HOOK_FAKE_INPUT_SCANCODE, msg.wParam ? 0 : KEYEVENTF_KEYUP
+          SYNERGY_HOOK_FAKE_INPUT_VIRTUAL_KEY, SYNERGY_HOOK_FAKE_INPUT_SCANCODE, msg.wParam ? 0 : KEYEVENTF_KEYUP
       );
       break;
     }
@@ -816,7 +816,7 @@ void MSWindowsDesks::checkDesk()
     // show cursor on previous desk
     bool wasOnScreen = m_isOnScreen;
     if (!wasOnScreen) {
-      sendMessage(DESKFLOW_MSG_ENTER, 0, 0);
+      sendMessage(SYNERGY_MSG_ENTER, 0, 0);
     }
 
     // always sync keys when switching desks to ensure keyboard modifier
@@ -833,11 +833,11 @@ void MSWindowsDesks::checkDesk()
     // switch desk
     m_activeDesk = desk;
     m_activeDeskName = name;
-    sendMessage(DESKFLOW_MSG_SWITCH, 0, 0);
+    sendMessage(SYNERGY_MSG_SWITCH, 0, 0);
 
     // hide cursor on new desk
     if (!wasOnScreen) {
-      sendMessage(DESKFLOW_MSG_LEAVE, (WPARAM)m_keyLayout, 0);
+      sendMessage(SYNERGY_MSG_LEAVE, (WPARAM)m_keyLayout, 0);
     }
 
     // update keys if necessary
@@ -846,7 +846,7 @@ void MSWindowsDesks::checkDesk()
     }
   } else if (name != m_activeDeskName) {
     // screen saver might have started
-    PostThreadMessage(m_threadID, DESKFLOW_MSG_SCREEN_SAVER, TRUE, 0);
+    PostThreadMessage(m_threadID, SYNERGY_MSG_SCREEN_SAVER, TRUE, 0);
   }
 }
 
@@ -875,7 +875,7 @@ void MSWindowsDesks::handleCheckDesk()
   if (m_isPrimary) {
     BOOL running;
     SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &running, FALSE);
-    PostThreadMessage(m_threadID, DESKFLOW_MSG_SCREEN_SAVER, running, 0);
+    PostThreadMessage(m_threadID, SYNERGY_MSG_SCREEN_SAVER, running, 0);
   }
 }
 

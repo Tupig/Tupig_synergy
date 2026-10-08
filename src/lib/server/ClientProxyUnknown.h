@@ -12,7 +12,7 @@
 
 class ClientProxy;
 class EventQueueTimer;
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 class Server;
@@ -21,7 +21,7 @@ class IEventQueue;
 class ClientProxyUnknown
 {
 public:
-  ClientProxyUnknown(deskflow::IStream *stream, double timeout, Server *server, IEventQueue *events);
+  ClientProxyUnknown(synergy::IStream *stream, double timeout, Server *server, IEventQueue *events);
   ClientProxyUnknown(ClientProxyUnknown const &) = delete;
   ClientProxyUnknown(ClientProxyUnknown &&) = delete;
   ~ClientProxyUnknown();
@@ -41,7 +41,7 @@ public:
   ClientProxy *orphanClientProxy();
 
   //! Get the stream
-  deskflow::IStream *getStream()
+  synergy::IStream *getStream()
   {
     return m_stream;
   }
@@ -62,7 +62,7 @@ private:
   void handleDisconnect();
 
 private:
-  deskflow::IStream *m_stream = nullptr;
+  synergy::IStream *m_stream = nullptr;
   EventQueueTimer *m_timer = nullptr;
   ClientProxy *m_proxy = nullptr;
   bool m_ready = false;

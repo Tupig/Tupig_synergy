@@ -8,7 +8,7 @@
 
 #include "ProtocolUtil.h"
 #include "base/Log.h"
-#include "synergy/core/DeskflowException.h"
+#include "synergy/core/SynergyException.h"
 #include "io/IStream.h"
 
 #include <cstring>
@@ -89,7 +89,7 @@ FileChunk *FileChunk::end()
 }
 
 TransferState FileChunk::assemble(
-    deskflow::IStream *stream, std::string &dataCached, FileTransferAssemblyState &state, uint64_t maxFileSize
+    synergy::IStream *stream, std::string &dataCached, FileTransferAssemblyState &state, uint64_t maxFileSize
 )
 {
   using enum TransferState;
@@ -203,7 +203,7 @@ TransferState FileChunk::assemble(
   return Error;
 }
 
-void FileChunk::send(deskflow::IStream *stream, void *chunk)
+void FileChunk::send(synergy::IStream *stream, void *chunk)
 {
   const auto *fileChunk = static_cast<FileChunk *>(chunk);
   const char *buffer = fileChunk->m_chunk;

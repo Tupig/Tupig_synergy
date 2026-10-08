@@ -14,7 +14,7 @@
 // ClientProxy1_1
 //
 
-ClientProxy1_1::ClientProxy1_1(const std::string &name, deskflow::IStream *stream, IEventQueue *events)
+ClientProxy1_1::ClientProxy1_1(const std::string &name, synergy::IStream *stream, IEventQueue *events)
     : ClientProxy1_0(name, stream, events)
 {
   // do nothing

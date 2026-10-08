@@ -189,9 +189,9 @@ std::string XWindowsUtil::atomToString(Display *display, Atom atom)
   XWindowsUtil::ErrorLock lock(display, &error);
   char *name = XGetAtomName(display, atom);
   if (error) {
-    return deskflow::string::sprintf("<UNKNOWN> (%d)", (int)atom);
+    return synergy::string::sprintf("<UNKNOWN> (%d)", (int)atom);
   } else {
-    std::string msg = deskflow::string::sprintf("%s (%d)", name, (int)atom);
+    std::string msg = synergy::string::sprintf("%s (%d)", name, (int)atom);
     XFree(name);
     return msg;
   }
@@ -206,11 +206,11 @@ std::string XWindowsUtil::atomsToString(Display *display, const Atom *atom, uint
   std::string msg;
   if (error) {
     for (uint32_t i = 0; i < num; ++i) {
-      msg += deskflow::string::sprintf("<UNKNOWN> (%d), ", (int)atom[i]);
+      msg += synergy::string::sprintf("<UNKNOWN> (%d), ", (int)atom[i]);
     }
   } else {
     for (uint32_t i = 0; i < num; ++i) {
-      msg += deskflow::string::sprintf("%s (%d), ", names[i], (int)atom[i]);
+      msg += synergy::string::sprintf("%s (%d), ", names[i], (int)atom[i]);
       XFree(names[i]);
     }
   }

@@ -21,13 +21,13 @@
 
 class Event;
 class EventQueueTimer;
-namespace deskflow {
+namespace synergy {
 class Screen;
 }
 class ServerProxy;
 class IDataSocket;
 class ISocketFactory;
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 class IEventQueue;
@@ -60,7 +60,7 @@ public:
   */
   Client(
       IEventQueue *events, const std::string &name, const NetworkAddress &address, ISocketFactory *socketFactory,
-      deskflow::Screen *screen
+      synergy::Screen *screen
   );
   Client(Client const &) = delete;
   Client(Client &&) = delete;
@@ -91,7 +91,7 @@ public:
   Disconnects from the server with an optional error message.
   Unlike disconnect this function doesn't try to use other ip addresses
   */
-  void refuseConnection(deskflow::core::ConnectionRefusal reason, const char *msg);
+  void refuseConnection(synergy::core::ConnectionRefusal reason, const char *msg);
 
   //! Notify of handshake complete
   /*!
@@ -162,7 +162,7 @@ public:
 
 private:
   void sendClipboard(ClipboardID);
-  void sendEvent(deskflow::EventTypes);
+  void sendEvent(synergy::EventTypes);
   void sendConnectionFailedEvent(const char *msg);
   void setupConnecting();
   void setupConnection();
@@ -191,8 +191,8 @@ private:
   std::string m_name;
   NetworkAddress m_serverAddress;
   ISocketFactory *m_socketFactory = nullptr;
-  deskflow::Screen *m_screen = nullptr;
-  deskflow::IStream *m_stream = nullptr;
+  synergy::Screen *m_screen = nullptr;
+  synergy::IStream *m_stream = nullptr;
   EventQueueTimer *m_timer = nullptr;
   ServerProxy *m_server = nullptr;
   bool m_ready = false;

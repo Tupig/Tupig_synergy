@@ -10,7 +10,7 @@
 
 #include <QDebug>
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 
 DaemonIpcClient::DaemonIpcClient(QObject *parent) : IpcClient(parent, kDaemonIpcName, QStringLiteral("daemon"))
 {
@@ -53,4 +53,4 @@ void DaemonIpcClient::processCommand(const QString &command, const QStringList &
   }
 }
 
-} // namespace deskflow::gui::ipc
+} // namespace synergy::gui::ipc

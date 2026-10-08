@@ -13,7 +13,7 @@
 #include <QObject>
 #include <QTextStream>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 
 FileTail::FileTail(const QString &filePath, QObject *parent) : QObject(parent), m_watcher(new QFileSystemWatcher(this))
 {
@@ -57,4 +57,4 @@ void FileTail::handleFileChanged(const QString &)
   m_lastPos = m_file.pos();
 }
 
-} // namespace deskflow::gui
+} // namespace synergy::gui

@@ -31,7 +31,7 @@
 #include <QFileInfo>
 #include <QSettings>
 
-using namespace deskflow::core;
+using namespace synergy::core;
 
 DaemonApp::DaemonApp(IEventQueue &events) : m_events(events)
 {

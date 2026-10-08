@@ -13,7 +13,7 @@
 // PrimaryClient
 //
 
-PrimaryClient::PrimaryClient(const std::string &name, deskflow::Screen *screen)
+PrimaryClient::PrimaryClient(const std::string &name, synergy::Screen *screen)
     : BaseClientProxy(name),
       m_screen(screen)
 {

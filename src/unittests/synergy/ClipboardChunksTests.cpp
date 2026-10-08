@@ -11,7 +11,7 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
-#include "synergy/core/DeskflowException.h"
+#include "synergy/core/SynergyException.h"
 #include "io/IStream.h"
 
 #include <algorithm>
@@ -21,7 +21,7 @@
 
 namespace {
 
-class MemoryStream : public deskflow::IStream
+class MemoryStream : public synergy::IStream
 {
 public:
   void push(const std::string &bytes)
@@ -96,7 +96,7 @@ private:
   bool m_inputShutdown = false;
 };
 
-class BufferWriteStream : public deskflow::IStream
+class BufferWriteStream : public synergy::IStream
 {
 public:
   const std::string &str() const

@@ -12,7 +12,7 @@
 
 #include <libportal/portal.h>
 
-namespace deskflow {
+namespace synergy {
 
 class EiClipboard;
 
@@ -60,4 +60,4 @@ private:
   static QByteArray bmpToDib(const QByteArray &bmp);
 };
 
-} // namespace deskflow
+} // namespace synergy

@@ -18,7 +18,7 @@
 This interface defines the methods common to all network sockets that
 represent a full-duplex data stream.
 */
-class IDataSocket : public ISocket, public deskflow::IStream
+class IDataSocket : public ISocket, public synergy::IStream
 {
 public:
   class ConnectionFailedInfo

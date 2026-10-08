@@ -45,7 +45,7 @@ QString BaseException::format(const char * /*id*/, const char *fmt, ...) const n
   va_list args;
   va_start(args, fmt);
   try {
-    result = QString::fromStdString(deskflow::string::vformat(fmt, args));
+    result = QString::fromStdString(synergy::string::vformat(fmt, args));
   } catch (...) {
     // ignore
     result.clear();

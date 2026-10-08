@@ -15,7 +15,7 @@
 
 constexpr static auto s_clipboardChunkMetaSize = 7;
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -35,11 +35,11 @@ public:
   static ClipboardChunk *end(ClipboardID id, uint32_t sequence);
 
   static TransferState assemble(
-      deskflow::IStream *stream, std::string &dataCached, ClipboardID &id, uint32_t &sequence,
+      synergy::IStream *stream, std::string &dataCached, ClipboardID &id, uint32_t &sequence,
       ClipboardChunkAssemblyState &state, size_t maxDataSize
   );
 
-  static void send(deskflow::IStream *stream, void *data);
+  static void send(synergy::IStream *stream, void *data);
 
   static size_t getExpectedSize(const ClipboardChunkAssemblyState &state)
   {

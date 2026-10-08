@@ -26,7 +26,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace deskflow {
+namespace synergy {
 class Screen;
 }
 

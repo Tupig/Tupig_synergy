@@ -14,7 +14,7 @@
 #include <stdarg.h>
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -44,7 +44,7 @@ public:
   - \%s   -- converts std::string* to stream of bytes
   - \%S   -- converts integer N and const uint8_t* to stream of N bytes
   */
-  static void writef(deskflow::IStream *, const char *fmt, ...);
+  static void writef(synergy::IStream *, const char *fmt, ...);
 
   //! Read formatted data
   /*!
@@ -62,36 +62,36 @@ public:
   - \%4I  -- reads NBO 4 byte integers;  arg is std::vector<uint32_t>*
   - \%s   -- reads bytes;  argument must be a std::string*, \b not a char*
   */
-  static bool readf(deskflow::IStream *, const char *fmt, ...);
+  static bool readf(synergy::IStream *, const char *fmt, ...);
 
 private:
-  static void vwritef(deskflow::IStream *, const char *fmt, uint32_t size, va_list);
-  static void vreadf(deskflow::IStream *, const char *fmt, va_list);
+  static void vwritef(synergy::IStream *, const char *fmt, uint32_t size, va_list);
+  static void vreadf(synergy::IStream *, const char *fmt, va_list);
 
   static uint32_t getLength(const char *fmt, va_list);
   static void writef(std::vector<uint8_t> &, const char *fmt, va_list);
   static uint32_t eatLength(const char **fmt);
-  static void read(deskflow::IStream *, void *, uint32_t);
+  static void read(synergy::IStream *, void *, uint32_t);
 
   /**
    * @brief Handles 1,2, or 4 byte Integers
    */
-  static uint8_t read1ByteInt(deskflow::IStream *stream);
-  static uint16_t read2BytesInt(deskflow::IStream *stream);
-  static uint32_t read4BytesInt(deskflow::IStream *stream);
+  static uint8_t read1ByteInt(synergy::IStream *stream);
+  static uint16_t read2BytesInt(synergy::IStream *stream);
+  static uint32_t read4BytesInt(synergy::IStream *stream);
 
   /**
    * @brief Handles a Vector of integers
    */
-  static void readVector1ByteInt(deskflow::IStream *, std::vector<uint8_t> &);
-  static void readVector2BytesInt(deskflow::IStream *, std::vector<uint16_t> &);
-  static void readVector4BytesInt(deskflow::IStream *, std::vector<uint32_t> &);
-  static uint32_t readVectorSize(deskflow::IStream *stream);
+  static void readVector1ByteInt(synergy::IStream *, std::vector<uint8_t> &);
+  static void readVector2BytesInt(synergy::IStream *, std::vector<uint16_t> &);
+  static void readVector4BytesInt(synergy::IStream *, std::vector<uint32_t> &);
+  static uint32_t readVectorSize(synergy::IStream *stream);
 
   /**
    * @brief Handles an array of bytes
    */
-  static void readBytes(deskflow::IStream *, uint32_t, std::string *);
+  static void readBytes(synergy::IStream *, uint32_t, std::string *);
 };
 
 //! Mismatched read exception

@@ -38,7 +38,7 @@
 
 Client::Client(
     IEventQueue *events, const std::string &name, const NetworkAddress &address, ISocketFactory *socketFactory,
-    deskflow::Screen *screen
+    synergy::Screen *screen
 )
     : m_name(name),
       m_serverAddress(address),
@@ -102,7 +102,7 @@ void Client::connect(size_t addressIndex)
           "connecting to '%s': %s:%i", m_serverAddress.getHostname().c_str(),
           ARCH->addrToString(m_serverAddress.getAddress()).c_str(), m_serverAddress.getPort()
       );
-      ipcSendConnectionState(deskflow::core::ConnectionState::Connecting);
+      ipcSendConnectionState(synergy::core::ConnectionState::Connecting);
     }
 
     // create the socket
@@ -138,9 +138,9 @@ void Client::disconnect(const char *msg)
   }
 }
 
-void Client::refuseConnection(deskflow::core::ConnectionRefusal reason, const char *msg)
+void Client::refuseConnection(synergy::core::ConnectionRefusal reason, const char *msg)
 {
-  const auto metaEnum = QMetaEnum::fromType<deskflow::core::ConnectionRefusal>();
+  const auto metaEnum = QMetaEnum::fromType<synergy::core::ConnectionRefusal>();
   ipcSendToClient("connectionRefused", metaEnum.valueToKey(static_cast<int>(reason)));
 
   cleanup();

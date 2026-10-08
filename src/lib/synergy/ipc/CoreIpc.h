@@ -11,4 +11,4 @@
 #include <QString>
 
 void ipcSendToClient(const QString &command, const QString &args = "");
-void ipcSendConnectionState(deskflow::core::ConnectionState state);
+void ipcSendConnectionState(synergy::core::ConnectionState state);

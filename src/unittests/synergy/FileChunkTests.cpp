@@ -8,7 +8,7 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
-#include "synergy/core/DeskflowException.h"
+#include "synergy/core/SynergyException.h"
 #include "synergy/protocol/FileChunk.h"
 #include "io/IStream.h"
 
@@ -20,7 +20,7 @@
 namespace {
 
 //! Replays bytes pushed by the test, as the receiving side would read them.
-class MemoryStream : public deskflow::IStream
+class MemoryStream : public synergy::IStream
 {
 public:
   void push(const std::string &bytes)
@@ -96,7 +96,7 @@ private:
 };
 
 //! Captures what a sender writes, so the exact wire bytes can be replayed.
-class BufferWriteStream : public deskflow::IStream
+class BufferWriteStream : public synergy::IStream
 {
 public:
   const std::string &str() const

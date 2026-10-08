@@ -22,7 +22,7 @@
 // Useful for debugging Windows specific bootstrapping code before the logging system is initialized.
 // This output can be viewed by attaching a Microsoft debugger or by using the DebugView program.
 #define MS_LOG_DEBUG(message, ...)                                                                                     \
-  OutputDebugStringA((deskflow::string::sprintf((s_binaryName + ": " + message + "\n").c_str(), __VA_ARGS__)).c_str())
+  OutputDebugStringA((synergy::string::sprintf((s_binaryName + ": " + message + "\n").c_str(), __VA_ARGS__)).c_str())
 
 //
 // Free functions
@@ -505,7 +505,7 @@ void ArchMiscWindows::guardRuntimeVersion() // NOSONAR - `noreturn` is not avail
   MS_LOG_DEBUG("msvc runtime dll version: %d.%d.%d", currentMajor, currentMinor, currentBuild);
 
   if (currentMajor < kWindowsRuntimeMajor || currentMinor < kWindowsRuntimeMinor) {
-    const auto message = deskflow::string::sprintf(
+    const auto message = synergy::string::sprintf(
         "Installed Microsoft Visual C++ Runtime v%d.%d.%d is outdated.\n\n"
         "Minimum required version: v%d.%d\n\n"
         "Please update to the latest Microsoft Visual C++ Redistributable.",

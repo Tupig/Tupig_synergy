@@ -12,7 +12,7 @@
 
 class IEventQueue;
 
-namespace deskflow {
+namespace synergy {
 
 //! Bidirectional stream interface
 /*!
@@ -105,4 +105,4 @@ public:
   //@}
 };
 
-} // namespace deskflow
+} // namespace synergy

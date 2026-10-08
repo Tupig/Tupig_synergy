@@ -15,8 +15,8 @@ elseif(UNIX)
   set(PLATFORM_CODE
     unix/AppUtilUnix.cpp
     unix/AppUtilUnix.h
-    unix/DeskflowXkbKeyboard.cpp
-    unix/DeskflowXkbKeyboard.h
+    unix/SynergyXkbKeyboard.cpp
+    unix/SynergyXkbKeyboard.h
     unix/ISO639Table.h
     unix/X11LayoutsParser.cpp
     unix/X11LayoutsParser.h
@@ -35,8 +35,8 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   core/ServerApp.h
   core/IApp.h
   core/IClient.h
-  core/DeskflowException.cpp
-  core/DeskflowException.h
+  core/SynergyException.cpp
+  core/SynergyException.h
   core/DisplayInvalidException.h
   # Clipboard
   clipboard/Clipboard.cpp

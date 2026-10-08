@@ -11,7 +11,7 @@
 
 #include <openssl/x509.h>
 
-namespace deskflow {
+namespace synergy {
 
 /**
  * @brief formatSSLFingerprint Format an ssl Fingerprint
@@ -28,4 +28,4 @@ Fingerprint sslCertFingerprint(const X509 *cert, QCryptographicHash::Algorithm t
 void generatePemSelfSignedCert(const QString &path, int keyLength = 2048);
 
 QString generateFingerprintArt(const QByteArray &rawDigest);
-} // namespace deskflow
+} // namespace synergy

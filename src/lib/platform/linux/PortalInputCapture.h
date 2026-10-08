@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 
 class EiClipboard;
 
@@ -175,4 +175,4 @@ private:
   EiClipboard *m_clipboard = nullptr;
 };
 
-} // namespace deskflow
+} // namespace synergy

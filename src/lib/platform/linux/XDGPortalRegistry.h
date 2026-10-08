@@ -14,7 +14,7 @@
 #include "common/Constants.h"
 #include "common/PlatformInfo.h"
 
-namespace deskflow::platform {
+namespace synergy::platform {
 
 /**
  * @brief setAppId Set the app id for the xdg portal registry
@@ -40,4 +40,4 @@ inline void setAppId()
   std::ignore = i->call("Register", kRevFqdnName, QVariantMap{});
 }
 
-} // namespace deskflow::platform
+} // namespace synergy::platform

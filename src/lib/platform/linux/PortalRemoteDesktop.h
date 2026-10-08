@@ -15,7 +15,7 @@
 
 #include <QByteArray>
 
-namespace deskflow {
+namespace synergy {
 
 class PortalRemoteDesktop
 {
@@ -70,4 +70,4 @@ private:
   guint m_sessionIteration = 0;
 };
 
-} // namespace deskflow
+} // namespace synergy

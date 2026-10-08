@@ -32,7 +32,7 @@ The receiver expects to be positioned just past the 4-byte message code, so the
 code is stripped when messages are pushed - the same contract the real dispatchers
 honour.
 */
-class MemoryStream : public deskflow::IStream
+class MemoryStream : public synergy::IStream
 {
 public:
   void push(const std::string &bytes)
@@ -108,7 +108,7 @@ private:
 };
 
 //! Captures what the sender writes, so the exact wire bytes can be replayed.
-class BufferWriteStream : public deskflow::IStream
+class BufferWriteStream : public synergy::IStream
 {
 public:
   const std::string &str() const
@@ -189,7 +189,7 @@ std::string encodeFileChunk(uint8_t mark, const std::string &payload)
 }
 
 //! A stream that swallows writes, for driving the sender without a network.
-class NullWriteStream : public deskflow::IStream
+class NullWriteStream : public synergy::IStream
 {
 public:
   void close() override

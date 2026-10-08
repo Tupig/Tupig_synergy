@@ -8,7 +8,7 @@
 #pragma once
 
 #include <stdint.h>
-namespace deskflow {
+namespace synergy {
 enum class EventTypes : uint32_t
 {
   /** An unknown event type. This type is used as a placeholder for unknown events when
@@ -235,4 +235,4 @@ enum class EventTypes : uint32_t
   /// Stop libei
   EISessionClosed,
 };
-} // namespace deskflow
+} // namespace synergy

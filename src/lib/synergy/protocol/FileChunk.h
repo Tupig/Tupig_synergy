@@ -15,7 +15,7 @@
 #include <string_view>
 #include <vector>
 
-namespace deskflow {
+namespace synergy {
 class IStream;
 }
 
@@ -66,10 +66,10 @@ public:
   the stream is malformed. Callers must treat this as a protocol error.
   */
   static TransferState
-  assemble(deskflow::IStream *stream, std::string &dataCached, FileTransferAssemblyState &state, uint64_t maxFileSize);
+  assemble(synergy::IStream *stream, std::string &dataCached, FileTransferAssemblyState &state, uint64_t maxFileSize);
 
   //! Write a chunk to the stream.
-  static void send(deskflow::IStream *stream, void *chunk);
+  static void send(synergy::IStream *stream, void *chunk);
 
   //! Content bytes carried by one chunk.
   /*!

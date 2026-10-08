@@ -9,7 +9,7 @@
 
 #include <common/Settings.h>
 
-namespace deskflow::gui::TlsUtility {
+namespace synergy::gui::TlsUtility {
 
 bool generateCertificate();
 
@@ -41,4 +41,4 @@ int getCertKeyLength(const QString &certPath = Settings::value(Settings::Securit
 // clang-format off
   QByteArray certFingerprint(const QString &certPath = Settings::value(Settings::Security::Certificate).toString());
 // clang-format on
-} // namespace deskflow::gui::TlsUtility
+} // namespace synergy::gui::TlsUtility

@@ -642,7 +642,7 @@ static const KeyID s_numpadTable[] = {
 
 KeyState::KeyState(IEventQueue *events, std::vector<std::string> layouts, bool isLangSyncEnabled)
     : IKeyState(events),
-      m_keyMapPtr(new deskflow::KeyMap()),
+      m_keyMapPtr(new synergy::KeyMap()),
       m_keyMap(*m_keyMapPtr),
       m_mask(0),
       m_events(events),
@@ -653,7 +653,7 @@ KeyState::KeyState(IEventQueue *events, std::vector<std::string> layouts, bool i
 }
 
 KeyState::KeyState(
-    IEventQueue *events, deskflow::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled
+    IEventQueue *events, synergy::KeyMap &keyMap, std::vector<std::string> layouts, bool isLangSyncEnabled
 )
     : IKeyState(events),
       m_keyMapPtr(nullptr),
@@ -725,13 +725,13 @@ void KeyState::sendKeyEvent(
   }
 }
 
-void KeyState::updateKeyMap(deskflow::KeyMap *existing)
+void KeyState::updateKeyMap(synergy::KeyMap *existing)
 {
   if (existing) {
     m_keyMap.swap(*existing);
   } else {
     // get the current keyboard map
-    deskflow::KeyMap keyMap;
+    synergy::KeyMap keyMap;
     getKeyMap(keyMap);
     m_keyMap.swap(keyMap);
     m_keyMap.finish();
@@ -770,7 +770,7 @@ void KeyState::updateKeyState()
   LOG_VERBOSE("modifiers on update: 0x%04x", m_mask);
 }
 
-void KeyState::addActiveModifierCB(KeyID, int32_t group, deskflow::KeyMap::KeyItem &keyItem, void *vcontext)
+void KeyState::addActiveModifierCB(KeyID, int32_t group, synergy::KeyMap::KeyItem &keyItem, void *vcontext)
 {
   auto *context = static_cast<AddActiveModifierContext *>(vcontext);
   if (group == context->m_activeGroup && (keyItem.m_generates & context->m_mask) != 0) {
@@ -810,7 +810,7 @@ void KeyState::fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton serverID, c
 
   Keystrokes keys;
   ModifierToKeys oldActiveModifiers = m_activeModifiers;
-  const deskflow::KeyMap::KeyItem *keyItem =
+  const synergy::KeyMap::KeyItem *keyItem =
       m_keyMap.mapKey(keys, id, pollActiveGroup(), m_activeModifiers, getActiveModifiersRValue(), mask, false, lang);
 
   if (keyItem == nullptr) {
@@ -853,7 +853,7 @@ bool KeyState::fakeKeyRepeat(KeyID id, KeyModifierMask mask, int32_t count, KeyB
   // get keys for key repeat
   Keystrokes keys;
   ModifierToKeys oldActiveModifiers = m_activeModifiers;
-  const deskflow::KeyMap::KeyItem *keyItem =
+  const synergy::KeyMap::KeyItem *keyItem =
       m_keyMap.mapKey(keys, id, pollActiveGroup(), m_activeModifiers, getActiveModifiersRValue(), mask, true, lang);
   if (keyItem == nullptr) {
     return false;
@@ -995,7 +995,7 @@ bool KeyState::isIgnoredKey(KeyID key, KeyModifierMask) const
 
 KeyButton KeyState::getButton(KeyID id, int32_t group) const
 {
-  const deskflow::KeyMap::KeyItemList *items = m_keyMap.findCompatibleKey(id, group, 0, 0);
+  const synergy::KeyMap::KeyItemList *items = m_keyMap.findCompatibleKey(id, group, 0, 0);
   if (items == nullptr) {
     return 0;
   } else {
@@ -1097,8 +1097,8 @@ void KeyState::updateModifierKeyState(
 )
 {
   // get the pressed modifier buttons before and after
-  deskflow::KeyMap::ButtonToKeyMap oldKeys;
-  deskflow::KeyMap::ButtonToKeyMap newKeys;
+  synergy::KeyMap::ButtonToKeyMap oldKeys;
+  synergy::KeyMap::ButtonToKeyMap newKeys;
   for (const auto &[modifier, keyItem] : oldModifiers) {
     oldKeys.insert(std::make_pair(keyItem.m_button, &keyItem));
   }
@@ -1107,19 +1107,19 @@ void KeyState::updateModifierKeyState(
   }
 
   // get the modifier buttons that were pressed or released
-  deskflow::KeyMap::ButtonToKeyMap pressed;
-  deskflow::KeyMap::ButtonToKeyMap released;
+  synergy::KeyMap::ButtonToKeyMap pressed;
+  synergy::KeyMap::ButtonToKeyMap released;
   std::ranges::set_difference(oldKeys, newKeys, std::inserter(released, released.end()), ButtonToKeyLess());
   std::ranges::set_difference(newKeys, oldKeys, std::inserter(pressed, pressed.end()), ButtonToKeyLess());
 
   // update state
-  for (deskflow::KeyMap::ButtonToKeyMap::const_iterator i = released.begin(); i != released.end(); ++i) {
+  for (synergy::KeyMap::ButtonToKeyMap::const_iterator i = released.begin(); i != released.end(); ++i) {
     if (i->first != button) {
       m_keys[i->first] = 0;
       m_syntheticKeys[i->first] = 0;
     }
   }
-  for (deskflow::KeyMap::ButtonToKeyMap::const_iterator i = pressed.begin(); i != pressed.end(); ++i) {
+  for (synergy::KeyMap::ButtonToKeyMap::const_iterator i = pressed.begin(); i != pressed.end(); ++i) {
     if (i->first != button) {
       m_keys[i->first] = 1;
       m_syntheticKeys[i->first] = 1;

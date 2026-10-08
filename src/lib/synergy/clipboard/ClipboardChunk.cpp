@@ -77,7 +77,7 @@ ClipboardChunk *ClipboardChunk::end(ClipboardID id, uint32_t sequence)
 }
 
 TransferState ClipboardChunk::assemble(
-    deskflow::IStream *stream, std::string &dataCached, ClipboardID &id, uint32_t &sequence,
+    synergy::IStream *stream, std::string &dataCached, ClipboardID &id, uint32_t &sequence,
     ClipboardChunkAssemblyState &state, size_t maxDataSize
 )
 {
@@ -161,7 +161,7 @@ TransferState ClipboardChunk::assemble(
   return Error;
 }
 
-void ClipboardChunk::send(deskflow::IStream *stream, void *data)
+void ClipboardChunk::send(synergy::IStream *stream, void *data)
 {
   const auto *clipboardData = static_cast<ClipboardChunk *>(data);
 

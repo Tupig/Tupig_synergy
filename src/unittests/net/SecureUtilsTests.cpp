@@ -9,7 +9,7 @@
 
 #include "net/SecureUtils.h"
 
-using namespace deskflow;
+using namespace synergy;
 
 void SecureUtilsTests::checkHex()
 {
@@ -19,7 +19,7 @@ void SecureUtilsTests::checkHex()
       32
   );
   QCOMPARE(
-      deskflow::formatSSLFingerprint(fingerprint, true),
+      synergy::formatSSLFingerprint(fingerprint, true),
       "28:FD:0A:98:8A:0E:A1:6C:D7:E8:6C:A7:EE:58:41:71:CA:B2:8E:49:25:94:90:25:26:05:8D:AF:63:ED:2E:30"
   );
 }
@@ -32,7 +32,7 @@ void SecureUtilsTests::checkArt()
       32
   );
   QCOMPARE(
-      deskflow::generateFingerprintArt(fingerprint), "╔═════════════════╗\n"
+      synergy::generateFingerprintArt(fingerprint), "╔═════════════════╗\n"
                                                      "║*X+. .           ║\n"
                                                      "║*oo +            ║\n"
                                                      "║ + =             ║\n"

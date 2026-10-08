@@ -693,14 +693,14 @@ uint32_t XWindowsScreen::registerHotKey(KeyID key, KeyModifierMask mask)
     m_oldHotKeyIDs.push_back(id);
     m_hotKeys.erase(id);
     LOG(
-        (CLOG_WARN "failed to register hotkey %s (id=%04x mask=%04x)", deskflow::KeyMap::formatKey(key, mask).c_str(),
+        (CLOG_WARN "failed to register hotkey %s (id=%04x mask=%04x)", synergy::KeyMap::formatKey(key, mask).c_str(),
          key, mask)
     );
     return 0;
   }
 
   LOG(
-      (CLOG_DEBUG "registered hotkey %s (id=%04x mask=%04x) as id=%d", deskflow::KeyMap::formatKey(key, mask).c_str(),
+      (CLOG_DEBUG "registered hotkey %s (id=%04x mask=%04x) as id=%d", synergy::KeyMap::formatKey(key, mask).c_str(),
        key, mask, id)
   );
   return id;

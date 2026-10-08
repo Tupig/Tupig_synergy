@@ -10,9 +10,9 @@
 
 using StartupFunc = int (*)();
 
-namespace deskflow {
+namespace synergy {
 class Screen;
-} // namespace deskflow
+} // namespace synergy
 
 class IEventQueue;
 
@@ -28,6 +28,6 @@ public:
   virtual int mainLoop() = 0;
   virtual void initApp() = 0;
   virtual const char *daemonName() const = 0;
-  virtual deskflow::Screen *createScreen() = 0;
+  virtual synergy::Screen *createScreen() = 0;
   virtual IEventQueue *getEvents() const = 0;
 };

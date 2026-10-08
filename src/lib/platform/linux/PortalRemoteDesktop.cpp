@@ -16,7 +16,7 @@
 #include "PortalClipboard.h"
 #endif
 
-namespace deskflow {
+namespace synergy {
 
 PortalRemoteDesktop::PortalRemoteDesktop(EiScreen *screen, IEventQueue *events)
     : m_screen{screen},
@@ -263,4 +263,4 @@ void PortalRemoteDesktop::handleSelectionOwnerChanged(XdpSession *session, char 
 #endif
 }
 
-} // namespace deskflow
+} // namespace synergy

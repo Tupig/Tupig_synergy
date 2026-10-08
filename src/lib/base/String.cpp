@@ -14,7 +14,7 @@
 #include <cstring>
 #include <vector>
 
-namespace deskflow::string {
+namespace synergy::string {
 
 std::string format(const char *fmt, ...)
 {
@@ -150,7 +150,7 @@ bool CaselessCmp::operator()(const std::string &a, const std::string &b) const
 
 bool CaselessCmp::less(const std::string_view &a, const std::string_view &b)
 {
-  return std::ranges::lexicographical_compare(a, b, &deskflow::string::CaselessCmp::cmpLess);
+  return std::ranges::lexicographical_compare(a, b, &synergy::string::CaselessCmp::cmpLess);
 }
 
 bool CaselessCmp::equal(const std::string &a, const std::string &b)
@@ -164,4 +164,4 @@ bool CaselessCmp::cmpLess(const std::string::value_type &a, const std::string::v
   return tolower(a) < tolower(b);
 }
 
-} // namespace deskflow::string
+} // namespace synergy::string

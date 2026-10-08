@@ -261,7 +261,7 @@ macro(configure_xorg_libs)
   check_library_exists("Xinerama" XineramaQueryExtension "" HAVE_Xinerama)
   check_library_exists("Xi" XISelectEvents "" HAVE_Xi)
   check_library_exists("Xrandr" XRRQueryExtension "" HAVE_Xrandr)
-  # libxkbfile exports XkbRF_* (used by DeskflowXkbKeyboard); XkbGetKeyboard is in libX11.
+  # libxkbfile exports XkbRF_* (used by SynergyXkbKeyboard); XkbGetKeyboard is in libX11.
   find_library(XKBFILE_LIBRARY xkbfile)
 
   if(HAVE_ICE)

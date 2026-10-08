@@ -14,7 +14,7 @@
 #include <mutex>
 #include <queue>
 
-namespace deskflow {
+namespace synergy {
 
 //! Event queue buffer for Ei
 class EiEventQueueBuffer : public IEventQueueBuffer
@@ -43,4 +43,4 @@ private:
   mutable std::mutex m_mutex;
 };
 
-} // namespace deskflow
+} // namespace synergy

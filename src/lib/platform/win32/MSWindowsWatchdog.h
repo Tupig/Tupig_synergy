@@ -142,7 +142,7 @@ private:
   FileLogOutputter &m_fileLogOutputter;
   bool m_foreground = false;
   std::wstring m_activeDesktop = {};
-  std::unique_ptr<deskflow::platform::MSWindowsProcess> m_process;
+  std::unique_ptr<synergy::platform::MSWindowsProcess> m_process;
   std::optional<double> m_nextStartTime = std::nullopt;
   ProcessState m_processState = ProcessState::Idle;
   std::wstring m_command = {};

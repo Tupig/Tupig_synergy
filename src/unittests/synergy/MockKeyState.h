@@ -19,8 +19,8 @@ public:
   {
   }
 
-  MockKeyState(const IEventQueue &eventQueue, const deskflow::KeyMap &keyMap)
-      : KeyState((IEventQueue *)&eventQueue, (deskflow::KeyMap &)keyMap, {"en"}, true)
+  MockKeyState(const IEventQueue &eventQueue, const synergy::KeyMap &keyMap)
+      : KeyState((IEventQueue *)&eventQueue, (synergy::KeyMap &)keyMap, {"en"}, true)
   {
   }
 
@@ -36,7 +36,7 @@ public:
   {
     return false;
   }
-  void getKeyMap(deskflow::KeyMap &) override
+  void getKeyMap(synergy::KeyMap &) override
   {
   }
   void fakeKey(const Keystroke &) override
@@ -66,7 +66,7 @@ public:
   }
 
 private:
-  deskflow::KeyMap::KeyItem m_key;
+  synergy::KeyMap::KeyItem m_key;
 };
 
 using KeyID = uint32_t;

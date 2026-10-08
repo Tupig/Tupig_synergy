@@ -24,7 +24,7 @@ void OSXKeyStateTests::initTestCase()
 
 void OSXKeyStateTests::mapModifiersFromOSX_OSXMask()
 {
-  deskflow::KeyMap keyMap;
+  synergy::KeyMap keyMap;
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
 
@@ -57,7 +57,7 @@ void OSXKeyStateTests::mapModifiersFromOSX_OSXMask()
 
 void OSXKeyStateTests::fakePollShift()
 {
-  deskflow::KeyMap keyMap;
+  synergy::KeyMap keyMap;
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
@@ -77,7 +77,7 @@ void OSXKeyStateTests::fakePollShift()
 
 void OSXKeyStateTests::fakePollChar()
 {
-  deskflow::KeyMap keyMap;
+  synergy::KeyMap keyMap;
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
@@ -96,7 +96,7 @@ void OSXKeyStateTests::fakePollChar()
 
 void OSXKeyStateTests::fakePollCharWithModifier()
 {
-  deskflow::KeyMap keyMap;
+  synergy::KeyMap keyMap;
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();

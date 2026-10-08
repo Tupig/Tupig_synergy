@@ -16,7 +16,7 @@ struct xkb_context;
 struct xkb_keymap;
 struct xkb_state;
 
-namespace deskflow {
+namespace synergy {
 
 /// A key state for Ei
 class EiKeyState : public KeyState
@@ -53,4 +53,4 @@ private:
   xkb_state *m_xkbState = nullptr;
 };
 
-} // namespace deskflow
+} // namespace synergy

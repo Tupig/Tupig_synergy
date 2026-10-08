@@ -84,7 +84,7 @@ ServerConfigDialog::ServerConfigDialog(QWidget *parent, ServerConfig &config)
 
   ui->cbRelativeMouseMoves->setChecked(serverConfig().relativeMouseMoves());
 
-  if (!deskflow::platform::isWindows())
+  if (!synergy::platform::isWindows())
     ui->cbWin32KeepForeground->setVisible(false);
 
   ui->cbWin32KeepForeground->setChecked(serverConfig().win32KeepForeground());

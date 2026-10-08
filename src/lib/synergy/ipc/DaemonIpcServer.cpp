@@ -11,7 +11,7 @@
 
 #include <QLocalSocket>
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 const auto kAckMessage = "ok";
 const auto kErrorMessage = "error";
@@ -89,4 +89,4 @@ void DaemonIpcServer::processConfigFile(QLocalSocket *&clientSocket, const QStri
   writeToClientSocket(clientSocket, kAckMessage);
 }
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc

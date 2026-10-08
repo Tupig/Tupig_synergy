@@ -159,7 +159,7 @@ HRESULT __stdcall MSWindowsDropSource::GiveFeedback(DWORD /*effect*/)
 
 MSWindowsDropDataObject::MSWindowsDropDataObject(const std::vector<std::string> &utf8Paths)
 {
-  m_hdrop = deskflow::win32::createDropFilesHGlobal(utf8Paths);
+  m_hdrop = synergy::win32::createDropFilesHGlobal(utf8Paths);
 }
 
 MSWindowsDropDataObject::~MSWindowsDropDataObject()
@@ -297,10 +297,10 @@ HRESULT __stdcall MSWindowsDropDataObject::EnumDAdvise(IEnumSTATDATA **)
 }
 
 //
-// deskflow::win32::startDraggingFiles
+// synergy::win32::startDraggingFiles
 //
 
-bool deskflow::win32::startDraggingFiles(const std::vector<std::string> &utf8Paths)
+bool synergy::win32::startDraggingFiles(const std::vector<std::string> &utf8Paths)
 {
   if (utf8Paths.empty()) {
     return false;

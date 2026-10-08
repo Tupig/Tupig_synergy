@@ -28,7 +28,6 @@ class QAction;
 class QMenu;
 class QLocalServer;
 
-class DeskflowApplication;
 class LogDock;
 class StatusBar;
 
@@ -36,17 +35,17 @@ namespace Ui {
 class MainWindow;
 }
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 class DaemonIpcClient;
 }
 
 class MainWindow : public QMainWindow
 {
-  using ConnectionState = deskflow::core::ConnectionState;
+  using ConnectionState = synergy::core::ConnectionState;
   using CoreMode = Settings::CoreMode;
-  using CoreProcess = deskflow::gui::CoreProcess;
-  using NetworkMonitor = deskflow::gui::NetworkMonitor;
-  using ProcessState = deskflow::core::ProcessState;
+  using CoreProcess = synergy::gui::CoreProcess;
+  using NetworkMonitor = synergy::gui::NetworkMonitor;
+  using ProcessState = synergy::core::ProcessState;
 
   Q_OBJECT
 
@@ -116,7 +115,7 @@ private:
   void applyConfig();
   void setTrayIcon();
   void handleUnrecognisedClient(const QString &clientName);
-  void handleConnectionRefused(deskflow::core::ConnectionRefusal reason);
+  void handleConnectionRefused(synergy::core::ConnectionRefusal reason);
   void handlePeerFingerprint(const QString &fingerprint);
   void handleMissingKeyboardLayouts(const QString &layouts);
   void closeEvent(QCloseEvent *event) override;
@@ -166,7 +165,7 @@ private:
   bool m_saveOnExit = true;
   bool m_clientErrorVisible = false;
   ServerConfig m_serverConfig;
-  deskflow::gui::CoreProcess m_coreProcess;
+  synergy::gui::CoreProcess m_coreProcess;
   QSet<QString> m_ignoredClients;
   bool m_newClientPromptShowing = false;
   bool m_serverConfigDialogVisible = false;
@@ -175,7 +174,7 @@ private:
   QStringList m_checkedServers;
   QSystemTrayIcon *m_trayIcon = nullptr;
   QLocalServer *m_guiDupeChecker = nullptr;
-  deskflow::gui::ipc::DaemonIpcClient *m_daemonIpcClient = nullptr;
+  synergy::gui::ipc::DaemonIpcClient *m_daemonIpcClient = nullptr;
 
   LogDock *m_logDock;
   StatusBar *m_statusBar = nullptr;

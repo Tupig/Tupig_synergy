@@ -13,7 +13,7 @@
 #include <QObject>
 #include <QString>
 
-namespace deskflow::gui::ipc {
+namespace synergy::gui::ipc {
 
 CoreIpcClient::CoreIpcClient(QObject *parent) : IpcClient(parent, kCoreIpcName, QStringLiteral("core"))
 {
@@ -31,4 +31,4 @@ void CoreIpcClient::processCommand(const QString &command, const QStringList &pa
   Q_EMIT commandReceived(command, args);
 }
 
-} // namespace deskflow::gui::ipc
+} // namespace synergy::gui::ipc

@@ -15,7 +15,7 @@
 // ClientProxy
 //
 
-ClientProxy::ClientProxy(const std::string &name, deskflow::IStream *stream) : BaseClientProxy(name), m_stream(stream)
+ClientProxy::ClientProxy(const std::string &name, synergy::IStream *stream) : BaseClientProxy(name), m_stream(stream)
 {
   // do nothing
 }
@@ -34,7 +34,7 @@ void ClientProxy::close(const char *msg) const
   getStream()->flush();
 }
 
-deskflow::IStream *ClientProxy::getStream() const
+synergy::IStream *ClientProxy::getStream() const
 {
   return m_stream;
 }

@@ -11,9 +11,9 @@
 #include "base/BaseException.h"
 
 /**
- * @brief The DeskflowException class Generic deskflow exception class
+ * @brief The SynergyException class Generic deskflow exception class
  */
-class DeskflowException : public BaseException
+class SynergyException : public BaseException
 {
   using BaseException::BaseException;
 };
@@ -21,9 +21,9 @@ class DeskflowException : public BaseException
 /**
  * @brief BadClientException - Thrown when the client fails to follow the protocol.
  */
-class BadClientException : public DeskflowException
+class BadClientException : public SynergyException
 {
-  using DeskflowException::DeskflowException;
+  using SynergyException::SynergyException;
 
 protected:
   QString getWhat() const throw() override;
@@ -32,9 +32,9 @@ protected:
 /**
  * @brief InvalidProtocolException - Thrown when the server protocol is unreconized.
  */
-class InvalidProtocolException : public DeskflowException
+class InvalidProtocolException : public SynergyException
 {
-  using DeskflowException::DeskflowException;
+  using SynergyException::SynergyException;
 
 protected:
   QString getWhat() const throw() override;
@@ -44,7 +44,7 @@ protected:
 /*!
 Thrown when a client attempting to connect has an incompatible version.
 */
-class IncompatibleClientException : public DeskflowException
+class IncompatibleClientException : public SynergyException
 {
 public:
   IncompatibleClientException(int major, int minor);
@@ -72,7 +72,7 @@ private:
 Thrown when a client attempting to connect is using the same name as
 a client that is already connected.
 */
-class DuplicateClientException : public DeskflowException
+class DuplicateClientException : public SynergyException
 {
 public:
   explicit DuplicateClientException(const std::string &name);
@@ -98,7 +98,7 @@ private:
 Thrown when a client attempting to connect is using a name that is
 unknown to the server.
 */
-class UnknownClientException : public DeskflowException
+class UnknownClientException : public SynergyException
 {
 public:
   explicit UnknownClientException(const std::string &name);
@@ -125,7 +125,7 @@ Thrown when we want to abort, with the opportunity to clean up. This is a
 little bit of a hack, but it's a better way of exiting, than just calling
 exit(int).
 */
-class ExitAppException : public DeskflowException
+class ExitAppException : public SynergyException
 {
 public:
   explicit ExitAppException(int code);

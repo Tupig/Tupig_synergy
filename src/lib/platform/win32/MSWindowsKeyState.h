@@ -32,7 +32,7 @@ public:
       bool isLangSyncEnabled
   );
   MSWindowsKeyState(
-      MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, deskflow::KeyMap &keyMap,
+      MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, synergy::KeyMap &keyMap,
       std::vector<std::string> layouts, bool isLangSyncEnabled
   );
   virtual ~MSWindowsKeyState();
@@ -164,7 +164,7 @@ public:
 
 protected:
   // KeyState overrides
-  void getKeyMap(deskflow::KeyMap &keyMap) override;
+  void getKeyMap(synergy::KeyMap &keyMap) override;
   void fakeKey(const Keystroke &keystroke) override;
   KeyModifierMask &getActiveModifiersRValue() override;
 
@@ -174,9 +174,9 @@ private:
   bool getGroups(GroupList &) const;
   void setWindowGroup(int32_t group);
 
-  KeyID getIDForKey(deskflow::KeyMap::KeyItem &item, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl) const;
+  KeyID getIDForKey(synergy::KeyMap::KeyItem &item, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl) const;
 
-  void addKeyEntry(deskflow::KeyMap &keyMap, deskflow::KeyMap::KeyItem &item);
+  void addKeyEntry(synergy::KeyMap &keyMap, synergy::KeyMap::KeyItem &item);
 
   void init();
 

@@ -25,7 +25,7 @@ std::string vectorToString(const std::vector<std::string> &vector, const std::st
 
 } // anonymous namespace
 
-namespace deskflow {
+namespace synergy {
 
 KeyboardLayoutManager::KeyboardLayoutManager(const std::vector<std::string> &localLayouts)
     : m_localLayouts(localLayouts)
@@ -90,4 +90,4 @@ bool KeyboardLayoutManager::isLayoutInstalled(const std::string &layout) const
   return isInstalled;
 }
 
-} // namespace deskflow
+} // namespace synergy

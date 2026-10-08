@@ -9,7 +9,7 @@
 #include "ClipboardTypes.h"
 #include "IClipboard.h"
 
-namespace deskflow {
+namespace synergy {
 
 //! EI/Portal clipboard implementation
 /*!
@@ -49,4 +49,4 @@ private:
   std::string m_data[static_cast<int>(Format::TotalFormats)] = {"", "", ""};
 };
 
-} // namespace deskflow
+} // namespace synergy

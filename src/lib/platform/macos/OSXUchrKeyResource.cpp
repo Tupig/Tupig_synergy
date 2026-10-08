@@ -171,7 +171,7 @@ bool OSXUchrKeyResource::getDeadKey(KeySequence &keys, uint16_t index) const
 
   // convert keys to their dead counterparts
   for (KeySequence::iterator i = keys.begin(); i != keys.end(); ++i) {
-    *i = deskflow::KeyMap::getDeadKey(*i);
+    *i = synergy::KeyMap::getDeadKey(*i);
   }
 
   return true;

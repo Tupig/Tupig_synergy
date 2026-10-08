@@ -53,7 +53,7 @@ struct SentMessage
 };
 
 //! Replays bytes as a receiver would read them.
-class MemoryStream : public deskflow::IStream
+class MemoryStream : public synergy::IStream
 {
 public:
   void push(const std::string &bytes)
@@ -185,7 +185,7 @@ Reproducing that here is what makes the round-trip faithful.
 */
 std::string encodeChunkForReceiver(uint8_t mark, const std::string &payload)
 {
-  struct BufferStream : deskflow::IStream
+  struct BufferStream : synergy::IStream
   {
     std::string buffer;
     void close() override

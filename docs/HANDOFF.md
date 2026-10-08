@@ -51,7 +51,7 @@
 ### Phase 1: 安全基线 ✅
 - [x] **S-1 (#2) TLS 证书验证**: `verifyIgnoreCertCallback` → `verifyCertificateCallback` (链验证+过期+RSA≥2048)
 - [x] **S-2 (#3) 协议消息大小限制**: `MessageSizeLimit` 枚举 (Control=256, InputEvent=4KB, ClipboardChunk=64KB, FileChunk=256KB, AbsoluteMaximum=4MB)
-- [x] **S-3 (#4) assert→异常**: 15 个 `assert(0)` 替换为 `throw BadClientException`/`throw DeskflowException`
+- [x] **S-3 (#4) assert→异常**: 15 个 `assert(0)` 替换为 `throw BadClientException`/`throw SynergyException`
 - [x] **S-4 (#5) InputValidator**: 新建 `InputValidator.h/.cpp` — 范围验证+频率限制+敏感键拦截
 - [x] **S-5 (#6) X11 降级**: `m_displayLost` 标记+`ioErrorHandler` 优雅处理+方法守卫
 - [x] **Issue tracking**: 原 `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 于 2026-10-08 **全量迁移到 GitHub Issues**（144 条 = 存量 103 + 四域审查新发现 41），本地台账已删除
@@ -116,7 +116,7 @@ a45c13209 refactor(ci): 合并为单一工作流 ghdesktop2chinese.yml
 |------|------|------|
 | TLS 验证方式 | OpenSSL 回调 + TOFU | 兼容现有架构，defense-in-depth |
 | 协议限制策略 | 分级枚举 (非单一上限) | 不同消息类型有不同合理上限 |
-| 异常类型选择 | `BadClientException` (网络输入) vs `DeskflowException` (内部逻辑) | 区分恶意输入和内部错误 |
+| 异常类型选择 | `BadClientException` (网络输入) vs `SynergyException` (内部逻辑) | 区分恶意输入和内部错误 |
 | 输入验证位置 | 独立模块 `InputValidator` | 可复用、可测试、平台无关 |
 | X11 降级策略 | 标记+事件+守卫 (非重连) | 最小风险，重连逻辑留给 Phase 3 |
 

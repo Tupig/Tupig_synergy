@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <cstdlib>
 
-using deskflow::EventTypes;
+using synergy::EventTypes;
 
 class EventData
 {

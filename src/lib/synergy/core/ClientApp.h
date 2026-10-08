@@ -13,10 +13,10 @@
 
 #include <QList>
 
-namespace deskflow {
+namespace synergy {
 class Screen;
 class ClientArgs;
-} // namespace deskflow
+} // namespace synergy
 
 class Event;
 class Client;
@@ -45,22 +45,22 @@ public:
   }
   int start() override;
   int runInner(StartupFunc startup) override;
-  deskflow::Screen *createScreen() override;
+  synergy::Screen *createScreen() override;
   int mainLoop() override;
   void startNode() override;
 
   //
   // Regular functions
   //
-  deskflow::Screen *openClientScreen();
-  void closeClientScreen(deskflow::Screen *screen);
+  synergy::Screen *openClientScreen();
+  void closeClientScreen(synergy::Screen *screen);
   void handleClientRestart(const Event &, EventQueueTimer *vtimer);
   void scheduleClientRestart(double retryTime);
   void handleClientConnected();
   void handleClientFailed(const Event &e);
   void handleClientRefused(const Event &e);
   void handleClientDisconnected();
-  Client *openClient(const std::string &name, const NetworkAddress &address, deskflow::Screen *screen);
+  Client *openClient(const std::string &name, const NetworkAddress &address, synergy::Screen *screen);
   void closeClient(Client *client);
   bool startClient();
   void stopClient();
@@ -91,7 +91,7 @@ private:
 
   bool m_suspended = false;
   Client *m_client = nullptr;
-  deskflow::Screen *m_clientScreen = nullptr;
+  synergy::Screen *m_clientScreen = nullptr;
   QList<NetworkAddress> m_serverAddresses;
   size_t m_currentServerIndex = 0;
   size_t m_lastServerAddressIndex = 0;

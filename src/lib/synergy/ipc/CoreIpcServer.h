@@ -13,7 +13,7 @@
 
 class QLocalSocket;
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 class CoreIpcServer : public IpcServer
 {
@@ -28,4 +28,4 @@ private:
   void processCommand(QLocalSocket *clientSocket, const QString &command, const QStringList &parts) override;
 };
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc

@@ -574,7 +574,7 @@ MSWindowsKeyState::MSWindowsKeyState(
 }
 
 MSWindowsKeyState::MSWindowsKeyState(
-    MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, deskflow::KeyMap &keyMap,
+    MSWindowsDesks *desks, void *eventTarget, IEventQueue *events, synergy::KeyMap &keyMap,
     std::vector<std::string> layouts, bool isLangSyncEnabled
 )
     : KeyState(events, keyMap, std::move(layouts), isLangSyncEnabled),
@@ -859,7 +859,7 @@ void MSWindowsKeyState::pollPressedKeys(KeyButtonSet &pressedKeys) const
   }
 }
 
-void MSWindowsKeyState::getKeyMap(deskflow::KeyMap &keyMap)
+void MSWindowsKeyState::getKeyMap(synergy::KeyMap &keyMap)
 {
   // update keyboard groups
   if (getGroups(m_groups)) {
@@ -875,7 +875,7 @@ void MSWindowsKeyState::getKeyMap(deskflow::KeyMap &keyMap)
   memset(m_virtualKeyToButton, 0, sizeof(m_virtualKeyToButton));
   m_keyToVKMap.clear();
 
-  deskflow::KeyMap::KeyItem item;
+  synergy::KeyMap::KeyItem item;
   int32_t numGroups = (int32_t)m_groups.size();
   for (int32_t g = 0; g < numGroups; ++g) {
     item.m_group = g;
@@ -1060,7 +1060,7 @@ void MSWindowsKeyState::getKeyMap(deskflow::KeyMap &keyMap)
         item.m_client = m_buttonToVK[i];
 
         // get flags for modifier keys
-        deskflow::KeyMap::initModifierKey(item);
+        synergy::KeyMap::initModifierKey(item);
 
         if (item.m_id == 0) {
           // translate virtual key to a character with and without
@@ -1294,7 +1294,7 @@ UINT MSWindowsKeyState::mapButtonToVirtualKey(KeyButton button) const
 }
 
 KeyID MSWindowsKeyState::getIDForKey(
-    deskflow::KeyMap::KeyItem &item, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl
+    synergy::KeyMap::KeyItem &item, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl
 ) const
 {
   WCHAR unicode[2];
@@ -1313,7 +1313,7 @@ KeyID MSWindowsKeyState::getIDForKey(
     // as an alternative, we could use the returned
     // buffer in unicode to look at the dead key character
     // and not rely on getDeadKey to provide the mapping
-    return deskflow::KeyMap::getDeadKey(id);
+    return synergy::KeyMap::getDeadKey(id);
   }
   default:
   case 0:
@@ -1331,7 +1331,7 @@ KeyID MSWindowsKeyState::getIDForKey(
   }
 }
 
-void MSWindowsKeyState::addKeyEntry(deskflow::KeyMap &keyMap, deskflow::KeyMap::KeyItem &item)
+void MSWindowsKeyState::addKeyEntry(synergy::KeyMap &keyMap, synergy::KeyMap::KeyItem &item)
 {
   keyMap.addKeyEntry(item);
   if (item.m_group == 0) {

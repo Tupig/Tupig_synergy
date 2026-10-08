@@ -15,7 +15,7 @@
 #include <cctype>
 #include <cstdlib>
 
-namespace deskflow {
+namespace synergy {
 
 KeyMap::NameToKeyMap *KeyMap::s_nameToKeyMap = nullptr;
 KeyMap::NameToModifierMap *KeyMap::s_nameToModifierMap = nullptr;
@@ -946,10 +946,10 @@ void KeyMap::addKeystrokes(
     break;
 
   case kKeystrokeRepeat:
-    if (deskflow::platform::isWindows()) {
+    if (synergy::platform::isWindows()) {
       keystrokes.push_back(Keystroke(button, false, true, data));
       keystrokes.push_back(Keystroke(button, true, true, data));
-    } else if (deskflow::platform::isMac()) {
+    } else if (synergy::platform::isMac()) {
       keystrokes.push_back(Keystroke(button, true, true, data));
     }
     break;
@@ -1096,7 +1096,7 @@ std::string KeyMap::formatKey(KeyID key, KeyModifierMask mask)
     else if (key >= 33 && key < 127) {
       x += (char)key;
     } else {
-      x += deskflow::string::sprintf("\\u%04x", key);
+      x += synergy::string::sprintf("\\u%04x", key);
     }
   } else if (!x.empty()) {
     // remove trailing '+'
@@ -1238,4 +1238,4 @@ KeyMap::Keystroke::Keystroke(int32_t group, bool absolute, bool restore) : m_typ
   m_data.m_group.m_restore = restore;
 }
 
-} // namespace deskflow
+} // namespace synergy

@@ -11,7 +11,7 @@
 #include "ClientProxy1_8.h"
 
 ClientProxy1_8::ClientProxy1_8(
-    const std::string &name, deskflow::IStream *adoptedStream, Server *server, IEventQueue *events
+    const std::string &name, synergy::IStream *adoptedStream, Server *server, IEventQueue *events
 )
     : ClientProxy1_7(name, adoptedStream, server, events)
 {
@@ -20,7 +20,7 @@ ClientProxy1_8::ClientProxy1_8(
 
 void ClientProxy1_8::synchronizeLanguages() const
 {
-  deskflow::KeyboardLayoutManager layoutManager;
+  synergy::KeyboardLayoutManager layoutManager;
   auto localLayouts = layoutManager.getSerializedLocalLayouts();
   if (!localLayouts.empty()) {
     LOG_VERBOSE("send server languages to the client: %s", localLayouts.c_str());

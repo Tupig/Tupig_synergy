@@ -10,7 +10,7 @@
 
 #include <QObject>
 
-namespace deskflow::client {
+namespace synergy::client {
 Q_NAMESPACE
 enum class ErrorType : uint8_t
 {
@@ -20,9 +20,9 @@ enum class ErrorType : uint8_t
   GenericError
 };
 Q_ENUM_NS(ErrorType)
-} // namespace deskflow::client
+} // namespace synergy::client
 
-namespace deskflow::core {
+namespace synergy::core {
 Q_NAMESPACE
 
 enum class ProcessState
@@ -53,4 +53,4 @@ enum class ConnectionRefusal
 };
 Q_ENUM_NS(ConnectionRefusal)
 
-} // namespace deskflow::core
+} // namespace synergy::core

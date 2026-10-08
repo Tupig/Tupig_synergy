@@ -18,7 +18,7 @@
 #include <QPushButton>
 #include <memory>
 
-namespace deskflow::gui::messages {
+namespace synergy::gui::messages {
 
 struct Errors
 {
@@ -263,4 +263,4 @@ bool showDaemonOffline(QWidget *parent)
   return true;
 }
 
-} // namespace deskflow::gui::messages
+} // namespace synergy::gui::messages

@@ -28,7 +28,7 @@ XWindowsEventQueueBuffer::XWindowsEventQueueBuffer(Display *display, Window wind
   assert(m_display != nullptr);
   assert(m_window != None);
 
-  m_userEvent = XInternAtom(m_display, "DESKFLOW_USER_EVENT", False);
+  m_userEvent = XInternAtom(m_display, "SYNERGY_USER_EVENT", False);
   // set up for pipe hack
   int result = pipe2(m_pipefd, O_NONBLOCK);
   assert(result == 0);

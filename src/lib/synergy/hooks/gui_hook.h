@@ -35,7 +35,7 @@
 #include <QPalette>
 #include <QSize>
 
-namespace deskflow::gui {
+namespace synergy::gui {
 class CoreProcess;
 }
 
@@ -58,7 +58,7 @@ inline void onPreInit()
   }
 }
 
-inline void onMainWindow(QMainWindow *mainWindow, deskflow::gui::CoreProcess *coreProcess)
+inline void onMainWindow(QMainWindow *mainWindow, synergy::gui::CoreProcess *coreProcess)
 {
   // Qt's default link color is unreadable on the dark theme; setting the palette link role
   // once colors every anchor, so dialog copy never needs inline link styles.

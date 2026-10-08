@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "DeskflowException.h"
+#include "SynergyException.h"
 #include "IApp.h"
 
 #include <string>

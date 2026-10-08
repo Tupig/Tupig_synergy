@@ -13,7 +13,7 @@
 
 class QLocalSocket;
 
-namespace deskflow::core::ipc {
+namespace synergy::core::ipc {
 
 class DaemonIpcServer : public IpcServer
 {
@@ -31,4 +31,4 @@ private:
   const QString m_logFilename;
 };
 
-} // namespace deskflow::core::ipc
+} // namespace synergy::core::ipc
