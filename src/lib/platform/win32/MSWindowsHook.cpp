@@ -328,8 +328,7 @@ static bool keyboardHookHandler(WPARAM wParam, LPARAM lParam)
   }
 
   PostThreadMessage(
-      g_threadID, SYNERGY_MSG_DEBUG, (wc[0] & 0xffff) | ((wParam & 0xff) << 16) | ((n & 0xf) << 24) | 0x60000000,
-      lParam
+      g_threadID, SYNERGY_MSG_DEBUG, (wc[0] & 0xffff) | ((wParam & 0xff) << 16) | ((n & 0xf) << 24) | 0x60000000, lParam
   );
   WPARAM charAndVirtKey = 0;
   bool clearDeadKey = false;

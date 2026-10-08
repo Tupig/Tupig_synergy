@@ -9,9 +9,9 @@
 #include <sstream>
 
 #include <base/Log.h>
-#include <synergy/ipc/CoreIpc.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <synergy/ipc/CoreIpc.h>
 
 namespace {
 

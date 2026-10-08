@@ -483,8 +483,7 @@ bool ServerConfigDialog::browseConfigFile()
   //: (*.conf) and (*.*) should not be translated
   const auto configFilter = tr("%1 Configurations (*.conf);;All files (*.*)");
 
-  QString fileName =
-      QFileDialog::getOpenFileName(this, tr("Browse for a config file"), "", configFilter.arg(kAppName));
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Browse for a config file"), "", configFilter.arg(kAppName));
 
   if (!fileName.isEmpty()) {
     ui->lineConfigFile->setText(fileName);

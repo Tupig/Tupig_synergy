@@ -294,10 +294,12 @@ void showNoticeIfPending(QWidget *parent)
 
   QMessageBox::information(
       parent, QObject::tr("Settings updated"),
-      QObject::tr("<p>We've migrated your settings to a new format used by this version of Synergy.</p>"
-                  "<p>Your previous settings have been backed up to:</p>"
-                  "<p><code>%1</code></p>"
-                  "<p>If anything looks different, please contact us.</p>")
+      QObject::tr(
+          "<p>We've migrated your settings to a new format used by this version of Synergy.</p>"
+          "<p>Your previous settings have been backed up to:</p>"
+          "<p><code>%1</code></p>"
+          "<p>If anything looks different, please contact us.</p>"
+      )
           .arg(s_lastBackupPath)
   );
   writeNotifiedVersion(kCurrentSchemaVersion);

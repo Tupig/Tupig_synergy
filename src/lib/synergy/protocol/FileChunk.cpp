@@ -8,8 +8,8 @@
 
 #include "ProtocolUtil.h"
 #include "base/Log.h"
-#include "synergy/core/SynergyException.h"
 #include "io/IStream.h"
+#include "synergy/core/SynergyException.h"
 
 #include <cstring>
 #include <limits>

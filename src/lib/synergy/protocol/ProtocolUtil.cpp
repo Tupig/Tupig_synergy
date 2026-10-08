@@ -7,8 +7,8 @@
  */
 
 #include "ProtocolUtil.h"
-#include "SynergyException.h"
 #include "ProtocolTypes.h"
+#include "SynergyException.h"
 #include "base/Log.h"
 #include "io/IStream.h"
 #include <array>

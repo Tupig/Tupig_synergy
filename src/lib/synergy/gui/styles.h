@@ -30,6 +30,8 @@ const auto kColorSecondary = "#4285f4";
 const auto kColorNotice = "#3b67d3";
 
 const auto kStyleNoticeLabel = //
-    QString("padding: 3px 5px; border-radius: 3px;"
-            "background-color: %1; color: %2")
+    QString(
+        "padding: 3px 5px; border-radius: 3px;"
+        "background-color: %1; color: %2"
+    )
         .arg(kColorNotice, kColorWhite);

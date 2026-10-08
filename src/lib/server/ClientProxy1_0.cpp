@@ -8,8 +8,8 @@
 
 #include "server/ClientProxy1_0.h"
 
-#include "SynergyException.h"
 #include "ProtocolUtil.h"
+#include "SynergyException.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "io/IStream.h"

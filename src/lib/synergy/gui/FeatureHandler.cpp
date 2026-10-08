@@ -212,9 +212,7 @@ void FeatureHandler::addLicenseLinks(QDialog *parent) const
 void FeatureHandler::addTrademark(QDialog *parent) const
 {
   if (auto *copyright = parent->findChild<QLabel *>(QStringLiteral("lblCopyright"))) {
-    copyright->setText(
-        copyright->text() + QStringLiteral("\n") + QObject::tr("TuPig Synergy is a trademark of TuPig")
-    );
+    copyright->setText(copyright->text() + QStringLiteral("\n") + QObject::tr("TuPig Synergy is a trademark of TuPig"));
   }
 }
 

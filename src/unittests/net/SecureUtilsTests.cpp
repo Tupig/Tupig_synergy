@@ -33,16 +33,16 @@ void SecureUtilsTests::checkArt()
   );
   QCOMPARE(
       synergy::generateFingerprintArt(fingerprint), "╔═════════════════╗\n"
-                                                     "║*X+. .           ║\n"
-                                                     "║*oo +            ║\n"
-                                                     "║ + =             ║\n"
-                                                     "║  B  . .         ║\n"
-                                                     "║.+... o S        ║\n"
-                                                     "║E+ ++. .         ║\n"
-                                                     "║B*++..  .        ║\n"
-                                                     "║+o*o o .         ║\n"
-                                                     "║+o*Bo .          ║\n"
-                                                     "╚═════════════════╝"
+                                                    "║*X+. .           ║\n"
+                                                    "║*oo +            ║\n"
+                                                    "║ + =             ║\n"
+                                                    "║  B  . .         ║\n"
+                                                    "║.+... o S        ║\n"
+                                                    "║E+ ++. .         ║\n"
+                                                    "║B*++..  .        ║\n"
+                                                    "║+o*o o .         ║\n"
+                                                    "║+o*Bo .          ║\n"
+                                                    "╚═════════════════╝"
   );
 }
 

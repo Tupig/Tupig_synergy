@@ -7,8 +7,8 @@
 
 #include "App.h"
 
-#include "SynergyException.h"
 #include "DisplayInvalidException.h"
+#include "SynergyException.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
 #include "base/LogOutputters.h"

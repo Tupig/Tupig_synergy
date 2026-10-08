@@ -16,9 +16,9 @@
 #include "net/NetworkAddress.h"
 
 #include <climits>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 class Event;
 class EventQueueTimer;

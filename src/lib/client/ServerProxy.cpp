@@ -10,11 +10,11 @@
 
 #include "Clipboard.h"
 #include "ClipboardChunk.h"
-#include "SynergyException.h"
 #include "OptionTypes.h"
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
+#include "SynergyException.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "client/Client.h"

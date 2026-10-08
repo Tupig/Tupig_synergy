@@ -13,9 +13,7 @@
 // PrimaryClient
 //
 
-PrimaryClient::PrimaryClient(const std::string &name, synergy::Screen *screen)
-    : BaseClientProxy(name),
-      m_screen(screen)
+PrimaryClient::PrimaryClient(const std::string &name, synergy::Screen *screen) : BaseClientProxy(name), m_screen(screen)
 {
   // do nothing
 }

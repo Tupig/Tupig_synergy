@@ -8,11 +8,11 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "io/IStream.h"
 #include "synergy/protocol/FileChunk.h"
 #include "synergy/protocol/FileTransferPath.h"
 #include "synergy/protocol/FileTransferSender.h"
 #include "synergy/protocol/FileTransferSource.h"
-#include "io/IStream.h"
 
 #include <QDir>
 #include <QFile>

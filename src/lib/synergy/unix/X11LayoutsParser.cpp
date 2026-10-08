@@ -12,8 +12,8 @@
 #include <QDomDocument>
 #include <QFile>
 
-#include "SynergyXkbKeyboard.h"
 #include "ISO639Table.h"
+#include "SynergyXkbKeyboard.h"
 #include "X11LayoutsParser.h"
 #include "base/Log.h"
 

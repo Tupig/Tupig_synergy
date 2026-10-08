@@ -11,8 +11,8 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
-#include "synergy/core/SynergyException.h"
 #include "io/IStream.h"
+#include "synergy/core/SynergyException.h"
 
 #include <algorithm>
 #include <cstring>

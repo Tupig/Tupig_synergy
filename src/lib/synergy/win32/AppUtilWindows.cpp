@@ -9,9 +9,9 @@
 #include "win32/AppUtilWindows.h"
 
 #include "App.h"
-#include "SynergyException.h"
 #include "MSWindowsScreen.h"
 #include "Screen.h"
+#include "SynergyException.h"
 #include "arch/Arch.h"
 #include "arch/win32/ArchDaemonWindows.h"
 #include "arch/win32/ArchMiscWindows.h"

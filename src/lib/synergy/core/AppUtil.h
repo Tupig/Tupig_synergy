@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "SynergyException.h"
 #include "IApp.h"
+#include "SynergyException.h"
 
 #include <string>
 #include <vector>

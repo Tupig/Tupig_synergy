@@ -8,9 +8,9 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "io/IStream.h"
 #include "synergy/core/SynergyException.h"
 #include "synergy/protocol/FileChunk.h"
-#include "io/IStream.h"
 
 #include <algorithm>
 #include <cstring>
