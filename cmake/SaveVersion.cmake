@@ -5,7 +5,7 @@
 #   cmake -DVERSION_FILE=build/VERSION \
 #         -DSYNERGY_VERSION_RELEASE=true|false \
 #         -DSYNERGY_VERSION_SNAPSHOT=true|false \
-#         -P extra/cmake/SaveVersion.cmake
+#         -P cmake/SaveVersion.cmake
 #
 # Includes Version.cmake (the same one Synergy.cmake includes during the build)
 # and writes the result to VERSION_FILE. Guarantees the CI-side version matches

@@ -52,7 +52,7 @@ target_link_libraries(
   Qt6::Network)
 
 # Set output name with version
-include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Synergy.cmake)
 set_output_name(${target})
 # On Apple the .app folder must be named "TuPig Synergy.app" (install/CPack
 # paths use CMAKE_PROJECT_PROPER_NAME); override set_output_name's synergy.

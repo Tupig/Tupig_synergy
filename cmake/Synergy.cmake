@@ -63,7 +63,7 @@ set(GUI_QRC_FILE "${GUI_RES_DIR}/synergy.qrc")
 set(CMAKE_PROJECT_NAME synergy)
 
 # Synergy version. Base semver and composition rules — dev/snapshot/release
-# suffix, rev count — live in extra/cmake/Version.cmake via synergy_compute_version()
+# suffix, rev count — live in cmake/Version.cmake via synergy_compute_version()
 # so the CI-side version (package filenames, S3 paths, etc.) matches what the
 # binaries report. Default mode is dev; flip with -DSYNERGY_VERSION_RELEASE=ON or
 # -DSYNERGY_VERSION_SNAPSHOT=ON for CI/release builds.

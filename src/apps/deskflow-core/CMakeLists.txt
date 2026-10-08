@@ -41,7 +41,7 @@ target_link_libraries(
   ${libs})
 
 # Set output name with version
-include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Synergy.cmake)
 set_output_name(${target} SUFFIX "-core")
 
 install(

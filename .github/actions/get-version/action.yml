@@ -1,6 +1,6 @@
 name: "Get version"
 description: >
-  Computes the build version via extra/cmake/SaveVersion.cmake — runs the same
+  Computes the build version via cmake/SaveVersion.cmake — runs the same
   synergy_compute_version() the build uses, so the CI-side version (used in
   package filenames, S3 paths, release titles) matches what binaries report.
 
@@ -15,7 +15,7 @@ runs:
     - id: compute
       shell: bash
       # The project lives at the repository root; the paths below
-      # (extra/cmake/..., build/) are relative to it.
+      # (cmake/..., build/) are relative to it.
       working-directory: .
       run: |
         # Container jobs bind-mount the workspace owned by the host user while
@@ -27,7 +27,7 @@ runs:
           -DVERSION_FILE=build/VERSION \
           -DSYNERGY_VERSION_RELEASE=${SYNERGY_VERSION_RELEASE:-false} \
           -DSYNERGY_VERSION_SNAPSHOT=${SYNERGY_VERSION_SNAPSHOT:-false} \
-          -P extra/cmake/SaveVersion.cmake
+          -P cmake/SaveVersion.cmake
         version=$(cat build/VERSION)
         echo "Computed version: $version"
         echo "version=$version" >> "$GITHUB_OUTPUT"

@@ -34,7 +34,7 @@ if(WIN32)
     Qt6::Core)
 
   # Set output name with version
-  include(${CMAKE_SOURCE_DIR}/extra/cmake/Synergy.cmake)
+  include(${CMAKE_SOURCE_DIR}/cmake/Synergy.cmake)
   set_output_name(${target} SUFFIX "-daemon")
 
   install(

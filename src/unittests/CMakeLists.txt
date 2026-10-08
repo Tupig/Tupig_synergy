@@ -101,10 +101,10 @@ get_property(PROJECT_TESTS GLOBAL PROPERTY ${CMAKE_PROJECT_NAME}_tests)
 # This used to read "Deskflow"/"deskflow", which is not a target in this tree, so
 # the DEPENDS below named a file with no rule to make it and the build broke as
 # soon as SKIP_BUILD_TESTS was turned off - which is exactly what
-# extra/cmake/Synergy.cmake tells people to do.
+# cmake/Synergy.cmake tells people to do.
 set(guiApp ${CMAKE_PROJECT_NAME})
 
-# SKIP_BUILD_TESTS is owned by extra/cmake/Synergy.cmake (default ON); do not
+# SKIP_BUILD_TESTS is owned by cmake/Synergy.cmake (default ON); do not
 # declare a second option() here with a conflicting default.
 
 if(NOT SKIP_BUILD_TESTS)

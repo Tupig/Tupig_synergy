@@ -14,7 +14,7 @@
 - **项目**: TuPig Synergy — 基于 Synergy/Deskflow 的跨平台键鼠共享工具
 - **仓库**: `https://github.com/Tupig/Tupig_synergy`
 - **技术栈**: C++20, CMake 3.25+, Qt 6.7+, OpenSSL 3.0+
-- **版本**: 见 `extra/cmake/Version.cmake`（`SYNERGY_VERSION_*`；`vcpkg.json` 的 `version-string` 须与之对齐）
+- **版本**: 见 `cmake/Version.cmake`（`SYNERGY_VERSION_*`；`vcpkg.json` 的 `version-string` 须与之对齐）
 - **平台**: Windows / macOS / Linux
 
 ### 1.2 优化目标

@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION_CMAKE = ROOT / "extra" / "cmake" / "Version.cmake"
+VERSION_CMAKE = ROOT / "cmake" / "Version.cmake"
 VCPKG_JSON = ROOT / "vcpkg.json"
 
 
