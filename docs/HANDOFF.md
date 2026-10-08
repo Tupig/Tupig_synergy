@@ -277,7 +277,7 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 ## 6. 后续建议的下一步操作
 
 ### 立即执行
-1. **阶段 4 回归**：先推送批1/批2/批3 提交，再触发全量 19 腿矩阵（`workflow_dispatch`；`platform` 留空 / `package-type` 按需），覆盖 A-56 (#80)（macOS dyld）与 Windows/macOS/flatpak 腿；批1/批2 的门禁修复（static-analysis、valgrind）同步以手动 run 验证
+1. **阶段 4 回归 ✅ 已完成**（2026-10-08）：30+ 提交已推送；free 子集 run 37754662586 与全量矩阵 run 37755828508 全绿（含 macOS 腿，A-56 (#80) 随之覆盖）。剩余：批1/批2 门禁修复（static-analysis、valgrind）可用 workflow_dispatch 手动验证真实拦截能力
 2. **网络层（N-01～N-07）**: test(net) 基线 → 工厂接线（闭合 A-15 (#39)）→ Qt5 手动 TLS 升级 → 默认切 Qt → Step 6 删遗留栈；详见 §5.4 与 issues #139-145
 3. **G1**: 本机文件拖拽跨屏人工验证（清单见 §5.6，由用户执行）
 
