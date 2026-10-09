@@ -150,12 +150,39 @@ bool InputValidator::isKnownButtonId(ButtonID buttonId)
   }
 }
 
+size_t InputValidator::trackedKeyCount() const
+{
+  return m_eventTimestamps.size();
+}
+
 bool InputValidator::isRateLimited(KeyID keyCode, std::chrono::steady_clock::time_point now)
 {
+  const auto cutoff = now - std::chrono::seconds(1);
+
+  // A new key past the cap is dropped. Expired windows are forgotten first, so
+  // the cap bounds a burst of distinct ids rather than ordinary typing.
+  if (m_eventTimestamps.size() >= kMaxTrackedKeys && !m_eventTimestamps.contains(keyCode)) {
+    for (auto it = m_eventTimestamps.begin(); it != m_eventTimestamps.end();) {
+      auto &stamps = it->second;
+      stamps.erase(
+          std::remove_if(stamps.begin(), stamps.end(), [cutoff](const auto &t) { return t < cutoff; }), stamps.end()
+      );
+      if (stamps.empty()) {
+        it = m_eventTimestamps.erase(it);
+      } else {
+        ++it;
+      }
+    }
+
+    if (m_eventTimestamps.size() >= kMaxTrackedKeys) {
+      LOG_WARN("rate limited new key 0x%08x: already tracking %zu keys", keyCode, m_eventTimestamps.size());
+      return true;
+    }
+  }
+
   auto &timestamps = m_eventTimestamps[keyCode];
 
   // Drop everything that has fallen out of the one-second window.
-  const auto cutoff = now - std::chrono::seconds(1);
   timestamps.erase(
       std::remove_if(timestamps.begin(), timestamps.end(), [cutoff](const auto &t) { return t < cutoff; }),
       timestamps.end()

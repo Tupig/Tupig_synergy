@@ -35,9 +35,12 @@ What it enforces:
 - A transfer that ends short, or with more bytes than declared, is discarded.
 - The final path is re-checked to be inside the drop directory after normalisation,
   so sanitisation is not the only line of defence.
-- Writes are staged to a temporary file and renamed into place, so a partial
+- Writes are staged to a temporary file and published into place, so a partial
   transfer never appears as a finished file, and an existing file is never
-  overwritten - a unique name is chosen instead.
+  overwritten - a unique name is chosen instead. Publishing does not replace
+  a file that appears between the check and the write.
+- The Nth completed transfer is paired with the Nth accepted name. A write that
+  fails still consumes that name, so the next file is not stored under it.
 */
 class FileTransferReceiver
 {

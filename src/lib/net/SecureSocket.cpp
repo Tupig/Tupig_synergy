@@ -15,6 +15,7 @@
 #include "ipc/CoreIpc.h"
 #include "mt/Lock.h"
 #include "net/FingerprintDatabase.h"
+#include "net/SocketException.h"
 #include "net/TCPSocket.h"
 #include "net/TSocketMultiplexerMethodJob.h"
 #include <net/SslLogger.h>
@@ -46,19 +47,19 @@ struct Ssl
  * @brief OpenSSL certificate verification callback for TLS peer authentication.
  *
  * This callback is invoked by OpenSSL during the TLS handshake to verify
- * the peer's certificate. It performs standard certificate chain validation:
- * - Certificate chain verification (issuer chain, root CA trust)
- * - Certificate expiration check
- * - Certificate not-yet-valid check
- * - Basic constraints validation
+ * the peer's certificate. It REPLACES the default chain verification
+ * (SSL_CTX_set_cert_verify_callback overrides X509_verify_cert).
+ * Therefore no chain/expiration/basic-constraints checks occur here.
+ * Trust is established solely by the TOFU fingerprint database
+ * after the handshake (see verifyCertFingerprint).
  *
- * After this callback succeeds, the application still performs an additional
- * fingerprint-based trust verification (TOFU model) to ensure the specific
- * certificate is trusted, providing defense-in-depth.
+ * This callback performs only:
+ * - RSA key size check (minimum 2048 bits)
+ * - Null certificate rejection
  *
  * @param store_ctx OpenSSL X509 certificate store context
  * @param arg User data (unused, reserved for future use)
- * @return 1 if certificate is valid, 0 if verification fails
+ * @return 1 if certificate passes key-size check, 0 if verification fails
  *
  * @note This replaces the previous verifyIgnoreCertCallback which always
  * returned 1, effectively bypassing all TLS certificate verification.
@@ -181,14 +182,13 @@ void SecureSocket::secureAccept()
 TCPSocket::JobResult SecureSocket::doRead()
 {
   using enum JobResult;
-  static uint8_t buffer[4096];
-  static const auto bufferSize = std::size(buffer);
-  memset(buffer, 0, bufferSize);
+  const auto bufferSize = static_cast<int>(m_readBuffer.size());
+  memset(m_readBuffer.data(), 0, m_readBuffer.size());
   int bytesRead = 0;
   int status = 0;
 
   if (isSecureReady()) {
-    status = secureRead(buffer, bufferSize, bytesRead);
+    status = secureRead(m_readBuffer.data(), bufferSize, bytesRead);
     if (status < 0) {
       return Break;
     } else if (status == 0) {
@@ -203,13 +203,13 @@ TCPSocket::JobResult SecureSocket::doRead()
 
     // slurp up as much as possible
     do {
-      m_inputBuffer.write(buffer, bytesRead);
+      m_inputBuffer.write(m_readBuffer.data(), bytesRead);
 
       if (m_inputBuffer.getSize() > s_maxInputBufferSize) {
         break;
       }
 
-      status = secureRead(buffer, bufferSize, bytesRead);
+      status = secureRead(m_readBuffer.data(), bufferSize, bytesRead);
       if (status < 0) {
         return Break;
       }
@@ -429,10 +429,11 @@ void SecureSocket::initContext(bool server)
   }
 
   if (m_securityLevel == SecurityLevel::PeerAuth) {
-    // Request peer certificate and verify it using our custom callback.
-    // The callback performs chain validation, expiration checks, and key strength
-    // verification. Fingerprint-based trust (TOFU) is applied after handshake
-    // in secureAccept/secureConnect for defense-in-depth.
+    // Request a peer certificate. set_cert_verify_callback replaces
+    // X509_verify_cert, so this callback does not check the chain, expiry, or
+    // basic constraints. It only rejects a null certificate and an RSA key
+    // shorter than 2048 bits. Trust is the TOFU fingerprint database, checked
+    // after the handshake in secureAccept/secureConnect.
     SSL_CTX_set_verify(m_ssl->m_context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
     SSL_CTX_set_cert_verify_callback(m_ssl->m_context, verifyCertificateCallback, nullptr);
   }
@@ -443,8 +444,15 @@ void SecureSocket::createSSL()
   // I assume just one instance is needed
   // get new SSL state with context
   if (m_ssl->m_ssl == nullptr) {
-    assert(m_ssl->m_context != nullptr);
+    if (m_ssl->m_context == nullptr) {
+      SslLogger::logError("SSL context is null, cannot create SSL");
+      throw SocketException(QStringLiteral("SSL context not initialized"));
+    }
     m_ssl->m_ssl = SSL_new(m_ssl->m_context);
+    if (m_ssl->m_ssl == nullptr) {
+      SslLogger::logError();
+      throw SocketException(QStringLiteral("SSL_new failed"));
+    }
   }
 }
 
@@ -485,7 +493,7 @@ int SecureSocket::secureAccept(int socket)
   LOG_VERBOSE("accepting secure socket");
   int r = SSL_accept(m_ssl->m_ssl);
 
-  static int retry;
+  int retry = 0;
 
   checkResult(r, retry);
 
@@ -546,7 +554,7 @@ int SecureSocket::secureConnect(int socket)
   SSL_set1_host(m_ssl->m_ssl, name.c_str());
   int r = SSL_connect(m_ssl->m_ssl);
 
-  static int retry;
+  int retry = 0;
 
   checkResult(r, retry);
 

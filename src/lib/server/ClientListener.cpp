@@ -33,7 +33,9 @@ ClientListener::ClientListener(
       m_securityLevel(securityLevel),
       m_address(address)
 {
-  assert(m_socketFactory != nullptr);
+  if (m_socketFactory == nullptr) {
+    throw SocketException(QStringLiteral("socket factory is null"));
+  }
 
   try {
     start();
@@ -57,7 +59,9 @@ ClientListener::~ClientListener()
 
 void ClientListener::setServer(Server *server)
 {
-  assert(server != nullptr);
+  if (server == nullptr) {
+    throw SocketException(QStringLiteral("server is null"));
+  }
   m_server = server;
 }
 
@@ -157,9 +161,12 @@ void ClientListener::handleClientAccepted(IDataSocket *socket)
 {
   LOG_INFO("accepted client connection");
 
+  if (m_server == nullptr) {
+    throw SocketException(QStringLiteral("client listener has no server"));
+  }
+
   // filter socket messages, including a packetizing filter
   synergy::IStream *stream = new PacketStreamFilter(m_events, socket, false);
-  assert(m_server != nullptr);
 
   // create proxy for unknown client
   auto *client = new ClientProxyUnknown(stream, 30.0, m_server, m_events);

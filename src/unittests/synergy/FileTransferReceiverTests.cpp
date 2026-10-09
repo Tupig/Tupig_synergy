@@ -437,6 +437,44 @@ void FileTransferReceiverTests::refusesShortTransfer()
   QVERIFY(m_receiver->writtenFiles().empty());
 }
 
+void FileTransferReceiverTests::failedWriteDoesNotReuseTheNextName()
+{
+  // The first file exceeds the drag byte budget and is refused. The second file
+  // must still land under its own announced name.
+  FileTransferReceiver::Options options;
+  options.dropDirectory = m_drop->path().toStdString();
+  options.maxTotalBytes = 4;
+  FileTransferReceiver receiver(options);
+
+  MemoryStream announce;
+  announce.push(encodeDragInfo(2, FileTransferPath::joinNames({"first.txt", "second.txt"})));
+  QVERIFY(receiver.onDragInfo(&announce));
+
+  MemoryStream firstStart;
+  firstStart.push(encodeFileChunk(ChunkType::DataStart, "5"));
+  receiver.onFileChunk(&firstStart);
+  MemoryStream firstData;
+  firstData.push(encodeFileChunk(ChunkType::DataChunk, "hello"));
+  receiver.onFileChunk(&firstData);
+  MemoryStream firstEnd;
+  firstEnd.push(encodeFileChunk(ChunkType::DataEnd, ""));
+  receiver.onFileChunk(&firstEnd);
+
+  MemoryStream secondStart;
+  secondStart.push(encodeFileChunk(ChunkType::DataStart, "2"));
+  receiver.onFileChunk(&secondStart);
+  MemoryStream secondData;
+  secondData.push(encodeFileChunk(ChunkType::DataChunk, "ok"));
+  receiver.onFileChunk(&secondData);
+  MemoryStream secondEnd;
+  secondEnd.push(encodeFileChunk(ChunkType::DataEnd, ""));
+  receiver.onFileChunk(&secondEnd);
+
+  QCOMPARE(dropped("second.txt"), QByteArray("ok"));
+  QVERIFY(!QFile::exists(QDir(m_drop->path()).filePath("first.txt")));
+  QCOMPARE(receiver.writtenFiles().size(), static_cast<size_t>(1));
+}
+
 void FileTransferReceiverTests::refusesTransferWithNoAnnouncedName()
 {
   // More transfers than names: the peer is not following the protocol.

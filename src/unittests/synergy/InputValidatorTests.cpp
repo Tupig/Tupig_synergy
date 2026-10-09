@@ -148,6 +148,26 @@ void InputValidatorTests::rateLimitIsPerKey()
   QVERIFY(!validator.isRateLimited(kKeyBackSpace, now));
 }
 
+void InputValidatorTests::rateLimitCapsDistinctKeys()
+{
+  InputValidator validator;
+  const auto now = std::chrono::steady_clock::now();
+
+  for (KeyID key = 1; key <= InputValidator::kMaxTrackedKeys; ++key) {
+    QVERIFY(!validator.isRateLimited(key, now));
+  }
+  QCOMPARE(validator.trackedKeyCount(), InputValidator::kMaxTrackedKeys);
+
+  // A further new key inside the same window is dropped and not remembered.
+  QVERIFY(validator.isRateLimited(static_cast<KeyID>(InputValidator::kMaxTrackedKeys + 1), now));
+  QCOMPARE(validator.trackedKeyCount(), InputValidator::kMaxTrackedKeys);
+
+  // Once the window expires, the stale keys are forgotten and a new key fits.
+  const auto later = now + std::chrono::seconds(2);
+  QVERIFY(!validator.isRateLimited(static_cast<KeyID>(InputValidator::kMaxTrackedKeys + 2), later));
+  QCOMPARE(validator.trackedKeyCount(), static_cast<size_t>(1));
+}
+
 void InputValidatorTests::setMaxEventsPerSecondRejectsZero()
 {
   InputValidator validator;

@@ -85,3 +85,21 @@ without an event queue. Every piece is non-empty; an empty input yields no
 pieces at all.
 */
 std::vector<std::string> splitIntoFileChunks(std::string_view bytes);
+
+//! Turn a user-configured megabyte cap into a byte limit.
+/*!
+Zero keeps \p fallback (the compiled-in default). Anything above 64 GiB is
+clamped, and the multiply is done in 64-bit so a huge setting cannot wrap
+into a small limit and silently disable the check.
+*/
+inline uint64_t bytesFromMegabyteSetting(uint64_t megabytes, uint64_t fallback)
+{
+  constexpr uint64_t kMaxMegabytes = 64ull * 1024;
+  if (megabytes == 0) {
+    return fallback;
+  }
+  if (megabytes > kMaxMegabytes) {
+    megabytes = kMaxMegabytes;
+  }
+  return megabytes * 1024ull * 1024ull;
+}

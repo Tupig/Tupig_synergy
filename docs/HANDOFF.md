@@ -1,12 +1,18 @@
 # HANDOFF — TuPig Synergy 代码库优化重构
 
-> **最后更新**: 2026-09-24
+> **最后更新**: 2026-10-09
 > **当前分支**: `main`
 > **仓库**: `https://github.com/Tupig/Tupig_synergy`（public，项目在仓库根目录）
 > **最新 Commit**: 以 `git log -1` 为准；阶段 2 关键提交：T1 `a7541a6`、T2 `68c61a5`、T3 `610d0e8`，批1/批2 修复随后（见 §2 提交记录）
 > **状态**: Phase 0+1 完成；**阶段 2（结构整理）完成** — extra/ 溶解（cmake/、deploy/、config/、src/lib/synergy）、REUSE 全绿（893/893）、deskflow→synergy 全仓改名（issue #146）、CI 脚本归置 scripts/ci/；**批1 源码修复（C-01～C-09）与批2 CI 修复（B-01～B-11）已落地并关闭对应 issue**；**网络层（N-01/N-03/N-04/N-05/N-06 + A-15）已完成并默认切换 Qt**（环回端到端测试：明文/TOFU 拒绝/TOFU 信任+TLS；`USE_LEGACY_NETWORK=1` 回退 raw 栈）；批3 文档完成；**N-07（删遗留栈）按验收条件保留一个稳定期**；阶段 4 回归已重跑（见下）。GitHub Issues 为唯一问题追踪载体（144 条）。**阶段 4 回归完成**：free 子集 run 37754662586/37768850901 与全量 19 腿矩阵 run 37755828508/37770107215 均 SUCCESS（后者含 Qt 默认传输切换后的全网回归：Windows x64+arm64、macOS x64+arm64、Flatpak x2、全 Linux 矩阵含 rocky/debian Qt5 腿）（Windows x64/arm64、macOS x64/arm64、Flatpak x86_64/aarch64、全 Linux 矩阵含 rocky Qt5 腿、lint/get-version/ci-passed/s3-upload；commit d4e57c1 起）。
 
 ---
+
+## 0. 2026-10-09 首轮审查修复
+
+登记并处理的 issue：[#147](https://github.com/Tupig/Tupig_synergy/issues/147)–[#160](https://github.com/Tupig/Tupig_synergy/issues/160)。
+空 SSL 上下文改为抛 `SocketException`（`net` 不依赖 `SynergyException`）、握手 retry 改为局部变量、SecureSocket 读缓冲改为成员、TLS 注释与 TOFU 对齐、daemon `--version` 打印 `kDisplayVersion`、ClientListener 空指针改为抛 `SocketException`、图标目录 `deskflow-*` 改为 `synergy-*`、文件接收失败仍消耗文件名且发布不覆盖已有文件、IPC 只按第一个 `=` 切开、daemon 拒绝命令行元字符路径、按键限速键码上限、文件大小设置不再回绕、IPC 待发队列上限 32。
+验证：`cmake --build --preset windows-msvc-release` 成功；`ctest` 于 `build/src/unittests`（Release）34 项中修复前 33 通过、`FileTransferReceiverTests` 修复后通过；`InputValidatorTests` 与 `FileTransferReceiverTests` 复跑通过。`synergy-daemon --version` 输出 `TuPig Synergy Daemon 1.21.2-dev+979bdce8`，`synergy-core --version` 为 `1.21.2-dev+979bdce8`。版权行中的 Deskflow 归属不改。根目录 `ctest` 看不到用例，是因为 `enable_testing()` 在 `src/unittests`，测试注册在 `build/src/unittests`。
 
 ## 1. 会话目标与背景
 

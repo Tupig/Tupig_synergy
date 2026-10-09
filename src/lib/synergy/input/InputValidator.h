@@ -124,12 +124,19 @@ public:
   //! Check whether an event would exceed the rate limit.
   /*!
   Uses a sliding one-second window per key. Old timestamps are dropped as the
-  window advances, so memory does not grow without bound.
+  window advances, and at most kMaxTrackedKeys distinct keys are remembered, so
+  a peer that cycles key ids cannot grow this table without bound.
   \param keyCode the key being checked
   \param now current timestamp
   \return true if the event should be dropped
   */
   bool isRateLimited(KeyID keyCode, std::chrono::steady_clock::time_point now);
+
+  //! Most distinct keys remembered at once. Further new keys are dropped.
+  static constexpr size_t kMaxTrackedKeys = 256;
+
+  //! How many keys currently have a live window. For tests and diagnostics.
+  [[nodiscard]] size_t trackedKeyCount() const;
 
   //! Set the maximum events per second per key.
   void setMaxEventsPerSecond(uint32_t max);

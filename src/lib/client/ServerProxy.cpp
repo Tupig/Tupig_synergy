@@ -22,6 +22,7 @@
 #include "io/IStream.h"
 #include "ipc/CoreIpc.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <string>
@@ -73,10 +74,11 @@ ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *
     options.dropDirectory = Settings::value(Settings::FileTransfer::DropDirectory).toString().toStdString();
 
     if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
-      options.maxFileSize = maxMb * 1024 * 1024;
+      options.maxFileSize = bytesFromMegabyteSetting(maxMb, options.maxFileSize);
     }
     if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
-      options.maxFileCount = static_cast<size_t>(maxCount);
+      constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
+      options.maxFileCount = static_cast<size_t>(std::min(maxCount, kMaxFileCount));
     }
 
     m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);

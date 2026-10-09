@@ -10,6 +10,8 @@
 #include "net/SecurityLevel.h"
 #include "net/TCPSocket.h"
 
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -105,4 +107,8 @@ private:
   int m_writeRetrySize = 0;
   void *m_writeBuffer = nullptr;
   int m_writeBufferSize = 0;
+
+  // Scratch for one secureRead. Per socket, not a function-local static:
+  // a static buffer is shared by every SecureSocket on the multiplexer.
+  std::array<uint8_t, 4096> m_readBuffer{};
 };

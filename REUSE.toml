@@ -50,7 +50,7 @@ path = [
  , "deploy/mac/bundle/Contents/Resources/TuPig Synergy.icns"
  , "deploy/windows/wix-banner.png"
  , "deploy/windows/wix-dialog.png"
- , "src/apps/res/icons/deskflow-**/apps/64/org.deskflow.deskflow*.svg"
+ , "src/apps/res/icons/synergy-**/apps/64/com.tupig.synergy*.svg"
  , "src/apps/res/branding/image/logo-dark.png"
  , "src/apps/res/branding/image/logo-light.png"
  , "src/apps/res/branding/synergy-dark.theme"
@@ -66,12 +66,12 @@ SPDX-FileCopyrightText = "TuPig"
 SPDX-License-Identifier = "GPL-2.0-only"
 
 [[annotations]]
-path = "src/apps/res/icons/deskflow-**/**/**/**.svg"
+path = "src/apps/res/icons/synergy-**/**/**/**.svg"
 SPDX-FileCopyrightText = "Kde Breeze Icons"
 SPDX-License-Identifier = "LGPL-2.1-only"
 
 [[annotations]]
-path = "src/apps/res/icons/deskflow-**/index.theme"
+path = "src/apps/res/icons/synergy-**/index.theme"
 SPDX-FileCopyrightText = "Chris Rizzitello <sithlord48@gmail.com>"
 SPDX-License-Identifier = "LGPL-2.1-only"
 

@@ -51,6 +51,21 @@ int main(int argc, char **argv)
 
   QCoreApplication app(argc, argv);
   QCoreApplication::setApplicationName(QStringLiteral("%1 Daemon").arg(kAppName));
+  // Same string core and the GUI print. Qt's --version on a Windows-subsystem
+  // binary otherwise shows the four-part FILEVERSION resource (1.21.2.<tweak>).
+  QCoreApplication::setApplicationVersion(QString::fromUtf8(kDisplayVersion));
+
+  for (int i = 1; i < argc; ++i) {
+    const auto arg = QString::fromLocal8Bit(argv[i]);
+    if (arg == QLatin1String("--version") || arg == QLatin1String("-v")) {
+      const auto line = QStringLiteral("%1 %2\n").arg(
+          QCoreApplication::applicationName(), QCoreApplication::applicationVersion()
+      );
+      fputs(line.toLocal8Bit().constData(), stdout);
+      fflush(stdout);
+      return s_exitSuccess;
+    }
+  }
 
   QCommandLineParser parser;
   parser.addHelpOption();

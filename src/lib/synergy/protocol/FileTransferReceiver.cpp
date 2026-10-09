@@ -11,9 +11,14 @@
 #include "base/Log.h"
 #include "io/IStream.h"
 
+#include <cerrno>
+#include <cstdio>
 #include <filesystem>
-#include <fstream>
 #include <system_error>
+
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -29,6 +34,64 @@ std::pair<std::string, std::string> splitStemAndExtension(const std::string &nam
     return {name, {}};
   }
   return {name.substr(0, dot), name.substr(dot)};
+}
+
+//! Open \p path for writing only if it does not already exist.
+FILE *openExclusive(const std::filesystem::path &path)
+{
+#if defined(_WIN32)
+  return _wfopen(path.c_str(), L"wbx");
+#else
+  return std::fopen(path.c_str(), "wbx");
+#endif
+}
+
+//! Publish a finished staging file as \p target without replacing anything.
+/*!
+std::filesystem::rename replaces an existing destination on POSIX. link() fails
+with EEXIST instead, which is the rule this receiver promises. Filesystems that
+cannot hard-link fall back to copy_file, which also errors when the destination
+exists.
+*/
+bool publishStagedFile(const std::filesystem::path &staging, const std::filesystem::path &target, std::error_code &ec)
+{
+#if defined(_WIN32)
+  std::filesystem::rename(staging, target, ec);
+  return !ec;
+#else
+  if (::link(staging.c_str(), target.c_str()) == 0) {
+    std::filesystem::remove(staging, ec);
+    ec.clear();
+    return true;
+  }
+
+  if (errno == EEXIST) {
+    ec = std::error_code(errno, std::generic_category());
+    return false;
+  }
+
+  std::filesystem::copy_file(staging, target, std::filesystem::copy_options::none, ec);
+  std::error_code removeEc;
+  std::filesystem::remove(staging, removeEc);
+  return !ec;
+#endif
+}
+
+//! True when the path does not exist. An error is treated as "occupied": guessing
+//! that a probe failure means the name is free is how an overwrite slips through.
+bool pathIsFree(const std::filesystem::path &path)
+{
+  std::error_code ec;
+  const auto status = std::filesystem::status(path, ec);
+  // MSVC reports not-found as an error code. That is "free", not "occupied".
+  // Any other error means we cannot tell, so the name is treated as taken.
+  if (status.type() == std::filesystem::file_type::not_found) {
+    return true;
+  }
+  if (ec) {
+    return false;
+  }
+  return !std::filesystem::exists(status);
 }
 
 //! True when \p candidate, once normalised, still lives inside \p directory.
@@ -200,6 +263,11 @@ void FileTransferReceiver::writeCurrentFile()
     return;
   }
 
+  // The Nth completed transfer is paired with the Nth accepted name. A failed
+  // write still consumes that name, otherwise the next file is stored under it.
+  const auto safeName = m_acceptedNames.at(m_nextName);
+  ++m_nextName;
+
   if (m_totalWritten + content.size() > m_options.maxTotalBytes) {
     LOG_ERR(
         "file transfer: total of %llu bytes would exceed the limit of %llu",
@@ -210,7 +278,14 @@ void FileTransferReceiver::writeCurrentFile()
     return;
   }
 
-  const auto &safeName = m_acceptedNames.at(m_nextName);
+  std::error_code ec;
+  std::filesystem::create_directories(m_options.dropDirectory, ec);
+  if (ec) {
+    LOG_ERR("file transfer: cannot create the drop directory: %s", ec.message().c_str());
+    ++m_refused;
+    return;
+  }
+
   const auto target = uniqueTargetPath(safeName);
   if (target.empty()) {
     LOG_ERR("file transfer: no free target path for an accepted name");
@@ -224,32 +299,36 @@ void FileTransferReceiver::writeCurrentFile()
     return;
   }
 
-  std::error_code ec;
-  std::filesystem::create_directories(m_options.dropDirectory, ec);
-
-  // Stage then rename: a partial transfer must never appear as a finished file.
-  const auto staging = std::filesystem::path(target + ".part");
-
-  {
-    std::ofstream out(staging, std::ios::binary | std::ios::trunc);
-    if (!out) {
-      LOG_ERR("file transfer: cannot open a staging file in the drop directory");
-      ++m_refused;
-      return;
-    }
-
-    out.write(content.data(), static_cast<std::streamsize>(content.size()));
-    if (!out) {
-      LOG_ERR("file transfer: failed while writing the staging file");
-      out.close();
-      std::filesystem::remove(staging, ec);
-      ++m_refused;
-      return;
+  // Stage exclusively, then publish without replacing an existing file.
+  std::filesystem::path staging(target + ".part");
+  FILE *staged = openExclusive(staging);
+  if (staged == nullptr) {
+    for (int attempt = 1; staged == nullptr && attempt <= 20; ++attempt) {
+      staging = std::filesystem::path(target + "." + std::to_string(attempt) + ".part");
+      staged = openExclusive(staging);
     }
   }
+  if (staged == nullptr) {
+    LOG_ERR("file transfer: cannot open a staging file in the drop directory");
+    ++m_refused;
+    return;
+  }
 
-  std::filesystem::rename(staging, target, ec);
-  if (ec) {
+  bool wrote = true;
+  if (!content.empty()) {
+    const auto n = std::fwrite(content.data(), 1, content.size(), staged);
+    wrote = n == content.size();
+  }
+  wrote = wrote && std::fflush(staged) == 0;
+  std::fclose(staged);
+  if (!wrote) {
+    LOG_ERR("file transfer: failed while writing the staging file");
+    std::filesystem::remove(staging, ec);
+    ++m_refused;
+    return;
+  }
+
+  if (!publishStagedFile(staging, std::filesystem::path(target), ec)) {
     LOG_ERR("file transfer: cannot move the staged file into place: %s", ec.message().c_str());
     std::filesystem::remove(staging, ec);
     ++m_refused;
@@ -257,7 +336,6 @@ void FileTransferReceiver::writeCurrentFile()
   }
 
   m_totalWritten += content.size();
-  ++m_nextName;
   m_writtenFiles.push_back(target);
   LOG_INFO("file transfer: wrote %s (%zu bytes)", target.c_str(), content.size());
 }
@@ -267,16 +345,16 @@ std::string FileTransferReceiver::uniqueTargetPath(const std::string &safeName) 
   const std::filesystem::path base(m_options.dropDirectory);
   const auto direct = base / safeName;
 
-  std::error_code ec;
-  if (!std::filesystem::exists(direct, ec)) {
+  if (pathIsFree(direct)) {
     return direct.string();
   }
 
   // Never overwrite: an incoming file must not be able to replace a local one.
+  // A probe error counts as occupied, so we do not guess that the name is free.
   const auto [stem, extension] = splitStemAndExtension(safeName);
   for (int attempt = 1; attempt <= kMaxCollisionAttempts; ++attempt) {
     const auto candidate = base / (stem + " (" + std::to_string(attempt) + ")" + extension);
-    if (!std::filesystem::exists(candidate, ec)) {
+    if (pathIsFree(candidate)) {
       return candidate.string();
     }
   }

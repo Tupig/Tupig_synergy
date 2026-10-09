@@ -26,6 +26,7 @@ private Q_SLOTS:
   void rateLimitBlocksOnceWindowIsFull();
   void rateLimitWindowSlides();
   void rateLimitIsPerKey();
+  void rateLimitCapsDistinctKeys();
   void setMaxEventsPerSecondRejectsZero();
   void blockedCombinationsDefaultToEmpty();
   void blockedCombinationMatchesExactKeyAndModifiers();

@@ -26,12 +26,14 @@
 #include "server/PrimaryClient.h"
 
 #include "common/Settings.h"
+#include "synergy/protocol/FileChunk.h"
 #include "synergy/protocol/FileTransferOutbound.h"
 
 #ifdef _WIN32
 #include <algorithm>
 #include <array>
 #endif
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -333,10 +335,11 @@ uint64_t Server::sendLocalFiles(const std::vector<std::string> &paths)
   options.enabled = Settings::value(Settings::FileTransfer::Enabled).toBool();
 
   if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
-    options.maxFileSize = maxMb * 1024 * 1024;
+    options.maxFileSize = bytesFromMegabyteSetting(maxMb, options.maxFileSize);
   }
   if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
-    options.maxFileCount = static_cast<size_t>(maxCount);
+    constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
+    options.maxFileCount = static_cast<size_t>(std::min(maxCount, kMaxFileCount));
   }
 
   FileTransferSender::Emitter emitter;

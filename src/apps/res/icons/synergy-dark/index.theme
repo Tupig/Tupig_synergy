@@ -1,11 +1,11 @@
 [Icon Theme]
-Name=deskflow-light
+Name=synergy-dark
 
-Comment=Striped down Breeze Light by the KDE VDG
+Comment=Striped down Breeze Dark by the KDE VDG
 
 DisplayDepth=32
 
-Inherits=breeze,hicolor
+#Inherits=breeze-dark,hicolor
 
 Example=folder
 
@@ -147,7 +147,6 @@ Context=Actions
 Type=Scalable
 MinSize=16
 MaxSize=256
-
 
 #64x64 - Fixed size - For folder icons >!!!ONLY!!!< - DO_NOT_USE_ANYWHERE_ELSE - Color
 [places/64]

@@ -14,6 +14,21 @@
 
 namespace synergy::gui::ipc {
 
+namespace {
+
+//! Split on the first '=' only. Values are paths and fingerprints, which may
+//! themselves contain '='. Splitting every '=' truncates them.
+QStringList splitIpcMessage(const QString &message)
+{
+  const auto separator = message.indexOf(QLatin1Char('='));
+  if (separator < 0) {
+    return {message};
+  }
+  return {message.left(separator), message.mid(separator + 1)};
+}
+
+} // namespace
+
 // QLocalSocket::errorOccurred was added in Qt 5.15; the pre-5.15 signal is
 // error(QLocalSocket::LocalSocketError), which is overloaded against the
 // error() const getter — qOverload disambiguates. Resolve once so the connect
@@ -165,7 +180,7 @@ void IpcClient::handleReadyRead()
     data.remove(0, index + 1);
 
     qDebug().noquote() << QStringLiteral("%1 ipc client message: %2").arg(m_typeName, message);
-    const auto parts = message.split('=');
+    const auto parts = splitIpcMessage(message);
     if (parts.isEmpty()) {
       qWarning().noquote() << QStringLiteral("%1 ipc client got invalid message: %2").arg(m_typeName, message);
       continue;

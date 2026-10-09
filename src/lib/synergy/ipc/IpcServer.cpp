@@ -14,6 +14,23 @@
 
 namespace synergy::core::ipc {
 
+namespace {
+
+//! Split on the first '=' only. Values are paths and fingerprints, which may
+//! themselves contain '='. Splitting every '=' truncates them.
+QStringList splitIpcMessage(const QString &message)
+{
+  const auto separator = message.indexOf(QLatin1Char('='));
+  if (separator < 0) {
+    return {message};
+  }
+  return {message.left(separator), message.mid(separator + 1)};
+}
+
+constexpr int kMaxPendingIpcMessages = 32;
+
+} // namespace
+
 // QLocalSocket::errorOccurred was added in Qt 5.15; pre-5.15 uses error(),
 // which is overloaded against the error() const getter — qOverload disambiguates.
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
@@ -112,7 +129,7 @@ void IpcServer::handleErrorOccurred()
 void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &message)
 {
   LOG_VERBOSE("%s ipc server got message: %s", m_typeName.constData(), message.toUtf8().constData());
-  const auto parts = message.split('=');
+  const auto parts = splitIpcMessage(message);
   if (parts.isEmpty()) {
     LOG_ERR("%s ipc server got invalid message: %s", m_typeName.constData(), message.toUtf8().constData());
     writeToClientSocket(clientSocket, QStringLiteral("error"));
@@ -171,6 +188,9 @@ void IpcServer::broadcastCommand(const QString &command, const QString &args)
     LOG_VERBOSE(
         "%s ipc server has no clients, message queued: %s", m_typeName.constData(), message.toUtf8().constData()
     );
+    if (m_pendingMessages.size() >= kMaxPendingIpcMessages) {
+      m_pendingMessages.removeFirst();
+    }
     m_pendingMessages.append(message);
     return;
   }

@@ -70,6 +70,15 @@ void DaemonApp::applyWatchdogCommand() const
     return;
   }
 
+  // The path is interpolated inside a quoted CreateProcess command line. A quote
+  // or newline would close that quote or split the command. Windows file names
+  // cannot contain either, so rejecting them drops nothing a real config uses.
+  if (m_configFile.contains(QLatin1Char('"')) || m_configFile.contains(QLatin1Char('\n')) ||
+      m_configFile.contains(QLatin1Char('\r'))) {
+    LOG_ERR("cannot apply watchdog command: config file path contains a command-line metacharacter");
+    return;
+  }
+
   if (!QFileInfo::exists(m_configFile)) {
     LOG_ERR("cannot apply watchdog command: config file does not exist: %s", qPrintable(m_configFile));
     return;
