@@ -1,10 +1,12 @@
 # Single workflow, shown as "TuPig Synergy" (CMAKE_PROJECT_PROPER_NAME).
-# One CMake configure line for every OS; the runner compiler
-# is the only toolchain difference: MSVC (vcvars + Ninja) on Windows, AppleClang
-# on macOS, gcc in the Linux containers. package-type=release builds Windows,
-# macOS and Linux together. clang-tidy, cppcheck, CodeQL, SonarCloud and
-# Valgrind run only when a manual dispatch sets analyze=true. push/PR use the
-# lean Linux subset (.github/matrices/linux-targets.json "free").
+# Jobs are ordered for reading; `needs` is what actually schedules them:
+#   1. prepare (version, clang-format)
+#   2. build (Windows MSVC, macOS AppleClang arm64+x86_64, Linux gcc, Flatpak)
+#   3. publish (GitHub Release, optional S3, Slack on failure)
+#   4. analysis (only workflow_dispatch with analyze=true)
+#   5. ci-passed, the branch-protection gate
+# package-type=release builds every platform. push/PR use the free Linux
+# subset (.github/matrices/linux-targets.json "free").
 
 name: TuPig Synergy
 
@@ -53,9 +55,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   PACKAGE_PREFIX: ${{ vars.SYNERGY_PACKAGE_PREFIX || 'synergy' }}
-  PACKAGE_PATH: ./dist
   CMAKE_CONFIGURE: "cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DSKIP_BUILD_TESTS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON"
 
   # Release shape, propagated to cmake (Synergy.cmake reads these as options).
@@ -66,70 +66,10 @@ env:
   SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
 jobs:
-  # Quality gate to allow PR merge, used in the branch protection rules.
-  ci-passed:
-    runs-on: ubuntu-latest
-    needs:
-      [
-        get-version,
-        lint-clang,
-        build-windows,
-        build-macos,
-        build-linux,
-        build-flatpak,
-        github-release,
-        clang-tidy,
-        cppcheck,
-        codeql,
-        sonar,
-        valgrind,
-      ]
-    if: always()
-
-    steps:
-      # 'skipped' is treated as passing because the user/event deliberately
-      # filtered the platform set (workflow_dispatch with inputs.platform=windows
-      # skips macos+linux jobs). A failed job is still a failure. get-version never
-      # filters out, so requiring it catches a build skipped by its failure.
-      # lint-clang has no platform filter: a failed lint used to be invisible here
-      # (builds skip via needs:, skipped counted as ok) — always require it.
-      # No checkout: this job only inspects needs.* results.
-      - name: Check all jobs passed or were intentionally skipped
-        run: |
-          ok() {
-            [[ "$1" == "success" || "$1" == "skipped" ]]
-          }
-          if ok "${{needs.get-version.result}}" \
-             && ok "${{needs.lint-clang.result}}" \
-             && ok "${{needs.build-windows.result}}" \
-             && ok "${{needs.build-macos.result}}" \
-             && ok "${{needs.build-linux.result}}" \
-             && ok "${{needs.build-flatpak.result}}" \
-             && ok "${{needs.github-release.result}}" \
-             && ok "${{needs.clang-tidy.result}}" \
-             && ok "${{needs.cppcheck.result}}" \
-             && ok "${{needs.codeql.result}}" \
-             && ok "${{needs.sonar.result}}" \
-             && ok "${{needs.valgrind.result}}"; then
-            echo "✅ CI passed" > $GITHUB_STEP_SUMMARY
-          else
-            exit 1
-          fi
-
-  lint-clang:
-    runs-on: ubuntu-slim
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Lint Checker
-        uses: ./.github/actions/lint-clang
-
-  # Valgrind is free-tier expensive (full container build). Keep the
-  # reusable workflow dispatch-only; do not auto-run it on every PR.
-
+  # ---------------------------------------------------------------------------
+  # 1. Prepare. Every event starts here. Push and pull requests then build
+  # only the free Linux subset; a release builds every platform.
+  # ---------------------------------------------------------------------------
   get-version:
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -156,7 +96,6 @@ jobs:
       # release/workflow_dispatch use the full distro matrix.
       - name: Select Linux matrix
         id: linux-matrix
-        working-directory: .
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ] || [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             key=free
@@ -166,6 +105,21 @@ jobs:
           targets=$(jq -c --arg k "$key" '.[$k]' .github/matrices/linux-targets.json)
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
 
+  lint-clang:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Clang-format
+        uses: ./.github/actions/lint-clang
+
+  # ---------------------------------------------------------------------------
+  # 2. Build. One CMake configure line per OS; the runner compiler differs.
+  # Windows: MSVC + Ninja. macOS: AppleClang (arm64 and x86_64). Linux: gcc.
+  # ---------------------------------------------------------------------------
   build-windows:
     needs: [lint-clang, get-version]
     # A release always builds Windows, even if platform was set to one OS.
@@ -207,7 +161,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # Effectively runs vcvarsall.bat. VC++ itself is already pre-installed on the runner.
+      # Stage: toolchain. vcvars via setup-msvc-dev; Qt from the CI Qt build, OpenSSL from vcpkg.
       - name: Setup VC++ environment
         uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
@@ -227,6 +181,7 @@ jobs:
           set "DOXYGEN_BIN=C:\Program Files\doxygen\bin"
           echo %DOXYGEN_BIN%>>"%GITHUB_PATH%"
 
+      # Stage: compile. GUI must be synergy_<X.Y.Z>.exe; core and daemon stay unversioned.
       - name: Configure
         run: ${{ env.CMAKE_CONFIGURE }} -G Ninja ${{ steps.get-deps.outputs.vcpkg-cmake-config }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }}
 
@@ -268,12 +223,8 @@ jobs:
           path: ${{ steps.gui-exe.outputs.path }}
           if-no-files-found: error
 
-      # Inner binaries (synergy-core.exe, synergy_<version>.exe, synergy-daemon.exe) must
-      # be signed BEFORE the MSI is built — WiX embeds them into the installer,
-      # and signing the MSI afterward doesn't propagate signatures to embedded
-      # files. Stages all non-test exes into one dir so they can be batch-signed
-      # with a single OTP, then restores them in-place before the package step.
-      # Skipped entirely when SSL.com secrets are absent (issue #165).
+      # Stage: sign executables before WiX embeds them. Skipped when any SSL.com
+      # secret is missing; the package is still produced, unsigned (issue #165).
       - name: Windows signing not configured
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING != 'true'
         shell: bash
@@ -313,6 +264,7 @@ jobs:
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat restore
 
+      # Stage: package, then sign the MSI itself when signing is enabled.
       - name: Package
         shell: bash
         run: cmake --build build --config Release -j8 --target package
@@ -346,14 +298,15 @@ jobs:
           MSI_PATH: ${{ steps.locate-msi.outputs.path }}
         run: scripts\ci\ci-windows-signing.bat verify-msi
 
-      - name: Tests
+      # Stage: test the build and the package, then upload it.
+      - name: Unit tests
         uses: ./.github/actions/run-tests
         timeout-minutes: 2
 
-      - name: Test package
+      - name: Test packaged build
         uses: ./.github/actions/test-package
 
-      - name: Upload
+      - name: Upload package
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
@@ -396,6 +349,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # Stage: toolchain, then compile. Qt comes from the CI Qt build.
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
@@ -408,6 +362,7 @@ jobs:
         shell: bash
         run: cmake --build build --config Release -j8
 
+      # Stage: sign and notarize, only when APPLE_CODESIGN_ID is set.
       # Create an ephemeral keychain just for this run and import the Developer
       # ID Application certificate from the base64-encoded P12 in secrets. Using
       # a per-run keychain (rather than System.keychain) keeps the cert out of
@@ -501,14 +456,15 @@ jobs:
           spctl -a -t open --context context:primary-signature -v "$dmg"
           echo "DMG signed + notarized + stapled: $dmg"
 
-      - name: Tests
+      # Stage: test the build and the package, then upload it.
+      - name: Unit tests
         uses: ./.github/actions/run-tests
         timeout-minutes: 2
 
-      - name: Test package
+      - name: Test packaged build
         uses: ./.github/actions/test-package
 
-      - name: Upload
+      - name: Upload package
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
@@ -531,11 +487,11 @@ jobs:
         target: ${{ fromJSON(needs.get-version.outputs.linux_targets) }}
 
     steps:
+      # Stage: container toolchain. The image has no git, and it runs as root.
       # Containers don't ship git; everything else needs it for checkout + describe.
       # This pre-checkout step runs at the workspace root, which always exists.
       - name: Install Git on Container
         shell: bash
-        working-directory: .
         run: |
           if [ "${{ matrix.target.like }}" == "debian" ]; then
             apt update -qqq > /dev/null && apt install -qqq git devscripts > /dev/null
@@ -588,6 +544,7 @@ jobs:
           rm -f /usr/lib/$(gcc -dumpmachine)/libportal.so*
           ldconfig
 
+      # Stage: compile and package. Arch uses makepkg; every other distro uses CPack.
       - name: Configure
         run: ${{ env.CMAKE_CONFIGURE }} ${{ matrix.target.config-args }} -DSYNERGY_VERSION_RELEASE=${{ env.SYNERGY_VERSION_RELEASE }} -DSYNERGY_VERSION_SNAPSHOT=${{ env.SYNERGY_VERSION_SNAPSHOT }}
 
@@ -612,17 +569,18 @@ jobs:
             cmake --build build --config Release -j8 --target package
           fi
 
-      - name: Tests
+      # Stage: test, then upload. RHEL skips the unit tests (Qt5 leg).
+      - name: Unit tests
         if: ${{ matrix.target.like != 'rhel' }}
         uses: ./.github/actions/run-tests
         timeout-minutes: 2
 
-      - name: Test package
+      - name: Test packaged build
         uses: ./.github/actions/test-package
         with:
           like: ${{ matrix.target.like }}
 
-      - name: Upload
+      - name: Upload package
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-${{ matrix.target.name }}
@@ -656,7 +614,8 @@ jobs:
 
       - run: git config --global protocol.file.allow always
 
-      - name: Lint appsteam
+      # Stage: lint the metadata, build the bundle, then upload it.
+      - name: Lint AppStream
         run: flatpak-builder-lint appstream deploy/linux/com.tupig.synergy.metainfo.xml
 
       # appid-url-not-reachable: the linter probes https://tupig.com (app-id
@@ -681,7 +640,7 @@ jobs:
       - name: Validate build
         run: flatpak-builder-lint --exceptions --user-exceptions deploy/linux/flatpak/ci-build-lint-exceptions.json repo repo
 
-      - name: Upload
+      - name: Upload package
         uses: actions/upload-artifact@v7
         with:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
@@ -691,6 +650,10 @@ jobs:
   # Attach the CPack/Flatpak packages to the GitHub Release v<X.Y.Z>. Actions
   # artifacts expire; the Release page is what people download. Push and PR
   # skip this job. A failed distro does not drop packages that did build.
+  # ---------------------------------------------------------------------------
+  # 3. Publish. Release builds attach packages to the GitHub Release and,
+  # when AWS secrets exist, copy them to S3. report runs only after a failure.
+  # ---------------------------------------------------------------------------
   github-release:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
     if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success' || needs.build-flatpak.result == 'success') }}
@@ -734,8 +697,7 @@ jobs:
   # uploads whatever artifacts exist — one failed target must not block shipping
   # the rest (a flaky distro shouldn't sink a whole nightly snapshot). Gated only
   # on get-version, which supplies the path. Layout: <dir>/<dev|snapshot|release>/<version>/...
-  # No checkout (download-artifact only), so run steps must override the
-  # workflow working-directory; artifacts land at the workspace root under dist/.
+  # No checkout (download-artifact only). Artifacts land at the workspace root under dist/.
   # Secrets cannot be referenced from a job-level `if` (context unavailable
   # there), so gate each AWS step individually: when secrets are unset the
   # job still runs but every upload step is skipped - job stays green (A-30 (#54)).
@@ -748,7 +710,6 @@ jobs:
     steps:
       - name: Check AWS secrets
         id: aws
-        working-directory: .
         env:
           AWS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -779,7 +740,6 @@ jobs:
       - name: Upload to AWS S3
         if: steps.aws.outputs.configured == 'true'
         shell: bash
-        working-directory: .
         run: |
           version="${{ needs.get-version.outputs.version }}"
           s3_uri="${{ inputs.aws-s3-uri || format('s3://{0}/{1}', vars.AWS_S3_BUCKET, vars.AWS_S3_UPLOAD_DIR) }}"
@@ -807,11 +767,9 @@ jobs:
     timeout-minutes: 2
 
     steps:
-      # No checkout: override workflow working-directory so bash can start.
       - name: Build Slack message
         id: message
         shell: bash
-        working-directory: .
         run: |
           link="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           {
@@ -830,7 +788,6 @@ jobs:
       - name: Check Slack secrets
         id: slack
         shell: bash
-        working-directory: .
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_NOTIFY_CHANNEL_ID }}
@@ -852,10 +809,11 @@ jobs:
             channel: ${{ secrets.SLACK_NOTIFY_CHANNEL_ID }}
             text: ${{ toJSON(steps.message.outputs.text) }}
 
-  # Analysis jobs used to be separate workflows. They run only when a manual
-  # dispatch sets analyze=true, so push/PR stay on the lean build path.
+  # ---------------------------------------------------------------------------
+  # 4. Analysis. Manual dispatch with analyze=true only. Push and pull
+  # requests skip this whole group. Valgrind is the expensive container build.
+  # ---------------------------------------------------------------------------
   clang-tidy:
-    name: clang-tidy
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -898,7 +856,6 @@ jobs:
           if-no-files-found: ignore
 
   cppcheck:
-    name: cppcheck
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -940,11 +897,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Install container dependencies
-        working-directory: .
         run: |
           apt update -qqq > /dev/null
           apt install -qqq git > /dev/null
-      - name: Fancy Checkout
+      - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
@@ -973,11 +929,10 @@ jobs:
       CPU_CORE_COUNT: 4
     steps:
       - name: Install container dependencies
-        working-directory: .
         run: |
           apt update -qqq > /dev/null
           apt install -qqq git curl unzip gcovr dirmngr gpg > /dev/null
-      - name: Fancy Checkout
+      - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install project dependencies
         uses: ./.github/actions/install-dependencies
@@ -1031,11 +986,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Install container dependencies
-        working-directory: .
         run: |
           apt update -qqq > /dev/null
           apt install -qqq git valgrind > /dev/null
-      - name: Fancy Checkout
+      - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
@@ -1063,3 +1017,56 @@ jobs:
           EOF
           )
           echo "$message" >> $GITHUB_STEP_SUMMARY
+  # ---------------------------------------------------------------------------
+  # 5. Gate. Branch protection watches this job. A skipped job counts as
+  # success: platform filters and analyze=false skip work on purpose.
+  # ---------------------------------------------------------------------------
+  ci-passed:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        get-version,
+        lint-clang,
+        build-windows,
+        build-macos,
+        build-linux,
+        build-flatpak,
+        github-release,
+        clang-tidy,
+        cppcheck,
+        codeql,
+        sonar,
+        valgrind,
+      ]
+    if: always()
+
+    steps:
+      # 'skipped' is treated as passing because the user/event deliberately
+      # filtered the platform set (workflow_dispatch with inputs.platform=windows
+      # skips macos+linux jobs). A failed job is still a failure. get-version never
+      # filters out, so requiring it catches a build skipped by its failure.
+      # lint-clang has no platform filter: a failed lint used to be invisible here
+      # (builds skip via needs:, skipped counted as ok) — always require it.
+      # No checkout: this job only inspects needs.* results.
+      - name: Check all jobs passed or were intentionally skipped
+        run: |
+          ok() {
+            [[ "$1" == "success" || "$1" == "skipped" ]]
+          }
+          if ok "${{needs.get-version.result}}" \
+             && ok "${{needs.lint-clang.result}}" \
+             && ok "${{needs.build-windows.result}}" \
+             && ok "${{needs.build-macos.result}}" \
+             && ok "${{needs.build-linux.result}}" \
+             && ok "${{needs.build-flatpak.result}}" \
+             && ok "${{needs.github-release.result}}" \
+             && ok "${{needs.clang-tidy.result}}" \
+             && ok "${{needs.cppcheck.result}}" \
+             && ok "${{needs.codeql.result}}" \
+             && ok "${{needs.sonar.result}}" \
+             && ok "${{needs.valgrind.result}}"; then
+            echo "✅ CI passed" > $GITHUB_STEP_SUMMARY
+          else
+            exit 1
+          fi
+
