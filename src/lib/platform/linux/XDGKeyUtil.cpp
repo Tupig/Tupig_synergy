@@ -160,7 +160,7 @@ uint32_t XDGKeyUtil::getModifierBitForKeySym(KeySym keysym)
  * Author: Markus G. Kuhn <http://www.cl.cam.ac.uk/~mgk25/>,
  *         University of Cambridge, April 2001
  *
- * Special thanks to Richard Verhoeven <river@win.tue.nl> for preparing
+ * Special thanks to Richard Verhoeven <https://github.com/Tupig/Tupig_synergy/issues> for preparing
  * an initial draft of the mapping table.
  *
  * This software is in the public domain. Share and enjoy!

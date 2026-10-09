@@ -298,9 +298,9 @@ void showNoticeIfPending(QWidget *parent)
           "<p>We've migrated your settings to a new format used by this version of Synergy.</p>"
           "<p>Your previous settings have been backed up to:</p>"
           "<p><code>%1</code></p>"
-          "<p>If anything looks different, please contact us.</p>"
+          "<p>If anything looks different, report it at <a href=\"%2\">%2</a>.</p>"
       )
-          .arg(s_lastBackupPath)
+          .arg(s_lastBackupPath, QString::fromUtf8(kProjectContact))
   );
   writeNotifiedVersion(kCurrentSchemaVersion);
 }

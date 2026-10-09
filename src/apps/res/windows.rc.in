@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <sithlord48@gmail.com>
+// SPDX-FileCopyrightText: (C) 2025 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 // SPDX-License-Identifier: MIT
 // Generic Template for rc files in Synergy
 #include <windows.h>

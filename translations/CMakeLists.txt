@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-FileCopyrightText: Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 # SPDX-License-Identifier: MIT
 set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM 1)
 option(CLEAN_TRS "Clean obsolete translations from tr files" OFF)

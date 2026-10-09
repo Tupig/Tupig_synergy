@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (C) 2024 Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-FileCopyrightText: (C) 2024 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 # SPDX-License-Identifier: MIT
 
 # HACK This is set when the files is included so its the real path

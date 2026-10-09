@@ -1,8 +1,8 @@
 /*
  * Synergy -- mouse and keyboard sharing utility
- * SPDX-FileCopyrightText: (C) 2024 Chris Rizzitello <sithlord48@gmail.com>
+ * SPDX-FileCopyrightText: (C) 2024 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
  * SPDX-FileCopyrightText: (C) 2012 - 2024 Symless Ltd.
- * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <vl@fidra.de>
+ * SPDX-FileCopyrightText: (C) 2008 Volker Lanz <https://github.com/Tupig/Tupig_synergy/issues>
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 

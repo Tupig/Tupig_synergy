@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: 2020 Chris Rizzitello <sithlord48@gmail.com>
+-- SPDX-FileCopyrightText: 2020 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 -- SPDX-License-Identifier: MIT
 
 on run argv

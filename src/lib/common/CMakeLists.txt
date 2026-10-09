@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (C) 2024 - 2025 Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-FileCopyrightText: (C) 2024 - 2025 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 # SPDX-License-Identifier: MIT
 
 set(CORE_BINARY "${CMAKE_PROJECT_NAME}-core")

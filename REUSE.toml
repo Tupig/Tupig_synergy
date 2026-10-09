@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Chris Rizzitello <sithlord48@gmail.com>
+# SPDX-FileCopyrightText: 2025 Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>
 # SPDX-License-Identifier: MIT
 
 version = 1
@@ -72,7 +72,7 @@ SPDX-License-Identifier = "LGPL-2.1-only"
 
 [[annotations]]
 path = "src/apps/res/icons/synergy-**/index.theme"
-SPDX-FileCopyrightText = "Chris Rizzitello <sithlord48@gmail.com>"
+SPDX-FileCopyrightText = "Chris Rizzitello <https://github.com/Tupig/Tupig_synergy/issues>"
 SPDX-License-Identifier = "LGPL-2.1-only"
 
 [[annotations]]
