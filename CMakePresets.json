@@ -79,10 +79,11 @@
     {
       "name": "linux-release",
       "displayName": "Linux x64 Release",
-      "description": "Static-linked Release build for Linux (x64)",
+      "description": "Static-linked Release build for Linux (x64). SYNERGY_VERSION_RELEASE makes the version X.Y.Z.",
       "inherits": "linux",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "SYNERGY_VERSION_RELEASE": "ON"
       }
     },
     {
@@ -98,10 +99,11 @@
     {
       "name": "macos-release",
       "displayName": "macOS ARM64 Release",
-      "description": "Static-linked Release build for macOS (ARM64)",
+      "description": "Static-linked Release build for macOS (ARM64). SYNERGY_VERSION_RELEASE makes the version X.Y.Z. Intel x86_64 is the CI job macos-x64, not this preset.",
       "inherits": "macos",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "SYNERGY_VERSION_RELEASE": "ON"
       }
     },
     {

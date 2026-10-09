@@ -16,7 +16,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/github/license/Tupig/Tupig_synergy?style=flat-square&color=2D8CFF)
-![Release](https://img.shields.io/github/v/release/Tupig/Tupig_synergy?style=flat-square&color=00C853&include_prereleases)
+![Build](https://img.shields.io/github/actions/workflow/status/Tupig/Tupig_synergy/ci.yml?style=flat-square&label=TuPig%20Synergy)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-0EA5E9?style=flat-square)
 ![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat-square&logo=c%2B%2B)
 ![Qt](https://img.shields.io/badge/Qt-6.7%2B-41CD52?style=flat-square&logo=qt)
@@ -39,7 +39,7 @@
 | 🌐 **Cross-Platform / 跨平台** | Windows, macOS, Linux (X11/Wayland) | ✅ Native / 原生 |
 | 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
 | 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
-| 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was — see `docs/HANDOFF.md` §5.5 / Win/mac 已实现，Linux 从未实现（见 `docs/HANDOFF.md` §5.5） | ⚠️ Platform-dependent / 视平台而定 |
+| 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was — see `docs/HANDOFF.md` §5.6 / Win/mac 已实现，Linux 从未实现（见 `docs/HANDOFF.md` §5.6） | ⚠️ Platform-dependent / 视平台而定 |
 | ⌨️ **Hotkey Switching / 热键切屏** | Instant screen switching via custom hotkeys / 自定义热键瞬间切换 | ✅ Configurable / 可配置 |
 | 🚫 **No License Required / 无需许可证** | Completely free, no serial keys or activation / 完全免费，无序列号/激活 | ✅ Forever / 永久 |
 | 🎨 **Modern Qt6 UI / 现代 Qt6 界面** | Beautiful, responsive graphical interface / 美观、响应式图形界面 | ✅ Polished / 打磨完成 |
@@ -88,49 +88,54 @@ graph TB
 
 </div>
 
+The diagram names CMake targets. On disk the Windows GUI file is `synergy_<X.Y.Z>.exe`. Linux keeps an unversioned `synergy` binary. macOS ships `TuPig Synergy.app`. `synergy-core` and `synergy-daemon` stay unversioned on every platform.
+
+图中是 CMake 目标名。Windows 上 GUI 文件是 `synergy_<X.Y.Z>.exe`。Linux 的 GUI 仍是不带版本号的 `synergy`。macOS 交付 `TuPig Synergy.app`。`synergy-core` 与 `synergy-daemon` 在各平台都不带版本号。
+
 ---
 
 ## 🚀 Quick Start / 快速开始
 
-### One-Click Setup / 一键环境搭建
+### One-command build / 一条命令构建
+
+Qt 与 OpenSSL 由仓库内 vcpkg 清单安装，不要再装一份系统 Qt，也不要设置 `VCPKG_ROOT`。版本号只来自 `cmake/Version.cmake`（当前 `1.21.2`）。`scripts\build.bat release` 与 `./scripts/build.sh release` 会打开 `SYNERGY_VERSION_RELEASE`，版本字符串是 `X.Y.Z`，不含 `-dev`。
+
+Qt and OpenSSL come from the repository vcpkg manifest. Do not install a second Qt, and do not set `VCPKG_ROOT`. The version comes only from `cmake/Version.cmake` (currently `1.21.2`). `scripts\build.bat release` and `./scripts/build.sh release` set `SYNERGY_VERSION_RELEASE`, so the version string is `X.Y.Z` with no `-dev` suffix.
 
 ```bat
-REM 1. Clone
 git clone https://github.com/Tupig/Tupig_synergy.git
 cd Tupig_synergy
 
-REM 2. Right-click setup.bat → Run as Administrator
-REM    (installs CMake, MSVC Build Tools, Git, bootstraps vcpkg)
-
-REM 3. Build (preferred user-facing entry — see AGENTS.md)
+REM Windows: once, as Administrator (CMake, MSVC Build Tools, Git)
+setup.bat
 scripts\build.bat release
-
-REM Advanced equivalent:
-REM   cmake --preset windows-msvc-release
-REM   cmake --build build --config Release
 ```
 
-Output (VS multi-config) / 产物（VS 多配置）: `build\bin\Release\synergy.exe` (GUI / 图形界面),
-`build\bin\Release\synergy-core.exe` (core / 核心),
-`build\bin\Release\synergy-daemon.exe` (Windows daemon / Windows 守护进程)
+```bash
+# macOS Apple Silicon, or Linux. Host tools only: CMake 3.25+, Ninja, a C++ compiler.
+# macOS also needs Xcode Command Line Tools. Linux also needs the X11 / libei / libportal packages in docs/build.md.
+./scripts/build.sh release
+```
 
-### Prerequisites (auto-installed by setup.bat) / 前置依赖（由 setup.bat 自动安装）
-
-| Requirement / 依赖 | Windows | macOS | Linux |
+| Platform / 平台 | GUI | Core | Daemon |
 |---|---|---|---|
-| **CMake 3.25+** | `setup.bat` installs / 自动安装 | `brew install cmake` | `sudo apt install cmake` |
-| **Ninja** | Included with VS Build Tools / 随 VS 构建工具附带 | `brew install ninja` | `sudo apt install ninja-build` |
-| **vcpkg** | `setup.bat` bootstraps / 自动引导 | `brew install vcpkg` | manual bootstrap / 手工引导 |
-| **MSVC Build Tools** | `setup.bat` installs / 自动安装 | — | — |
-| **"Desktop development with C++"** | Select in VS Installer / 在 VS 安装器中勾选 | — | — |
+| Windows | `build\bin\Release\synergy_<X.Y.Z>.exe` | `build\bin\Release\synergy-core.exe` | `build\bin\Release\synergy-daemon.exe` |
+| Linux | `build/bin/synergy` | `build/bin/synergy-core` | — |
+| macOS | `build/bin/TuPig Synergy.app` | `build/bin/synergy-core` | — |
 
-> **Note for MSVC / MSVC 注意**：当 `setup.bat` 安装构建工具时会弹出 Visual Studio 安装器，
-> 在点击安装前**必须**勾选 **"使用 C++ 的桌面开发"** 工作负载。
+`./scripts/build.sh` on macOS uses the `macos-release` preset (`arm64-osx`). Intel x86_64 is the Actions job `macos-x64`, not that preset. Details, packaging, and tests: [docs/build.md](docs/build.md).
 
-### Switching Machines / 更换机器
+macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。Intel x86_64 由 Actions 作业 `macos-x64` 构建，不是这个预设。打包与测试见 [docs/build.md](docs/build.md)。
 
-Just re-run `setup.bat` — it's idempotent and only installs what's missing.
-重新运行 `setup.bat` 即可 —— 它可重复执行，仅安装缺失的部分。
+> **MSVC**：`setup.bat` 弹出 Visual Studio 安装器时，安装前必须勾选 **“使用 C++ 的桌面开发”**。换机器时重新运行 `setup.bat` 即可，它只补缺。
+>
+> When `setup.bat` opens the Visual Studio installer, select **Desktop development with C++** before installing. On another machine, run `setup.bat` again; it only installs what is missing.
+
+### Prebuilt packages / 预编译包
+
+Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在 `package-type=release` 时用同一条 CMake 命令构建三端 Release：Windows MSVC、macOS AppleClang（arm64 与 x86_64）、Linux gcc。产物名是 `synergy_<version>.exe` 以及 `package-synergy-<version>-<platform>`。仓库还没配置代码签名 secret 时，Windows 包会跳过签名并给出警告。
+
+The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) with `package-type=release` builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc. Artifacts are `synergy_<version>.exe` and `package-synergy-<version>-<platform>`. Until the Windows code-signing secrets exist, those Windows packages are unsigned and the job says so.
 
 ---
 
@@ -188,6 +193,7 @@ Server screen layout is a **separate** config file (`screens`, `main.position`, 
 | [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查 |
 | [security.md](docs/security.md) | Security Policy / 安全策略 |
 | [HANDOFF.md](docs/HANDOFF.md) | Session Handoff / 会话交接 (progress, open items, G1 checklist) |
+| [Wiki](https://github.com/Tupig/Tupig_synergy/wiki) | Short map of these docs / 上述文档的简短索引 |
 
 ---
 
@@ -212,8 +218,6 @@ This project is licensed under **GPL-2.0-only WITH LicenseRef-OpenSSL-Exception*
 | [OpenSSL](https://www.openssl.org/) | TLS/Crypto | Apache-2.0 |
 | [CMake](https://cmake.org/) | Build System | BSD-3-Clause |
 | [vcpkg](https://github.com/microsoft/vcpkg) | Dependency Manager | MIT |
-
-</div>
 
 ---
 

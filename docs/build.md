@@ -20,9 +20,9 @@
 
 The following components are enabled by default:
 
-- ✅ TuPig Synergy GUI Application (`synergy`)
-- ✅ TuPig Synergy Core Service (`synergy-core`)
-- ✅ Daemon for Windows UAC handling (`synergy-daemon`, Windows only)
+- ✅ TuPig Synergy GUI (`synergy_<X.Y.Z>.exe` on Windows, `synergy` on Linux, `TuPig Synergy.app` on macOS)
+- ✅ TuPig Synergy Core (`synergy-core`, unversioned)
+- ✅ Daemon for Windows UAC handling (`synergy-daemon`, Windows only, unversioned)
 - ✅ Build-time Unit Tests (Qt Test + CTest)
 
 ### CMake Configuration Options
@@ -40,12 +40,15 @@ The following components are enabled by default:
 | `SYNERGY_CORE_FLAVOR` | Build as "TuPig Synergy Core"; seeds headless defaults (GUI/tests/installer off) | `OFF` |
 | `APPLE_CODESIGN_DEV` | Apple Developer code-sign identity (cache variable, not an `option()`) | unset |
 
-**Basic Configuration Example:**
+**Build:**
 
 ```bash
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build
+# Windows: scripts\build.bat release
+# Linux or macOS (Apple Silicon):
+./scripts/build.sh release
 ```
+
+A bare `cmake -S` without the vcpkg toolchain from `CMakePresets.json` will not find Qt.
 
 ---
 
@@ -64,71 +67,81 @@ scripts\build.bat release
 
 `scripts\build.bat` locates Visual Studio through `vswhere`, activates the MSVC x64 environment and
 then runs `cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`.
+That preset sets `SYNERGY_VERSION_RELEASE=ON`, so the version string is `X.Y.Z` from
+`cmake/Version.cmake` (currently 1.21.2), not `X.Y.Z-dev+<sha>`.
 
-Output: `build\bin\Release\`.
+Output:
 
-#### Windows Code Signing (Optional)
+| File | Role |
+|------|------|
+| `build\bin\Release\synergy_<X.Y.Z>.exe` | GUI. `X.Y.Z` is `SYNERGY_VERSION_MAJOR.MINOR.PATCH` plus an optional stage. |
+| `build\bin\Release\synergy-core.exe` | Core. The GUI looks this name up; do not version it. |
+| `build\bin\Release\synergy-daemon.exe` | Windows service helper. Also unversioned. The portable 7Z omits it. |
 
-For distribution builds, configure Authenticode signing in `deploy/windows/`.
+#### Windows code signing
+
+Release CI signs the inner executables and the MSI only when `WINDOWS_SSL_USERNAME`,
+`WINDOWS_SSL_PASSWORD`, `WINDOWS_SSL_CREDENTIAL_ID`, and `WINDOWS_SSL_TOTP_SECRET` are
+all set. If any one is missing, the job warns and uploads unsigned packages. There is
+no local signing step in `scripts\build.bat`.
 
 ---
 
-### 🍎 macOS (Apple Silicon / Intel)
+### 🍎 macOS (Apple Silicon locally, Intel in CI)
+
+Host tools are Xcode Command Line Tools, CMake 3.25+, and Ninja. Qt and OpenSSL come from
+the repository vcpkg. Do not point CMake at a Homebrew Qt.
 
 ```bash
-# 1. Install dependencies via Homebrew
-brew install cmake ninja qt@6 openssl@3
-
-# 2. Configure (Apple Silicon native)
-cmake -S . -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_OSX_ARCHITECTURES=arm64 \
-  -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
-
-cmake --build build --config Release
-
-# 3. Run
-./build/bin/synergy-core    # Core service
-./build/bin/synergy         # GUI
+xcode-select --install
+brew install cmake ninja
+./scripts/build.sh release
 ```
 
-#### macOS Code Signing (Development)
+`./scripts/build.sh` selects preset `macos-release` (Ninja, triplet `arm64-osx`). That
+preset is Apple Silicon. Intel x86_64 is the Actions job `macos-x64`
+(`CMAKE_OSX_ARCHITECTURES=x86_64` on `macos-15-intel`), which produces a separate DMG
+(`mac_x64`), not a universal binary. The deployment target is macOS 12 and is set only
+in `cmake/Synergy.cmake`. Do not pass `-DCMAKE_OSX_DEPLOYMENT_TARGET`.
+
+Output: `build/bin/TuPig Synergy.app` and `build/bin/synergy-core`.
+
+#### macOS code signing (development)
 
 ```bash
-# 1. Get Developer ID certificate
 security find-identity -v -p codesigning login.keychain-db
-
-# 2. Pass to CMake
-cmake -S . -B build -DAPPLE_CODESIGN_DEV="Apple Development: Name (TEAMID)"
-
-# 3. Verify
-codesign -d -r- build/bin/TuPig\ Synergy.app
+cmake --preset macos-release -DAPPLE_CODESIGN_DEV="Apple Development: Name (TEAMID)"
+codesign -d -r- "build/bin/TuPig Synergy.app"
 ```
 
-> **Development vs Distribution**: Local dev uses `Apple Development` cert with hardened runtime. Distribution builds use `Developer ID Application` cert with notarization via CI.
+Local development uses an Apple Development certificate. Distribution signing uses the
+CI secret `APPLE_CODESIGN_ID` when it is set.
 
 ---
 
 ### 🐧 Linux (Ubuntu / Debian / Fedora / Arch)
 
+Install a C++ compiler, CMake 3.25+, Ninja, and the system libraries vcpkg does not
+build (X11 and the Wayland portal stack). Do not install a distro Qt or OpenSSL for
+this build, and do not set `CMAKE_PREFIX_PATH` to one: `./scripts/build.sh` configures
+with the vcpkg toolchain, which builds Qt and OpenSSL from `vcpkg.json`.
+
 #### Ubuntu / Debian
 
 ```bash
 sudo apt update && sudo apt install -y \
-  cmake ninja-build g++ \
-  qt6-base-dev libssl-dev \
+  cmake ninja-build g++ pkg-config \
   libx11-dev libxi-dev libxtst-dev \
   libxinerama-dev libxrandr-dev \
   libxkbcommon-dev libglib2.0-dev \
-  libportal-dev libei-dev \
+  libportal-dev libei-dev
 ```
 
 #### Fedora / RHEL
 
 ```bash
 sudo dnf install -y \
-  cmake ninja-build gcc-c++ \
-  qt6-qtbase-devel openssl-devel \
+  cmake ninja-build gcc-c++ pkgconf-pkg-config \
   libX11-devel libXi-devel libXtst-devel \
   libXinerama-devel libXrandr-devel \
   libxkbcommon-devel glib2-devel \
@@ -139,8 +152,7 @@ sudo dnf install -y \
 
 ```bash
 sudo pacman -S \
-  cmake ninja gcc \
-  qt6-base openssl \
+  cmake ninja gcc pkgconf \
   libx11 libxi libxtst libxinerama \
   libxrandr libxkbcommon glib2 \
   libportal libei
@@ -149,13 +161,13 @@ sudo pacman -S \
 #### Build
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release -j$(nproc)
-
-# Run
-./build/bin/synergy-core    # Core service
-./build/bin/synergy         # GUI
+./scripts/build.sh release
 ```
+
+Output: `build/bin/synergy` (GUI, unversioned, because the `.desktop` file launches that
+name) and `build/bin/synergy-core`. If vcpkg stops on a missing system library, install
+the package it names and run the script again. Downloads already in
+`vendor/vcpkg/downloads/` are reused.
 
 ---
 
@@ -189,21 +201,15 @@ cmake --build build --config Release -j$(nproc)
 
 ### 🔧 Advanced Configuration
 
-#### Sanitizer Builds
+#### Sanitizer builds
 
 ```bash
-# AddressSanitizer
-cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"
-
-# ThreadSanitizer
-cmake -S . -B build-tsan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=thread -fPIC"
-
-# MemorySanitizer (Clang only)
-cmake -S . -B build-msan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=memory -fPIE -fno-omit-frame-pointer"
+cmake --preset linux-asan-build && cmake --build --preset linux-asan-build
+cmake --preset linux-tsan-build && cmake --build --preset linux-tsan-build
+cmake --preset linux-coverage-build && cmake --build --preset linux-coverage-build
 ```
+
+Windows ASan is preset `windows-msvc-asan`. It uses the dynamic-CRT triplet `x64-windows` because MSVC ASan requires `/MD`. There is no MemorySanitizer preset.
 
 #### ccache Acceleration
 
@@ -216,16 +222,19 @@ cmake -S . -B build \
 
 ### 🧪 Testing
 
+Tests are registered under `src/unittests`, so `ctest --test-dir build` reports that no tests were found. `BUILD_TESTS` defaults to `ON` (the test binaries are compiled). `SKIP_BUILD_TESTS` defaults to `ON`, which only skips running them at the end of the build.
+
 ```bash
-# Run all tests
-ctest --test-dir build --output-on-failure
+# Windows (Visual Studio preset)
+ctest --test-dir build/src/unittests -C Release --output-on-failure
 
-# Run specific test suite
-ctest --test-dir build -R "ClipboardTests" --output-on-failure
+# Linux / macOS (Ninja)
+ctest --test-dir build/src/unittests --output-on-failure
 
-# With coverage (requires ENABLE_COVERAGE=ON)
-cmake --build build --target coverage-StringTests
+ctest --test-dir build/src/unittests -C Release -R "ClipboardTests" --output-on-failure
 ```
+
+Pass `-DSKIP_BUILD_TESTS=OFF` to run that ctest invocation automatically after the build. Coverage uses preset `linux-coverage-build`.
 
 ---
 
@@ -233,11 +242,11 @@ cmake --build build --target coverage-StringTests
 
 | Issue | Solution |
 |-------|----------|
-| `Qt6 not found` | Set `Qt6_DIR` or `CMAKE_PREFIX_PATH` to Qt's lib/cmake dir |
-| `OpenSSL not found` | Install `libssl-dev` (Linux) / `openssl@3` (macOS) / vcpkg (Windows) |
-| `X11 libs missing` | Install `libx11-dev`, `libxi-dev`, `libxtst-dev` etc. |
-| `Wayland protocols` | Install `libwayland-dev`, `wayland-protocols` |
-| `vcpkg Qt timeout` | Increase timeout: `set(VCPKG_BUILD_TIMEOUT 3600)` in CMake |
+| `Qt6 not found` | Re-run `scripts/build.bat` or `scripts/build.sh`. Do not set `Qt6_DIR` or `CMAKE_PREFIX_PATH` to a distro Qt. |
+| `OpenSSL not found` | Same. OpenSSL is a vcpkg manifest dependency, not a system package you point CMake at. |
+| `X11 libs missing` | Install `libx11-dev`, `libxi-dev`, `libxtst-dev`, and the rest of the Linux package list above. |
+| `Wayland protocols` | Install `libwayland-dev` and `wayland-protocols` when the log asks for them. |
+| vcpkg download stalls | Run the build script again. Keep `vendor/vcpkg/downloads/`; partial files are rejected by their SHA-512. |
 
 ---
 
@@ -255,9 +264,9 @@ cmake --build build --target coverage-StringTests
 
 ### 默认启用组件
 
-- ✅ TuPig Synergy GUI 程序 (`synergy`)
-- ✅ TuPig Synergy 核心服务 (`synergy-core`)
-- ✅ Windows UAC 守护进程 (`synergy-daemon`，仅 Windows)
+- ✅ TuPig Synergy GUI（Windows 为 `synergy_<X.Y.Z>.exe`，Linux 为 `synergy`，macOS 为 `TuPig Synergy.app`）
+- ✅ TuPig Synergy 核心（`synergy-core`，不带版本号）
+- ✅ Windows UAC 守护进程（`synergy-daemon`，仅 Windows，不带版本号）
 - ✅ 编译时单元测试 (Qt Test + CTest)
 
 ### CMake 配置选项
@@ -275,12 +284,15 @@ cmake --build build --target coverage-StringTests
 | `SYNERGY_CORE_FLAVOR` | 以 “TuPig Synergy Core” 构建；同时将 GUI/测试/安装包默认置为关闭（无界面构建） | `OFF` |
 | `APPLE_CODESIGN_DEV` | Apple 开发者代码签名身份（缓存变量，非 `option()`） | 未设置 |
 
-**基础配置示例：**
+**构建：**
 
 ```bash
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build
+# Windows：scripts\build.bat release
+# Linux 或 macOS（Apple Silicon）：
+./scripts/build.sh release
 ```
+
+不带 `CMakePresets.json` 里 vcpkg 工具链的 `cmake -S` 找不到 Qt。
 
 ---
 
@@ -298,71 +310,69 @@ scripts\build.bat release
 
 `scripts\build.bat` 会通过 `vswhere` 定位 Visual Studio，激活 MSVC x64 环境，然后执行
 `cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`。
+该预设打开 `SYNERGY_VERSION_RELEASE`，版本字符串是 `cmake/Version.cmake` 里的 `X.Y.Z`
+（当前 1.21.2），不是 `X.Y.Z-dev+<sha>`。
 
-产物目录：`build\bin\Release\`。
+产物：
 
-#### Windows 代码签名（可选）
+| 文件 | 作用 |
+|------|------|
+| `build\bin\Release\synergy_<X.Y.Z>.exe` | GUI。`X.Y.Z` 来自 `SYNERGY_VERSION_MAJOR.MINOR.PATCH`，若有 stage 再追加。 |
+| `build\bin\Release\synergy-core.exe` | 核心。GUI 按这个固定名字查找，不要加版本号。 |
+| `build\bin\Release\synergy-daemon.exe` | Windows 服务辅助进程，同样不带版本号。便携 7Z 故意不含它。 |
 
-分发构建需在 `deploy/windows/` 配置 Authenticode 签名。
+#### Windows 代码签名
+
+Release CI 只有在 `WINDOWS_SSL_USERNAME`、`WINDOWS_SSL_PASSWORD`、`WINDOWS_SSL_CREDENTIAL_ID`、`WINDOWS_SSL_TOTP_SECRET` 四个 secret 全部存在时才签名内部 exe 和 MSI。缺任何一个时，作业给出警告并上传未签名包。`scripts\build.bat` 本身不签名。
 
 ---
 
-### 🍎 macOS (Apple Silicon / Intel)
+### 🍎 macOS（本地 Apple Silicon，Intel 由 CI 构建）
+
+宿主工具是 Xcode Command Line Tools、CMake 3.25+ 和 Ninja。Qt 与 OpenSSL 来自仓库内 vcpkg，不要把 CMake 指到 Homebrew 的 Qt。
 
 ```bash
-# 1. 通过 Homebrew 安装依赖
-brew install cmake ninja qt@6 openssl@3
-
-# 2. 配置 (Apple Silicon 原生)
-cmake -S . -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_OSX_ARCHITECTURES=arm64 \
-  -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
-
-cmake --build build --config Release
-
-# 3. 运行
-./build/bin/synergy-core    # 核心服务
-./build/bin/synergy         # GUI
+xcode-select --install
+brew install cmake ninja
+./scripts/build.sh release
 ```
+
+`./scripts/build.sh` 选择预设 `macos-release`（Ninja，triplet `arm64-osx`），这是 Apple Silicon。Intel x86_64 是 Actions 作业 `macos-x64`（`macos-15-intel` 上 `CMAKE_OSX_ARCHITECTURES=x86_64`），单独产出 `mac_x64` 的 DMG，不是一个通用二进制。部署目标是 macOS 12，只写在 `cmake/Synergy.cmake`，不要传 `-DCMAKE_OSX_DEPLOYMENT_TARGET`。
+
+产物：`build/bin/TuPig Synergy.app` 与 `build/bin/synergy-core`。
 
 #### macOS 代码签名（开发用）
 
 ```bash
-# 1. 获取开发者证书
 security find-identity -v -p codesigning login.keychain-db
-
-# 2. 传递给 CMake
-cmake -S . -B build -DAPPLE_CODESIGN_DEV="Apple Development: Name (TEAMID)"
-
-# 3. 验证
-codesign -d -r- build/bin/TuPig\ Synergy.app
+cmake --preset macos-release -DAPPLE_CODESIGN_DEV="Apple Development: Name (TEAMID)"
+codesign -d -r- "build/bin/TuPig Synergy.app"
 ```
 
-> **开发 vs 分发**：本地开发使用 `Apple Development` 证书 + Hardened Runtime。分发构建使用 `Developer ID Application` 证书并通过 CI 公证。
+本地开发用 Apple Development 证书。分发签名在设置了 CI secret `APPLE_CODESIGN_ID` 时由 CI 完成。
 
 ---
 
 ### 🐧 Linux (Ubuntu / Debian / Fedora / Arch)
 
+安装 C++ 编译器、CMake 3.25+、Ninja，以及 vcpkg 不负责构建的系统库（X11 与 Wayland portal）。不要为这次构建安装发行版 Qt 或 OpenSSL，也不要把 `CMAKE_PREFIX_PATH` 指过去：`./scripts/build.sh` 使用 vcpkg 工具链，按 `vcpkg.json` 从源码构建 Qt 与 OpenSSL。
+
 #### Ubuntu / Debian
 
 ```bash
 sudo apt update && sudo apt install -y \
-  cmake ninja-build g++ \
-  qt6-base-dev libssl-dev \
+  cmake ninja-build g++ pkg-config \
   libx11-dev libxi-dev libxtst-dev \
   libxinerama-dev libxrandr-dev \
   libxkbcommon-dev libglib2.0-dev \
-  libportal-dev libei-dev \
+  libportal-dev libei-dev
 ```
 
 #### Fedora / RHEL
 
 ```bash
 sudo dnf install -y \
-  cmake ninja-build gcc-c++ \
-  qt6-qtbase-devel openssl-devel \
+  cmake ninja-build gcc-c++ pkgconf-pkg-config \
   libX11-devel libXi-devel libXtst-devel \
   libXinerama-devel libXrandr-devel \
   libxkbcommon-devel glib2-devel \
@@ -373,8 +383,7 @@ sudo dnf install -y \
 
 ```bash
 sudo pacman -S \
-  cmake ninja gcc \
-  qt6-base openssl \
+  cmake ninja gcc pkgconf \
   libx11 libxi libxtst libxinerama \
   libxrandr libxkbcommon glib2 \
   libportal libei
@@ -383,13 +392,10 @@ sudo pacman -S \
 #### 编译
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release -j$(nproc)
-
-# 运行
-./build/bin/synergy-core    # 核心服务
-./build/bin/synergy         # GUI
+./scripts/build.sh release
 ```
+
+产物：`build/bin/synergy`（GUI，不带版本号，因为 `.desktop` 的 `Exec=` 按这个名字启动）和 `build/bin/synergy-core`。vcpkg 若因缺少系统库停下，安装它点名的包后再运行脚本。`vendor/vcpkg/downloads/` 里已有的下载会被复用。
 
 ---
 
@@ -420,18 +426,12 @@ cmake --build build --config Release -j$(nproc)
 #### Sanitizer 构建
 
 ```bash
-# AddressSanitizer
-cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"
-
-# ThreadSanitizer
-cmake -S . -B build-tsan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=thread -fPIC"
-
-# MemorySanitizer (仅 Clang)
-cmake -S . -B build-msan -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_FLAGS="-fsanitize=memory -fPIE -fno-omit-frame-pointer"
+cmake --preset linux-asan-build && cmake --build --preset linux-asan-build
+cmake --preset linux-tsan-build && cmake --build --preset linux-tsan-build
+cmake --preset linux-coverage-build && cmake --build --preset linux-coverage-build
 ```
+
+Windows ASan 使用预设 `windows-msvc-asan`。它改用动态 CRT triplet `x64-windows`，因为 MSVC ASan 需要 `/MD`。没有 MemorySanitizer 预设。
 
 #### ccache 加速编译
 
@@ -444,16 +444,19 @@ cmake -S . -B build \
 
 ### 🧪 测试
 
+测试注册在 `src/unittests`，所以 `ctest --test-dir build` 会报找不到测试。`BUILD_TESTS` 默认 `ON`（会编译测试程序）。`SKIP_BUILD_TESTS` 默认 `ON`，只是不在构建结束时自动跑它们。
+
 ```bash
-# 运行所有测试
-ctest --test-dir build --output-on-failure
+# Windows（Visual Studio 预设）
+ctest --test-dir build/src/unittests -C Release --output-on-failure
 
-# 运行特定测试套件
-ctest --test-dir build -R "ClipboardTests" --output-on-failure
+# Linux / macOS（Ninja）
+ctest --test-dir build/src/unittests --output-on-failure
 
-# 生成覆盖率报告 (需 ENABLE_COVERAGE=ON)
-cmake --build build --target coverage-StringTests
+ctest --test-dir build/src/unittests -C Release -R "ClipboardTests" --output-on-failure
 ```
+
+加上 `-DSKIP_BUILD_TESTS=OFF` 会在构建结束后自动跑上述 ctest。覆盖率使用预设 `linux-coverage-build`。
 
 ---
 
@@ -461,11 +464,11 @@ cmake --build build --target coverage-StringTests
 
 | 问题 | 解决方案 |
 |------|----------|
-| `Qt6 not found` | 设置 `Qt6_DIR` 或 `CMAKE_PREFIX_PATH` 为 Qt 的 lib/cmake 目录 |
-| `OpenSSL not found` | 安装 `libssl-dev` (Linux) / `openssl@3` (macOS) / vcpkg (Windows) |
-| `X11 库缺失` | 安装 `libx11-dev`, `libxi-dev`, `libxtst-dev` 等 |
-| `Wayland 协议缺失` | 安装 `libwayland-dev`, `wayland-protocols` |
-| `vcpkg Qt 编译超时` | 增加超时：CMake 中 `set(VCPKG_BUILD_TIMEOUT 3600)` |
+| `Qt6 not found` | 重新运行 `scripts\build.bat` 或 `scripts/build.sh`。不要把 `Qt6_DIR` 或 `CMAKE_PREFIX_PATH` 指到发行版 Qt。 |
+| `OpenSSL not found` | 同上。OpenSSL 是 vcpkg 清单依赖，不是要另外指给 CMake 的系统包。 |
+| `X11 库缺失` | 安装 `libx11-dev`、`libxi-dev`、`libxtst-dev` 以及上面 Linux 软件包列表里的其余项。 |
+| `Wayland 协议缺失` | 日志点名时再安装 `libwayland-dev` 与 `wayland-protocols`。 |
+| vcpkg 下载中断 | 重新运行构建脚本。保留 `vendor/vcpkg/downloads/`；不完整文件会因 SHA-512 校验失败而被拒绝。 |
 
 ---
 
@@ -484,6 +487,10 @@ automatically — no `VCPKG_ROOT`, no global install, no manual environment vari
 |---|---|
 | Windows | `scripts\build.bat release` |
 | Linux / macOS | `./scripts/build.sh release` |
+
+The three `*-release` presets set `SYNERGY_VERSION_RELEASE=ON`, so the version string is `X.Y.Z` from `cmake/Version.cmake`. Configuring without that preset (or without `-DSYNERGY_VERSION_RELEASE=ON`) produces `X.Y.Z-dev+<sha>`.
+
+这三个 `*-release` 预设都会设置 `SYNERGY_VERSION_RELEASE=ON`，版本字符串是 `cmake/Version.cmake` 里的 `X.Y.Z`。不用该预设、也不传 `-DSYNERGY_VERSION_RELEASE=ON` 时，版本是 `X.Y.Z-dev+<sha>`。
 
 Both scripts accept only `release`: every vcpkg overlay triplet in this repository sets
 `VCPKG_BUILD_TYPE release`, so a Debug configuration cannot link the dependencies. For

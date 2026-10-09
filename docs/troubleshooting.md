@@ -177,7 +177,7 @@ tccutil reset InputMonitoring
 |-------|----------|
 | **UAC prompts / login screen not captured** | The daemon must be registered as a Windows service — see [Register the daemon service](#register-the-daemon-service-windows) |
 | **Service mode fails** | Same; the binaries cannot self-install the service, so it must come from the MSI or a manual `sc create` |
-| **Antivirus blocks** | Add exclusion for `synergy-core.exe`, `synergy-daemon.exe` |
+| **Antivirus blocks** | Add exclusions for `synergy_<version>.exe`, `synergy-core.exe`, and `synergy-daemon.exe` |
 | **High DPI scaling** | Set DPI awareness in manifest; per-monitor v2 |
 | **Port already in use** | `netstat -ano | findstr :24800`, kill PID |
 | **FIPS mode breaks TLS** | Disable FIPS or use OpenSSL FIPS provider |
@@ -501,7 +501,7 @@ tccutil reset InputMonitoring
 |------|----------|
 | **UAC 提示 / 登录界面未捕获** | daemon 必须注册为 Windows 服务 —— 见 [注册守护服务](#注册守护服务-windows) |
 | **服务模式失败** | 同上；可执行文件无法自行安装服务，必须由 MSI 或手工 `sc create` 完成 |
-| **杀毒软件拦截** | 加白 `synergy-core.exe`, `synergy-daemon.exe` |
+| **杀毒软件拦截** | 加白 `synergy_<版本>.exe`、`synergy-core.exe` 与 `synergy-daemon.exe` |
 | **高 DPI 缩放** | 清单设 DPI 感知；逐显示器 v2 |
 | **端口被占用** | `netstat -ano | findstr :24800`，结束 PID |
 | **FIPS 模式破坏 TLS** | 关闭 FIPS 或用 OpenSSL FIPS provider |
