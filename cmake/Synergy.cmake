@@ -6,7 +6,7 @@
 set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
 set(CMAKE_PROJECT_VENDOR "TuPig")
 set(CMAKE_PROJECT_COPYRIGHT "(C) 2012-2026 ${CMAKE_PROJECT_VENDOR}")
-set(CMAKE_PROJECT_CONTACT "${CMAKE_PROJECT_PROPER_NAME} <support@tupig.com>")
+set(CMAKE_PROJECT_CONTACT "https://github.com/Tupig/Tupig_synergy/issues")
 set(CMAKE_PROJECT_REV_FQDN "com.tupig.synergy")
 set(CMAKE_PROJECT_DOMAIN "tupig.com")
 set(CMAKE_PROJECT_HOMEPAGE_URL "https://tupig.com")

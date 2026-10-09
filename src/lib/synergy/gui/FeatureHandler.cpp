@@ -18,6 +18,7 @@
 
 #include "FeatureHandler.h"
 
+#include "common/Constants.h"
 #include "common/Settings.h"
 #include "synergy/gui/SettingsMigration.h"
 #include "synergy/gui/SettingsScope.h"
@@ -212,7 +213,15 @@ void FeatureHandler::addLicenseLinks(QDialog *parent) const
 void FeatureHandler::addTrademark(QDialog *parent) const
 {
   if (auto *copyright = parent->findChild<QLabel *>(QStringLiteral("lblCopyright"))) {
-    copyright->setText(copyright->text() + QStringLiteral("\n") + QObject::tr("TuPig Synergy is a trademark of TuPig"));
+    copyright->setTextFormat(Qt::RichText);
+    copyright->setOpenExternalLinks(true);
+    copyright->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    const auto body = copyright->text().toHtmlEscaped().replace(QLatin1String("\n"), QLatin1String("<br>"));
+    const auto issues = QString(kLink).arg(QString::fromUtf8(kProjectContact), kColorSecondary, QObject::tr("Issues"));
+    copyright->setText(
+        body + QStringLiteral("<br>") + QObject::tr("TuPig Synergy is a trademark of TuPig") + QStringLiteral("<br>") +
+        issues
+    );
   }
 }
 

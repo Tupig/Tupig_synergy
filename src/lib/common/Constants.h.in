@@ -11,6 +11,7 @@ const auto kAppName = "@CMAKE_PROJECT_PROPER_NAME@";
 const auto kAppId = "@CMAKE_PROJECT_NAME@";
 const auto kUpstreamId = "@UPSTREAM_PROJECT_NAME@";
 const auto kAppDescription = "@CMAKE_PROJECT_DESCRIPTION@";
+const auto kProjectContact = "@CMAKE_PROJECT_CONTACT@";
 const auto kAppDomain = "@CMAKE_PROJECT_DOMAIN@";
 const auto kDaemonBinName = "@CMAKE_PROJECT_NAME@-daemon";
 const auto kDaemonIpcName = "@CMAKE_PROJECT_NAME@-daemon";
