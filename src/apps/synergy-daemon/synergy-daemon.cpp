@@ -58,9 +58,9 @@ int main(int argc, char **argv)
   for (int i = 1; i < argc; ++i) {
     const auto arg = QString::fromLocal8Bit(argv[i]);
     if (arg == QLatin1String("--version") || arg == QLatin1String("-v")) {
-      const auto line =
-          QStringLiteral("%1 %2\n").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion());
-      fputs(line.toLocal8Bit().constData(), stdout);
+      // Release builds set this to X.Y.Z. Do not prefix "Daemon" or a dev suffix.
+      fputs(kDisplayVersion, stdout);
+      fputc('\n', stdout);
       fflush(stdout);
       return s_exitSuccess;
     }
