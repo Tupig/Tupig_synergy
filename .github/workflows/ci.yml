@@ -658,8 +658,13 @@ jobs:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
     if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success' || needs.build-flatpak.result == 'success') }}
     runs-on: ubuntu-latest
+    # contents:write uploads the Release. id-token and attestations mint the
+    # Sigstore provenance for those same bytes. Job permissions replace the
+    # workflow default, so contents:write has to stay on this list.
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Download packages
         uses: actions/download-artifact@v8
@@ -667,6 +672,24 @@ jobs:
           pattern: package-*
           path: dist
           merge-multiple: true
+
+      - name: Hash release packages
+        id: subjects
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find dist -type f ! -name '*.digest' | sort)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::no package files to attest"
+            exit 1
+          fi
+          sha256sum "${files[@]}" > "$RUNNER_TEMP/release-subjects.txt"
+          echo "path=$RUNNER_TEMP/release-subjects.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: ${{ steps.subjects.outputs.path }}
 
       - name: Publish GitHub Release
         shell: bash
@@ -685,7 +708,7 @@ jobs:
           printf ' - %s\n' "${files[@]}"
           tag="v${VERSION}"
           title="TuPig Synergy ${VERSION}"
-          notes="Packages for ${VERSION}. Windows builds are unsigned until the SSL.com secrets are set."
+          notes="Packages for ${VERSION}."$'\n\n'"Each package file from this workflow has a GitHub build-provenance attestation. Verify a downloaded file with: gh attestation verify FILE --repo Tupig/Tupig_synergy"$'\n\n'"Windows builds are unsigned until the SSL.com secrets are set. Provenance shows which workflow and commit produced the file. It is not an Authenticode or Apple signature."
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "${files[@]}" --clobber
           else
