@@ -1,11 +1,12 @@
-# Single workflow. One CMake configure line for every OS; the runner compiler
+# Single workflow, shown as "TuPig Synergy" (CMAKE_PROJECT_PROPER_NAME).
+# One CMake configure line for every OS; the runner compiler
 # is the only toolchain difference: MSVC (vcvars + Ninja) on Windows, AppleClang
 # on macOS, gcc in the Linux containers. package-type=release builds Windows,
 # macOS and Linux together. clang-tidy, cppcheck, CodeQL, SonarCloud and
 # Valgrind run only when a manual dispatch sets analyze=true. push/PR use the
 # lean Linux subset (.github/matrices/linux-targets.json "free").
 
-name: CI
+name: TuPig Synergy
 
 permissions:
   contents: read
