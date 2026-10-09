@@ -177,15 +177,19 @@ Client                                    Server
 ### TLS Encryption (v1.4+)
 
 ```
-1. TCP Connection Established
-2. TLS Handshake (Client validates Server cert)
-3. Protocol Handshake (Hello/HelloBack) over TLS
+1. TCP connection established
+2. TLS handshake
+3. Protocol handshake (Hello / HelloBack) over TLS when TLS is on
 ```
 
-**Certificate Requirements:**
-- RSA or DSA key, ≥2048 bits
-- Client **must** validate server certificate
-- Self-signed certs supported for LAN use
+TLS is on by default (`security/tlsEnabled`). Peer fingerprint checks are also on by default (`security/checkPeerFingerprints`). Turning peer checks off still encrypts, but skips the fingerprint database. Turning TLS off uses plaintext.
+
+**Certificate checks in the default Qt stack** (`src/lib/net/QtSocketFactory.cpp`):
+
+- An RSA key shorter than 2048 bits is rejected.
+- Other algorithms, including EC, are not rejected for length.
+- When peer checks are on, the peer certificate fingerprint must match the saved TOFU database. These are local certificates, not a public CA.
+- The legacy stack is `src/lib/net/SecureSocket.h`, used only when `USE_LEGACY_NETWORK=1`.
 
 ---
 
@@ -193,9 +197,10 @@ Client                                    Server
 
 | File | Purpose |
 |------|---------|
-| `src/lib/synergy/protocol/ProtocolTypes.h` | Complete message definitions, incl. `ClientInfo` |
-| `src/lib/synergy/protocol/ProtocolUtil.h` | Serialization/parsing utilities |
-| `src/lib/net/SecureSocket.h` | TLS wrapper |
+| `src/lib/synergy/protocol/ProtocolTypes.h` | Message definitions, including `ClientInfo` |
+| `src/lib/synergy/protocol/ProtocolUtil.h` | Serialization and parsing |
+| `src/lib/net/QtSocketFactory.cpp` | Default TLS stack |
+| `src/lib/net/SecureSocket.h` | Legacy TLS stack (`USE_LEGACY_NETWORK=1`) |
 
 ---
 
@@ -394,15 +399,19 @@ Client                                    Server
 ### TLS 加密 (v1.4+)
 
 ```
-1. TCP 连接建立
-2. TLS 握手 (Client 验证 Server 证书)
-3. 协议握手通过 TLS 进行
+1. 建立 TCP 连接
+2. TLS 握手
+3. 开启 TLS 时，协议握手（Hello / HelloBack）走 TLS
 ```
 
-**证书要求：**
-- RSA 或 DSA 密钥，≥2048 位
-- Client **必须** 验证 Server 证书
-- 局域网支持自签名证书
+TLS 默认开启（`security/tlsEnabled`）。对端指纹校验也默认开启（`security/checkPeerFingerprints`）。关掉指纹校验后仍然加密，只是不再查指纹库。关掉 TLS 则使用明文。
+
+**默认 Qt 栈的证书检查**（`src/lib/net/QtSocketFactory.cpp`）：
+
+- 短于 2048 位的 RSA 密钥会被拒绝。
+- 其他算法（包括 EC）不按长度拒绝。
+- 开启对端校验时，证书指纹必须与已保存的 TOFU 记录一致。这是本地证书，不是公共 CA。
+- 旧栈是 `src/lib/net/SecureSocket.h`，仅在 `USE_LEGACY_NETWORK=1` 时使用。
 
 ---
 
@@ -410,9 +419,10 @@ Client                                    Server
 
 | 文件 | 用途 |
 |------|------|
-| `src/lib/synergy/protocol/ProtocolTypes.h` | 完整消息定义（含 `ClientInfo`） |
-| `src/lib/synergy/protocol/ProtocolUtil.h` | 序列化/解析工具 |
-| `src/lib/net/SecureSocket.h` | TLS 封装 |
+| `src/lib/synergy/protocol/ProtocolTypes.h` | 消息定义，含 `ClientInfo` |
+| `src/lib/synergy/protocol/ProtocolUtil.h` | 序列化与解析 |
+| `src/lib/net/QtSocketFactory.cpp` | 默认 TLS 栈 |
+| `src/lib/net/SecureSocket.h` | 旧 TLS 栈（`USE_LEGACY_NETWORK=1`） |
 
 ---
 

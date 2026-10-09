@@ -58,12 +58,11 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /path/to/synergy-
 | Client timeout | Check keep-alive: `CALV` every 3s |
 | TLS handshake fail | Verify cert/key, try without TLS |
 
-**Debug**: Enable protocol logging
+**Debug**: turn on file logging. When `file` is omitted the default path is `~/synergy.log`.
 ```ini
 [log]
-level=debug
+level=DEBUG
 toFile=true
-file=/path/to/synergy-debug.log
 ```
 
 #### "Incompatible Version" Error
@@ -288,21 +287,14 @@ checkPeerFingerprints = false  # for self-signed
 
 ### Log Analysis
 
-**Key log patterns:**
+**Log line shape** (`src/lib/base/Log.cpp`):
 
 ```
-# Successful connection
-[INFO] Server: Client "laptop" connected (v1.8)
-[INFO] Server: Screen "laptop" entered at (1920,0)
-
-# Keep-alive
-[DEBUG] Server: CALV sent to "laptop"
-[DEBUG] Client: CALV received, responding
-
-# Errors
-[ERROR] Client: TLS handshake failed: certificate verify failed
-[WARN] Server: Keep-alive timeout for "laptop", disconnecting
+[2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
+[2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
 ```
+
+The level token is `INFO`, `WARNING`, `ERROR`, `DEBUG`, or `VERBOSE`. File logging is off until `[log] toFile=true`. The default path is `~/synergy.log` (`kAppId`), not `synergy-debug.log`. The GUI log panel shows the same lines when file logging is off.
 
 ---
 
@@ -310,17 +302,17 @@ checkPeerFingerprints = false  # for self-signed
 
 | Channel | Best For |
 |---------|----------|
-| **GitHub Issues** | Bug reports, crashes, reproducible issues |
-| **GitHub Discussions** | Configuration help, "how do I..." |
-| **Wiki** | Common setups, FAQ |
-| **Debug Logs** | Always attach `synergy-debug.log` with issue |
+| **GitHub Issues** | Bugs and crashes. Use the bug-report template |
+| **Feature request issue** | Setup questions. Discussions are not enabled |
+| **This directory** | Build, configuration, and this file. The wiki is only a short index |
+| **Logs** | Attach the GUI log, or `~/synergy.log` after `[log] toFile=true` |
 
 **Minimal bug report template:**
 ```markdown
 **OS/Version**: Windows 11 23H2 / TuPig Synergy (see `cmake/Version.cmake`)
 **Role**: Server (Desktop) ↔ Client (Laptop)
 **Config**: [paste relevant config sections]
-**Logs**: [attach synergy-debug.log]
+**Logs**: [GUI log, or ~/synergy.log when toFile is true]
 **Steps**: 1. Start server 2. Start client 3. Move mouse to edge
 **Expected**: Cursor moves to client
 **Actual**: Cursor stops at edge, log shows [error]
@@ -382,12 +374,11 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /path/to/synergy-
 | 客户端超时 | 检查保活：`CALV` 每 3 秒 |
 | TLS 握手失败 | 验证证书/密钥，尝试关闭 TLS |
 
-**调试**：启用协议日志
+**调试**：打开文件日志。不写 `file` 时默认是 `~/synergy.log`。
 ```ini
 [log]
-level=debug
+level=DEBUG
 toFile=true
-file=/path/to/synergy-debug.log
 ```
 
 #### "版本不兼容" 错误
@@ -607,21 +598,14 @@ checkPeerFingerprints = false  # 自签名时
 
 ### 日志分析
 
-**关键日志模式：**
+**日志行格式**（`src/lib/base/Log.cpp`）：
 
 ```
-# 连接成功
-[INFO] Server: Client "laptop" connected (v1.8)
-[INFO] Server: Screen "laptop" entered at (1920,0)
-
-# 保活
-[DEBUG] Server: CALV sent to "laptop"
-[DEBUG] Client: CALV received, responding
-
-# 错误
-[ERROR] Client: TLS handshake failed: certificate verify failed
-[WARN] Server: Keep-alive timeout for "laptop", disconnecting
+[2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
+[2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
 ```
+
+级别标记是 `INFO`、`WARNING`、`ERROR`、`DEBUG` 或 `VERBOSE`。`[log] toFile=true` 之前不会写文件。默认路径是 `~/synergy.log`（`kAppId`），不是 `synergy-debug.log`。未写文件时，GUI 日志面板里是同样的行。
 
 ---
 
@@ -629,17 +613,17 @@ checkPeerFingerprints = false  # 自签名时
 
 | 渠道 | 适用场景 |
 |------|----------|
-| **GitHub Issues** | Bug 报告、崩溃、可复现问题 |
-| **GitHub Discussions** | 配置求助、"怎么做..." |
-| **Wiki** | 常见布局、FAQ |
-| **调试日志** | 提 Issue 必附 `synergy-debug.log` |
+| **GitHub Issues** | Bug 和崩溃，使用 bug 报告模板 |
+| **功能请求 issue** | 安装和配置问题。Discussions 未开启 |
+| **本目录文档** | 编译、配置和本文。Wiki 只是简短索引 |
+| **日志** | 附上 GUI 日志，或在 `[log] toFile=true` 后附上 `~/synergy.log` |
 
 **最小 Bug 报告模板：**
 ```markdown
 **OS/版本**: Windows 11 23H2 / TuPig Synergy（见 `cmake/Version.cmake`）
 **角色**: 服务端(台式机) ↔ 客户端(笔记本)
 **配置**: [粘贴相关配置节]
-**日志**: [附件 synergy-debug.log]
+**日志**: [GUI 日志，或 toFile 打开后的 ~/synergy.log]
 **步骤**: 1. 启动服务端 2. 启动客户端 3. 移动鼠标到边缘
 **预期**: 光标进入客户端
 **实际**: 光标停在边缘，日志显示 [error]

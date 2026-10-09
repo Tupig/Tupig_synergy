@@ -199,20 +199,9 @@ TuPig Synergy (repo root)
 
 ### Settings (GUI INI / 设置文件)
 
-Real keys live in `src/lib/common/Settings.h`. Example (`~/.config/TuPig Synergy/TuPig Synergy.conf` on Linux; see `Settings.h` for per-OS paths):
+键名以 `src/lib/common/Settings.h` 为准，说明和可运行示例在 [docs/configuration.md](docs/configuration.md)。上面「运行」一节里的 `[client]` 片段可以直接写入 `TuPig Synergy.conf`。屏幕布局是另一份服务端配置（`screens`、`main.position`），不是这份 INI。
 
-```ini
-[core]
-computerName = my-desktop
-port = 24800
-interface = 0.0.0.0
-
-[client]
-remoteHost = 192.168.1.100
-dynamicConnectionInterval = true
-```
-
-Server screen layout is a **separate** config file (`screens`, `main.position`, …), not these settings — see [configuration.md](docs/configuration.md).
+Keys are defined in `src/lib/common/Settings.h`. The reference and runnable commands are in [docs/configuration.md](docs/configuration.md). The `[client]` block in the Run section above can be pasted into `TuPig Synergy.conf`. Screen layout is a separate server file (`screens`, `main.position`), not this INI.
 
 ---
 
