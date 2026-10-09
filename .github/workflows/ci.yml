@@ -173,8 +173,13 @@ jobs:
 
     env:
       # esigner-codesign installs Corretto 11 when JAVA_VERSION < 11; none exists for
-      # Windows/arm64, so pin >= 11 to skip that install and use the preinstalled JDK.
+      # Windows/arm64. Pin 21 and, when signing actually runs, install Temurin 21 so
+      # JAVA_HOME matches. The runner image's JAVA_HOME is still JDK 8.
       JAVA_VERSION: "21"
+      # True only when every SSL.com secret is set. Empty secrets make CodeSignTool
+      # exit with "Missing required options" and the action hides that as
+      # "Something Went Wrong". Unsigned packages are produced instead (issue #165).
+      WINDOWS_SIGNING: ${{ secrets.WINDOWS_SSL_USERNAME != '' && secrets.WINDOWS_SSL_PASSWORD != '' && secrets.WINDOWS_SSL_CREDENTIAL_ID != '' && secrets.WINDOWS_SSL_TOTP_SECRET != '' }}
 
     strategy:
       fail-fast: false
@@ -265,13 +270,26 @@ jobs:
       # and signing the MSI afterward doesn't propagate signatures to embedded
       # files. Stages all non-test exes into one dir so they can be batch-signed
       # with a single OTP, then restores them in-place before the package step.
+      # Skipped entirely when SSL.com secrets are absent (issue #165).
+      - name: Windows signing not configured
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING != 'true'
+        shell: bash
+        run: echo "::warning::Windows code signing skipped. Set WINDOWS_SSL_USERNAME, WINDOWS_SSL_PASSWORD, WINDOWS_SSL_CREDENTIAL_ID and WINDOWS_SSL_TOTP_SECRET to sign. Artifacts from this run are unsigned."
+
+      - name: Setup JDK for code signing
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Stage binaries for signing
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat stage
 
       - name: Sign inner binaries
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
         with:
           command: batch_sign
@@ -288,7 +306,7 @@ jobs:
           malware_block: "false"
 
       - name: Restore + verify signed binaries
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat restore
 
@@ -297,13 +315,13 @@ jobs:
         run: cmake --build build --config Release -j8 --target package
 
       - name: Locate MSI
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         id: locate-msi
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat locate-msi
 
       - name: Sign MSI
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
         with:
           command: sign
@@ -319,7 +337,7 @@ jobs:
           environment_name: PROD
 
       - name: Verify MSI is signed
-        if: env.SYNERGY_VERSION_RELEASE == 'true'
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         shell: cmd
         env:
           MSI_PATH: ${{ steps.locate-msi.outputs.path }}
