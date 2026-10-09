@@ -1,16 +1,24 @@
 # Default CodeQL scan for the Security tab. Separate from the analyze=true
 # CodeQL job in ci.yml, which builds with CMake by hand inside Debian.
-# Triggers stay: push and pull request to main, plus Monday 00:00 UTC.
+# Automatic: push and pull request to main, plus Monday 00:00 UTC.
+# Manual: workflow_dispatch, for a re-run that is not tied to a new commit.
+# A newer push or PR cancels the older scan of that same ref. The weekly run
+# and a manual run do not cancel each other or an in-progress push scan.
 
 name: CodeQL
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   schedule:
     - cron: "0 0 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
 
 permissions:
   security-events: write

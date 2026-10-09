@@ -1,12 +1,24 @@
 # Single workflow, shown as "TuPig Synergy" (CMAKE_PROJECT_PROPER_NAME).
 # Jobs are ordered for reading; `needs` is what actually schedules them:
-#   1. prepare (version, clang-format)
+#   1. prepare (version, clang-format, and the trigger plan below)
 #   2. build (Windows MSVC, macOS AppleClang arm64+x86_64, Linux gcc, Flatpak)
 #   3. publish (GitHub Release, optional S3, Slack on failure)
 #   4. analysis (only workflow_dispatch with analyze=true)
 #   5. ci-passed, the branch-protection gate
-# package-type=release builds every platform. push/PR use the free Linux
-# subset (.github/matrices/linux-targets.json "free").
+#
+# Triggers — one run does not start another:
+#   push to main          lint + free Linux. No publish. A newer push cancels the older one.
+#   pull_request to main  same as push. A newer push to that PR cancels the older run.
+#   release published     all platforms, clean version, attach packages. This fires when a
+#                         person publishes a Release. The publish job uses the workflow
+#                         token, and that token does not start a new workflow, so it does
+#                         not loop. Do not publish the same commit from the UI and from
+#                         workflow_dispatch; those are different refs and both would build.
+#   workflow_dispatch     manual. package-type=release ignores platform and publishes.
+#                         package-type=snapshot honors platform and does not publish.
+#                         analyze is independent of package-type.
+# Push/PR and a manual run use different concurrency groups, so a free Linux
+# check cannot cancel a release build that is already going.
 
 name: TuPig Synergy
 
@@ -17,24 +29,15 @@ on:
   workflow_dispatch:
     inputs:
       package-type:
-        description: "release (clean semver) or snapshot (nightly)"
+        description: "release: all platforms, clean version, publish the GitHub Release. snapshot: no publish; platform applies."
         required: false
         default: "release"
         type: choice
         options:
           - release
           - snapshot
-      analyze:
-        description: "Also run clang-tidy, cppcheck, CodeQL, SonarCloud and Valgrind"
-        required: false
-        default: false
-        type: boolean
-      aws-s3-uri:
-        description: "Override AWS S3 target (e.g. s3://bucket/path)"
-        required: false
-        type: string
       platform:
-        description: "Build only one platform (blank = all)"
+        description: "snapshot only. blank = all platforms. Ignored when package-type is release."
         required: false
         default: ""
         type: choice
@@ -43,16 +46,27 @@ on:
           - windows
           - macos
           - linux
+      analyze:
+        description: "Also run clang-tidy, cppcheck, CodeQL, SonarCloud and Valgrind. Does not change which platforms build."
+        required: false
+        default: false
+        type: boolean
+      aws-s3-uri:
+        description: "Optional S3 override for a manual or release run. Unused when AWS secrets are unset."
+        required: false
+        type: string
   push:
     branches: [main]
   pull_request:
+    branches: [main]
   release:
     types: [published]
 
-# Cancel superseded PR builds; pushes to branches/tags always run to completion.
+# Automatic runs cancel only their own older run. Manual and release runs
+# never cancel, and a push cannot cancel them (separate group).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
 
 env:
   PACKAGE_PREFIX: ${{ vars.SYNERGY_PACKAGE_PREFIX || 'synergy' }}
@@ -67,8 +81,8 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Prepare. Every event starts here. Push and pull requests then build
-  # only the free Linux subset; a release builds every platform.
+  # 1. Prepare. Every event starts here. The plan step records which
+  # platforms this event is allowed to build.
   # ---------------------------------------------------------------------------
   get-version:
     runs-on: ubuntu-latest
@@ -76,7 +90,12 @@ jobs:
     outputs:
       version: ${{ steps.get-version.outputs.version }}
       base: ${{ steps.get-version.outputs.base }}
-      linux_targets: ${{ steps.linux-matrix.outputs.targets }}
+      linux_targets: ${{ steps.plan.outputs.targets }}
+      build_windows: ${{ steps.plan.outputs.build_windows }}
+      build_macos: ${{ steps.plan.outputs.build_macos }}
+      build_linux: ${{ steps.plan.outputs.build_linux }}
+      build_flatpak: ${{ steps.plan.outputs.build_flatpak }}
+      publish_release: ${{ steps.plan.outputs.publish_release }}
 
     steps:
       - name: Checkout
@@ -92,18 +111,72 @@ jobs:
       - name: Check vcpkg version matches Version.cmake
         run: python3 scripts/ci/check-version-consistency.py
 
-      # push/PR use the free-tier subset (x86_64 only, ~4 legs);
-      # release/workflow_dispatch use the full distro matrix.
-      - name: Select Linux matrix
-        id: linux-matrix
+      # One place decides what this event builds. Job `if`s only read these
+      # outputs, so a platform is not accidentally both required and skipped.
+      # push/PR: free Linux. release and package-type=release: every platform
+      # and a GitHub Release. snapshot: honor platform; blank means all of them.
+      - name: Plan builds for this event
+        id: plan
+        env:
+          PACKAGE_TYPE: ${{ inputs.package-type }}
+          PLATFORM: ${{ inputs.platform }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "push" ] || [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            key=free
-          else
-            key=full
-          fi
-          targets=$(jq -c --arg k "$key" '.[$k]' .github/matrices/linux-targets.json)
-          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          linux_key=free
+          build_windows=false
+          build_macos=false
+          build_linux=false
+          build_flatpak=false
+          publish_release=false
+          case "$GITHUB_EVENT_NAME" in
+            push|pull_request)
+              linux_key=free
+              build_linux=true
+              ;;
+            release)
+              linux_key=full
+              build_windows=true
+              build_macos=true
+              build_linux=true
+              build_flatpak=true
+              publish_release=true
+              ;;
+            workflow_dispatch)
+              linux_key=full
+              if [ "$PACKAGE_TYPE" = "release" ]; then
+                build_windows=true
+                build_macos=true
+                build_linux=true
+                build_flatpak=true
+                publish_release=true
+              else
+                if [ -z "$PLATFORM" ] || [ "$PLATFORM" = "windows" ]; then
+                  build_windows=true
+                fi
+                if [ -z "$PLATFORM" ] || [ "$PLATFORM" = "macos" ]; then
+                  build_macos=true
+                fi
+                if [ -z "$PLATFORM" ] || [ "$PLATFORM" = "linux" ]; then
+                  build_linux=true
+                  build_flatpak=true
+                fi
+              fi
+              ;;
+            *)
+              echo "::error::unexpected event $GITHUB_EVENT_NAME"
+              exit 1
+              ;;
+          esac
+          targets=$(jq -c --arg k "$linux_key" '.[$k]' .github/matrices/linux-targets.json)
+          {
+            echo "targets=$targets"
+            echo "build_windows=$build_windows"
+            echo "build_macos=$build_macos"
+            echo "build_linux=$build_linux"
+            echo "build_flatpak=$build_flatpak"
+            echo "publish_release=$publish_release"
+          } >> "$GITHUB_OUTPUT"
+          echo "plan event=$GITHUB_EVENT_NAME package=${PACKAGE_TYPE:-<none>} platform=${PLATFORM:-<none>} linux_matrix=$linux_key windows=$build_windows macos=$build_macos linux=$build_linux flatpak=$build_flatpak publish=$publish_release"
 
   lint-clang:
     runs-on: ubuntu-slim
@@ -122,8 +195,7 @@ jobs:
   # ---------------------------------------------------------------------------
   build-windows:
     needs: [lint-clang, get-version]
-    # A release always builds Windows, even if platform was set to one OS.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release') }}
+    if: ${{ needs.get-version.outputs.build_windows == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: 30
@@ -315,8 +387,7 @@ jobs:
 
   build-macos:
     needs: [lint-clang, get-version]
-    # macOS is 10x minutes. Release always includes it; other dispatches honor platform.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.package-type == 'release' || inputs.platform == '' || inputs.platform == 'macos')) }}
+    if: ${{ needs.get-version.outputs.build_macos == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: ${{ matrix.target.timeout }}
@@ -473,9 +544,7 @@ jobs:
 
   build-linux:
     needs: [lint-clang, get-version]
-    # push/PR: platform is empty, so the free Linux subset still runs.
-    # release: always run, even when a platform filter was set.
-    if: ${{ inputs.platform == '' || inputs.platform == 'linux' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release') }}
+    if: ${{ needs.get-version.outputs.build_linux == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     container: ${{ matrix.target.container }}
@@ -483,7 +552,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # free = push/PR subset; full = release/workflow_dispatch (see get-version).
+        # free or full, chosen by the plan step in get-version.
         target: ${{ fromJSON(needs.get-version.outputs.linux_targets) }}
 
     steps:
@@ -589,8 +658,7 @@ jobs:
 
   build-flatpak:
     needs: [lint-clang, get-version]
-    # Free tier: flatpak is a long privileged container build — release / manual only.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.package-type == 'release' || inputs.platform == '' || inputs.platform == 'linux')) }}
+    if: ${{ needs.get-version.outputs.build_flatpak == 'true' }}
     name: flatpak-${{matrix.flatpak.arch}}
     runs-on: ${{matrix.flatpak.runs-on}}
     timeout-minutes: 60
@@ -656,7 +724,7 @@ jobs:
   # ---------------------------------------------------------------------------
   github-release:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
-    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success' || needs.build-flatpak.result == 'success') }}
+    if: ${{ always() && needs.get-version.result == 'success' && needs.get-version.outputs.publish_release == 'true' && (needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success' || needs.build-flatpak.result == 'success') }}
     runs-on: ubuntu-latest
     # contents:write uploads the Release. id-token and attestations mint the
     # Sigstore provenance for those same bytes. Job permissions replace the
@@ -1064,10 +1132,11 @@ jobs:
     if: always()
 
     steps:
-      # 'skipped' is treated as passing because the user/event deliberately
-      # filtered the platform set (workflow_dispatch with inputs.platform=windows
-      # skips macos+linux jobs). A failed job is still a failure. get-version never
-      # filters out, so requiring it catches a build skipped by its failure.
+      # 'skipped' is treated as passing because the plan step skips platforms
+      # on purpose (push/PR skip Windows, macOS and Flatpak; snapshot honors
+      # platform). package-type=release and a published Release do not skip a
+      # platform. A failed job is still a failure. get-version never filters
+      # out, so requiring it catches a build skipped by its failure.
       # lint-clang has no platform filter: a failed lint used to be invisible here
       # (builds skip via needs:, skipped counted as ok) — always require it.
       # No checkout: this job only inspects needs.* results.
