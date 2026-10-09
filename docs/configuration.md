@@ -8,29 +8,34 @@
 
 ### Configuration File Locations
 
-TuPig Synergy searches for settings in platform-specific locations (in order):
+The settings file is named after the application (`kAppName`). In a normal build
+that name is `TuPig Synergy`, so the file is `TuPig Synergy.conf`, not
+`Synergy.conf`. The directory uses the same name.
 
-> **Naming**: every config file is named after the application (`kAppName`, which
-> is `TuPig Synergy` in a normal build), so the file is `TuPig Synergy.conf` —
-> **not** `Synergy.conf`. The containing directory uses the same name.
+On Windows, `<install-dir>/settings/TuPig Synergy.conf` is used when that
+portable file exists. Otherwise the first existing file below is used, and if
+neither exists the user file is created:
+
+1. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
+2. `<system-drive>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
+
+`QSettingsProxy` reads the registry key `HKCU\Software\TuPig Synergy\TuPig Synergy`
+only when no file path is supplied at all.
+
+On Linux and macOS, a set `XDG_CONFIG_HOME` wins even when the file does not
+exist yet: `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`. When that
+variable is unset, the first existing path below is used, or the user path is
+created.
 
 #### Linux
-1. `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`
-2. `~/.config/TuPig Synergy/TuPig Synergy.conf`
-3. `/etc/TuPig Synergy/TuPig Synergy.conf`
+1. `~/.config/TuPig Synergy/TuPig Synergy.conf`
+2. `/etc/TuPig Synergy/TuPig Synergy.conf`
 
 #### macOS
 1. `~/Library/TuPig Synergy/TuPig Synergy.conf`
 2. `/Library/TuPig Synergy/TuPig Synergy.conf`
 
-#### Windows
-1. `<install-dir>/settings/TuPig Synergy.conf` (portable mode; checked first)
-2. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
-3. `<system-drive>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
-4. Registry `HKCU\Software\TuPig Synergy\TuPig Synergy` — used by
-   `QSettingsProxy` only when no file path is supplied at all
-
-> The first found file is used as base for all other config files (certs, logs, etc.)
+> Certificates and logs are placed next to the settings file that was chosen.
 
 `gui/windowGeometry` is not stored in that file: it lives in a separate state
 file, `<state-dir>/TuPig Synergy.state` (see `Settings::m_stateKeys`).
@@ -75,7 +80,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 | `lastVersion` | string | — | Last run version |
 | `port` | int | `24800` | TCP port |
 | `preventSleep` | bool | `false` | Inhibit system sleep |
-| `processMode` | int | `0` | `0`=Desktop, `1`=Service |
+| `processMode` | int | `0` on an installed Windows build, `1` otherwise | `0` = Service, `1` = Desktop |
 | `computerName` | string | hostname | Unique computer identifier |
 | `useHooks` | bool | `true` | Windows: use hooks vs raw input |
 | `language` | ISO 639 | `en` | UI language code |
@@ -89,7 +94,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `configFile` | path | — | Core config the daemon starts the core with |
-| `elevate` | bool | `true` | Run elevated (UAC) |
+| `elevate` | bool | `true` when not portable | Run elevated (UAC). Portable mode defaults to `false` |
 | `logFile` | path | — | Daemon log file |
 | `logLevel` | string | — | Log verbosity |
 
@@ -114,7 +119,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `file` | path | — | Log file path |
-| `level` | enum | `info` | `debug`, `info`, `warning`, `error`, `critical` |
+| `level` | enum | `INFO` | `FATAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`, `VERBOSE` |
 | `toFile` | bool | `false` | Write to file |
 | `guiDebug` | bool | `false` | Include GUI internal debug |
 
@@ -351,14 +356,47 @@ end
 
 ---
 
-### Environment Variable Overrides
+### Command line
 
-| Variable | Section/Key | Description |
-|----------|-------------|-------------|
-| `SYNERGY_CONFIG` | — | Force config file path |
-| `SYNERGY_LOG_LEVEL` | `[log] level` | Override log level |
-| `SYNERGY_TLS_CERT` | `[security] certificate` | Certificate path |
-| `SYNERGY_PORT` | `[core] port` | Override port |
+`server` and `client` are required positional arguments. `--settings` (`-s`)
+selects the INI file. `--new-instance` skips the single-instance check.
+There is no `--debug` flag and no `--no-daemon` flag.
+
+```bat
+synergy-core --help
+synergy-core --version
+synergy-core server
+synergy-core client --settings "%APPDATA%\TuPig Synergy\TuPig Synergy.conf"
+```
+
+```bash
+synergy-core --help
+synergy-core --version
+synergy-core server
+synergy-core client --settings "$HOME/.config/TuPig Synergy/TuPig Synergy.conf"
+```
+
+The Windows GUI file is `synergy_<X.Y.Z>.exe`, with `X.Y.Z` from
+`cmake/Version.cmake` (currently 1.21.2). `--reset` restores settings to
+their defaults.
+
+```bat
+synergy_1.21.2.exe --version
+synergy_1.21.2.exe --reset
+synergy-daemon.exe --version
+synergy-daemon.exe --foreground
+```
+
+Linux runs `./build/bin/synergy`. macOS runs `build/bin/TuPig Synergy.app`.
+Neither platform ships `synergy-daemon`.
+
+### Environment
+
+`USE_LEGACY_NETWORK=1` selects the old socket stack. Leave it unset to keep
+the default Qt TLS stack. The program does not read `SYNERGY_PORT`,
+`SYNERGY_CONFIG`, `SYNERGY_LOG_LEVEL`, or `SYNERGY_TLS_CERT`. Change the port,
+settings path, log level, and certificate in the INI file, or pass
+`--settings`.
 
 ---
 
@@ -366,27 +404,26 @@ end
 
 ### 配置文件位置
 
-TuPig Synergy 按平台按顺序搜索配置文件：
+配置文件名来自应用名（`kAppName`）。正常构建中该名字是 `TuPig Synergy`，所以文件是 `TuPig Synergy.conf`，不是 `Synergy.conf`。目录名相同。
+
+Windows 上，若 `<安装目录>/settings/TuPig Synergy.conf` 存在，就用这份便携配置。否则使用下面第一个已经存在的文件；两个都不存在时创建用户文件：
+
+1. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
+2. `<系统盘>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
+
+`QSettingsProxy` 只在完全没有文件路径时才读注册表 `HKCU\Software\TuPig Synergy\TuPig Synergy`。
+
+Linux 与 macOS 上，若设置了 `XDG_CONFIG_HOME`，即使文件还不存在也使用 `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`。未设置该变量时，使用下面第一个已存在的路径，否则创建用户路径。
 
 #### Linux
-1. `$XDG_CONFIG_HOME/TuPig Synergy/TuPig Synergy.conf`
-2. `~/.config/TuPig Synergy/TuPig Synergy.conf`
-3. `/etc/TuPig Synergy/TuPig Synergy.conf`
+1. `~/.config/TuPig Synergy/TuPig Synergy.conf`
+2. `/etc/TuPig Synergy/TuPig Synergy.conf`
 
 #### macOS
 1. `~/Library/TuPig Synergy/TuPig Synergy.conf`
 2. `/Library/TuPig Synergy/TuPig Synergy.conf`
 
-#### Windows
-1. `<安装目录>/settings/TuPig Synergy.conf`（便携模式，最先查找）
-2. `%APPDATA%\TuPig Synergy\TuPig Synergy.conf`
-3. `<系统盘>\ProgramData\TuPig Synergy\TuPig Synergy.conf`
-4. 注册表 `HKCU\Software\TuPig Synergy\TuPig Synergy` —— 仅在完全没有传入文件路径时由 `QSettingsProxy` 使用
-
-> 首个找到的文件作为基础，其他文件（证书、日志等）相对其路径。
-
-> **命名**：配置文件名取自应用名（`kAppName`，常规构建中为 `TuPig Synergy`），
-> 即 `TuPig Synergy.conf`，**而非** `Synergy.conf`。所在目录名亦同。
+证书和日志放在所选配置文件旁边。
 
 `gui/windowGeometry` 不存在该文件中：它位于独立的状态文件
 `<状态目录>/TuPig Synergy.state`（见 `Settings::m_stateKeys`）。
@@ -431,7 +468,7 @@ key=value
 | `lastVersion` | string | — | 上次运行版本 |
 | `port` | int | `24800` | TCP 端口 |
 | `preventSleep` | bool | `false` | 阻止系统休眠 |
-| `processMode` | int | `0` | `0`=桌面, `1`=服务 |
+| `processMode` | int | 已安装的 Windows 为 `0`，其余为 `1` | `0`=服务，`1`=桌面 |
 | `computerName` | string | 主机名 | 唯一计算机标识 |
 | `useHooks` | bool | `true` | Windows: 钩子 vs 原始输入 |
 | `language` | ISO 639 | `en` | UI 语言代码 |
@@ -445,7 +482,7 @@ key=value
 | 键 | 类型 | 默认值 | 说明 |
 |-----|------|--------|------|
 | `configFile` | path | — | 守护进程启动核心时使用的核心配置文件 |
-| `elevate` | bool | `true` | 以提升权限运行 (UAC) |
+| `elevate` | bool | 非便携模式为 `true` | 以提升权限运行 (UAC)。便携模式默认为 `false` |
 | `logFile` | path | — | 守护进程日志文件 |
 | `logLevel` | string | — | 日志详细程度 |
 
@@ -470,7 +507,7 @@ key=value
 | 键 | 类型 | 默认值 | 说明 |
 |-----|------|--------|------|
 | `file` | path | — | 日志文件路径 |
-| `level` | enum | `info` | `debug`, `info`, `warning`, `error`, `critical` |
+| `level` | enum | `INFO` | `FATAL`, `ERROR`, `WARNING`, `INFO`, `DEBUG`, `VERBOSE` |
 | `toFile` | bool | `false` | 写入文件 |
 | `guiDebug` | bool | `false` | 包含 GUI 内部调试 |
 
@@ -704,11 +741,35 @@ end
 
 ---
 
-### 环境变量覆盖
+### 命令行
 
-| 变量 | 对应节/键 | 说明 |
-|------|-----------|------|
-| `SYNERGY_CONFIG` | — | 强制配置文件路径 |
-| `SYNERGY_LOG_LEVEL` | `[log] level` | 覆盖日志级别 |
-| `SYNERGY_TLS_CERT` | `[security] certificate` | 证书路径 |
-| `SYNERGY_PORT` | `[core] port` | 覆盖端口 |
+`server` 与 `client` 是必填的位置参数。`--settings`（`-s`）指定 INI 文件。`--new-instance` 跳过单实例检查。没有 `--debug`，也没有 `--no-daemon`。
+
+```bat
+synergy-core --help
+synergy-core --version
+synergy-core server
+synergy-core client --settings "%APPDATA%\TuPig Synergy\TuPig Synergy.conf"
+```
+
+```bash
+synergy-core --help
+synergy-core --version
+synergy-core server
+synergy-core client --settings "$HOME/.config/TuPig Synergy/TuPig Synergy.conf"
+```
+
+Windows GUI 文件是 `synergy_<X.Y.Z>.exe`，`X.Y.Z` 来自 `cmake/Version.cmake`（当前 1.21.2）。`--reset` 把设置恢复为默认值。
+
+```bat
+synergy_1.21.2.exe --version
+synergy_1.21.2.exe --reset
+synergy-daemon.exe --version
+synergy-daemon.exe --foreground
+```
+
+Linux 运行 `./build/bin/synergy`。macOS 运行 `build/bin/TuPig Synergy.app`。这两个平台都没有 `synergy-daemon`。
+
+### 环境变量
+
+`USE_LEGACY_NETWORK=1` 改用旧的套接字栈。不设置则使用默认的 Qt TLS 栈。程序不读取 `SYNERGY_PORT`、`SYNERGY_CONFIG`、`SYNERGY_LOG_LEVEL` 或 `SYNERGY_TLS_CERT`。端口、配置路径、日志级别和证书写在 INI 里，或用 `--settings` 指定文件。

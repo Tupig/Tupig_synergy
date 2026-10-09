@@ -18,7 +18,8 @@ Before opening an issue or a pull request:
 
 - **Build & development workflow**: [`docs/build.md`](../docs/build.md)
   (toolchain prerequisites, `setup.bat` / `scripts/build.*`, presets, packaging).
-- **Configuration reference**: [`docs/configuration.md`](../docs/configuration.md).
+- **Configuration, settings keys, and command-line flags**: [`docs/configuration.md`](../docs/configuration.md).
+  Flags come from `CoreArgs.h` and `synergy-gui.cpp`. There is no `--debug` or `--no-daemon`.
 - **Troubleshooting**: [`docs/troubleshooting.md`](../docs/troubleshooting.md).
 
 Code standards:
@@ -67,7 +68,8 @@ PR checklist:
 
 - **构建与开发工作流**：[`docs/build.md`](../docs/build.md)
   （工具链前置、`setup.bat` / `scripts/build.*`、预设、打包）。
-- **配置参考**：[`docs/configuration.md`](../docs/configuration.md)。
+- **配置、设置键与命令行参数**：[`docs/configuration.md`](../docs/configuration.md)。
+  参数以 `CoreArgs.h` 和 `synergy-gui.cpp` 为准。没有 `--debug`，也没有 `--no-daemon`。
 - **故障排查**：[`docs/troubleshooting.md`](../docs/troubleshooting.md)。
 
 代码规范：

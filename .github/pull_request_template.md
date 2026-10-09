@@ -10,6 +10,9 @@
 <!--- Example, if fixing Issues #1234 you would add -->
 <!--- fixes: #1234 -->
 
+## Documentation
+<!--- If user-facing behavior changed, update the matching file under docs/ or README.md -->
+
 ## How has this been tested?
 <!--- Please describe how you tested your changes -->
 <!--- Include details of your testing environment -->

@@ -127,6 +127,39 @@ scripts\build.bat release
 
 macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。Intel x86_64 由 Actions 作业 `macos-x64` 构建，不是这个预设。打包与测试见 [docs/build.md](docs/build.md)。
 
+### Run / 运行
+
+日常使用打开 GUI。下面的命令对应当前 `Version.cmake`（1.21.2）。`server` 和 `client` 是位置参数，必须写上。没有 `--debug`，也没有 `--no-daemon`。详细键名见 [docs/configuration.md](docs/configuration.md)。
+
+Open the GUI for normal use. The commands below match the current `Version.cmake` (1.21.2). `server` and `client` are required positional arguments. There is no `--debug` flag and no `--no-daemon` flag. Key names are in [docs/configuration.md](docs/configuration.md).
+
+```bat
+build\bin\Release\synergy_1.21.2.exe --version
+build\bin\Release\synergy-core.exe --version
+build\bin\Release\synergy-core.exe server
+build\bin\Release\synergy-core.exe client --settings "%APPDATA%\TuPig Synergy\TuPig Synergy.conf"
+```
+
+```bash
+./build/bin/synergy --version
+./build/bin/synergy-core --version
+./build/bin/synergy-core server
+./build/bin/synergy-core client --settings "$HOME/.config/TuPig Synergy/TuPig Synergy.conf"
+```
+
+客户端至少要在配置里写上要连接的主机。TLS 和对端指纹校验默认已经打开，不用再设密码。
+
+A client needs the host it should connect to. TLS and peer-fingerprint checks are already on by default. There is no separate password.
+
+```ini
+[client]
+remoteHost=192.168.1.10
+
+[log]
+level=INFO
+toFile=false
+```
+
 > **MSVC**：`setup.bat` 弹出 Visual Studio 安装器时，安装前必须勾选 **“使用 C++ 的桌面开发”**。换机器时重新运行 `setup.bat` 即可，它只补缺。
 >
 > When `setup.bat` opens the Visual Studio installer, select **Desktop development with C++** before installing. On another machine, run `setup.bat` again; it only installs what is missing.

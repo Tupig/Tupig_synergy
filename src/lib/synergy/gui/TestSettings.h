@@ -27,7 +27,7 @@ namespace synergy::gui {
 // copy at the repo root covers any build dir inside the tree and survives
 // wipes of the app settings dir. When nothing is found above the binary
 // (e.g. installed builds), falls back to `${UserDir}/${kAppName}.test.conf`,
-// sibling to the main Synergy.conf settings file. Sourcing values from a file
+// sibling to the main TuPig Synergy.conf settings file. Sourcing values from a file
 // (rather than env vars) sidesteps the pain of getting env vars into GUI
 // launches on macOS / Windows / VS Code F5.
 class TestSettings

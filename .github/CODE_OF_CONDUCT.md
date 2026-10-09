@@ -7,6 +7,7 @@
 > and headings were added, plus this fork's Chinese translation below.
 > 本文件继承自上游。英文正文为 Deskflow 原文，未作改动，以便与 `upstream` 合并时
 > 易于审阅；此处仅新增了语言导航与标题，以及下方本分支的中文译文。
+> 本仓库的贡献说明是 [`.github/CONTRIBUTING.md`](CONTRIBUTING.md)，不是 Deskflow wiki。
 
 ---
 

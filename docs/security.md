@@ -34,7 +34,8 @@ than 2048 bits are rejected when peer checking is on.
 
 Turning TLS off switches that connection to plaintext. Plaintext has no
 confidentiality and no peer authentication. There is no separate server
-password.
+password. Settings keys and the real command-line flags are in
+[`configuration.md`](configuration.md).
 
 The protocol has a message-length limit. The keyboard and mouse path rate-limits
 input. Modifier bits outside the defined mask are cleared. Key-combination
@@ -108,7 +109,7 @@ TuPig Synergy 在你自己控制的几台电脑之间共享键盘、鼠标和剪
 
 TLS **默认开启**，对端校验也 **默认开启**（`security/tlsEnabled` 与 `security/checkPeers`）。对端校验是指纹 TOFU：第一次接受的证书会被记住，之后证书变了就拒绝。这不是公共 CA 签发的证书。开启对端校验时，短于 2048 位的 RSA 密钥会被拒绝。
 
-关掉 TLS 后，这条连接变为明文。明文没有机密性，也没有对端身份。没有单独的服务器密码。
+关掉 TLS 后，这条连接变为明文。明文没有机密性，也没有对端身份。没有单独的服务器密码。设置键和真实的命令行参数见 [`configuration.md`](configuration.md)。
 
 协议有消息长度上限。键鼠路径对输入做频率限制。修饰键掩码里未定义的位会被清掉。组合键拦截只读 `security/blockedKeyCombos`，该列表 **默认为空**。在 Windows 上拦截 `Ctrl+Alt+Del` 会让 UAC 和登录界面收不到这个组合，所以除非你写进列表，否则不拦截；写进去之后，启动时会记一条警告。格式错误的条目会被跳过。
 

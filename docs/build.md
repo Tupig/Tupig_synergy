@@ -78,6 +78,17 @@ Output:
 | `build\bin\Release\synergy-core.exe` | Core. The GUI looks this name up; do not version it. |
 | `build\bin\Release\synergy-daemon.exe` | Windows service helper. Also unversioned. The portable 7Z omits it. |
 
+Check the binaries. `X.Y.Z` below is the current `Version.cmake` value, 1.21.2:
+
+```bat
+build\bin\Release\synergy_1.21.2.exe --version
+build\bin\Release\synergy-core.exe --version
+build\bin\Release\synergy-daemon.exe --version
+build\bin\Release\synergy-core.exe server
+```
+
+`synergy-core --version` prints the product version and `protocol v1.8`. The GUI prints `TuPig Synergy: 1.21.2`. The daemon prints `1.21.2` only. Flags are listed in [configuration.md](configuration.md#command-line).
+
 #### Windows code signing
 
 Release CI signs the inner executables and the MSI only when `WINDOWS_SSL_USERNAME`,
@@ -319,6 +330,17 @@ scripts\build.bat release
 | `build\bin\Release\synergy_<X.Y.Z>.exe` | GUI。`X.Y.Z` 来自 `SYNERGY_VERSION_MAJOR.MINOR.PATCH`，若有 stage 再追加。 |
 | `build\bin\Release\synergy-core.exe` | 核心。GUI 按这个固定名字查找，不要加版本号。 |
 | `build\bin\Release\synergy-daemon.exe` | Windows 服务辅助进程，同样不带版本号。便携 7Z 故意不含它。 |
+
+检查产物。下面的 `1.21.2` 是当前 `Version.cmake` 的值：
+
+```bat
+build\bin\Release\synergy_1.21.2.exe --version
+build\bin\Release\synergy-core.exe --version
+build\bin\Release\synergy-daemon.exe --version
+build\bin\Release\synergy-core.exe server
+```
+
+`synergy-core --version` 同时打印产品版本和 `protocol v1.8`。GUI 打印 `TuPig Synergy: 1.21.2`。daemon 只打印 `1.21.2`。参数说明见 [configuration.md](configuration.md#命令行)。
 
 #### Windows 代码签名
 

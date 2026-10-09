@@ -140,7 +140,7 @@ clipboardSharingSize=2048
 | **Clipboard empty** | Install `wl-clipboard` (Wayland) or `xclip`/`xsel` (X11) |
 | **High DPI blurry** | Set `QT_AUTO_SCREEN_SCALE_FACTOR=1` or per-monitor DPI |
 | **SELinux blocks** | `setsebool -P allow_execstack=1` or custom policy |
-| **Systemd service fails** | Check `ExecStart=/usr/bin/synergy-core --no-daemon` |
+| **Want a systemd service** | This repository does not ship a unit, and `synergy-core` has no `--no-daemon` flag. Run `synergy-core server` in the foreground |
 
 **Debug Wayland**:
 ```bash
@@ -268,7 +268,7 @@ checkPeerFingerprints = false  # for self-signed
 | `heartbeat` | 5000ms (LAN), 10000ms (WAN) |
 | `switchDelay` | 250ms (default), 100ms (fast) |
 | `clipboardSharingSize` | 1024KB (text), 5120KB (images) |
-| `log level` | `info` (prod), `debug` (debug only) |
+| `[log] level` | `INFO` for normal use, `DEBUG` while diagnosing. There is no `--debug` flag |
 | TLS session reuse | Enabled by default in OpenSSL 3.0 |
 
 ---
@@ -277,7 +277,7 @@ checkPeerFingerprints = false  # for self-signed
 
 | Tool | Purpose |
 |------|---------|
-| `synergy-core --debug` | Verbose protocol logging |
+| `[log] level=DEBUG` in `TuPig Synergy.conf` | Verbose logging. `synergy-core` has no `--debug` flag |
 | Wireshark | Capture port 24800, decode as Synergy |
 | `strace -p <pid>` | Linux syscall trace |
 | `dtruss -p <pid>` | macOS syscall trace |
@@ -464,7 +464,7 @@ clipboardSharingSize=2048
 | **剪贴板为空** | Wayland 装 `wl-clipboard`，X11 装 `xclip`/`xsel` |
 | **高 DPI 模糊** | 设 `QT_AUTO_SCREEN_SCALE_FACTOR=1` 或逐显示器 DPI |
 | **SELinux 拦截** | `setsebool -P allow_execstack=1` 或自定义策略 |
-| **Systemd 服务失败** | 检查 `ExecStart=/usr/bin/synergy-core --no-daemon` |
+| **想用 systemd** | 本仓库不带 unit 文件，`synergy-core` 也没有 `--no-daemon`。前台运行 `synergy-core server` |
 
 **Wayland 调试**：
 ```bash
@@ -587,7 +587,7 @@ checkPeerFingerprints = false  # 自签名时
 | `heartbeat` | 5000ms (局域网), 10000ms (广域网) |
 | `switchDelay` | 250ms (默认), 100ms (极速) |
 | `clipboardSharingSize` | 1024KB (文本), 5120KB (图片) |
-| `log level` | `info` (生产), `debug` (仅调试) |
+| `[log] level` | 平时用 `INFO`，排查时用 `DEBUG`。没有 `--debug` 参数 |
 | TLS 会话复用 | OpenSSL 3.0 默认开启 |
 
 ---
@@ -596,7 +596,7 @@ checkPeerFingerprints = false  # 自签名时
 
 | 工具 | 用途 |
 |------|------|
-| `synergy-core --debug` | 详细协议日志 |
+| 在 `TuPig Synergy.conf` 里设 `[log] level=DEBUG` | 详细日志。`synergy-core` 没有 `--debug` 参数 |
 | Wireshark | 抓包端口 24800，解析为 Synergy |
 | `strace -p <pid>` | Linux 系统调用跟踪 |
 | `dtruss -p <pid>` | macOS 系统调用跟踪 |
