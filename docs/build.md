@@ -16,6 +16,18 @@
 | **libportal** | 0.8.0+ | Linux/BSD only (Wayland portal) |
 | **libei** | 1.0+ | Linux/BSD only (input emulation) |
 
+### Architectures
+
+Build artifacts are **64-bit only**. `vcpkg.json` sets `"supports": "x64 | arm64"`. There is no 32-bit (x86) target.
+
+| Platform | Architectures |
+|----------|----------------|
+| Windows | x64 (`vcvarsall.bat x64`, triplet `x64-windows-static`) and arm64 in CI |
+| Linux | x86_64 and aarch64 |
+| macOS | arm64 locally (`arm64-osx`); Intel x86_64 in CI |
+
+x86_64 and x64 name the same 64-bit Intel/AMD architecture. They are not 32-bit.
+
 ### Default Build Options
 
 The following components are enabled by default:
@@ -271,6 +283,18 @@ Pass `-DSKIP_BUILD_TESTS=OFF` to run that ctest invocation automatically after t
 | **OpenSSL** | 3.0+ | TLS/加密支持 |
 | **libportal** | 0.8.0+ | 仅 Linux/BSD (Wayland Portal) |
 | **libei** | 1.0+ | 仅 Linux/BSD (输入仿真) |
+
+### 架构
+
+构建产物**只有 64 位**。`vcpkg.json` 的 `"supports"` 是 `x64 | arm64`。没有 32 位（x86）目标。
+
+| 平台 | 架构 |
+|------|------|
+| Windows | x64（`vcvarsall.bat x64`，triplet `x64-windows-static`）；CI 另有 arm64 |
+| Linux | x86_64 与 aarch64 |
+| macOS | 本地 arm64（`arm64-osx`）；CI 另有 Intel x86_64 |
+
+x86_64 与 x64 都是 64 位 Intel/AMD，不是 32 位。
 
 ### 默认启用组件
 

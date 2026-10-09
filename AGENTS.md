@@ -58,6 +58,7 @@ The current tree is normative for new files:
 - A C++ toolchain (MSVC / clang / gcc), CMake and Ninja are unavoidable host prerequisites and are
   **not** vendored. Everything else — Qt, OpenSSL and their transitive dependencies — is fetched by
   vcpkg.
+- Build artifacts are 64-bit only (`vcpkg.json` `supports`: `x64 | arm64`). Do not add an x86 / Win32 target.
 - On Windows, the MSVC environment must be activated (`vcvarsall.bat x64`) before CMake runs. vcpkg
   resolves its Visual Studio instance from the VC environment variables; without them it fails with
   *"Could not locate a complete Visual Studio instance"* on Build Tools installations whose instance
@@ -186,6 +187,7 @@ This section is the authoritative list. The following are deliberate, not defect
   读取固定 baseline，且可重复执行。
 - C++ 工具链（MSVC / clang / gcc）、CMake、Ninja 是不可避免的宿主前置条件，**不纳入仓库**。除此之外的
   一切依赖 —— Qt、OpenSSL 及其传递依赖 —— 均由 vcpkg 获取。
+- 构建产物只有 64 位（`vcpkg.json` 的 `supports` 为 `x64 | arm64`）。不要增加 x86 / Win32 目标。
 - Windows 上必须在 CMake 之前激活 MSVC 环境（`vcvarsall.bat x64`）。vcpkg 依赖 VC 环境变量来定位
   Visual Studio 实例；若缺少这些变量，在实例元数据没有 `isComplete` 标记的 Build Tools 上会报
   *"Could not locate a complete Visual Studio instance"*。`scripts/build.bat` 已自动处理，**不要删除**该步骤。

@@ -47,7 +47,7 @@ sudo firewall-cmd --reload
 # macOS:
 sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /path/to/synergy-core
 sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /path/to/synergy-core
-```
+```text
 
 #### Connection Drops Frequently
 
@@ -67,7 +67,7 @@ toFile=true
 
 #### "Incompatible Version" Error
 
-```
+```text
 EICV: Protocol version mismatch
 ```
 
@@ -84,7 +84,7 @@ EICV: Protocol version mismatch
    [options]
    switchCornerSize = 6
    switchDelay = 250
-   ```
+```text
 
 2. **Verify links are bidirectional**:
    ```ini
@@ -94,7 +94,7 @@ EICV: Protocol version mismatch
        laptop:
            left = desktop
    end
-   ```
+```
 
 3. **Screen resolution mismatch**: Ensure `DINF` reports correct dimensions.
 
@@ -109,7 +109,7 @@ EICV: Protocol version mismatch
            halfDuplexCapsLock = true
            halfDuplexNumLock = true
    end
-   ```
+```text
 
 #### Clipboard Not Syncing
 
@@ -148,7 +148,7 @@ busctl --user call org.freedesktop.portal.Desktop /org/freedesktop/portal/deskto
 
 # Check libei
 pkg-config --modversion libei
-```
+```text
 
 #### 🍎 macOS
 
@@ -188,7 +188,7 @@ Get-Service -Name "TuPig Synergy"
 
 # View logs
 Get-WinEvent -LogName Application -ProviderName "TuPig Synergy" -MaxEvents 50
-```
+```text
 
 <a id="register-the-daemon-service-windows"></a>
 **Register the daemon service (Windows)**
@@ -219,7 +219,7 @@ To remove it:
 ```bat
 sc stop "TuPig Synergy"
 sc delete "TuPig Synergy"
-```
+```text
 
 > The service name is not hardcoded in the daemon — the Service Control Manager passes
 > it in at startup — so any name pointing at the right binary works. The MSI happens to
@@ -289,7 +289,7 @@ checkPeerFingerprints = false  # for self-signed
 
 **Log line shape** (`src/lib/base/Log.cpp`):
 
-```
+```text
 [2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
 [2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
 ```
@@ -316,7 +316,7 @@ The level token is `INFO`, `WARNING`, `ERROR`, `DEBUG`, or `VERBOSE`. File loggi
 **Steps**: 1. Start server 2. Start client 3. Move mouse to edge
 **Expected**: Cursor moves to client
 **Actual**: Cursor stops at edge, log shows [error]
-```
+```text
 
 ---
 
@@ -379,13 +379,13 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /path/to/synergy-
 [log]
 level=DEBUG
 toFile=true
-```
+```text
 
 #### "版本不兼容" 错误
 
 ```
 EICV: Protocol version mismatch
-```
+```text
 
 **修复**：双端必须支持共同版本。服务端日志显示协商版本。双端升级到同一主版本。
 
@@ -400,7 +400,7 @@ EICV: Protocol version mismatch
    [options]
    switchCornerSize = 6
    switchDelay = 250
-   ```
+```
 
 2. **验证链接双向**：
    ```ini
@@ -410,7 +410,7 @@ EICV: Protocol version mismatch
        laptop:
            left = desktop
    end
-   ```
+```text
 
 3. **分辨率不匹配**：确保 `DINF` 上报正确尺寸。
 
@@ -425,7 +425,7 @@ EICV: Protocol version mismatch
            halfDuplexCapsLock = true
            halfDuplexNumLock = true
    end
-   ```
+```
 
 #### 剪贴板不同步
 
@@ -438,7 +438,7 @@ clipboardSharingSize = 2048  # KB
 # 或 GUI [server] 节
 clipboardSharing=true
 clipboardSharingSize=2048
-```
+```text
 
 **要求**：双端 v1.6+，大文件传输需 TLS。
 
@@ -484,7 +484,7 @@ sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db "SELECT * FROM acces
 # 重置权限 (最后手段)
 tccutil reset Accessibility
 tccutil reset InputMonitoring
-```
+```text
 
 #### 🪟 Windows
 
@@ -525,7 +525,7 @@ sc create "TuPig Synergy" binPath= "<安装目录>\synergy-daemon.exe" start= au
    DisplayName= "TuPig Synergy"
 sc description "TuPig Synergy" "Runs the Core process on secure desktops (UAC prompts, login screen, etc)."
 sc start "TuPig Synergy"
-```
+```text
 
 移除服务：
 
@@ -567,7 +567,7 @@ certificate = /path/to/server-cert.pem
 keySize = 2048
 tlsEnabled = true
 checkPeerFingerprints = false  # 自签名时
-```
+```text
 
 ---
 
@@ -603,7 +603,7 @@ checkPeerFingerprints = false  # 自签名时
 ```
 [2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
 [2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
-```
+```text
 
 级别标记是 `INFO`、`WARNING`、`ERROR`、`DEBUG` 或 `VERBOSE`。`[log] toFile=true` 之前不会写文件。默认路径是 `~/synergy.log`（`kAppId`），不是 `synergy-debug.log`。未写文件时，GUI 日志面板里是同样的行。
 

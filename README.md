@@ -36,7 +36,7 @@
 | Feature / 特性 | Description / 说明 | Status / 状态 |
 |---|---|---|
 | 🖱️ **Seamless Sharing / 无缝共享** | One keyboard & mouse across multiple computers / 一套键鼠控制多台电脑 | ✅ Stable / 稳定 |
-| 🌐 **Cross-Platform / 跨平台** | Windows, macOS, Linux (X11/Wayland) | ✅ Native / 原生 |
+| 🌐 **Cross-Platform / 跨平台** | 64-bit only: Windows x64/arm64, macOS arm64/x86_64, Linux x86_64/aarch64 / 仅 64 位 | ✅ Native / 原生 |
 | 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
 | 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
 | 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was / Win/mac 已实现，Linux 从未实现 | ⚠️ Platform-dependent / 视平台而定 |
@@ -123,9 +123,9 @@ scripts\build.bat release
 | Linux | `build/bin/synergy` | `build/bin/synergy-core` | — |
 | macOS | `build/bin/TuPig Synergy.app` | `build/bin/synergy-core` | — |
 
-`./scripts/build.sh` on macOS uses the `macos-release` preset (`arm64-osx`). Intel x86_64 is the Actions job `macos-x64`, not that preset. Details, packaging, and tests: [docs/build.md](docs/build.md).
+`./scripts/build.sh` on macOS uses the `macos-release` preset (`arm64-osx`). Intel x86_64 is the Actions job `macos-x64`, not that preset. Every shipped binary is 64-bit (`vcpkg.json` `supports`: `x64 | arm64`). There is no 32-bit build. Details, packaging, and tests: [docs/build.md](docs/build.md).
 
-macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。Intel x86_64 由 Actions 作业 `macos-x64` 构建，不是这个预设。打包与测试见 [docs/build.md](docs/build.md)。
+macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。Intel x86_64 由 Actions 作业 `macos-x64` 构建，不是这个预设。发布的二进制都是 64 位（`vcpkg.json` 的 `supports` 为 `x64 | arm64`）。没有 32 位构建。打包与测试见 [docs/build.md](docs/build.md)。
 
 ### Run / 运行
 

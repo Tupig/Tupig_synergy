@@ -41,7 +41,7 @@ The TuPig Synergy protocol enables keyboard and mouse sharing between multiple c
 
 ### Connection State Machine
 
-```
+```text
 DISCONNECTED ──TCP──► CONNECTING ──OK──► HANDSHAKE ──OK──► CONNECTED
      ▲                                      │                    │
      │                TCP Fail              │       CINN         │
@@ -126,7 +126,7 @@ DISCONNECTED ──TCP──► CONNECTING ──OK──► HANDSHAKE ──OK�
 
 ### Typical Message Flow
 
-```
+```text
 Client                                    Server
   │                                         │
   ├─ TCP SYN ────────────────────────────► │
@@ -176,7 +176,7 @@ Client                                    Server
 
 ### TLS Encryption (v1.4+)
 
-```
+```text
 1. TCP connection established
 2. TLS handshake
 3. Protocol handshake (Hello / HelloBack) over TLS when TLS is on
@@ -263,7 +263,7 @@ TuPig Synergy 协议实现多台计算机间通过 TCP/IP 共享键盘和鼠标�
 
 ### 连接状态机
 
-```
+```text
 DISCONNECTED ──TCP──► CONNECTING ──OK──► HANDSHAKE ──OK──► CONNECTED
      ▲                                      │                    │
      │                TCP 失败               │       CINN         │
@@ -348,7 +348,7 @@ DISCONNECTED ──TCP──► CONNECTING ──OK──► HANDSHAKE ──OK�
 
 ### 典型消息流
 
-```
+```text
 Client                                    Server
   │                                         │
   ├─ TCP SYN ────────────────────────────► │
@@ -398,7 +398,7 @@ Client                                    Server
 
 ### TLS 加密 (v1.4+)
 
-```
+```text
 1. 建立 TCP 连接
 2. TLS 握手
 3. 开启 TLS 时，协议握手（Hello / HelloBack）走 TLS
