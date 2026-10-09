@@ -129,9 +129,9 @@ echo Advanced equivalent:
 echo   cmake --preset windows-msvc-release
 echo   cmake --build build --config Release
 echo.
-echo Output: build\bin\Release\synergy.exe        (GUI)
-echo         build\bin\Release\synergy-core.exe   (core)
-echo         build\bin\Release\synergy-daemon.exe (daemon)
+echo Output: build\bin\Release\synergy_^<version^>.exe (GUI)
+echo         build\bin\Release\synergy-core.exe        (core)
+echo         build\bin\Release\synergy-daemon.exe      (daemon)
 echo.
 
 endlocal

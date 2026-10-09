@@ -1,8 +1,9 @@
-# Single workflow. Build jobs run on push/PR/release/manual dispatch.
-# clang-tidy, cppcheck, CodeQL, SonarCloud and Valgrind run only when a
-# manual dispatch sets analyze=true. push/PR use the lean Linux subset
-# (.github/matrices/linux-targets.json "free"); Windows/macOS/flatpak and
-# the full Linux matrix run on release or workflow_dispatch.
+# Single workflow. One CMake configure line for every OS; the runner compiler
+# is the only toolchain difference: MSVC (vcvars + Ninja) on Windows, AppleClang
+# on macOS, gcc in the Linux containers. package-type=release builds Windows,
+# macOS and Linux together. clang-tidy, cppcheck, CodeQL, SonarCloud and
+# Valgrind run only when a manual dispatch sets analyze=true. push/PR use the
+# lean Linux subset (.github/matrices/linux-targets.json "free").
 
 name: CI
 
@@ -163,9 +164,8 @@ jobs:
 
   build-windows:
     needs: [lint-clang, get-version]
-    # Windows GUI must be a release build: synergy_<X.Y.Z>.exe. Snapshot and
-    # dev dispatches do not produce that file.
-    if: ${{ (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (github.event_name != 'workflow_dispatch' || inputs.platform == '' || inputs.platform == 'windows') }}
+    # A release always builds Windows, even if platform was set to one OS.
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release') }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: 30
@@ -340,8 +340,8 @@ jobs:
 
   build-macos:
     needs: [lint-clang, get-version]
-    # Free tier: macOS is 10x minutes — release / manual dispatch only.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'macos')) }}
+    # macOS is 10x minutes. Release always includes it; other dispatches honor platform.
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.package-type == 'release' || inputs.platform == '' || inputs.platform == 'macos')) }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: ${{ matrix.target.timeout }}
@@ -495,7 +495,9 @@ jobs:
 
   build-linux:
     needs: [lint-clang, get-version]
-    if: ${{ inputs.platform == '' || inputs.platform == 'linux' }}
+    # push/PR: platform is empty, so the free Linux subset still runs.
+    # release: always run, even when a platform filter was set.
+    if: ${{ inputs.platform == '' || inputs.platform == 'linux' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release') }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     container: ${{ matrix.target.container }}
@@ -608,7 +610,7 @@ jobs:
   build-flatpak:
     needs: [lint-clang, get-version]
     # Free tier: flatpak is a long privileged container build — release / manual only.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'linux')) }}
+    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.package-type == 'release' || inputs.platform == '' || inputs.platform == 'linux')) }}
     name: flatpak-${{matrix.flatpak.arch}}
     runs-on: ${{matrix.flatpak.runs-on}}
     timeout-minutes: 60
