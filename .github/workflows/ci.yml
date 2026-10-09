@@ -1,7 +1,8 @@
-# All-in-one continuous integration (CI) workflow.
-# push/PR run a lean Linux subset (see .github/matrices/linux-targets.json
-# "free"); Windows/macOS/flatpak and the full Linux matrix run on release or
-# workflow_dispatch. No schedule — runs are event-driven.
+# Single workflow. Build jobs run on push/PR/release/manual dispatch.
+# clang-tidy, cppcheck, CodeQL, SonarCloud and Valgrind run only when a
+# manual dispatch sets analyze=true. push/PR use the lean Linux subset
+# (.github/matrices/linux-targets.json "free"); Windows/macOS/flatpak and
+# the full Linux matrix run on release or workflow_dispatch.
 
 name: CI
 
@@ -12,14 +13,18 @@ on:
   workflow_dispatch:
     inputs:
       package-type:
-        description: "dev (commit SHA), snapshot (nightly), release (clean semver)"
+        description: "release (clean semver) or snapshot (nightly)"
         required: false
-        default: "dev"
+        default: "release"
         type: choice
         options:
-          - dev
-          - snapshot
           - release
+          - snapshot
+      analyze:
+        description: "Also run clang-tidy, cppcheck, CodeQL, SonarCloud and Valgrind"
+        required: false
+        default: false
+        type: boolean
       aws-s3-uri:
         description: "Override AWS S3 target (e.g. s3://bucket/path)"
         required: false
@@ -52,9 +57,9 @@ env:
   CMAKE_CONFIGURE: "cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DSKIP_BUILD_TESTS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON"
 
   # Release shape, propagated to cmake (Synergy.cmake reads these as options).
-  # Release events + explicit "release" workflow_dispatch input → release build.
-  # Push to main + explicit "snapshot" dispatch → snapshot build.
-  # PRs and "dev" dispatch fall through to dev (the cmake default).
+  # Release events + package-type=release → clean X.Y.Z (the GUI exe name).
+  # Push to main + package-type=snapshot → snapshot build.
+  # Pull requests fall through to the cmake dev default.
   SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
   SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
@@ -62,7 +67,20 @@ jobs:
   # Quality gate to allow PR merge, used in the branch protection rules.
   ci-passed:
     runs-on: ubuntu-latest
-    needs: [get-version, lint-clang, build-windows, build-macos, build-linux, build-flatpak]
+    needs:
+      [
+        get-version,
+        lint-clang,
+        build-windows,
+        build-macos,
+        build-linux,
+        build-flatpak,
+        clang-tidy,
+        cppcheck,
+        codeql,
+        sonar,
+        valgrind,
+      ]
     if: always()
 
     steps:
@@ -83,7 +101,12 @@ jobs:
              && ok "${{needs.build-windows.result}}" \
              && ok "${{needs.build-macos.result}}" \
              && ok "${{needs.build-linux.result}}" \
-             && ok "${{needs.build-flatpak.result}}"; then
+             && ok "${{needs.build-flatpak.result}}" \
+             && ok "${{needs.clang-tidy.result}}" \
+             && ok "${{needs.cppcheck.result}}" \
+             && ok "${{needs.codeql.result}}" \
+             && ok "${{needs.sonar.result}}" \
+             && ok "${{needs.valgrind.result}}"; then
             echo "✅ CI passed" > $GITHUB_STEP_SUMMARY
           else
             exit 1
@@ -140,8 +163,9 @@ jobs:
 
   build-windows:
     needs: [lint-clang, get-version]
-    # Free tier: Windows is 2x minutes — release / manual dispatch only.
-    if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && (inputs.platform == '' || inputs.platform == 'windows')) }}
+    # Windows GUI must be a release build: synergy_<X.Y.Z>.exe. Snapshot and
+    # dev dispatches do not produce that file.
+    if: ${{ (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (github.event_name != 'workflow_dispatch' || inputs.platform == '' || inputs.platform == 'windows') }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
     timeout-minutes: 30
@@ -201,7 +225,41 @@ jobs:
         shell: bash
         run: cmake --build build --config Release -j8
 
-      # Inner binaries (synergy-core.exe, synergy.exe, synergy-daemon.exe) must
+      # Iron rule: the GUI file is synergy_<X.Y.Z>.exe. X.Y.Z is get-version's
+      # base, which SaveVersion.cmake reads from Version.cmake. core and daemon
+      # stay unversioned so the GUI can still launch them.
+      - name: Require synergy_<version>.exe
+        id: gui-exe
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ needs.get-version.outputs.base }}"
+          ver="${{ needs.get-version.outputs.version }}"
+          if [ "$ver" != "$base" ]; then
+            echo "::error::release version must be ${base}, got ${ver}"
+            exit 1
+          fi
+          count=$(find build/bin -type f -name "synergy_${base}.exe" | wc -l)
+          if [ "$count" -ne 1 ]; then
+            echo "::error::expected exactly one synergy_${base}.exe, found ${count}"
+            find build/bin -type f -name '*.exe' || true
+            exit 1
+          fi
+          exe=$(find build/bin -type f -name "synergy_${base}.exe")
+          dir=$(dirname "$exe")
+          test -f "$dir/synergy-core.exe"
+          test -f "$dir/synergy-daemon.exe"
+          echo "path=$exe" >> "$GITHUB_OUTPUT"
+          echo "GUI exe: $exe"
+
+      - name: Upload synergy_<version>.exe
+        uses: actions/upload-artifact@v7
+        with:
+          name: synergy_${{ needs.get-version.outputs.base }}.exe
+          path: ${{ steps.gui-exe.outputs.path }}
+          if-no-files-found: error
+
+      # Inner binaries (synergy-core.exe, synergy_<version>.exe, synergy-daemon.exe) must
       # be signed BEFORE the MSI is built — WiX embeds them into the installer,
       # and signing the MSI afterward doesn't propagate signatures to embedded
       # files. Stages all non-test exes into one dir so they can be batch-signed
@@ -728,3 +786,215 @@ jobs:
           payload: |
             channel: ${{ secrets.SLACK_NOTIFY_CHANNEL_ID }}
             text: ${{ toJSON(steps.message.outputs.text) }}
+
+  # Analysis jobs used to be separate workflows. They run only when a manual
+  # dispatch sets analyze=true, so push/PR stay on the lean build path.
+  clang-tidy:
+    name: clang-tidy
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang-tidy cmake ninja-build g++ \
+            libx11-dev libxi-dev libxtst-dev libxinerama-dev libxrandr-dev \
+            libxkbcommon-dev libglib2.0-dev libssl-dev \
+            libgl1-mesa-dev
+      - name: Install Qt
+        uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125 # v4
+        with:
+          version: "6.9.3"
+          cache: true
+      - name: Generate compile commands
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DSKIP_BUILD_TESTS=ON
+      - name: Run clang-tidy (errors only)
+        run: |
+          set -euo pipefail
+          find src/ -regex '.*\.\(cpp\|cc\|cxx\)' \
+            | xargs clang-tidy -p build \
+              --checks='-*,bugprone-*,cert-*,cppcoreguidelines-*,clang-analyzer-*,-modernize-use-trailing-return-type' \
+              --warnings-as-errors='*' \
+            2>&1 | tee clang-tidy-output.txt
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: clang-tidy-results
+          path: clang-tidy-output.txt
+          if-no-files-found: ignore
+
+  cppcheck:
+    name: cppcheck
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cppcheck
+      - name: Run cppcheck
+        run: |
+          cppcheck \
+            --enable=warning,style,performance,portability \
+            --std=c++20 \
+            --suppress=missingIncludeSystem \
+            --inline-suppr \
+            --error-exitcode=1 \
+            --output-file=cppcheck-results.txt \
+            --language=c++ \
+            src/
+          cat cppcheck-results.txt
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cppcheck-results
+          path: cppcheck-results.txt
+          if-no-files-found: ignore
+
+  codeql:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    container: debian:trixie-slim
+    timeout-minutes: 20
+    steps:
+      - name: Install container dependencies
+        working-directory: .
+        run: |
+          apt update -qqq > /dev/null
+          apt install -qqq git > /dev/null
+      - name: Fancy Checkout
+        uses: sithlord48/fancy-checkout@v2
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          like: "debian"
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: cpp
+          build-mode: manual
+      - name: Build for CodeQL
+        run: |
+          cmake -B build -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSKIP_BUILD_TESTS=ON
+          cmake --build build -j"$(nproc)"
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+
+  sonar:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze && vars.SONAR_SCANNER_ENABLED }}
+    runs-on: ubuntu-latest
+    container: debian:trixie-slim
+    timeout-minutes: 20
+    env:
+      CPU_CORE_COUNT: 4
+    steps:
+      - name: Install container dependencies
+        working-directory: .
+        run: |
+          apt update -qqq > /dev/null
+          apt install -qqq git curl unzip gcovr dirmngr gpg > /dev/null
+      - name: Fancy Checkout
+        uses: sithlord48/fancy-checkout@v2
+      - name: Install project dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          like: "debian"
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6
+      - name: Configure
+        run: |
+          cmake -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE="Debug" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DSKIP_BUILD_TESTS=ON \
+            -DENABLE_COVERAGE=ON
+      - name: Build
+        run: |
+          build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build -j${CPU_CORE_COUNT}
+      - name: Test coverage
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          tests=(`cmake --build build  --target help | grep -o "^coverage-[^:]*"`)
+          for i in "${tests[@]}"; do
+            cmake --build build --target "$i"
+          done
+      - name: Get coverage report paths
+        id: coverage-paths
+        run: |
+          paths=$(ls -w 0 -m build/coverage-*.xml | sed 's/ //g')
+          if [ -z "$paths" ]; then
+            echo "Error: No coverage files found"
+            exit 1
+          fi
+          echo "csv=$paths" >> $GITHUB_OUTPUT
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8
+        with:
+          args: >
+            -Dproject.settings=config/sonar-project.properties
+            -Dsonar.coverageReportPaths=${{ steps.coverage-paths.outputs.csv }}
+            -Dsonar.cfamily.threads=${{ env.CPU_CORE_COUNT }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  valgrind:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.analyze }}
+    runs-on: ubuntu-latest
+    container: debian:trixie-slim
+    timeout-minutes: 30
+    steps:
+      - name: Install container dependencies
+        working-directory: .
+        run: |
+          apt update -qqq > /dev/null
+          apt install -qqq git valgrind > /dev/null
+      - name: Fancy Checkout
+        uses: sithlord48/fancy-checkout@v2
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          like: "debian"
+      - name: Configure
+        run: cmake -B build -G "Ninja"
+      - name: Build
+        run: cmake --build build -j8
+      - name: Valgrind unit tests
+        id: unittests
+        uses: ./.github/actions/run-valgrind
+        with:
+          executable: ctest --test-dir  "build/src/unittests"
+      - name: Set job summary
+        run: |
+          backticks='```'
+          message=$(cat <<EOF
+          ## Valgrind summary
+
+          ### Unit tests
+          $backticks
+          ${{ steps.unittests.outputs.summary }}
+          $backticks
+          EOF
+          )
+          echo "$message" >> $GITHUB_STEP_SUMMARY

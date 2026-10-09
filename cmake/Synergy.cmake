@@ -107,18 +107,10 @@ endif()
 # Usage: set_output_name(<target> [SUFFIX <suffix>])
 # Example: set_output_name(synergy-core SUFFIX "-core")   -> synergy-core(.exe)
 #
-# The name deliberately carries NO version number. Versioned binaries
-# (synergy-core-1.21.2.exe) broke several consumers that identify these files by
-# their exact, unversioned names:
-#   * Constants.h.in sets kCoreBinName/kDaemonBinName to "synergy-core"/"synergy-daemon",
-#     which the GUI and daemon use to locate and launch the core, and which
-#     MSWindowsWatchdog matches against running processes;
-#   * deploy/linux/com.tupig.synergy.desktop declares Exec=synergy;
-#   * deploy/windows/wix-patch.xml.in keys WiX fragments on the component IDs
-#     derived from the installed file names, so packaging failed outright;
-#   * CI probes and signs build/bin/synergy-core.exe.
-# The version is not lost: it is reported by --version, embedded in the binary's
-# version resource, and still included in package file names.
+# synergy-core and synergy-daemon stay unversioned. The GUI and the watchdog
+# locate them by those exact names (Constants.h.in, WiX service/firewall ids).
+# The Windows GUI file is the exception: synergy_<X.Y.Z>.exe, with X.Y.Z taken
+# from Version.cmake (SYNERGY_GUI_EXE_NAME). Do not hardcode the digits here.
 function(set_output_name TARGET)
   cmake_parse_arguments(ARG "" "SUFFIX" "" ${ARGN})
 
@@ -130,3 +122,11 @@ function(set_output_name TARGET)
 
   message(STATUS "Set output name for ${TARGET}: ${_output_name}")
 endfunction()
+
+# Windows GUI iron rule: synergy_<automatic version>.exe. Digits come only from
+# Version.cmake. No -dev suffix and no Daemon prefix.
+set(SYNERGY_GUI_VERSION "${SYNERGY_VERSION_MAJOR}.${SYNERGY_VERSION_MINOR}.${SYNERGY_VERSION_PATCH}")
+if(SYNERGY_VERSION_STAGE)
+  string(APPEND SYNERGY_GUI_VERSION "-${SYNERGY_VERSION_STAGE}")
+endif()
+set(SYNERGY_GUI_EXE_NAME "synergy_${SYNERGY_GUI_VERSION}")

@@ -60,6 +60,12 @@ target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/src/lib)
 # Set output name with version
 include(${CMAKE_SOURCE_DIR}/cmake/Synergy.cmake)
 set_output_name(${target})
+# Windows GUI file name is an iron rule: synergy_<X.Y.Z>.exe. The digits are
+# SYNERGY_GUI_EXE_NAME from Version.cmake, not a literal checked in here.
+# synergy-core.exe and synergy-daemon.exe stay unversioned.
+if(WIN32)
+  set_target_properties(${target} PROPERTIES OUTPUT_NAME "${SYNERGY_GUI_EXE_NAME}")
+endif()
 # On Apple the .app folder must be named "TuPig Synergy.app" (install/CPack
 # paths use CMAKE_PROJECT_PROPER_NAME); override set_output_name's synergy.
 if(APPLE AND BUILD_OSX_BUNDLE)

@@ -21,3 +21,6 @@ get_filename_component(_repo_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 synergy_compute_version("${_repo_root}" _version _tweak _base)
 message(STATUS "Computed version: ${_version}")
 file(WRITE "${VERSION_FILE}" "${_version}")
+# Base semver only (X.Y.Z). The Windows GUI file is synergy_<this>.exe.
+get_filename_component(_version_dir "${VERSION_FILE}" DIRECTORY)
+file(WRITE "${_version_dir}/VERSION_BASE" "${_base}")

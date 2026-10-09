@@ -8,6 +8,9 @@ outputs:
   version:
     description: "Synergy version (e.g. 1.21.0, 1.21.0-snapshot+r42, 1.21.0-dev)"
     value: ${{ steps.compute.outputs.version }}
+  base:
+    description: "X.Y.Z from Version.cmake, used as synergy_<base>.exe"
+    value: ${{ steps.compute.outputs.base }}
 
 runs:
   using: "composite"
@@ -29,5 +32,8 @@ runs:
           -DSYNERGY_VERSION_SNAPSHOT=${SYNERGY_VERSION_SNAPSHOT:-false} \
           -P cmake/SaveVersion.cmake
         version=$(cat build/VERSION)
+        base=$(cat build/VERSION_BASE)
         echo "Computed version: $version"
+        echo "Base version: $base"
         echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "base=$base" >> "$GITHUB_OUTPUT"

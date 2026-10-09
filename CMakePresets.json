@@ -33,10 +33,11 @@
     {
       "name": "windows-msvc-release",
       "displayName": "Windows MSVC x64 Release",
-      "description": "Static-linked Release build for Windows (x64). Release is the only supported configuration: vcpkg dependencies are built Release-only.",
+      "description": "Static-linked Release build for Windows (x64). Release is the only supported configuration: vcpkg dependencies are built Release-only. SYNERGY_VERSION_RELEASE makes the version X.Y.Z, so the GUI file is synergy_<X.Y.Z>.exe.",
       "inherits": "windows-msvc",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "SYNERGY_VERSION_RELEASE": "ON"
       }
     },
     {

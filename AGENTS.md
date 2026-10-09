@@ -109,8 +109,11 @@ The following are deliberate, not defects:
   (`CoreProcess.cpp`). Merging them is possible for desktop mode only.
 - **The portable package deliberately omits the daemon** (`deploy/windows/pre-cpack.cmake.in`); a
   portable archive cannot register a service. Do not "restore" it.
-- **Executable names carry no version number** (`synergy` / `synergy-core` / `synergy-daemon`).
-  Versioned names break `Constants.h.in`'s `kCoreBinName`, the `.desktop` `Exec=`, and WiX component IDs.
+- **The Windows GUI file is `synergy_<X.Y.Z>.exe`.** `X.Y.Z` comes from `Version.cmake`
+  (`SYNERGY_GUI_EXE_NAME`). Do not hardcode it, and do not put `-dev` or `Daemon` in that name.
+  `synergy-core` and `synergy-daemon` stay unversioned: `Constants.h.in` `kCoreBinName` /
+  `kDaemonBinName`, the Linux `.desktop` `Exec=`, and the WiX service/firewall component IDs
+  look those two up by those exact names.
 - **macOS ships a `.app` bundle inside a `.dmg`**, not a bare binary — signing and notarization require
   the bundle layout.
 - **Nothing in this codebase registers the Windows service, and that is deliberate.**
@@ -226,8 +229,10 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
   模式下才谈得上合并。
 - **便携包有意不含 daemon**（`deploy/windows/pre-cpack.cmake.in`）；便携归档无法注册服务。不要
   「恢复」它。
-- **可执行文件名不带版本号**（`synergy` / `synergy-core` / `synergy-daemon`）。带版本号会破坏
-  `Constants.h.in` 的 `kCoreBinName`、`.desktop` 的 `Exec=` 以及 WiX 的组件 ID。
+- **Windows GUI 文件名是 `synergy_<X.Y.Z>.exe`。** `X.Y.Z` 只来自 `Version.cmake`
+  （`SYNERGY_GUI_EXE_NAME`），不要写死，也不要带 `-dev` 或 `Daemon`。
+  `synergy-core` 与 `synergy-daemon` 仍不带版本号：`Constants.h.in` 的 `kCoreBinName` /
+  `kDaemonBinName`、Linux `.desktop` 的 `Exec=`、WiX 服务与防火墙组件 ID 都按这两个固定名字查找。
 - **macOS 交付的是 `.dmg` 内的 `.app` bundle**，而非裸二进制 —— 签名与公证都要求 bundle 结构。
 - **本代码库中没有任何地方注册 Windows 服务，这是有意为之。**
   `synergy-daemon.exe` 无法自行安装：既无 `--install-service` 选项，也无 `CreateService` 调用。

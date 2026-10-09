@@ -43,7 +43,7 @@
 
     <CustomAction
       Id="RunApp"
-      ExeCommand="[INSTALL_ROOT]@CMAKE_PROJECT_NAME@.exe"
+      ExeCommand="[INSTALL_ROOT]@SYNERGY_GUI_EXE_NAME@.exe"
       Directory="INSTALL_ROOT"
       Execute="immediate"
       Impersonate="yes"
