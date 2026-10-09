@@ -132,6 +132,7 @@ jobs:
     timeout-minutes: 2
     outputs:
       version: ${{ steps.get-version.outputs.version }}
+      base: ${{ steps.get-version.outputs.base }}
       linux_targets: ${{ steps.linux-matrix.outputs.targets }}
 
     steps:

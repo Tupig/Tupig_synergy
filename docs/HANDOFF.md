@@ -12,7 +12,7 @@
 
 登记并处理的 issue：[#147](https://github.com/Tupig/Tupig_synergy/issues/147)–[#160](https://github.com/Tupig/Tupig_synergy/issues/160)。
 空 SSL 上下文改为抛 `SocketException`（`net` 不依赖 `SynergyException`）、握手 retry 改为局部变量、SecureSocket 读缓冲改为成员、TLS 注释与 TOFU 对齐、daemon `--version` 打印 `kDisplayVersion`、ClientListener 空指针改为抛 `SocketException`、图标目录 `deskflow-*` 改为 `synergy-*`、文件接收失败仍消耗文件名且发布不覆盖已有文件、IPC 只按第一个 `=` 切开、daemon 拒绝命令行元字符路径、按键限速键码上限、文件大小设置不再回绕、IPC 待发队列上限 32。
-Windows GUI 产物名为 `synergy_<X.Y.Z>.exe`（`Version.cmake` 自动生成，issue #161）。`synergy-core.exe` 与 `synergy-daemon.exe` 保持固定文件名。工作流只保留 `.github/workflows/ci.yml`（issue #162）。`package-type=release` 一次构建 Windows、macOS、Linux（issue #163）。
+Windows GUI 产物名为 `synergy_<X.Y.Z>.exe`（`Version.cmake` 自动生成，issue #161）。`synergy-core.exe` 与 `synergy-daemon.exe` 保持固定文件名。工作流只保留 `.github/workflows/ci.yml`（issue #162）。`package-type=release` 一次构建 Windows、macOS、Linux（issue #163）。`get-version` 必须把 `base` 传给 Windows 的 `synergy_<版本>.exe` 检查（issue #164）。
 验证：`cmake --build --preset windows-msvc-release` 成功；`ctest` 于 `build/src/unittests`（Release）34 项中修复前 33 通过、`FileTransferReceiverTests` 修复后通过；`InputValidatorTests` 与 `FileTransferReceiverTests` 复跑通过。发布构建（`package-type=release`，`SYNERGY_VERSION_RELEASE`）的版本字符串是 `1.21.2`，不含 `-dev`，daemon `--version` 只打印该字符串。版权行中的 Deskflow 归属不改。根目录 `ctest` 看不到用例，是因为 `enable_testing()` 在 `src/unittests`，测试注册在 `build/src/unittests`。
 
 ## 1. 会话目标与背景
