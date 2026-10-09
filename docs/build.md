@@ -194,8 +194,7 @@ the package it names and run the script again. Downloads already in
 > `deploy/linux/flatpak/` and is consumed by the CI `build-flatpak`
 > job; the local `package` target does not produce a Flatpak bundle.
 > MSI generation uses the WiX toolset installed on the machine (CI pins
-> 5.0.2; CPack requests the WiX v4 schema). See `docs/HANDOFF.md` for
-> verification status.
+> 5.0.2; CPack requests the WiX v4 schema).
 
 ---
 
@@ -417,7 +416,7 @@ sudo pacman -S \
 | **macOS** | DMG (DragNDrop) |
 | **Windows** | 7Z（便携）、MSI (WiX，见说明) |
 
-> **说明**：AppImage **未实现** —— `deploy/`、`.github/` 中不存在任何 `appimage` 引用。Flatpak 清单位于 `deploy/linux/flatpak/`，由 CI 的 `build-flatpak` job 消费；本地 `package` 目标不产出 Flatpak 包。MSI 使用机器上已安装的 WiX（CI 固定 5.0.2；CPack 请求 WiX v4 schema）。验证状态见 `docs/HANDOFF.md`。
+> **说明**：AppImage **未实现** —— `deploy/`、`.github/` 中不存在任何 `appimage` 引用。Flatpak 清单位于 `deploy/linux/flatpak/`，由 CI 的 `build-flatpak` job 消费；本地 `package` 目标不产出 Flatpak 包。MSI 使用机器上已安装的 WiX（CI 固定 5.0.2；CPack 请求 WiX v4 schema）。
 
 ---
 

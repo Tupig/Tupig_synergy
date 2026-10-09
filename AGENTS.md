@@ -2,12 +2,12 @@
 
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
-> 本文件是本仓库对**所有 AI 协作代理与贡献者**的统一约束。与 `docs/HANDOFF.md`（会话交接）、
-> GitHub Issues（问题追踪，<https://github.com/Tupig/Tupig_synergy/issues>；原台账
+> 本文件是本仓库对**所有 AI 协作代理与贡献者**的统一约束。与 GitHub Issues
+> （问题追踪，<https://github.com/Tupig/Tupig_synergy/issues>；原台账
 > `.github/ISSUE_TEMPLATE/security-quality-refactoring.md` 已于 2026-10-08 全量迁移并删除）配套使用。
 >
 > This file defines the binding rules for **all AI agents and contributors** working in this
-> repository. It complements `docs/HANDOFF.md` and the issue tracker.
+> repository. It complements the issue tracker.
 
 ---
 
@@ -99,8 +99,7 @@ release builds and for every local build. The exception carries three requiremen
 
 ### Delivery constraints — do not "fix" these
 
-This section is the authoritative list (verification status lives in `docs/HANDOFF.md` §5.5).
-The following are deliberate, not defects:
+This section is the authoritative list. The following are deliberate, not defects:
 
 - **`synergy-daemon.exe` must stay a separate process.** It runs as a Windows service (session 0) and
   duplicates `winlogon.exe` / `logonui.exe` tokens to start the core on the secure desktop. Folding it
@@ -127,7 +126,7 @@ The following are deliberate, not defects:
 1. Propose the approach before changing code; prefer the smallest correct change.
 2. One logical change per commit, committed immediately after it is made.
 3. Verify with evidence (build log, command output, real run). Never report success on reasoning alone.
-4. Keep `docs/HANDOFF.md` and the issue tracker in step with code changes.
+4. Keep the issue tracker in step with code changes.
 
 ### Known environment traps
 - `vendor/vcpkg` is a shallow clone; the pinned baseline commit must be present before CMake
@@ -220,7 +219,7 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
 
 ### 交付约束 —— 不要把这些当缺陷「修复」
 
-本节即权威清单（验证状态见 `docs/HANDOFF.md` §5.5）。以下均为**有意设计**，不是缺陷：
+本节即权威清单。以下均为**有意设计**，不是缺陷：
 
 - **`synergy-daemon.exe` 必须保持独立进程。** 它以 Windows 服务（会话 0）运行，通过复制
   `winlogon.exe` / `logonui.exe` 令牌把 core 启动到安全桌面。若合并进 GUI，会静默失去 UAC 提示与
@@ -244,7 +243,7 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
 1. 动手改代码前先给出方案，优先选择最小且正确的改动。
 2. 一个提交只做一件逻辑独立的事，做完立即提交。
 3. 必须有证据验证（构建日志、命令输出、真实运行）。严禁仅凭推理声称通过。
-4. 代码变更须同步更新 `docs/HANDOFF.md` 与 GitHub Issues（问题追踪；关联 issue 验证通过后关闭并附证据）。
+4. 代码变更须同步更新 GitHub Issues（问题追踪；关联 issue 验证通过后关闭并附证据）。
 
 ### 已知环境陷阱
 

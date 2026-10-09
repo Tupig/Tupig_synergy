@@ -20,7 +20,6 @@ Before opening an issue or a pull request:
   (toolchain prerequisites, `setup.bat` / `scripts/build.*`, presets, packaging).
 - **Configuration reference**: [`docs/configuration.md`](../docs/configuration.md).
 - **Troubleshooting**: [`docs/troubleshooting.md`](../docs/troubleshooting.md).
-- **Session handoff / current status**: [`docs/HANDOFF.md`](../docs/HANDOFF.md).
 
 Code standards:
 
@@ -56,7 +55,7 @@ PR checklist:
 - [ ] Commits follow Conventional Commits (Chinese messages)
 - [ ] Code passes `clang-format`
 - [ ] Tests pass (`ctest --test-dir build/src/unittests`, plus `-C Release` on Windows)
-- [ ] Docs / issue tracker updated if status changed (HANDOFF §1.3)
+- [ ] Docs and GitHub Issues updated if user-facing behavior changed
 
 ---
 
@@ -70,7 +69,6 @@ PR checklist:
   （工具链前置、`setup.bat` / `scripts/build.*`、预设、打包）。
 - **配置参考**：[`docs/configuration.md`](../docs/configuration.md)。
 - **故障排查**：[`docs/troubleshooting.md`](../docs/troubleshooting.md)。
-- **会话交接 / 当前状态**：[`docs/HANDOFF.md`](../docs/HANDOFF.md)。
 
 代码规范：
 
@@ -103,4 +101,4 @@ PR 检查清单：
 - [ ] 提交遵循 Conventional Commits（中文信息）
 - [ ] 代码通过 `clang-format`
 - [ ] 测试全部通过（`ctest --test-dir build/src/unittests`，Windows 加 `-C Release`）
-- [ ] 状态有变化时同步更新文档 / GitHub Issues（HANDOFF §1.3）
+- [ ] 用户可见行为有变化时同步更新文档与 GitHub Issues
