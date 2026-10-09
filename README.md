@@ -133,9 +133,9 @@ macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。I
 
 ### Prebuilt packages / 预编译包
 
-Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在 `package-type=release` 时用同一条 CMake 命令构建三端 Release：Windows MSVC、macOS AppleClang（arm64 与 x86_64）、Linux gcc。打好的安装包会挂到 GitHub Release 标签 `v<X.Y.Z>`（例如 [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)）。仓库还没配置代码签名 secret 时，Windows 包会跳过签名并给出警告。
+Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在 `package-type=release` 时用同一条 CMake 命令构建三端 Release：Windows MSVC、macOS AppleClang（arm64 与 x86_64）、Linux gcc。打好的安装包会挂到 GitHub Release 标签 `v<X.Y.Z>`（例如 [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)）。仓库还没配置代码签名 secret 时，Windows 包会跳过签名并给出警告。发布作业会对这些安装包做 GitHub 构建来源证明；下载后可用 `gh attestation verify <文件> --repo Tupig/Tupig_synergy` 核对。已发布的 v1.21.2 是在加入该步骤之前构建的，没有这份证明。
 
-The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) with `package-type=release` builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc. The packages are attached to the GitHub Release tag `v<X.Y.Z>` (for example [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)). Until the Windows code-signing secrets exist, those Windows packages are unsigned and the job says so.
+The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) with `package-type=release` builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc. The packages are attached to the GitHub Release tag `v<X.Y.Z>` (for example [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)). Until the Windows code-signing secrets exist, those Windows packages are unsigned and the job says so. The publish job attaches a GitHub build-provenance attestation to those packages; after downloading one, check it with `gh attestation verify <file> --repo Tupig/Tupig_synergy`. The existing v1.21.2 assets were built before that step, so they have no attestation.
 
 ---
 
