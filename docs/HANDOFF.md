@@ -12,7 +12,7 @@
 
 登记并处理的 issue：[#147](https://github.com/Tupig/Tupig_synergy/issues/147)–[#160](https://github.com/Tupig/Tupig_synergy/issues/160)。
 空 SSL 上下文改为抛 `SocketException`（`net` 不依赖 `SynergyException`）、握手 retry 改为局部变量、SecureSocket 读缓冲改为成员、TLS 注释与 TOFU 对齐、daemon `--version` 打印 `kDisplayVersion`、ClientListener 空指针改为抛 `SocketException`、图标目录 `deskflow-*` 改为 `synergy-*`、文件接收失败仍消耗文件名且发布不覆盖已有文件、IPC 只按第一个 `=` 切开、daemon 拒绝命令行元字符路径、按键限速键码上限、文件大小设置不再回绕、IPC 待发队列上限 32。
-Windows GUI 产物名为 `synergy_<X.Y.Z>.exe`（`Version.cmake` 自动生成，issue #161）。`synergy-core.exe` 与 `synergy-daemon.exe` 保持固定文件名。工作流只保留 `.github/workflows/ci.yml`（issue #162）。`package-type=release` 一次构建 Windows、macOS、Linux（issue #163）。`get-version` 必须把 `base` 传给 Windows 的 `synergy_<版本>.exe` 检查（issue #164）。仓库未配置 `WINDOWS_SSL_*` 时跳过 eSigner，避免空凭据把 Release 打红（issue #165）。
+Windows GUI 产物名为 `synergy_<X.Y.Z>.exe`（`Version.cmake` 自动生成，issue #161）。`synergy-core.exe` 与 `synergy-daemon.exe` 保持固定文件名。工作流只保留 `.github/workflows/ci.yml`（issue #162）。`package-type=release` 一次构建 Windows、macOS、Linux（issue #163）。`get-version` 必须把 `base` 传给 Windows 的 `synergy_<版本>.exe` 检查（issue #164）。仓库未配置 `WINDOWS_SSL_*` 时跳过 eSigner，避免空凭据把 Release 打红（issue #165）。§3.2 与代码对齐：默认传输已是 `QtSocketFactory`（issue #166）。
 验证：`cmake --build --preset windows-msvc-release` 成功；`ctest` 于 `build/src/unittests`（Release）34 项中修复前 33 通过、`FileTransferReceiverTests` 修复后通过；`InputValidatorTests` 与 `FileTransferReceiverTests` 复跑通过。发布构建（`package-type=release`，`SYNERGY_VERSION_RELEASE`）的版本字符串是 `1.21.2`，不含 `-dev`，daemon `--version` 只打印该字符串。版权行中的 Deskflow 归属不改。根目录 `ctest` 看不到用例，是因为 `enable_testing()` 在 `src/unittests`，测试注册在 `build/src/unittests`。
 
 ## 1. 会话目标与背景
@@ -133,11 +133,11 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 | 输入验证位置 | 独立模块 `InputValidator` | 可复用、可测试、平台无关 |
 | X11 降级策略 | 标记+事件+守卫 (非重连) | 最小风险，重连逻辑留给 Phase 3 |
 
-### 3.2 Phase 2 方案 (Step 1–4 已落地；Step 5–6 与 Qt 接线已批准恢复执行，见 §5.4)
+### 3.2 Phase 2 方案 (Step 1–5 已落地；Step 6 保留为回滚路径，见 §5.4)
 - **目标**: QtNetwork 迁移，消除 SocketMultiplexer 死锁
 - **6 步**: 并发重构 → 抽象层 → QtTcpTransport → QtTlsTransport → 智能指针 → 清理
-- **回滚策略**: 代码级 revert。运行时 `USE_LEGACY_NETWORK` 与 CMake `LEGACY_NETWORK` 均不可用——前者只在未接线的 `NetworkTransportFactory` 内读取，后者全仓不存在；工厂尚未接入 ServerApp/ClientApp（A-15 (#39) / §5.4 阶段 1）。默认仍走 legacy `TCPSocketFactory`，直到网络层任务（N-01～N-07）完成切换。
-- **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；方案已落地 Step 1-4，剩余步骤见第 5 节
+- **当前接线**: `ServerApp::getSocketFactory` 与 `ClientApp::getSocketFactory` 默认 `QtSocketFactory`。`USE_LEGACY_NETWORK=1` 才回退 `TCPSocketFactory`。CMake 没有 `LEGACY_NETWORK` 选项。N-07（删除遗留栈）仍在稳定期，不是「尚未接线」。
+- **文档**: 原 `docs/phase2-qt-network-migration.md` 已随 `docs/archive/` 一并删除；权威状态见 §5.4（issue #166）。
 
 ---
 
@@ -250,7 +250,7 @@ f429133 fix(ci): valgrind 真插桩（B-02）
 - 界面语言随系统区域解析（`initial language: zh_CN`）。
 - 单元测试：Release 与 AddressSanitizer 两种配置均 25/25 通过。
 
-**R8 风险（未验证，沿革）**：macOS 与 Linux 的构建、打包与运行**零实机验证** —— 无对应机器，DEB/RPM/DMG 从未产出；相关代码修复仅为代码级推理 + CI 绿（CI 的 macOS/Linux 腿是第一级证据）。结构性约束（daemon 独立、便携包排除 daemon、macOS `.app`、无自安装服务）见 `AGENTS.md`「交付约束」。
+**R8 风险（本地实机，沿革）**：本机没有 macOS / Linux，交互运行仍未在这两类系统上做过。DEB/RPM/DMG 由 CI 矩阵产出并上传（run 37770107215 起，含 macOS arm64 与 x86_64）。结构性约束（daemon 独立、便携包排除 daemon、macOS `.app`、无自安装服务）见 `AGENTS.md`「交付约束」（issue #166）。
 
 **产物摘要**：Windows = 便携 7Z + MSI；macOS = 含 `.app` 的 DMG；Linux = DEB 或 RPM（依 `/etc/os-release` 二选一）+ CI Flatpak + Arch PKGBUILD；AppImage 未实现。如何产出：`scripts\build.{bat,sh} release` 后 `cmake --build build --target package`。
 
