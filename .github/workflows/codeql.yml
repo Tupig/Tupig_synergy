@@ -1,12 +1,16 @@
+# Default CodeQL scan for the Security tab. Separate from the analyze=true
+# CodeQL job in ci.yml, which builds with CMake by hand inside Debian.
+# Triggers stay: push and pull request to main, plus Monday 00:00 UTC.
+
 name: CodeQL
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: "0 0 * * 1"
 
 permissions:
   security-events: write
@@ -14,11 +18,19 @@ permissions:
 
 jobs:
   analyze:
+    name: Analyze C++
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/codeql-action/init@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: actions/codeql-action/init@v3
         with:
           languages: cpp
-      - uses: actions/codeql-action/autobuild@v3
-      - uses: actions/codeql-action/analyze@v3
+
+      - name: Autobuild
+        uses: actions/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: actions/codeql-action/analyze@v3
