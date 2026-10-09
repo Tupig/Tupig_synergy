@@ -341,7 +341,7 @@ section: aliases
     desktop:
         desktop.office
     imac:
-        johns-imac.local
+        imac.local
 end
 
 section: options
@@ -726,7 +726,7 @@ section: aliases
     desktop:
         desktop.office
     imac:
-        johns-imac.local
+        imac.local
 end
 
 section: options
