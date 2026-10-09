@@ -77,6 +77,7 @@ jobs:
         build-macos,
         build-linux,
         build-flatpak,
+        github-release,
         clang-tidy,
         cppcheck,
         codeql,
@@ -104,6 +105,7 @@ jobs:
              && ok "${{needs.build-macos.result}}" \
              && ok "${{needs.build-linux.result}}" \
              && ok "${{needs.build-flatpak.result}}" \
+             && ok "${{needs.github-release.result}}" \
              && ok "${{needs.clang-tidy.result}}" \
              && ok "${{needs.cppcheck.result}}" \
              && ok "${{needs.codeql.result}}" \
@@ -685,6 +687,47 @@ jobs:
           name: package-${{ env.PACKAGE_PREFIX }}-${{ needs.get-version.outputs.version }}-flatpak-${{matrix.flatpak.arch}}
           path: ${{github.workspace}}/${{ env.PACKAGE_PREFIX }}[-_]*.flatpak
           retention-days: 14
+
+  # Attach the CPack/Flatpak packages to the GitHub Release v<X.Y.Z>. Actions
+  # artifacts expire; the Release page is what people download. Push and PR
+  # skip this job. A failed distro does not drop packages that did build.
+  github-release:
+    needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
+    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.package-type == 'release')) && (needs.build-windows.result == 'success' || needs.build-macos.result == 'success' || needs.build-linux.result == 'success' || needs.build-flatpak.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: package-*
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.get-version.outputs.base }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          mapfile -t files < <(find dist -type f ! -name '*.digest' | sort)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::no package files to publish"
+            exit 1
+          fi
+          printf 'Publishing %s files to v%s\n' "${#files[@]}" "$VERSION"
+          printf ' - %s\n' "${files[@]}"
+          tag="v${VERSION}"
+          title="TuPig Synergy ${VERSION}"
+          notes="Packages for ${VERSION}. Windows builds are unsigned until the SSL.com secrets are set."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --clobber
+          else
+            gh release create "$tag" "${files[@]}" --title "$title" --notes "$notes" --latest
+          fi
 
   # Upload all packages that built to AWS S3 for distribution. Runs after the
   # build jobs on push/dispatch/release events (PRs skipped, no secrets), and

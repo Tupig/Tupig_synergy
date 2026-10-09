@@ -133,9 +133,9 @@ macOS 上 `./scripts/build.sh` 使用预设 `macos-release`（`arm64-osx`）。I
 
 ### Prebuilt packages / 预编译包
 
-Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在 `package-type=release` 时用同一条 CMake 命令构建三端 Release：Windows MSVC、macOS AppleClang（arm64 与 x86_64）、Linux gcc。产物名是 `synergy_<version>.exe` 以及 `package-synergy-<version>-<platform>`。仓库还没配置代码签名 secret 时，Windows 包会跳过签名并给出警告。
+Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在 `package-type=release` 时用同一条 CMake 命令构建三端 Release：Windows MSVC、macOS AppleClang（arm64 与 x86_64）、Linux gcc。打好的安装包会挂到 GitHub Release 标签 `v<X.Y.Z>`（例如 [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)）。仓库还没配置代码签名 secret 时，Windows 包会跳过签名并给出警告。
 
-The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) with `package-type=release` builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc. Artifacts are `synergy_<version>.exe` and `package-synergy-<version>-<platform>`. Until the Windows code-signing secrets exist, those Windows packages are unsigned and the job says so.
+The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) with `package-type=release` builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc. The packages are attached to the GitHub Release tag `v<X.Y.Z>` (for example [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)). Until the Windows code-signing secrets exist, those Windows packages are unsigned and the job says so.
 
 ---
 
