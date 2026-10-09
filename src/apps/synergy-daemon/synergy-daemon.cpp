@@ -58,9 +58,8 @@ int main(int argc, char **argv)
   for (int i = 1; i < argc; ++i) {
     const auto arg = QString::fromLocal8Bit(argv[i]);
     if (arg == QLatin1String("--version") || arg == QLatin1String("-v")) {
-      const auto line = QStringLiteral("%1 %2\n").arg(
-          QCoreApplication::applicationName(), QCoreApplication::applicationVersion()
-      );
+      const auto line =
+          QStringLiteral("%1 %2\n").arg(QCoreApplication::applicationName(), QCoreApplication::applicationVersion());
       fputs(line.toLocal8Bit().constData(), stdout);
       fflush(stdout);
       return s_exitSuccess;
