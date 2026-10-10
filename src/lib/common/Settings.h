@@ -146,6 +146,7 @@ public:
   static void setStateFile(const QString &stateFile = QString());
   static void setValue(const QString &key = QString(), const QVariant &value = QVariant());
   static QVariant value(const QString &key = QString());
+  static bool contains(const QString &key);
   static void restoreDefaultSettings();
   static QVariant defaultValue(const QString &key);
   static bool isServerConfigFileReadable();

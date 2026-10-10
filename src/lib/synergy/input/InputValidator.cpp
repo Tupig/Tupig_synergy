@@ -88,12 +88,15 @@ InputValidator::parseBlockedCombinations(const std::vector<std::string> &entries
   return combinations;
 }
 
-void InputValidator::setBlockedCombinations(std::vector<KeyCombination> combinations)
+void InputValidator::setBlockedCombinations(std::vector<KeyCombination> combinations, bool warnOnSecureAttention)
 {
   m_blockedCombinations = std::move(combinations);
+  if (!warnOnSecureAttention) {
+    return;
+  }
 
-  // Honour the setting, but say so: this is the failure mode that made the
-  // previous unconditional block unusable, and it is silent from the user's side.
+  // The default block is silent. This warning is only for a chord the user
+  // stored again, which is what stops UAC and the login screen.
   for (const auto &combination : m_blockedCombinations) {
     const auto ctrlAlt = KeyModifierControl | KeyModifierAlt;
     if (combination.key == kKeyDelete && (combination.mask & ctrlAlt) == ctrlAlt) {

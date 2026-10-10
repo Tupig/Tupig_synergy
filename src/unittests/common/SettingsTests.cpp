@@ -6,6 +6,7 @@
 
 #include "SettingsTests.h"
 
+#include <QDir>
 #include <QFile>
 #include <QSignalSpy>
 
@@ -99,6 +100,24 @@ void SettingsTests::checkCleanScreenName_LongName()
   Settings::setValue(Settings::Core::ComputerName, input);
 
   QCOMPARE(Settings::value(Settings::Core::ComputerName).toString(), expected);
+}
+
+void SettingsTests::emptyBlockedComboSurvivesClean()
+{
+  const auto path = QDir(m_settingsPathTemp).filePath(QStringLiteral("blocked.conf"));
+  QDir().mkpath(m_settingsPathTemp);
+  QFile::remove(path);
+  {
+    QFile primed(path);
+    QVERIFY(primed.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    primed.write("[security]\nblockedKeyCombos=\n");
+    primed.close();
+  }
+
+  Settings::setSettingsFile(path);
+
+  const auto blocked = Settings::value(Settings::Security::BlockedKeyCombos).toStringList();
+  QVERIFY(!blocked.contains(QStringLiteral("0xEFFF:0x0006")));
 }
 
 QTEST_MAIN(SettingsTests)

@@ -52,8 +52,7 @@ ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *
     ClipboardChunk::send(m_stream, e.getDataObject());
   });
 
-  // Opt-in interception of key combinations. Empty unless the user lists some,
-  // so nothing is intercepted by default (see InputValidator).
+  // Default list blocks Ctrl+Alt+Delete. An explicit empty list blocks nothing.
   const auto blocked = Settings::value(Settings::Security::BlockedKeyCombos).toStringList();
   if (!blocked.isEmpty()) {
     std::vector<std::string> entries;
@@ -62,7 +61,10 @@ ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *
       entries.push_back(entry.toStdString());
     }
 
-    m_inputValidator.setBlockedCombinations(InputValidator::parseBlockedCombinations(entries));
+    m_inputValidator.setBlockedCombinations(
+        InputValidator::parseBlockedCombinations(entries),
+        Settings::contains(Settings::Security::BlockedKeyCombos)
+    );
     LOG_INFO("blocked key combinations configured: %zu", m_inputValidator.blockedCombinationCount());
   }
 

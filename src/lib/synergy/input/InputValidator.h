@@ -37,10 +37,10 @@ Scope, and why it is narrower than it first appears:
 - Rate limiting is meaningful: it bounds how much input a hostile peer can force
   the local machine to synthesise.
 
-- Combination blocking is opt-in and empty by default. Nothing is intercepted
-  unless the user lists it, because the interesting combinations are exactly the
-  ones the OS needs to see: blocking the secure attention sequence would stop UAC
-  prompts and the login screen from responding at all.
+- Combination blocking defaults to Ctrl+Alt+Delete (`0xEFFF:0x0006`) via
+  Settings. Clearing `security/blockedKeyCombos` blocks nothing. Blocking that
+  chord stops a remote peer from raising UAC or the login screen; the local
+  keyboard is unaffected.
 */
 class InputValidator
 {
@@ -92,9 +92,12 @@ public:
 
   //! Replace the blocked set. Empty (the default) blocks nothing.
   /*!
+  The default Ctrl+Alt+Delete block does not log. Pass \p warnOnSecureAttention
+  only when that chord was stored in settings again.
   \param combinations the combinations to intercept
+  \param warnOnSecureAttention log when the set includes Ctrl+Alt+Delete
   */
-  void setBlockedCombinations(std::vector<KeyCombination> combinations);
+  void setBlockedCombinations(std::vector<KeyCombination> combinations, bool warnOnSecureAttention = false);
 
   //! Check whether an event matches a configured blocked combination.
   /*!

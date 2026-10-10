@@ -131,7 +131,7 @@ Comments start with `#` or `;`. Only non-default values are written.
 | `certificate` | path | — | TLS certificate file |
 | `keySize` | int | `2048` | `2048` or `4096` |
 | `tlsEnabled` | bool | `true` | Enable TLS encryption |
-| `blockedKeyCombos` | list | empty | Key combinations to intercept, as `key[:mask]` (e.g. `0xEFFF:0x0005`). Empty blocks nothing |
+| `blockedKeyCombos` | list | `0xEFFF:0x0006` | Key combinations to intercept, as `key[:mask]`. The default is Ctrl+Alt+Delete. An empty list blocks nothing |
 
 #### `[fileTransfer]` — Drag-and-drop file transfer
 
@@ -519,7 +519,7 @@ key=value
 | `certificate` | path | — | TLS 证书文件 |
 | `keySize` | int | `2048` | `2048` 或 `4096` |
 | `tlsEnabled` | bool | `true` | 启用 TLS 加密 |
-| `blockedKeyCombos` | list | 空 | 要拦截的键组合，格式 `key[:mask]`（如 `0xEFFF:0x0005`）。为空则不拦截任何组合 |
+| `blockedKeyCombos` | list | `0xEFFF:0x0006` | 要拦截的键组合，格式 `key[:mask]`。默认拦截 Ctrl+Alt+Delete。列表为空则不拦截 |
 
 #### `[fileTransfer]` — 拖拽文件传输
 

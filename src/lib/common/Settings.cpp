@@ -122,6 +122,10 @@ void Settings::cleanSettings()
       continue;
     if (!m_validKeys.contains(key))
       m_settings->remove(key);
+    // An empty blocked-combo list is a real setting: it blocks nothing.
+    // Other empty values are unset and fall back to their defaults.
+    if (key == Settings::Security::BlockedKeyCombos && m_settings->contains(key))
+      continue;
     if (m_settings->value(key).toString().isEmpty())
       m_settings->remove(key);
   }
@@ -179,6 +183,10 @@ QVariant Settings::defaultValue(const QString &key)
 
   if (key == Security::KeySize)
     return 2048;
+
+  // Ctrl+Alt+Delete. Users who need the remote secure-attention sequence remove this entry.
+  if (key == Security::BlockedKeyCombos)
+    return QStringList{QStringLiteral("0xEFFF:0x0006")};
 
   if (key == Log::File)
     return QStringLiteral("%1/%2.log").arg(QDir::homePath(), kAppId);
@@ -320,6 +328,13 @@ QVariant Settings::value(const QString &key)
   const bool useState = Settings::m_stateKeys.contains(key) && !instance()->isPortableMode();
   auto settings = useState ? instance()->m_stateSettings : instance()->m_settings;
   return settings->value(key, defaultValue(key));
+}
+
+bool Settings::contains(const QString &key)
+{
+  const bool useState = Settings::m_stateKeys.contains(key) && !instance()->isPortableMode();
+  auto settings = useState ? instance()->m_stateSettings : instance()->m_settings;
+  return settings->contains(key);
 }
 
 void Settings::restoreDefaultSettings()
