@@ -829,6 +829,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          # This job does not check out the repo. Without GH_REPO, gh tries
+          # to run git and fails with "not a git repository".
+          GH_REPO: ${{ github.repository }}
           VERSION: ${{ needs.get-version.outputs.base }}
         run: |
           set -euo pipefail
