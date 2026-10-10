@@ -492,6 +492,21 @@ void FileTransferReceiverTests::refusesTransferWithNoAnnouncedName()
   QVERIFY(m_receiver->refusedCount() >= 1);
 }
 
+void FileTransferReceiverTests::writesUtf8FileName()
+{
+  // Bytes of U+7167 U+7247 ".txt", independent of the compiler's source charset.
+  const std::string name = "\xE7\x85\xA7\xE7\x89\x87.txt";
+  feedAnnounce({name});
+  feedChunk(ChunkType::DataStart, "4");
+  feedChunk(ChunkType::DataChunk, "data");
+  feedChunk(ChunkType::DataEnd, "");
+
+  const QString qname = QString::fromUtf8(name.data(), static_cast<int>(name.size()));
+  QCOMPARE(dropped(qname), QByteArray("data"));
+  QCOMPARE(m_receiver->writtenFiles().size(), static_cast<size_t>(1));
+  QVERIFY(m_receiver->writtenFiles().at(0).find(name) != std::string::npos);
+}
+
 void FileTransferReceiverTests::neverOverwritesAnExistingFile()
 {
   const QString existing = QDir(m_drop->path()).filePath("note.txt");

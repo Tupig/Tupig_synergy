@@ -147,9 +147,10 @@ Comments start with `#` or `;`. Only non-default values are written.
 > traversal (`../`), absolute paths, drive letters, control characters, Windows
 > reserved device names and over-long names are refused rather than adjusted, and
 > the content is discarded rather than written under a substitute name. Writes are
-> staged and renamed, and an existing file is never overwritten (a `name (1).ext`
-> variant is used instead). Declared sizes, the file count and the running total
-> are all bounded.
+> staged, then renamed. The rename fails if the destination already exists, on
+> Windows as well as on other systems, and a `name (1).ext` variant is used
+> instead. Names on the wire are UTF-8 and are stored under that name. Declared
+> sizes, the file count and the running total are all bounded.
 
 #### `[server]` — Server Mode
 
@@ -533,7 +534,8 @@ key=value
 > **默认关闭。** 启用后服务端可向本机写入文件，故采用显式启用。开启时，每个文件名
 > 都会被归约为单一安全文件名 —— 路径穿越（`../`）、绝对路径、盘符、控制字符、
 > Windows 保留设备名与过长名一律**拒绝**而非就地修正，其内容也被丢弃，不会以替换名
-> 写入。写入先落暂存文件再改名，且**从不覆盖**已有文件（改用 `name (1).ext`）。
+> 写入。写入先落暂存文件再改名；目标已存在时改名失败，Windows 上也一样，并改用
+> `name (1).ext`。线路上的文件名是 UTF-8，落盘时保持这个名字。
 > 声明大小、文件数与累计总量均受限。
 
 #### `[server]` — 服务端模式

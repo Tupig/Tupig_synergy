@@ -27,6 +27,7 @@ private Q_SLOTS:
   // Happy path
   void acceptsAnOrdinaryAnnounce();
   void writesExactContent();
+  void writesUtf8FileName();
   void writesSeveralFilesInOrder();
   void emptyFileProducesEmptyFileOnDisk();
 

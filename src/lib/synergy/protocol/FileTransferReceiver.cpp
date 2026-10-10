@@ -14,9 +14,12 @@
 #include <cerrno>
 #include <cstdio>
 #include <filesystem>
+#include <string_view>
 #include <system_error>
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <wchar.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -34,6 +37,20 @@ std::pair<std::string, std::string> splitStemAndExtension(const std::string &nam
     return {name, {}};
   }
   return {name.substr(0, dot), name.substr(dot)};
+}
+
+//! Wire names and Qt paths are UTF-8. On Windows a std::string path is otherwise
+//! read as the ANSI code page, so a non-ASCII name would be stored under the
+//! wrong bytes.
+std::filesystem::path pathFromUtf8(std::string_view utf8)
+{
+  return std::filesystem::path(std::u8string(reinterpret_cast<const char8_t *>(utf8.data()), utf8.size()));
+}
+
+std::string utf8FromPath(const std::filesystem::path &path)
+{
+  const auto bytes = path.u8string();
+  return std::string(reinterpret_cast<const char *>(bytes.data()), bytes.size());
 }
 
 //! Open \p path for writing only if it does not already exist.
@@ -56,8 +73,14 @@ exists.
 bool publishStagedFile(const std::filesystem::path &staging, const std::filesystem::path &target, std::error_code &ec)
 {
 #if defined(_WIN32)
-  std::filesystem::rename(staging, target, ec);
-  return !ec;
+  // std::filesystem::rename uses MOVEFILE_REPLACE_EXISTING and would replace a
+  // local file. _wrename fails when the destination already exists.
+  if (_wrename(staging.c_str(), target.c_str()) != 0) {
+    ec = std::error_code(errno, std::generic_category());
+    return false;
+  }
+  ec.clear();
+  return true;
 #else
   if (::link(staging.c_str(), target.c_str()) == 0) {
     std::filesystem::remove(staging, ec);
@@ -279,7 +302,7 @@ void FileTransferReceiver::writeCurrentFile()
   }
 
   std::error_code ec;
-  std::filesystem::create_directories(m_options.dropDirectory, ec);
+  std::filesystem::create_directories(pathFromUtf8(m_options.dropDirectory), ec);
   if (ec) {
     LOG_ERR("file transfer: cannot create the drop directory: %s", ec.message().c_str());
     ++m_refused;
@@ -293,18 +316,18 @@ void FileTransferReceiver::writeCurrentFile()
     return;
   }
 
-  if (!staysInside(m_options.dropDirectory, target)) {
+  if (!staysInside(pathFromUtf8(m_options.dropDirectory), pathFromUtf8(target))) {
     LOG_ERR("file transfer: refusing to write outside the drop directory");
     ++m_refused;
     return;
   }
 
   // Stage exclusively, then publish without replacing an existing file.
-  std::filesystem::path staging(target + ".part");
+  std::filesystem::path staging = pathFromUtf8(target + ".part");
   FILE *staged = openExclusive(staging);
   if (staged == nullptr) {
     for (int attempt = 1; staged == nullptr && attempt <= 20; ++attempt) {
-      staging = std::filesystem::path(target + "." + std::to_string(attempt) + ".part");
+      staging = pathFromUtf8(target + "." + std::to_string(attempt) + ".part");
       staged = openExclusive(staging);
     }
   }
@@ -328,7 +351,7 @@ void FileTransferReceiver::writeCurrentFile()
     return;
   }
 
-  if (!publishStagedFile(staging, std::filesystem::path(target), ec)) {
+  if (!publishStagedFile(staging, pathFromUtf8(target), ec)) {
     LOG_ERR("file transfer: cannot move the staged file into place: %s", ec.message().c_str());
     std::filesystem::remove(staging, ec);
     ++m_refused;
@@ -342,20 +365,20 @@ void FileTransferReceiver::writeCurrentFile()
 
 std::string FileTransferReceiver::uniqueTargetPath(const std::string &safeName) const
 {
-  const std::filesystem::path base(m_options.dropDirectory);
-  const auto direct = base / safeName;
+  const std::filesystem::path base = pathFromUtf8(m_options.dropDirectory);
+  const auto direct = base / pathFromUtf8(safeName);
 
   if (pathIsFree(direct)) {
-    return direct.string();
+    return utf8FromPath(direct);
   }
 
   // Never overwrite: an incoming file must not be able to replace a local one.
   // A probe error counts as occupied, so we do not guess that the name is free.
   const auto [stem, extension] = splitStemAndExtension(safeName);
   for (int attempt = 1; attempt <= kMaxCollisionAttempts; ++attempt) {
-    const auto candidate = base / (stem + " (" + std::to_string(attempt) + ")" + extension);
+    const auto candidate = base / pathFromUtf8(stem + " (" + std::to_string(attempt) + ")" + extension);
     if (pathIsFree(candidate)) {
-      return candidate.string();
+      return utf8FromPath(candidate);
     }
   }
 
