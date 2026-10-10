@@ -62,8 +62,7 @@ ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *
     }
 
     m_inputValidator.setBlockedCombinations(
-        InputValidator::parseBlockedCombinations(entries),
-        Settings::contains(Settings::Security::BlockedKeyCombos)
+        InputValidator::parseBlockedCombinations(entries), Settings::contains(Settings::Security::BlockedKeyCombos)
     );
     LOG_INFO("blocked key combinations configured: %zu", m_inputValidator.blockedCombinationCount());
   }

@@ -6,8 +6,8 @@
  */
 
 #include "SecureSocket.h"
-#include "net/TlsPolicy.h"
 #include "SecureUtils.h"
+#include "net/TlsPolicy.h"
 
 #include "arch/ArchException.h"
 #include "base/IEventQueue.h"

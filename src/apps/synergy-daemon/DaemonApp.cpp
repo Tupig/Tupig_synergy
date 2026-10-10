@@ -77,7 +77,9 @@ void DaemonApp::applyWatchdogCommand() const
   }
 
   if (!synergy::canonicalFileIsInsideDirectory(Settings::settingsPath(), configPath)) {
-    LOG_ERR("cannot apply watchdog command: config file must stay inside the settings directory: %s", qPrintable(configPath));
+    LOG_ERR(
+        "cannot apply watchdog command: config file must stay inside the settings directory: %s", qPrintable(configPath)
+    );
     return;
   }
 

@@ -14,8 +14,8 @@
 #include "net/FingerprintDatabase.h"
 #include "net/QtNetworkTransport.h"
 #include "net/SecureUtils.h"
-#include "net/TlsPolicy.h"
 #include "net/SocketException.h"
+#include "net/TlsPolicy.h"
 
 #include <QFile>
 #include <QSslCertificate>
@@ -202,9 +202,7 @@ void QtDataSocket::handleConnected()
   // the fingerprint database).
   const auto key = cert.publicKey();
   if (key.algorithm() == QSsl::Rsa && key.length() > 0 && key.length() < kMinimumRsaBits) {
-    handleTlsFailure(
-        QStringLiteral("RSA key too small (%1 bits, minimum %2)").arg(key.length()).arg(kMinimumRsaBits)
-    );
+    handleTlsFailure(QStringLiteral("RSA key too small (%1 bits, minimum %2)").arg(key.length()).arg(kMinimumRsaBits));
     return;
   }
 

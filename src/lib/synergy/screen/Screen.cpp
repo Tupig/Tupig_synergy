@@ -36,7 +36,8 @@ bool runScreenCommand(const QString &commandLine)
     return false;
   }
 
-  const auto program = QFileInfo(synergy::resolveRelativePath(Settings::settingsPath(), args.constFirst())).canonicalFilePath();
+  const auto program =
+      QFileInfo(synergy::resolveRelativePath(Settings::settingsPath(), args.constFirst())).canonicalFilePath();
   if (!synergy::canonicalFileIsInsideDirectory(Settings::settingsPath(), program)) {
     LOG_ERR("screen command must be an existing file under the settings directory");
     return false;

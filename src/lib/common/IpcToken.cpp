@@ -199,9 +199,8 @@ bool writeIpcToken(const QString &serverName, const QString &token)
   attributes.lpSecurityDescriptor = descriptor;
   attributes.bInheritHandle = FALSE;
   const auto nativePath = path.toStdWString();
-  const HANDLE handle = CreateFileW(
-      nativePath.c_str(), GENERIC_WRITE, 0, &attributes, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr
-  );
+  const HANDLE handle =
+      CreateFileW(nativePath.c_str(), GENERIC_WRITE, 0, &attributes, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
   LocalFree(descriptor);
   if (handle == INVALID_HANDLE_VALUE)
     return false;

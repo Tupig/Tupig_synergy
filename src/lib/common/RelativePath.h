@@ -60,9 +60,8 @@ inline bool isSafeRelativePath(const QString &path)
 //! Path of \p absoluteFile relative to \p directory, or empty when it is not safe.
 inline QString relativeToDirectory(const QString &directory, const QString &absoluteFile)
 {
-  auto relative = QDir::fromNativeSeparators(
-      QDir(directory).relativeFilePath(QFileInfo(absoluteFile).absoluteFilePath())
-  );
+  auto relative =
+      QDir::fromNativeSeparators(QDir(directory).relativeFilePath(QFileInfo(absoluteFile).absoluteFilePath()));
   if (relative.startsWith(QLatin1String("./")))
     relative.remove(0, 2);
   if (!isSafeRelativePath(relative)) {
