@@ -6,6 +6,7 @@
 
 #include "IpcClient.h"
 
+#include "common/IpcToken.h"
 #include "common/VersionInfo.h"
 
 #include <QDebug>
@@ -100,7 +101,8 @@ void IpcClient::attemptConnection()
 #endif
         // Divergence from upstream: kVersion already carries the build metadata; don't re-append the git sha.
         const auto versionId = QString::fromUtf8(kVersion);
-        m_socket->write(QStringLiteral("hello=%1\n").arg(versionId).toUtf8());
+        const auto token = synergy::readIpcToken(m_socketName);
+        m_socket->write(QStringLiteral("hello=%1 %2\n").arg(versionId, token).toUtf8());
         qDebug().noquote() << QStringLiteral("%1 ipc client sent hello with version: %2").arg(m_typeName, versionId);
       },
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

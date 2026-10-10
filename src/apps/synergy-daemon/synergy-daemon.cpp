@@ -11,6 +11,7 @@
 #include "base/EventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
+#include "common/IpcToken.h"
 #include "common/ExitCodes.h"
 #include "common/Settings.h"
 #include "common/VersionInfo.h"
@@ -26,6 +27,7 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QThread>
+#include <QTimer>
 
 using namespace synergy::core;
 
@@ -112,6 +114,15 @@ int main(int argc, char **argv)
       return s_exitFailed;
     }
     daemon.connectIpcServer(ipcServer);
+
+    // Token files may be created before anyone is logged on. Only SYSTEM can
+    // see the console session, so the service refreshes both ACLs.
+    QTimer tokenAccessTimer;
+    QObject::connect(&tokenAccessTimer, &QTimer::timeout, &app, [] {
+      synergy::refreshIpcTokenAccess(QString::fromLatin1(kDaemonIpcName));
+      synergy::refreshIpcTokenAccess(QString::fromLatin1(kCoreIpcName));
+    });
+    tokenAccessTimer.start(1000);
 
     QThread daemonThread;
     QObject::connect(&daemonThread, &QThread::finished, &app, &QCoreApplication::quit);

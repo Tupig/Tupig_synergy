@@ -7,9 +7,9 @@
 #include "IpcServer.h"
 
 #include "base/Log.h"
+#include "common/IpcToken.h"
 #include "common/VersionInfo.h"
 
-#include <QHash>
 #include <QHash>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -30,7 +30,6 @@ QStringList splitIpcMessage(const QString &message)
 }
 
 constexpr int kMaxPendingIpcMessages = 32;
-constexpr int kMaxIpcMessageBytes = 64 * 1024;
 constexpr int kMaxIpcMessageBytes = 64 * 1024;
 
 } // namespace
@@ -59,7 +58,15 @@ IpcServer::~IpcServer()
 
 bool IpcServer::listen()
 {
-  // IPC server normally runs as system, but GUI runs as regular user, so we need to allow world access.
+  m_token = synergy::generateIpcToken();
+  if (!synergy::writeIpcToken(m_serverName, m_token)) {
+    LOG_ERR("%s ipc server failed to write its hello token", m_typeName.constData());
+    return false;
+  }
+
+  // The daemon runs as SYSTEM and the GUI as the interactive user, so the
+  // pipe stays reachable. Commands are accepted only after a hello that
+  // carries the token from the restricted token file.
   m_server->setSocketOptions(QLocalServer::WorldAccessOption);
 
   connect(m_server, &QLocalServer::newConnection, this, &IpcServer::handleNewConnection);
@@ -143,6 +150,7 @@ void IpcServer::handleDisconnected()
   }
   LOG_DEBUG("%s ipc server client disconnected", m_typeName.constData());
   m_clients.remove(clientSocket);
+  m_authenticated.remove(clientSocket);
   m_readBuffers.remove(clientSocket);
   clientSocket->deleteLater();
 }
@@ -155,13 +163,17 @@ void IpcServer::handleErrorOccurred()
   }
   LOG_ERR("%s ipc server client error: %s", m_typeName.constData(), clientSocket->errorString().toUtf8().constData());
   m_clients.remove(clientSocket);
+  m_authenticated.remove(clientSocket);
   m_readBuffers.remove(clientSocket);
   clientSocket->deleteLater();
 }
 
 void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &message)
 {
-  LOG_VERBOSE("%s ipc server got message: %s", m_typeName.constData(), message.toUtf8().constData());
+  if (message.startsWith(QLatin1String("hello=")))
+    LOG_VERBOSE("%s ipc server got hello", m_typeName.constData());
+  else
+    LOG_VERBOSE("%s ipc server got message: %s", m_typeName.constData(), message.toUtf8().constData());
   const auto parts = splitIpcMessage(message);
   if (parts.isEmpty()) {
     LOG_ERR("%s ipc server got invalid message: %s", m_typeName.constData(), message.toUtf8().constData());
@@ -180,7 +192,18 @@ void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &messag
 
     // Divergence from upstream: kVersion already carries the build metadata; don't re-append the git sha.
     const auto versionId = QString::fromUtf8(kVersion);
-    const auto clientVersion = parts.at(1);
+    const auto helloValue = parts.at(1);
+    const auto separator = helloValue.indexOf(QLatin1Char(' '));
+    const auto clientVersion = separator < 0 ? helloValue : helloValue.left(separator);
+    const auto clientToken = separator < 0 ? QString() : helloValue.mid(separator + 1);
+    if (m_token.isEmpty() || clientToken != m_token) {
+      LOG_WARN("%s ipc server rejected hello", m_typeName.constData());
+      writeToClientSocket(clientSocket, QStringLiteral("error=hello required"));
+      clientSocket->flush();
+      clientSocket->disconnectFromServer();
+      return;
+    }
+
     LOG_DEBUG("%s ipc server got hello message (version: %s)", m_typeName.constData(), versionId.toUtf8().constData());
 
     if (clientVersion != versionId) {
@@ -194,6 +217,7 @@ void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &messag
     }
 
     LOG_DEBUG("%s ipc server sending hello back", m_typeName.constData());
+    m_authenticated.insert(clientSocket);
     writeToClientSocket(clientSocket, QStringLiteral("hello=%1").arg(versionId));
 
     // Replay messages that were queued before any clients connected.
@@ -203,6 +227,12 @@ void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &messag
       writeToClientSocket(clientSocket, pending);
     }
     m_pendingMessages.clear();
+  } else if (!m_authenticated.contains(clientSocket)) {
+    LOG_WARN("%s ipc command before hello: %s", m_typeName.constData(), command.toUtf8().constData());
+    writeToClientSocket(clientSocket, QStringLiteral("error=hello required"));
+    clientSocket->flush();
+    clientSocket->disconnectFromServer();
+    return;
   } else if (command == QStringLiteral("noop")) {
     LOG_DEBUG("%s ipc server got noop message", m_typeName.constData());
     writeToClientSocket(clientSocket, QStringLiteral("ok"));

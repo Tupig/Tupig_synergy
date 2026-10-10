@@ -15,6 +15,7 @@
 #include "base/Log.h"
 #include "common/Constants.h"
 #include "common/ExitCodes.h"
+#include "common/IpcToken.h"
 #include "ipc/CoreIpcServer.h"
 
 #if defined(Q_OS_WIN)
@@ -26,6 +27,7 @@
 #include <QSharedMemory>
 #include <QTextStream>
 #include <QThread>
+#include <QTimer>
 
 #include <memory>
 
@@ -151,6 +153,14 @@ int main(int argc, char **argv)
     LOG_ERR("ipc server failed to listen");
     return s_exitFailed;
   }
+
+  // Core can start on the secure desktop before a console user exists. Refresh
+  // the token ACL the same way the daemon does, so the GUI can read it after login.
+  QTimer tokenAccessTimer;
+  QObject::connect(&tokenAccessTimer, &QTimer::timeout, &app, [] {
+    synergy::refreshIpcTokenAccess(QString::fromLatin1(kCoreIpcName));
+  });
+  tokenAccessTimer.start(1000);
 
   QThread coreThread;
   QObject::connect(&coreThread, &QThread::finished, &app, &QApplication::quit);
