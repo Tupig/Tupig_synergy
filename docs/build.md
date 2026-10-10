@@ -16,6 +16,8 @@
 | **libportal** | 0.8.0+ | Linux/BSD only (Wayland portal) |
 | **libei** | 1.0+ | Linux/BSD only (input emulation) |
 
+libportal older than 0.8.0 does not ship `libportal/inputcapture.h`. When libei is present and libportal is missing or too old, the build still compiles: Wayland portal capture is left out and libei uses its socket backend.
+
 ### Architectures
 
 Build artifacts are **64-bit only**. `vcpkg.json` sets `"supports": "x64 | arm64"`. There is no 32-bit (x86) target.
@@ -344,6 +346,8 @@ A clean run is one line: `encoding OK checked=669 violations=0 allowed=utf-8 mod
 | **OpenSSL** | 3.0+ | TLS/加密支持 |
 | **libportal** | 0.8.0+ | 仅 Linux/BSD (Wayland Portal) |
 | **libei** | 1.0+ | 仅 Linux/BSD (输入仿真) |
+
+低于 0.8.0 的 libportal 没有 `libportal/inputcapture.h`。装了 libei、但没有 libportal 或版本过旧时，仍然可以编译：Wayland Portal 捕获不参与构建，libei 走 socket 后端。
 
 ### 架构
 

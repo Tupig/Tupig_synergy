@@ -14,8 +14,10 @@
 #include "EiKeyState.h"
 #include "IScreen.h"
 #include "OptionTypes.h"
+#ifdef WINAPI_LIBPORTAL
 #include "PortalInputCapture.h"
 #include "PortalRemoteDesktop.h"
+#endif
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "common/Constants.h"
@@ -52,6 +54,7 @@ EiScreen::EiScreen(bool isPrimary, IEventQueue *events, bool usePortal)
     handleSystemEvent(e);
   });
 
+#ifdef WINAPI_LIBPORTAL
   if (usePortal) {
     m_events->addHandler(EventTypes::EIConnected, getEventTarget(), [this](const auto &e) {
       handleConnectedToEisEvent(e);
@@ -68,6 +71,10 @@ EiScreen::EiScreen(bool isPrimary, IEventQueue *events, bool usePortal)
       m_clipboard = new EiClipboard(kClipboardClipboard);
     }
   } else {
+#else
+  (void)usePortal;
+  {
+#endif
     // Note: socket backend does not support reconnections
     auto rc = ei_setup_backend_socket(m_ei, nullptr);
     if (rc != 0) {
@@ -94,7 +101,9 @@ EiScreen::~EiScreen()
   delete m_keyState;
   delete m_clipboard;
 
+#ifdef WINAPI_LIBPORTAL
   delete m_portalRemoteDesktop;
+#endif
 }
 
 void EiScreen::eiLogEvent(ei_log_priority priority, const char *message) const
@@ -170,6 +179,7 @@ void *EiScreen::getEventTarget() const
 
 bool EiScreen::getClipboard(ClipboardID id, IClipboard *clipboard) const
 {
+#ifdef WINAPI_LIBPORTAL
   // If using portal input capture, get clipboard from there
   if (m_portalInputCapture) {
     const auto sourceClipboard = m_portalInputCapture->getClipboard(id);
@@ -178,6 +188,7 @@ bool EiScreen::getClipboard(ClipboardID id, IClipboard *clipboard) const
     }
     return IClipboard::copy(clipboard, sourceClipboard);
   }
+#endif
 
   // Otherwise use our own clipboard
   if (!m_clipboard) {
@@ -378,7 +389,11 @@ void EiScreen::enter()
     }
   } else {
     LOG_DEBUG("releasing input capture at x=%i y=%i", m_cursorX, m_cursorY);
-    m_portalInputCapture->release(m_cursorX, m_cursorY);
+#ifdef WINAPI_LIBPORTAL
+    if (m_portalInputCapture) {
+      m_portalInputCapture->release(m_cursorX, m_cursorY);
+    }
+#endif
   }
 }
 
@@ -410,6 +425,7 @@ bool EiScreen::setClipboard(ClipboardID id, const IClipboard *clipboard)
     return false;
   }
 
+#ifdef WINAPI_LIBPORTAL
   // If using portal input capture, set clipboard there
   if (m_portalInputCapture) {
     IClipboard *targetClipboard = m_portalInputCapture->getClipboard(id);
@@ -418,6 +434,7 @@ bool EiScreen::setClipboard(ClipboardID id, const IClipboard *clipboard)
     }
     return IClipboard::copy(targetClipboard, clipboard);
   }
+#endif
 
   // Otherwise use our own clipboard
   if (!m_clipboard) {
@@ -426,9 +443,11 @@ bool EiScreen::setClipboard(ClipboardID id, const IClipboard *clipboard)
 
   bool ok = IClipboard::copy(m_clipboard, clipboard);
 
+#ifdef WINAPI_LIBPORTAL
   if (ok && m_portalRemoteDesktop && id == kClipboardClipboard) {
     m_portalRemoteDesktop->claimClipboard();
   }
+#endif
 
   return ok;
 }
@@ -764,9 +783,11 @@ void EiScreen::onMotionEvent(ei_event *event)
   if (m_isOnScreen) {
     LOG_DEBUG("event: motion on primary x=%i y=%i)", m_cursorX, m_cursorY);
     sendEvent(EventTypes::PrimaryScreenMotionOnPrimary, MotionInfo::alloc(m_cursorX, m_cursorY));
-    if (m_portalInputCapture->isActive()) {
+#ifdef WINAPI_LIBPORTAL
+    if (m_portalInputCapture && m_portalInputCapture->isActive()) {
       m_portalInputCapture->release();
     }
+#endif
   } else {
     m_bufferDX += dx;
     m_bufferDY += dy;
@@ -859,6 +880,7 @@ void EiScreen::handleSystemEvent(const Event &)
       LOG_WARN("disconnected from eis, will afterwards commence attempt to reconnect");
       if (m_isPrimary) {
         LOG_DEBUG("re-allocating portal input capture connection and releasing active captures");
+#ifdef WINAPI_LIBPORTAL
         if (m_portalInputCapture) {
           if (m_portalInputCapture->isActive()) {
             m_portalInputCapture->release();
@@ -866,6 +888,7 @@ void EiScreen::handleSystemEvent(const Event &)
           delete m_portalInputCapture;
           m_portalInputCapture = new PortalInputCapture(this, this->m_events);
         }
+#endif
       }
       this->handlePortalSessionClosed();
       break;
