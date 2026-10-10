@@ -49,9 +49,9 @@ std::string vformat(const char *fmt, va_list args)
         char *end;
         errno = 0;
         long i = strtol(scan + 1, &end, 10);
-        if (errno || (i < 0) || (*end != '}')) {
-          // invalid index -- ignore
-          scan = end - 1; // BUG if there are digits?
+        if (end == nullptr || errno || (i < 0) || (*end != '}')) {
+          // Invalid placeholder. Leave scan where it is; the loop steps one
+          // character. Moving it to end - 1 walked backwards into the digits.
         } else {
           index.push_back(i);
           pos.push_back(static_cast<size_t>((scan - 1) - fmt));
