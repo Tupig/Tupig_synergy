@@ -77,9 +77,13 @@ if (REDIST_MERGE_MODULE_PATHS)
   set(WIX_REDIST_MERGE
     "<DirectoryRef Id=\"TARGETDIR\"><Merge Id=\"VC_Redist\" SourceFile=\"${REDIST_MERGE_MODULE_PATH}\" DiskId=\"1\" Language=\"0\"/></DirectoryRef>")
   set(WIX_REDIST_MERGE_REF "<MergeRef Id=\"VC_Redist\"/>")
+elseif(NOT CMAKE_MSVC_RUNTIME_LIBRARY MATCHES "DLL")
+  # /MT already links the runtime into the executables. A missing merge module
+  # is not a defect, and the build must not warn about it.
+  message(STATUS "Static CRT in use; the installer does not merge the VC++ redistributable")
 elseif(SYNERGY_VERSION_RELEASE OR SYNERGY_VERSION_SNAPSHOT)
-  # Shipping build: a missing CRT module means a broken installer for end users.
-  message(WARNING
+  # A dynamic-CRT shipping build without the merge module installs a broken MSI.
+  message(FATAL_ERROR
     "MSVC CRT merge module not found under ${REDIST_MERGE_MODULE_DIR}; "
     "the installer will NOT bundle the Visual C++ runtime")
 else()

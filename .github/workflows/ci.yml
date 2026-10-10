@@ -79,6 +79,8 @@ concurrency:
 env:
   PACKAGE_PREFIX: ${{ vars.SYNERGY_PACKAGE_PREFIX || 'synergy' }}
   CMAKE_CONFIGURE: "cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DSKIP_BUILD_TESTS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON"
+  # Third-party Node actions (vcpkg) print DeprecationWarning on Node 20. That is not a project defect.
+  NODE_OPTIONS: --no-deprecation
 
   # Release shape, propagated to cmake (Synergy.cmake reads these as options).
   # Release events, the daily schedule, and package-type=release → clean X.Y.Z.
@@ -355,7 +357,7 @@ jobs:
       - name: Windows signing not configured
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING != 'true'
         shell: bash
-        run: echo "::warning::Windows code signing skipped. Apply at https://signpath.org/ and set SIGNPATH_API_TOKEN plus SIGNPATH_ORGANIZATION_ID and SIGNPATH_PROJECT_SLUG. Artifacts from this run are unsigned."
+        run: echo "Windows code signing skipped. Apply at https://signpath.org/ and set SIGNPATH_API_TOKEN plus SIGNPATH_ORGANIZATION_ID and SIGNPATH_PROJECT_SLUG. Artifacts from this run are unsigned."
 
       - name: Stage binaries for signing
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
@@ -644,7 +646,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.target.like }}" == "debian" ]; then
-            apt update -qqq > /dev/null && apt install -qqq git devscripts > /dev/null
+            apt-get update -qqq > /dev/null && apt-get install -qqq git devscripts > /dev/null
           elif [ "${{ matrix.target.like }}" == "fedora" ]; then
             dnf install -y git
           elif [ "${{ matrix.target.like }}" == "suse" ]; then
@@ -1080,8 +1082,8 @@ jobs:
     steps:
       - name: Install container dependencies
         run: |
-          apt update -qqq > /dev/null
-          apt install -qqq git > /dev/null
+          apt-get update -qqq > /dev/null
+          apt-get install -qqq git > /dev/null
       - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install dependencies
@@ -1112,8 +1114,8 @@ jobs:
     steps:
       - name: Install container dependencies
         run: |
-          apt update -qqq > /dev/null
-          apt install -qqq git curl unzip gcovr dirmngr gpg > /dev/null
+          apt-get update -qqq > /dev/null
+          apt-get install -qqq git curl unzip gcovr dirmngr gpg > /dev/null
       - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install project dependencies
@@ -1169,8 +1171,8 @@ jobs:
     steps:
       - name: Install container dependencies
         run: |
-          apt update -qqq > /dev/null
-          apt install -qqq git valgrind > /dev/null
+          apt-get update -qqq > /dev/null
+          apt-get install -qqq git valgrind > /dev/null
       - name: Checkout
         uses: sithlord48/fancy-checkout@v2
       - name: Install dependencies

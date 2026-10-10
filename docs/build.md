@@ -51,6 +51,7 @@ The following components are enabled by default:
 | `CLEAN_TRS` | Remove obsolete translation strings | `OFF` |
 | `SYNERGY_CORE_FLAVOR` | Build as "TuPig Synergy Core"; seeds headless defaults (GUI/tests/installer off) | `OFF` |
 | `APPLE_CODESIGN_DEV` | Apple Developer code-sign identity (cache variable, not an `option()`) | unset |
+| `CMAKE_COMPILE_WARNING_AS_ERROR` | Fail the build on a compiler warning | `ON` |
 
 **Build:**
 
@@ -136,7 +137,7 @@ Apply at <https://signpath.org/> for the public repository
 4. Store the API token as the secret above, and store the organization id and project
    slug as the two variables. Do not commit any of those values.
 
-If any required value is missing, the job warns and uploads unsigned packages. If they
+If any required value is missing, the job logs that signing was skipped and uploads unsigned packages. If they
 are set and `signtool verify` fails after SignPath returns the files, the job fails.
 
 ---
@@ -377,6 +378,7 @@ x86_64 与 x64 都是 64 位 Intel/AMD，不是 32 位。
 | `CLEAN_TRS` | 清理翻译文件中过时字符串 | `OFF` |
 | `SYNERGY_CORE_FLAVOR` | 以 “TuPig Synergy Core” 构建；同时将 GUI/测试/安装包默认置为关闭（无界面构建） | `OFF` |
 | `APPLE_CODESIGN_DEV` | Apple 开发者代码签名身份（缓存变量，非 `option()`） | 未设置 |
+| `CMAKE_COMPILE_WARNING_AS_ERROR` | 编译器警告使构建失败 | `ON` |
 
 **构建：**
 
@@ -449,7 +451,7 @@ Release CI 通过 [SignPath Foundation](https://signpath.org/) 签名 `synergy_<
 3. 按仓库里的 XML 添加两份构件配置，slug 必须一致：`windows-executables` 对应 `.signpath/windows-executables.xml`，`windows-msi` 对应 `.signpath/windows-msi.xml`。
 4. 把 API 令牌存成上面的 secret，把组织 id 和项目 slug 存成那两个变量。这三项都不要提交进仓库。
 
-缺任何一项必填值时，作业给出警告并上传未签名包。三项都在、SignPath 返回文件之后 `signtool verify` 失败，则作业失败。
+缺任何一项必填值时，作业记下签名已跳过，并上传未签名包。三项都在、SignPath 返回文件之后 `signtool verify` 失败，则作业失败。
 
 ---
 

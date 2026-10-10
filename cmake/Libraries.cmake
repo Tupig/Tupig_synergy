@@ -35,6 +35,8 @@ macro(configure_libs)
     )
   endif()
 
+  # vcpkg 的 Qt 不带 qtpaths。静态构建不部署 Qt，不设这个变量时 find_package 会打出警告。
+  set(QT_NO_QTPATHS_DEPLOYMENT_WARNING ON)
   # 使用回退机制查找 Qt（版本无关探测与 Qt5 版本下调均在宏内完成）
   find_qt_with_fallback()
 
@@ -82,7 +84,7 @@ macro(configure_libs)
   # qmake 的 windeployqt.prf，没有 windeployqt.exe。因此这里不能把它当作配置阶段的硬性条件，
   # 否则动态 triplet（如 ASan 构建所用的 x64-windows）会直接配置失败。
   #
-  # 缺失时降级为警告：共享构建仍可编译运行（运行时需能找到 Qt DLL，例如把
+  # 缺失时记一条状态：共享构建仍可编译运行（运行时需能找到 Qt DLL，例如把
   # vcpkg_installed/<triplet>/bin 加入 PATH）；仅当确实要“打包”共享版产物时才需要该工具，
   # 届时自行提供（如使用官方 Qt 安装包中的 windeployqt）。
   set(DEPLOY_TOOL "")
@@ -95,7 +97,7 @@ macro(configure_libs)
   if(DEPLOY_TOOL AND QT_IS_SHARED)
     find_program(DEPLOYQT ${DEPLOY_TOOL})
     if(DEPLOYQT STREQUAL "DEPLOYQT-NOTFOUND")
-      message(WARNING
+      message(STATUS
         "${DEPLOY_TOOL} not found; the Qt runtime will not be copied next to the binaries. "
         "vcpkg does not ship this tool, so this is expected. Add "
         "vcpkg_installed/<triplet>/bin to PATH when running, or supply the tool if packaging."
@@ -214,7 +216,7 @@ macro(configure_unix_libs)
       
       message(STATUS "xkbcommon version: ${LIBXKBCOMMON_VERSION}")
     else()
-      message(WARNING "pkg-config not found, skipping wayland libraries")
+      message(STATUS "pkg-config not found, skipping wayland libraries")
     endif()
   endif()
 endmacro()
@@ -303,7 +305,7 @@ macro(configure_xorg_libs)
   else(HAVE_Xinerama)
     if(HAVE_X11_EXTENSIONS_XINERAMA_H)
       set(HAVE_X11_EXTENSIONS_XINERAMA_H 0)
-      message(WARNING "Old Xinerama implementation detected, disabled")
+      message(STATUS "Old Xinerama implementation detected, disabled")
     endif()
   endif()
 

@@ -253,4 +253,3 @@ void Win32DropDataTests::buildDropFileBlockRejectsEmpty()
 }
 
 QTEST_MAIN(Win32DropDataTests)
-#include "Win32DropDataTests.moc"

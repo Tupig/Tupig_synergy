@@ -158,4 +158,3 @@ void FileTransferOutboundTests::dropsFilesAboveMaxSize()
 }
 
 QTEST_MAIN(FileTransferOutboundTests)
-#include "FileTransferOutboundTests.moc"

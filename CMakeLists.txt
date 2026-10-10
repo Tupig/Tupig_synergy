@@ -59,6 +59,12 @@ project(
   LANGUAGES C CXX
 )
 
+# Compiler warnings fail the build. -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF is only
+# for diagnosing a toolchain warning; the normal build does not allow it.
+if(NOT DEFINED CMAKE_COMPILE_WARNING_AS_ERROR)
+  set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+endif()
+
 # Project metadata
 set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
 set(CMAKE_PROJECT_VENDOR "TuPig")
@@ -243,7 +249,7 @@ if(SYNERGY_ENABLE_LTO)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
     message(STATUS "Link-time optimization enabled for release builds")
   else()
-    message(WARNING "Link-time optimization unsupported by this toolchain, leaving it off: ${_synergy_ipo_msg}")
+    message(STATUS "Link-time optimization unsupported by this toolchain, leaving it off: ${_synergy_ipo_msg}")
   endif()
 endif()
 
