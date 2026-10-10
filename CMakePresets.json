@@ -58,6 +58,30 @@
       }
     },
     {
+      "name": "windows-msvc-2026",
+      "displayName": "Windows MSVC x64 (Visual Studio 2026)",
+      "description": "Same static triplet as windows-msvc, generated for Visual Studio 18 2026. scripts/build.bat selects this when vswhere -latest is VS 2026, so vcpkg and the app use one compiler. The STL symbols in a VS 2026 static Qt do not link with the VS 2022 toolset.",
+      "inherits": "vcpkg-base",
+      "generator": "Visual Studio 18 2026",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
+      "name": "windows-msvc-2026-release",
+      "displayName": "Windows MSVC x64 Release (Visual Studio 2026)",
+      "description": "Release build for Visual Studio 2026. Same version and triplet rules as windows-msvc-release.",
+      "inherits": "windows-msvc-2026",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "SYNERGY_VERSION_RELEASE": "ON"
+      }
+    },
+    {
       "name": "windows-msvc-debug",
       "displayName": "Windows MSVC x64 Debug",
       "description": "Debug build type for MSVC. NOTE: vcpkg dependencies are built Release-only (see triplets/overlay), so a Debug build cannot link them; build the Release configuration instead.",
@@ -169,6 +193,11 @@
     {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-msvc-2026-release",
+      "configurePreset": "windows-msvc-2026-release",
       "configuration": "Release"
     },
     {

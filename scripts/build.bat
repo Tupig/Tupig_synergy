@@ -70,15 +70,16 @@ if errorlevel 1 (
 REM --- locate Visual Studio ---------------------------------------------------
 REM vswhere.exe ships with the VS Installer, which is always a 32-bit tool, so it
 REM lives under the 32-bit Program Files. ProgramFiles(x86) is ABSENT in some
-REM environments (verified locally: it expands to nothing), therefore it must not
-REM be required -- fall back to the canonical literal location.
+REM environments (verified locally: it expands to nothing). SystemDrive is a
+REM Windows variable, not a hardcoded drive letter.
 REM The resolved path can contain "(x86)", so it is referenced via delayed
 REM expansion inside blocks: embedding it directly would terminate a FOR list or
 REM an IF block early and break parsing.
 set "VSWHERE="
 if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not defined VSWHERE if exist "%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
-if not defined VSWHERE if exist "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+if not defined VSWHERE if exist "%SystemDrive%\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%SystemDrive%\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+if not defined VSWHERE if exist "%SystemDrive%\Program Files\Microsoft Visual Studio\Installer\vswhere.exe" set "VSWHERE=%SystemDrive%\Program Files\Microsoft Visual Studio\Installer\vswhere.exe"
 if not defined VSWHERE (
     echo [ERROR] vswhere.exe not found.
     echo         Visual Studio 2022 Build Tools are required.
@@ -95,6 +96,19 @@ if not defined VS_PATH (
     exit /b 1
 )
 echo Visual Studio: "!VS_PATH!"
+
+REM vcpkg compiles dependencies with the compiler from the vcvars environment
+REM below, which is the newest Visual Studio. The CMake generator must be that
+REM same instance. A VS 2022 toolset cannot link a static Qt built by VS 2026
+REM (missing STL symbols such as __std_rotate).
+set "VS_MAJOR="
+for /f "usebackq tokens=1 delims=." %%v in (`"!VSWHERE!" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion`) do set "VS_MAJOR=%%v"
+if not defined VS_MAJOR (
+    echo [ERROR] Could not read the Visual Studio version.
+    exit /b 1
+)
+if "!VS_MAJOR!"=="18" set "PRESET=windows-msvc-2026-%BUILD_TYPE%"
+echo Preset: !PRESET!
 
 REM --- activate the MSVC environment ------------------------------------------
 REM Required: vcpkg resolves its Visual Studio instance from the VC environment
@@ -121,6 +135,20 @@ if errorlevel 1 (
 )
 
 pushd "%REPO_ROOT%"
+
+REM A cache from the other Visual Studio generator cannot be reused. Keep
+REM vcpkg_installed so the dependencies are not downloaded again.
+if exist "%REPO_ROOT%\build\CMakeCache.txt" (
+    set "EXPECTED_GENERATOR=Visual Studio 17 2022"
+    if "!VS_MAJOR!"=="18" set "EXPECTED_GENERATOR=Visual Studio 18 2026"
+    findstr /C:"CMAKE_GENERATOR:INTERNAL=!EXPECTED_GENERATOR!" "%REPO_ROOT%\build\CMakeCache.txt" >nul
+    if errorlevel 1 (
+        echo Removing CMake cache from a different Visual Studio generator.
+        del /q "%REPO_ROOT%\build\CMakeCache.txt"
+        if exist "%REPO_ROOT%\build\CMakeFiles" rmdir /s /q "%REPO_ROOT%\build\CMakeFiles"
+        del /q "%REPO_ROOT%\build\*.sln" 2>nul
+    )
+)
 
 REM --- configure (drives vcpkg manifest install) ------------------------------
 echo.
