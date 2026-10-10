@@ -24,6 +24,8 @@
 #include <shlobj.h>
 #include <tchar.h>
 
+#include <QByteArray>
+#include <QString>
 #include <QStringDecoder>
 
 //
@@ -317,7 +319,7 @@ void MSWindowsWatchdog::startProcess()
 
     LOG_DEBUG("started core process from watchdog");
     LOG_VERBOSE(
-        "process info, session=%i, elevated=%s, command: %s", //
+        "process info, session=%i, elevated=%s, command: %ls", //
         m_session.getActiveSessionId(), m_elevateProcess ? "yes" : "no", m_command.c_str()
     );
   }
@@ -329,7 +331,8 @@ void MSWindowsWatchdog::setProcessConfig(const std::string_view &command, bool e
   std::scoped_lock lock{m_processStateMutex};
 
   LOG_DEBUG("setting watchdog process config");
-  m_command = std::wstring(command.begin(), command.end());
+  const auto bytes = QByteArray(command.data(), static_cast<qsizetype>(command.size()));
+  m_command = QString::fromUtf8(bytes).toStdWString();
   m_elevateProcess = elevate;
 
   if (m_command.empty()) {
