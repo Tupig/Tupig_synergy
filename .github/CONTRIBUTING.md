@@ -29,6 +29,10 @@ Code standards:
   clang-format 20.1.0 and checks the diff against the merge base. A newer
   clang-format (for example 22) wraps the same files differently and fails that
   job. This repository has no `.pre-commit-config.yaml`.
+- Encoding: UTF-8 without a BOM. Before compile, CI runs
+  `python3 scripts/ci/check-encoding.py`. The allowed encodings, scanned
+  directories, and skipped directories are in `scripts/ci/encoding-check.json`.
+  `--warn` prints the same list and does not fail the process.
 - Tests: Qt Test + CTest. From a Windows Release build,
   `ctest --test-dir build/src/unittests -C Release --output-on-failure`.
   Linux and macOS omit `-C Release`. `ctest --test-dir build` finds nothing.
@@ -78,6 +82,9 @@ PR checklist:
 - 格式化：clang-format（Google 风格），配置在 `.clang-format`。CI 安装的是
   clang-format 20.1.0，并对照合并基线检查 diff。更新的 clang-format（例如 22）
   会把同一文件折行成另一种结果，lint 会失败。本仓库没有 `.pre-commit-config.yaml`。
+- 源码编码：UTF-8，不带 BOM。编译前 CI 运行
+  `python3 scripts/ci/check-encoding.py`。允许的编码、扫描目录和排除目录写在
+  `scripts/ci/encoding-check.json`。`--warn` 只打印同样的列表，不让进程失败。
 - 测试：Qt Test + CTest。Windows Release 构建使用
   `ctest --test-dir build/src/unittests -C Release --output-on-failure`。
   Linux 与 macOS 去掉 `-C Release`。`ctest --test-dir build` 找不到用例。

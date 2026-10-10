@@ -1,6 +1,6 @@
 # Single workflow, shown as "TuPig Synergy" (CMAKE_PROJECT_PROPER_NAME).
 # Jobs are ordered for reading; `needs` is what actually schedules them:
-#   1. prepare (version, clang-format, and the trigger plan below)
+#   1. prepare (version, encoding, clang-format, and the trigger plan below)
 #   2. build (Windows MSVC, macOS AppleClang arm64+x86_64, Linux gcc, Flatpak)
 #   3. publish (GitHub Release, optional S3, Slack on failure)
 #   4. analysis (only workflow_dispatch with analyze=true)
@@ -236,12 +236,27 @@ jobs:
       - name: Clang-format
         uses: ./.github/actions/lint-clang
 
+  # Same gate as clang-format: after the plan, before any compile or package.
+  # A failure here skips the build jobs. The daily no-change schedule skips it.
+  lint-encoding:
+    needs: get-version
+    if: needs.get-version.outputs.skip_unchanged != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check source encoding
+        run: python3 scripts/ci/check-encoding.py
+
   # ---------------------------------------------------------------------------
   # 2. Build. One CMake configure line per OS; the runner compiler differs.
   # Windows: MSVC + Ninja. macOS: AppleClang (arm64 and x86_64). Linux: gcc.
   # ---------------------------------------------------------------------------
   build-windows:
-    needs: [lint-clang, get-version]
+    needs: [lint-encoding, lint-clang, get-version]
     if: ${{ needs.get-version.outputs.build_windows == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
@@ -452,7 +467,7 @@ jobs:
           retention-days: 14
 
   build-macos:
-    needs: [lint-clang, get-version]
+    needs: [lint-encoding, lint-clang, get-version]
     if: ${{ needs.get-version.outputs.build_macos == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
@@ -609,7 +624,7 @@ jobs:
           retention-days: 14
 
   build-linux:
-    needs: [lint-clang, get-version]
+    needs: [lint-encoding, lint-clang, get-version]
     if: ${{ needs.get-version.outputs.build_linux == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
@@ -723,7 +738,7 @@ jobs:
           retention-days: 14
 
   build-flatpak:
-    needs: [lint-clang, get-version]
+    needs: [lint-encoding, lint-clang, get-version]
     if: ${{ needs.get-version.outputs.build_flatpak == 'true' }}
     name: flatpak-${{matrix.flatpak.arch}}
     runs-on: ${{matrix.flatpak.runs-on}}
@@ -1194,6 +1209,7 @@ jobs:
       [
         get-version,
         lint-clang,
+        lint-encoding,
         build-windows,
         build-macos,
         build-linux,
@@ -1214,9 +1230,9 @@ jobs:
       # published). package-type=release and a published Release do not skip a
       # platform. A failed job is still a failure. get-version never filters
       # out, so requiring it catches a build skipped by its failure.
-      # lint-clang has no platform filter: a failed lint used to be invisible here
-      # (builds skip via needs:, skipped counted as ok) — always require it.
-      # No checkout: this job only inspects needs.* results.
+      # lint-clang and lint-encoding have no platform filter: a failed lint used
+      # to be invisible here (builds skip via needs:, skipped counted as ok).
+      # Always require both. No checkout: this job only inspects needs.* results.
       - name: Check all jobs passed or were intentionally skipped
         run: |
           ok() {
@@ -1224,6 +1240,7 @@ jobs:
           }
           if ok "${{needs.get-version.result}}" \
              && ok "${{needs.lint-clang.result}}" \
+             && ok "${{needs.lint-encoding.result}}" \
              && ok "${{needs.build-windows.result}}" \
              && ok "${{needs.build-macos.result}}" \
              && ok "${{needs.build-linux.result}}" \
