@@ -38,6 +38,8 @@ compile_commands.json
 .DS_Store
 Thumbs.db
 **/*.directory
+__pycache__/
+*.pyc
 
 # Environment / secrets
 .env*
