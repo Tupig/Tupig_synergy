@@ -34,3 +34,6 @@ public:
 private:
   QList<Fingerprint> m_fingerprints;
 };
+
+//! Shared trust check for the Qt and OpenSSL stacks. Notifies the GUI of the peer digest.
+bool fingerprintIsTrusted(const Fingerprint &fingerprint, const QString &databasePath);

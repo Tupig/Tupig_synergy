@@ -6,6 +6,7 @@
  */
 
 #include "SecureSocket.h"
+#include "net/TlsPolicy.h"
 #include "SecureUtils.h"
 
 #include "arch/ArchException.h"
@@ -93,8 +94,8 @@ static int verifyCertificateCallback(X509_STORE_CTX *store_ctx, void * /* arg */
   EVP_PKEY *pkey = X509_get0_pubkey(cert);
   if (pkey != nullptr && EVP_PKEY_id(pkey) == EVP_PKEY_RSA) {
     int keyBits = EVP_PKEY_bits(pkey);
-    if (keyBits < 2048) {
-      LOG_WARN("tls certificate rejected: RSA key too small (%d bits, minimum 2048)", keyBits);
+    if (keyBits < kMinimumRsaBits) {
+      LOG_WARN("tls certificate rejected: RSA key too small (%d bits, minimum %d)", keyBits, kMinimumRsaBits);
       X509_STORE_CTX_set_error(store_ctx, X509_V_ERR_CERT_REJECTED);
       return 0;
     }
@@ -428,7 +429,7 @@ void SecureSocket::initContext(bool server)
     SslLogger::logError();
   }
 
-  if (m_securityLevel == SecurityLevel::PeerAuth) {
+  if (tlsRequiresPeerCertificate(m_securityLevel)) {
     // Request a peer certificate. set_cert_verify_callback replaces
     // X509_verify_cert, so this callback does not check the chain, expiry, or
     // basic constraints. It only rejects a null certificate and an RSA key
@@ -705,33 +706,7 @@ bool SecureSocket::verifyCertFingerprint(const QString &FingerprintDatabasePath)
   if (!sha256.isValid())
     return false;
 
-  const auto fingerprint = synergy::formatSSLFingerprint(sha256.data, false);
-  LOG_DEBUG("peer fingerprint: %s", qPrintable(fingerprint));
-  ipcSendToClient("peerFingerprint", fingerprint);
-
-  QFile file(FingerprintDatabasePath);
-
-  FingerprintDatabase db;
-  db.read(FingerprintDatabasePath);
-  const bool emptyDB = db.fingerprints().empty();
-
-  const auto &path = FingerprintDatabasePath;
-  if (file.exists() && emptyDB) {
-    LOG_ERR("failed to open trusted fingerprints file: %s", qPrintable(path));
-    return false;
-  }
-
-  if (!emptyDB) {
-    LOG_DEBUG("read %d fingerprint(s) from file: %s", db.fingerprints().size(), qPrintable(path));
-  }
-
-  if (!db.isTrusted(sha256)) {
-    LOG_WARN("fingerprint does not match trusted fingerprint");
-    return false;
-  }
-
-  LOG_DEBUG("fingerprint matches trusted fingerprint");
-  return true;
+  return fingerprintIsTrusted(sha256, FingerprintDatabasePath);
 }
 
 ISocketMultiplexerJob *SecureSocket::serviceConnect(ISocketMultiplexerJob *const, bool, bool, bool)

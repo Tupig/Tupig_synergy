@@ -14,6 +14,7 @@
 #include "net/FingerprintDatabase.h"
 #include "net/QtNetworkTransport.h"
 #include "net/SecureUtils.h"
+#include "net/TlsPolicy.h"
 #include "net/SocketException.h"
 
 #include <QFile>
@@ -184,40 +185,40 @@ void QtDataSocket::handleConnected()
     return;
   }
 
-  const bool peerAuth = m_securityLevel == SecurityLevel::PeerAuth;
-  const bool mustVerify = !m_serverSide || peerAuth;
+  // The client always checks the server fingerprint. The server checks the
+  // client fingerprint only for PeerAuth; Encrypted still rejects a missing
+  // certificate, which is what the unit test round-trip relies on.
+  const bool checkFingerprint =
+      m_serverSide ? m_securityLevel == SecurityLevel::PeerAuth : tlsRequiresPeerCertificate(m_securityLevel);
 
   const QSslCertificate cert = ssl->peerCertificate();
-  if (cert.isNull()) {
-    if (mustVerify) {
-      handleTlsFailure(QStringLiteral("peer has no tls certificate"));
-      return;
-    }
-    // Encrypted servers accept clients without inspecting them (parity with
-    // the raw stack, where trust is only enforced for PeerAuth).
-    LOG_WARN("QtDataSocket: accepted client without a tls certificate");
-  } else {
-    // Parity with SecureSocket: only RSA keys are size-constrained (the raw
-    // stack's cert callback never runs chain verification; trust comes from
-    // the fingerprint database).
-    const auto key = cert.publicKey();
-    if (key.algorithm() == QSsl::Rsa && key.length() > 0 && key.length() < 2048) {
-      handleTlsFailure(QStringLiteral("RSA key too small (%1 bits, minimum 2048)").arg(key.length()));
-      return;
-    }
-
-    if (mustVerify) {
-      const QString dbPath = m_serverSide ? Settings::tlsTrustedClientsDb() : Settings::tlsTrustedServersDb();
-      if (!verifyFingerprint(dbPath)) {
-        handleTlsFailure(QStringLiteral("failed to verify peer certificate fingerprint"));
-        return;
-      }
-    }
-
-    LOG_INFO(
-        "peer tls certificate info: %s", cert.subjectInfo(QSslCertificate::CommonName).join(u'/').toStdString().c_str()
-    );
+  if (tlsRequiresPeerCertificate(m_securityLevel) && cert.isNull()) {
+    handleTlsFailure(QStringLiteral("peer has no tls certificate"));
+    return;
   }
+
+  // Parity with SecureSocket: only RSA keys are size-constrained (the raw
+  // stack's cert callback never runs chain verification; trust comes from
+  // the fingerprint database).
+  const auto key = cert.publicKey();
+  if (key.algorithm() == QSsl::Rsa && key.length() > 0 && key.length() < kMinimumRsaBits) {
+    handleTlsFailure(
+        QStringLiteral("RSA key too small (%1 bits, minimum %2)").arg(key.length()).arg(kMinimumRsaBits)
+    );
+    return;
+  }
+
+  if (checkFingerprint) {
+    const QString dbPath = m_serverSide ? Settings::tlsTrustedClientsDb() : Settings::tlsTrustedServersDb();
+    if (!verifyFingerprint(dbPath)) {
+      handleTlsFailure(QStringLiteral("failed to verify peer certificate fingerprint"));
+      return;
+    }
+  }
+
+  LOG_INFO(
+      "peer tls certificate info: %s", cert.subjectInfo(QSslCertificate::CommonName).join(u'/').toStdString().c_str()
+  );
 
   m_resolved = true;
   if (m_serverSide) {
@@ -300,26 +301,7 @@ bool QtDataSocket::verifyFingerprint(const QString &databasePath)
     return false;
   }
 
-  const auto fingerprint = synergy::formatSSLFingerprint(sha256, false);
-  LOG_DEBUG("peer fingerprint: %s", qPrintable(fingerprint));
-  ipcSendToClient("peerFingerprint", fingerprint);
-
-  FingerprintDatabase db;
-  db.read(databasePath);
-  const bool emptyDB = db.fingerprints().empty();
-
-  if (QFile::exists(databasePath) && emptyDB) {
-    LOG_ERR("failed to open trusted fingerprints file: %s", qPrintable(databasePath));
-    return false;
-  }
-
-  if (!db.isTrusted({QCryptographicHash::Sha256, sha256})) {
-    LOG_WARN("fingerprint does not match trusted fingerprint");
-    return false;
-  }
-
-  LOG_DEBUG("fingerprint matches trusted fingerprint");
-  return true;
+  return fingerprintIsTrusted({QCryptographicHash::Sha256, sha256}, databasePath);
 }
 
 void QtDataSocket::sendEvent(synergy::EventTypes type)

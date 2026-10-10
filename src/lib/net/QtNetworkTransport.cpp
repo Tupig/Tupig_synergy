@@ -10,6 +10,7 @@
 #include "base/Log.h"
 #include "common/Settings.h"
 #include "net/NetworkAddress.h"
+#include "net/TlsPolicy.h"
 
 #include <QFile>
 #include <QHostAddress>
@@ -140,10 +141,9 @@ void QtNetworkTransport::createSocket()
 {
   if (wantsTls()) {
     auto *ssl = new QSslSocket(this);
-    if (m_securityLevel == SecurityLevel::PeerAuth) {
+    if (tlsRequiresPeerCertificate(m_securityLevel)) {
       ssl->setPeerVerifyMode(QSslSocket::VerifyPeer);
     } else {
-      // App-level fingerprint checks match SecureSocket Encrypted mode.
       ssl->setPeerVerifyMode(QSslSocket::VerifyNone);
     }
     m_socket = ssl;

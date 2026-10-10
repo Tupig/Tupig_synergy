@@ -444,11 +444,12 @@ ClientListener *ServerApp::openClientListener(const NetworkAddress &address)
   using enum SecurityLevel;
   auto securityLevel = PlainText;
   if (Settings::value(Settings::Security::TlsEnabled).toBool()) {
-    if (Settings::value(Settings::Security::CheckPeers).toBool()) {
-      securityLevel = PeerAuth;
-    } else {
-      securityLevel = Encrypted;
+    // Encrypted-without-a-certificate accepted any client on the same network.
+    // TLS stays peer-authenticated even when checkPeers is turned off.
+    if (!Settings::value(Settings::Security::CheckPeers).toBool()) {
+      LOG_WARN("security/checkPeers is off; peer certificates are still required");
     }
+    securityLevel = PeerAuth;
   }
 
   auto *listen = new ClientListener(getAddress(address), getSocketFactory(), getEvents(), securityLevel);

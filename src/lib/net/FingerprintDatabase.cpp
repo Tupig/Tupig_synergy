@@ -7,6 +7,10 @@
 
 #include "FingerprintDatabase.h"
 
+#include "SecureUtils.h"
+#include "base/Log.h"
+#include "ipc/CoreIpc.h"
+
 #include <QFile>
 #include <QTextStream>
 
@@ -84,4 +88,31 @@ void FingerprintDatabase::addTrusted(const Fingerprint &fingerprint)
 bool FingerprintDatabase::isTrusted(const Fingerprint &fingerprint) const
 {
   return m_fingerprints.contains(fingerprint);
+}
+
+bool fingerprintIsTrusted(const Fingerprint &fingerprint, const QString &databasePath)
+{
+  if (!fingerprint.isValid())
+    return false;
+
+  const auto formatted = synergy::formatSSLFingerprint(fingerprint.data, false);
+  LOG_DEBUG("peer fingerprint: %s", qPrintable(formatted));
+  ipcSendToClient(QStringLiteral("peerFingerprint"), formatted);
+
+  FingerprintDatabase db;
+  db.read(databasePath);
+  if (QFile::exists(databasePath) && db.fingerprints().empty()) {
+    LOG_ERR("failed to open trusted fingerprints file: %s", qPrintable(databasePath));
+    return false;
+  }
+  if (!db.fingerprints().empty()) {
+    LOG_DEBUG("read %d fingerprint(s) from file: %s", db.fingerprints().size(), qPrintable(databasePath));
+  }
+  if (!db.isTrusted(fingerprint)) {
+    LOG_WARN("fingerprint does not match trusted fingerprint");
+    return false;
+  }
+
+  LOG_DEBUG("fingerprint matches trusted fingerprint");
+  return true;
 }

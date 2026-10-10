@@ -79,6 +79,12 @@ void FingerprintDatabaseTests::trusted()
   QVERIFY(!db.isTrusted(untrusted));
 
   QCOMPARE(db.fingerprints().size(), 2);
+
+  const Fingerprint sha256{QCryptographicHash::Sha256, QByteArray(32, '\x11')};
+  QVERIFY(!db.isTrusted(sha256));
+  db.addTrusted(sha256);
+  QVERIFY(db.isTrusted(sha256));
+  QVERIFY(!db.isTrusted(Fingerprint{QCryptographicHash::Sha256, QByteArray(32, '\x22')}));
 }
 
 QTEST_MAIN(FingerprintDatabaseTests)
