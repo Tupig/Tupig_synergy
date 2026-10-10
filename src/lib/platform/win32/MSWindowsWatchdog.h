@@ -14,6 +14,7 @@
 #include <Windows.h>
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -146,6 +147,9 @@ private:
   std::optional<double> m_nextStartTime = std::nullopt;
   ProcessState m_processState = ProcessState::Idle;
   std::wstring m_command = {};
+  // Bumped whenever the command or elevate flag changes, so a start that is
+  // waiting outside the mutex does not mark a newer request as running.
+  std::uint64_t m_configGeneration = 0;
   SendSas m_sendSasFunc = nullptr;
   std::mutex m_processStateMutex;
 };

@@ -203,15 +203,38 @@ void MSWindowsWatchdog::mainLoop(const void *)
 
     case StartPending: {
       LOG_DEBUG("watchdog starting new process");
+      const auto generation = m_configGeneration;
       try {
         startProcess();
-        m_startFailures = 0;
-        m_processState = Running;
       } catch (std::exception &e) { // NOSONAR - Catching all exceptions
         m_processState = handleStartError(e.what());
+        break;
       } catch (...) { // NOSONAR - Catching remaining exceptions
         m_processState = handleStartError();
+        break;
       }
+
+      // CreateProcess has returned. Release the mutex before the settle wait
+      // so a stop or a new command is not stuck behind this sleep.
+      LOG_VERBOSE("unlocking process state mutex while the new process settles");
+      lock.unlock();
+      Arch::sleep(1);
+      lock.lock();
+
+      if (generation != m_configGeneration || m_processState != StartPending) {
+        LOG_DEBUG("watchdog config changed while the new process was settling");
+        break;
+      }
+
+      if (!isProcessRunning()) {
+        m_process.reset();
+        m_processState = handleStartError("process immediately stopped");
+        break;
+      }
+
+      m_startFailures = 0;
+      m_processState = Running;
+      LOG_DEBUG("started core process from watchdog");
     } break;
 
     case Running: {
@@ -300,29 +323,16 @@ void MSWindowsWatchdog::startProcess()
   }
 
   if (!createRet) {
-    DWORD exitCode = 0;
-    if (GetExitCodeProcess(m_process->info().hProcess, &exitCode)) {
-      LOG_ERR("daemon failed to run command, exit code: %d", exitCode);
-    } else {
-      LOG_ERR("daemon failed to run command, unknown exit code");
-      throw std::runtime_error(windowsErrorToString(GetLastError()));
-    }
-  } else {
-    // Wait for program to fail. This needs to be 1 second, as the process may take some time to fail.
-    LOG_DEBUG("watchdog waiting for process start result");
-    Arch::sleep(1);
-
-    if (!isProcessRunning()) {
-      m_process.reset();
-      throw std::runtime_error("process immediately stopped");
-    }
-
-    LOG_DEBUG("started core process from watchdog");
-    LOG_VERBOSE(
-        "process info, session=%i, elevated=%s, command: %ls", //
-        m_session.getActiveSessionId(), m_elevateProcess ? "yes" : "no", m_command.c_str()
-    );
+    const auto error = GetLastError();
+    m_process.reset();
+    LOG_ERR("daemon failed to run command, error: %s", windowsErrorToString(error).c_str());
+    throw std::runtime_error(windowsErrorToString(error));
   }
+
+  LOG_VERBOSE(
+      "process info, session=%i, elevated=%s, command: %ls", m_session.getActiveSessionId(),
+      m_elevateProcess ? "yes" : "no", m_command.c_str()
+  );
 }
 
 void MSWindowsWatchdog::setProcessConfig(const std::string_view &command, bool elevate)
@@ -331,6 +341,7 @@ void MSWindowsWatchdog::setProcessConfig(const std::string_view &command, bool e
   std::scoped_lock lock{m_processStateMutex};
 
   LOG_DEBUG("setting watchdog process config");
+  ++m_configGeneration;
   const auto bytes = QByteArray(command.data(), static_cast<qsizetype>(command.size()));
   m_command = QString::fromUtf8(bytes).toStdWString();
   m_elevateProcess = elevate;
