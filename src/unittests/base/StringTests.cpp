@@ -31,4 +31,11 @@ void StringTests::formatedString()
   QCOMPARE("answer=42", result);
 }
 
+void StringTests::sprintfKeepsStringThatFillsTheFirstBuffer()
+{
+  const std::string payload(1024, 'a');
+  const auto result = synergy::string::sprintf("%s", payload.c_str());
+  QCOMPARE(result, payload);
+}
+
 QTEST_MAIN(StringTests)

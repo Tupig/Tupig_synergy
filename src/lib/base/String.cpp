@@ -107,32 +107,32 @@ std::string sprintf(const char *fmt, ...)
 {
   char tmp[1024];
   char *buffer = tmp;
-  auto len = static_cast<int>(std::size(tmp));
+  int len = static_cast<int>(std::size(tmp));
+  constexpr int kMaxLen = 1 << 20;
 
   std::string result;
   while (buffer != nullptr) {
-    // try printing into the buffer
     va_list args;
     va_start(args, fmt);
-    int n = vsnprintf(buffer, len, fmt, args);
+    const int n = vsnprintf(buffer, static_cast<size_t>(len), fmt, args);
     va_end(args);
 
-    // if the buffer wasn't big enough then make it bigger and try again
-    if (n < 0 || n > len) {
-      if (buffer != tmp) {
-        delete[] buffer;
-      }
-      len *= 2;
-      buffer = new char[len];
-    }
-
-    // if it was big enough then save the string and don't try again
-    else {
+    // n >= len means the output was truncated (the return does not count the NUL).
+    if (n >= 0 && n < len) {
       result = buffer;
       if (buffer != tmp) {
         delete[] buffer;
       }
       buffer = nullptr;
+    } else {
+      if (buffer != tmp) {
+        delete[] buffer;
+      }
+      if (n < 0 || n >= kMaxLen) {
+        return {};
+      }
+      len = n + 1;
+      buffer = new char[static_cast<size_t>(len)];
     }
   }
 
