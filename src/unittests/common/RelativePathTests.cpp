@@ -31,7 +31,11 @@ void RelativePathTests::resolveJoinsASafeName()
 {
   const auto joined = synergy::resolveRelativePath(QStringLiteral("settings"), QStringLiteral("tool.exe"));
   QCOMPARE(QDir::fromNativeSeparators(joined), QStringLiteral("settings/tool.exe"));
+  QVERIFY(synergy::resolveRelativePath(QStringLiteral("settings"), QStringLiteral("../tool.exe")).isEmpty());
+#ifdef Q_OS_WIN
+  // fromNativeSeparators only turns '\' into '/' on Windows.
   QVERIFY(synergy::resolveRelativePath(QStringLiteral("settings"), QStringLiteral("..\\tool.exe")).isEmpty());
+#endif
 }
 
 void RelativePathTests::relativeToDirectoryRejectsPathsOutside()
