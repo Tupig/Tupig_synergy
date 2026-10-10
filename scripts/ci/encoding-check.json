@@ -8,5 +8,9 @@
   ],
   "names": ["CMakeLists.txt"],
   "allowed": ["utf-8"],
-  "exclude_dirs": ["vendor", "build", ".git", "dist", "node_modules", "downloads", "vcpkg_installed"]
+  "exclude_dirs": [
+    "vendor", "build", ".git", "dist", "node_modules", "downloads",
+    "vcpkg_installed", "generated", "autogen", "CMakeFiles"
+  ],
+  "on_violation": "fail"
 }
