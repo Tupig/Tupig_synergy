@@ -17,6 +17,11 @@
 #   workflow_dispatch     manual. package-type=release ignores platform and publishes.
 #                         package-type=snapshot honors platform and does not publish.
 #                         analyze is independent of package-type.
+#   schedule              every day at 08:23 Asia/Shanghai (cron is UTC: 23 0 * * *).
+#                         Same build as package-type=release. If tag v<X.Y.Z> already
+#                         records this commit (Built-From, or the tag itself), the
+#                         run stops before compile and publish. GitHub still starts
+#                         the workflow; the jobs are skipped.
 # Push/PR and a manual run use different concurrency groups, so a free Linux
 # check cannot cancel a release build that is already going.
 
@@ -61,6 +66,9 @@ on:
     branches: [main]
   release:
     types: [published]
+  schedule:
+    # 08:23 Asia/Shanghai (UTC+8). Actions cron is UTC and may start late.
+    - cron: "23 0 * * *"
 
 # Automatic runs cancel only their own older run. Manual and release runs
 # never cancel, and a push cannot cancel them (separate group).
@@ -73,10 +81,10 @@ env:
   CMAKE_CONFIGURE: "cmake -Bbuild -DCMAKE_BUILD_TYPE=Release -DSKIP_BUILD_TESTS=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON"
 
   # Release shape, propagated to cmake (Synergy.cmake reads these as options).
-  # Release events + package-type=release → clean X.Y.Z (the GUI exe name).
+  # Release events, the daily schedule, and package-type=release → clean X.Y.Z.
   # Push to main + package-type=snapshot → snapshot build.
   # Pull requests fall through to the cmake dev default.
-  SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
+  SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
   SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
 
 jobs:
@@ -96,6 +104,7 @@ jobs:
       build_linux: ${{ steps.plan.outputs.build_linux }}
       build_flatpak: ${{ steps.plan.outputs.build_flatpak }}
       publish_release: ${{ steps.plan.outputs.publish_release }}
+      skip_unchanged: ${{ steps.plan.outputs.skip_unchanged }}
 
     steps:
       - name: Checkout
@@ -113,13 +122,16 @@ jobs:
 
       # One place decides what this event builds. Job `if`s only read these
       # outputs, so a platform is not accidentally both required and skipped.
-      # push/PR: free Linux. release and package-type=release: every platform
-      # and a GitHub Release. snapshot: honor platform; blank means all of them.
+      # push/PR: free Linux. release, the daily schedule, and package-type=release:
+      # every platform and a GitHub Release. The schedule skips that when this
+      # commit is already on the tag. snapshot: honor platform; blank means all.
       - name: Plan builds for this event
         id: plan
         env:
           PACKAGE_TYPE: ${{ inputs.package-type }}
           PLATFORM: ${{ inputs.platform }}
+          VERSION_BASE: ${{ steps.get-version.outputs.base }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           linux_key=free
@@ -128,6 +140,7 @@ jobs:
           build_linux=false
           build_flatpak=false
           publish_release=false
+          skip_unchanged=false
           case "$GITHUB_EVENT_NAME" in
             push|pull_request)
               linux_key=free
@@ -140,6 +153,37 @@ jobs:
               build_linux=true
               build_flatpak=true
               publish_release=true
+              ;;
+            schedule)
+              linux_key=full
+              source_sha=$(git rev-parse HEAD)
+              tag="v${VERSION_BASE}"
+              published=""
+              if body=$(gh release view "$tag" --json body -q .body 2>/dev/null); then
+                published=$(printf '%s\n' "$body" | tr -d '\r' | sed -n 's/^Built-From: //p' | head -1 | tr -d '[:space:]')
+              fi
+              if [ -z "$published" ] && git rev-parse -q --verify "refs/tags/${tag}^{commit}" >/dev/null; then
+                published=$(git rev-parse "refs/tags/${tag}^{commit}")
+              fi
+              if [ -n "$published" ] && [ "$published" = "$source_sha" ]; then
+                skip_unchanged=true
+                echo "schedule: ${tag} already built from ${source_sha}; not compiling"
+                {
+                  echo "### Schedule skipped"
+                  echo "\`${tag}\` already records \`${source_sha}\`. No compile and no publish."
+                } >> "$GITHUB_STEP_SUMMARY"
+              else
+                build_windows=true
+                build_macos=true
+                build_linux=true
+                build_flatpak=true
+                publish_release=true
+                echo "schedule: ${tag} Built-From ${published:-<none>} differs from ${source_sha}; building release"
+                {
+                  echo "### Schedule release"
+                  echo "\`${tag}\` does not yet record \`${source_sha}\`."
+                } >> "$GITHUB_STEP_SUMMARY"
+              fi
               ;;
             workflow_dispatch)
               linux_key=full
@@ -175,10 +219,13 @@ jobs:
             echo "build_linux=$build_linux"
             echo "build_flatpak=$build_flatpak"
             echo "publish_release=$publish_release"
+            echo "skip_unchanged=$skip_unchanged"
           } >> "$GITHUB_OUTPUT"
-          echo "plan event=$GITHUB_EVENT_NAME package=${PACKAGE_TYPE:-<none>} platform=${PLATFORM:-<none>} linux_matrix=$linux_key windows=$build_windows macos=$build_macos linux=$build_linux flatpak=$build_flatpak publish=$publish_release"
+          echo "plan event=$GITHUB_EVENT_NAME package=${PACKAGE_TYPE:-<none>} platform=${PLATFORM:-<none>} linux_matrix=$linux_key windows=$build_windows macos=$build_macos linux=$build_linux flatpak=$build_flatpak publish=$publish_release skip=$skip_unchanged"
 
   lint-clang:
+    needs: get-version
+    if: needs.get-version.outputs.skip_unchanged != 'true'
     runs-on: ubuntu-slim
     timeout-minutes: 5
 
@@ -796,10 +843,17 @@ jobs:
           tag="v${VERSION}"
           title="TuPig Synergy ${VERSION}"
           notes="Packages for ${VERSION}."$'\n\n'"Each package file from this workflow has a GitHub build-provenance attestation. Verify a downloaded file with: gh attestation verify FILE --repo Tupig/Tupig_synergy"$'\n\n'"Windows builds are Authenticode-signed by SignPath Foundation when that project is approved. Until then they are unsigned. Provenance shows which workflow and commit produced the file. It is not itself an Authenticode or Apple signature."
+          marker="Built-From: ${GITHUB_SHA}"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "${files[@]}" --clobber
+            existing=$(gh release view "$tag" --json body -q .body)
+            cleaned=$(printf '%s\n' "$existing" | tr -d '\r' | grep -v '^Built-From: ' || true)
+            if [ -z "${cleaned//[[:space:]]/}" ]; then
+              cleaned="$notes"
+            fi
+            gh release edit "$tag" --notes "${cleaned}"$'\n\n'"${marker}"
           else
-            gh release create "$tag" "${files[@]}" --title "$title" --notes "$notes" --latest
+            gh release create "$tag" "${files[@]}" --title "$title" --notes "${notes}"$'\n\n'"${marker}" --latest
           fi
 
   # Upload all packages that built to AWS S3 for distribution. Runs after the
@@ -814,7 +868,7 @@ jobs:
   s3-upload:
     needs: [get-version, build-windows, build-macos, build-linux, build-flatpak]
     # Free tier: no push auto-upload; snapshot S3 only via release / manual dispatch.
-    if: ${{ always() && needs.get-version.result == 'success' && (github.event_name == 'workflow_dispatch' || github.event_name == 'release') }}
+    if: ${{ always() && needs.get-version.result == 'success' && needs.get-version.outputs.skip_unchanged != 'true' && (github.event_name == 'workflow_dispatch' || github.event_name == 'release' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -1153,7 +1207,8 @@ jobs:
     steps:
       # 'skipped' is treated as passing because the plan step skips platforms
       # on purpose (push/PR skip Windows, macOS and Flatpak; snapshot honors
-      # platform). package-type=release and a published Release do not skip a
+      # platform; the daily schedule skips everything when the commit is already
+      # published). package-type=release and a published Release do not skip a
       # platform. A failed job is still a failure. get-version never filters
       # out, so requiring it catches a build skipped by its failure.
       # lint-clang has no platform filter: a failed lint used to be invisible here
