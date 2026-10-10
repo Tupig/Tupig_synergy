@@ -198,17 +198,16 @@ jobs:
     if: ${{ needs.get-version.outputs.build_windows == 'true' }}
     name: ${{ matrix.target.name }}
     runs-on: ${{ matrix.target.runs-on }}
-    timeout-minutes: 30
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
 
     env:
-      # esigner-codesign installs Corretto 11 when JAVA_VERSION < 11; none exists for
-      # Windows/arm64. Pin 21 and, when signing actually runs, install Temurin 21 so
-      # JAVA_HOME matches. The runner image's JAVA_HOME is still JDK 8.
-      JAVA_VERSION: "21"
-      # True only when every SSL.com secret is set. Empty secrets make CodeSignTool
-      # exit with "Missing required options" and the action hides that as
-      # "Something Went Wrong". Unsigned packages are produced instead (issue #165).
-      WINDOWS_SIGNING: ${{ secrets.WINDOWS_SSL_USERNAME != '' && secrets.WINDOWS_SSL_PASSWORD != '' && secrets.WINDOWS_SSL_CREDENTIAL_ID != '' && secrets.WINDOWS_SSL_TOTP_SECRET != '' }}
+      # SignPath Foundation holds the code-signing key. The API token is the only
+      # secret. Organization id and project slug are Actions variables assigned
+      # after the project is approved. Missing any of them leaves the package unsigned.
+      WINDOWS_SIGNING: ${{ secrets.SIGNPATH_API_TOKEN != '' && vars.SIGNPATH_ORGANIZATION_ID != '' && vars.SIGNPATH_PROJECT_SLUG != '' }}
 
     strategy:
       fail-fast: false
@@ -288,53 +287,55 @@ jobs:
           echo "path=$exe" >> "$GITHUB_OUTPUT"
           echo "GUI exe: $exe"
 
-      - name: Upload synergy_<version>.exe
-        uses: actions/upload-artifact@v7
-        with:
-          name: synergy_${{ needs.get-version.outputs.base }}.exe
-          path: ${{ steps.gui-exe.outputs.path }}
-          if-no-files-found: error
-
-      # Stage: sign executables before WiX embeds them. Skipped when any SSL.com
-      # secret is missing; the package is still produced, unsigned (issue #165).
+      # Stage: sign executables before WiX embeds them. Skipped until the
+      # SignPath Foundation project is approved and the Actions secret and
+      # variables exist. The package is still produced, unsigned.
       - name: Windows signing not configured
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING != 'true'
         shell: bash
-        run: echo "::warning::Windows code signing skipped. Set WINDOWS_SSL_USERNAME, WINDOWS_SSL_PASSWORD, WINDOWS_SSL_CREDENTIAL_ID and WINDOWS_SSL_TOTP_SECRET to sign. Artifacts from this run are unsigned."
-
-      - name: Setup JDK for code signing
-        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+        run: echo "::warning::Windows code signing skipped. Apply at https://signpath.org/ and set SIGNPATH_API_TOKEN plus SIGNPATH_ORGANIZATION_ID and SIGNPATH_PROJECT_SLUG. Artifacts from this run are unsigned."
 
       - name: Stage binaries for signing
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat stage
 
-      - name: Sign inner binaries
+      - name: Upload unsigned executables
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
-        uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
+        id: upload-unsigned-exes
+        uses: actions/upload-artifact@v7
         with:
-          command: batch_sign
-          username: ${{ secrets.WINDOWS_SSL_USERNAME }}
-          password: ${{ secrets.WINDOWS_SSL_PASSWORD }}
-          credential_id: ${{ secrets.WINDOWS_SSL_CREDENTIAL_ID }}
-          totp_secret: ${{ secrets.WINDOWS_SSL_TOTP_SECRET }}
-          dir_path: ${{ runner.temp }}\sign-stage\in
-          output_path: ${{ runner.temp }}\sign-stage\out
-          environment_name: PROD
+          name: unsigned-signpath-exes-${{ matrix.target.name }}
+          path: ${{ runner.temp }}\sign-stage\in\*.exe
+          retention-days: 1
+          if-no-files-found: error
 
-          # The pre-sign malware scan draws on a separate, much smaller quota than signing and
-          # exhausts it across a full release; signing produces a valid signature without it.
-          malware_block: "false"
+      - name: Sign executables with SignPath Foundation
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
+        id: sign-exes
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3.0
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG || 'release-signing' }}
+          artifact-configuration-slug: windows-executables
+          github-artifact-id: ${{ steps.upload-unsigned-exes.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1200
+          output-artifact-directory: ${{ runner.temp }}\sign-stage\out
 
       - name: Restore + verify signed binaries
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat restore
+
+      - name: Upload synergy_<version>.exe
+        uses: actions/upload-artifact@v7
+        with:
+          name: synergy_${{ needs.get-version.outputs.base }}.exe
+          path: ${{ steps.gui-exe.outputs.path }}
+          if-no-files-found: error
 
       # Stage: package, then sign the MSI itself when signing is enabled.
       - name: Package
@@ -347,21 +348,39 @@ jobs:
         shell: cmd
         run: scripts\ci\ci-windows-signing.bat locate-msi
 
-      - name: Sign MSI
+      - name: Upload unsigned MSI
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
-        uses: SSLcom/esigner-codesign@b7f8ff36fc0de8690fbbab8e5b4421d29802f747 # develop as of 2026-10-08
+        id: upload-unsigned-msi
+        uses: actions/upload-artifact@v7
         with:
-          command: sign
-          username: ${{ secrets.WINDOWS_SSL_USERNAME }}
-          password: ${{ secrets.WINDOWS_SSL_PASSWORD }}
-          credential_id: ${{ secrets.WINDOWS_SSL_CREDENTIAL_ID }}
-          totp_secret: ${{ secrets.WINDOWS_SSL_TOTP_SECRET }}
-          file_path: ${{ steps.locate-msi.outputs.path }}
-          override: "true"
-          # The pre-sign malware scan draws on a separate, much smaller quota than signing and
-          # exhausts it across a full payload; signing produces a valid signature without it.
-          malware_block: "false"
-          environment_name: PROD
+          name: unsigned-signpath-msi-${{ matrix.target.name }}
+          path: ${{ steps.locate-msi.outputs.path }}
+          archive: false
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Sign MSI with SignPath Foundation
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3.0
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG || 'release-signing' }}
+          artifact-configuration-slug: windows-msi
+          github-artifact-id: ${{ steps.upload-unsigned-msi.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 1200
+          output-artifact-directory: ${{ runner.temp }}\sign-stage\msi
+          skip-decompress: true
+
+      - name: Replace MSI with the signed file
+        if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
+        shell: cmd
+        env:
+          MSI_PATH: ${{ steps.locate-msi.outputs.path }}
+          SIGNED_MSI_DIR: ${{ runner.temp }}\sign-stage\msi
+        run: scripts\ci\ci-windows-signing.bat replace-msi
 
       - name: Verify MSI is signed
         if: env.SYNERGY_VERSION_RELEASE == 'true' && env.WINDOWS_SIGNING == 'true'
@@ -776,7 +795,7 @@ jobs:
           printf ' - %s\n' "${files[@]}"
           tag="v${VERSION}"
           title="TuPig Synergy ${VERSION}"
-          notes="Packages for ${VERSION}."$'\n\n'"Each package file from this workflow has a GitHub build-provenance attestation. Verify a downloaded file with: gh attestation verify FILE --repo Tupig/Tupig_synergy"$'\n\n'"Windows builds are unsigned until the SSL.com secrets are set. Provenance shows which workflow and commit produced the file. It is not an Authenticode or Apple signature."
+          notes="Packages for ${VERSION}."$'\n\n'"Each package file from this workflow has a GitHub build-provenance attestation. Verify a downloaded file with: gh attestation verify FILE --repo Tupig/Tupig_synergy"$'\n\n'"Windows builds are Authenticode-signed by SignPath Foundation when that project is approved. Until then they are unsigned. Provenance shows which workflow and commit produced the file. It is not itself an Authenticode or Apple signature."
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "${files[@]}" --clobber
           else

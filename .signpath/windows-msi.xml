@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <!-- The MSI itself. The executables inside were signed before packaging.
+       Slug in the SignPath project must be windows-msi.
+       The workflow uploads this file with archive: false. -->
+  <msi-file>
+    <authenticode-sign/>
+  </msi-file>
+</artifact-configuration>

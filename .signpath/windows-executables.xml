@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <!-- ZIP produced by actions/upload-artifact from sign-stage\in\*.exe.
+       Slug in the SignPath project must be windows-executables. -->
+  <zip-file>
+    <pe-file path="synergy_*.exe" max-matches="1">
+      <authenticode-sign/>
+    </pe-file>
+    <pe-file path="synergy-core.exe">
+      <authenticode-sign/>
+    </pe-file>
+    <pe-file path="synergy-daemon.exe">
+      <authenticode-sign/>
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

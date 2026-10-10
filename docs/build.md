@@ -78,7 +78,9 @@ scripts\build.bat release
 ```
 
 `scripts\build.bat` locates Visual Studio through `vswhere`, activates the MSVC x64 environment and
-then runs `cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`.
+then configures with the preset for that Visual Studio. Visual Studio 2022 uses
+`windows-msvc-release`. Visual Studio 2026 uses `windows-msvc-2026-release`, because vcpkg builds
+the dependencies with the same compiler and a VS 2022 link cannot resolve the newer static STL.
 That preset sets `SYNERGY_VERSION_RELEASE=ON`, so the version string is `X.Y.Z` from
 `cmake/Version.cmake` (currently 1.21.2), not `X.Y.Z-dev+<sha>`.
 
@@ -103,10 +105,39 @@ build\bin\Release\synergy-core.exe server
 
 #### Windows code signing
 
-Release CI signs the inner executables and the MSI only when `WINDOWS_SSL_USERNAME`,
-`WINDOWS_SSL_PASSWORD`, `WINDOWS_SSL_CREDENTIAL_ID`, and `WINDOWS_SSL_TOTP_SECRET` are
-all set. If any one is missing, the job warns and uploads unsigned packages. There is
-no local signing step in `scripts\build.bat`.
+Release CI signs `synergy_<X.Y.Z>.exe`, `synergy-core.exe`, `synergy-daemon.exe`, and the
+MSI through [SignPath Foundation](https://signpath.org/). The private key stays on
+SignPath's HSM. This repository never stores a certificate, a password, or a token.
+The portable 7Z is built from those signed executables; the archive itself is not an
+Authenticode file. A local Release build stays unsigned, because the Foundation key
+cannot be used on a developer machine.
+
+Signing runs only when all three of these GitHub Actions values are set (Settings,
+Secrets and variables, Actions):
+
+| Name | Kind | Meaning |
+|---|---|---|
+| `SIGNPATH_API_TOKEN` | secret | API token for a user who may submit the signing policy. The only secret. |
+| `SIGNPATH_ORGANIZATION_ID` | variable | Organization id assigned after the Foundation approves the project. |
+| `SIGNPATH_PROJECT_SLUG` | variable | Project slug for this repository. |
+
+`SIGNPATH_POLICY_SLUG` is an optional variable. When it is empty, the workflow uses
+`release-signing`.
+
+Apply at <https://signpath.org/> for the public repository
+`https://github.com/Tupig/Tupig_synergy`. After approval:
+
+1. Install the SignPath GitHub App on this repository and link the predefined
+   Trusted Build System GitHub.com to the project.
+2. Create signing policy `release-signing` for the `main` branch and release tags.
+3. Add two artifact configurations, using these slugs and the XML in this repository:
+   `windows-executables` from `.signpath/windows-executables.xml`, and `windows-msi`
+   from `.signpath/windows-msi.xml`.
+4. Store the API token as the secret above, and store the organization id and project
+   slug as the two variables. Do not commit any of those values.
+
+If any required value is missing, the job warns and uploads unsigned packages. If they
+are set and `signtool verify` fails after SignPath returns the files, the job fails.
 
 ---
 
@@ -342,8 +373,10 @@ REM 构建（自动引导 vcpkg、配置、编译）
 scripts\build.bat release
 ```
 
-`scripts\build.bat` 会通过 `vswhere` 定位 Visual Studio，激活 MSVC x64 环境，然后执行
-`cmake --preset windows-msvc-release` / `cmake --build --preset windows-msvc-release`。
+`scripts\build.bat` 会通过 `vswhere` 定位 Visual Studio，激活 MSVC x64 环境，然后选用与该
+Visual Studio 对应的预设。Visual Studio 2022 使用 `windows-msvc-release`。Visual Studio 2026
+使用 `windows-msvc-2026-release`，因为 vcpkg 用同一套编译器构建依赖，而 VS 2022 的链接器
+解不开较新的静态 STL 符号。
 该预设打开 `SYNERGY_VERSION_RELEASE`，版本字符串是 `cmake/Version.cmake` 里的 `X.Y.Z`
 （当前 1.21.2），不是 `X.Y.Z-dev+<sha>`。
 
@@ -368,7 +401,26 @@ build\bin\Release\synergy-core.exe server
 
 #### Windows 代码签名
 
-Release CI 只有在 `WINDOWS_SSL_USERNAME`、`WINDOWS_SSL_PASSWORD`、`WINDOWS_SSL_CREDENTIAL_ID`、`WINDOWS_SSL_TOTP_SECRET` 四个 secret 全部存在时才签名内部 exe 和 MSI。缺任何一个时，作业给出警告并上传未签名包。`scripts\build.bat` 本身不签名。
+Release CI 通过 [SignPath Foundation](https://signpath.org/) 签名 `synergy_<X.Y.Z>.exe`、`synergy-core.exe`、`synergy-daemon.exe` 和 MSI。私钥留在 SignPath 的 HSM 上。本仓库不存放证书、密码或令牌。便携 7Z 由这些已签名的可执行文件打成，压缩包本身不是 Authenticode 文件。本地 Release 构建不签名，因为 Foundation 的私钥不能拿到开发机上用。
+
+只有下面三项 GitHub Actions 值都设置了才签名（Settings、Secrets and variables、Actions）：
+
+| 名称 | 种类 | 含义 |
+|---|---|---|
+| `SIGNPATH_API_TOKEN` | secret | 可提交该签名策略的用户 API 令牌。唯一的 secret。 |
+| `SIGNPATH_ORGANIZATION_ID` | variable | Foundation 批准项目后给出的组织 id。 |
+| `SIGNPATH_PROJECT_SLUG` | variable | 本仓库对应的项目 slug。 |
+
+`SIGNPATH_POLICY_SLUG` 是可选变量。为空时工作流使用 `release-signing`。
+
+到 <https://signpath.org/> 为公开仓库 `https://github.com/Tupig/Tupig_synergy` 申请。批准之后：
+
+1. 在本仓库安装 SignPath GitHub App，并把预置的 Trusted Build System GitHub.com 关联到该项目。
+2. 创建签名策略 `release-signing`，范围是 `main` 分支和 Release 标签。
+3. 按仓库里的 XML 添加两份构件配置，slug 必须一致：`windows-executables` 对应 `.signpath/windows-executables.xml`，`windows-msi` 对应 `.signpath/windows-msi.xml`。
+4. 把 API 令牌存成上面的 secret，把组织 id 和项目 slug 存成那两个变量。这三项都不要提交进仓库。
+
+缺任何一项必填值时，作业给出警告并上传未签名包。三项都在、SignPath 返回文件之后 `signtool verify` 失败，则作业失败。
 
 ---
 
@@ -533,9 +585,9 @@ automatically — no `VCPKG_ROOT`, no global install, no manual environment vari
 | Windows | `scripts\build.bat release` |
 | Linux / macOS | `./scripts/build.sh release` |
 
-The three `*-release` presets set `SYNERGY_VERSION_RELEASE=ON`, so the version string is `X.Y.Z` from `cmake/Version.cmake`. Configuring without that preset (or without `-DSYNERGY_VERSION_RELEASE=ON`) produces `X.Y.Z-dev+<sha>`.
+The `*-release` presets set `SYNERGY_VERSION_RELEASE=ON`, so the version string is `X.Y.Z` from `cmake/Version.cmake`. Configuring without that preset (or without `-DSYNERGY_VERSION_RELEASE=ON`) produces `X.Y.Z-dev+<sha>`.
 
-这三个 `*-release` 预设都会设置 `SYNERGY_VERSION_RELEASE=ON`，版本字符串是 `cmake/Version.cmake` 里的 `X.Y.Z`。不用该预设、也不传 `-DSYNERGY_VERSION_RELEASE=ON` 时，版本是 `X.Y.Z-dev+<sha>`。
+这些 `*-release` 预设都会设置 `SYNERGY_VERSION_RELEASE=ON`，版本字符串是 `cmake/Version.cmake` 里的 `X.Y.Z`。不用该预设、也不传 `-DSYNERGY_VERSION_RELEASE=ON` 时，版本是 `X.Y.Z-dev+<sha>`。
 
 Both scripts accept only `release`: every vcpkg overlay triplet in this repository sets
 `VCPKG_BUILD_TYPE release`, so a Debug configuration cannot link the dependencies. For
@@ -555,13 +607,13 @@ duplicated in the scripts.
 `VCPKG_BUILD_TYPE release`，Debug 配置无法链接依赖。需要插桩构建请使用诊断预设
 （`linux-asan-build` / `linux-tsan-build` / `linux-coverage-build`）。
 
-> **Windows prerequisite / Windows 前置条件**: a C++ toolchain (Visual Studio 2022 Build Tools with
+> **Windows prerequisite / Windows 前置条件**: a C++ toolchain (Visual Studio 2022 or 2026 Build Tools with
 > the "Desktop development with C++" workload), CMake 3.25+ and Git. Run `setup.bat` once to install
 > them. `scripts\build.bat` locates Visual Studio through `vswhere` and activates the MSVC environment
 > itself — do not hardcode install paths or pre-set `VCPKG_ROOT`.
 >
 > **Windows 前置条件**：C++ 工具链（含 "Desktop development with C++" 工作负载的 Visual Studio 2022
-> Build Tools）、CMake 3.25+ 与 Git。首次运行 `setup.bat` 安装。`scripts\build.bat` 会通过 `vswhere`
+> 或 2026 Build Tools）、CMake 3.25+ 与 Git。首次运行 `setup.bat` 安装。`scripts\build.bat` 会通过 `vswhere`
 > 自行定位 Visual Studio 并激活 MSVC 环境 —— 不要硬编码安装路径，也不要预设 `VCPKG_ROOT`。
 
 ### Presets in `CMakePresets.json` / 预设清单
@@ -569,6 +621,7 @@ duplicated in the scripts.
 | Preset | Purpose / 用途 |
 |---|---|
 | `windows-msvc`, `windows-msvc-release`, `windows-msvc-debug` | Windows x64, Visual Studio 2022, static triplet |
+| `windows-msvc-2026`, `windows-msvc-2026-release` | Windows x64, Visual Studio 2026, static triplet. `scripts\build.bat` selects this when VS 2026 is the newest install. |
 | `linux`, `linux-release` | Linux x64, Ninja, static triplet |
 | `macos`, `macos-release` | macOS arm64, Ninja, static triplet |
 | `linux-asan-build`, `linux-tsan-build`, `linux-coverage-build` | Linux diagnostics (`RelWithDebInfo` + `-O1`) / Linux 诊断构建 |

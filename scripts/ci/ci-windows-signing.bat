@@ -12,11 +12,12 @@ REM
 REM  Usage:  scripts\ci\ci-windows-signing.bat <mode>
 REM
 REM    stage        Copy build\bin\*.exe (excluding tests) into the staging dir
-REM                 so they can be batch-signed with a single OTP.
+REM                 so CI can upload them for SignPath Foundation.
 REM    restore      Copy the signed binaries back over build\bin and verify each
 REM                 signature is valid.
 REM    locate-msi   Find the built .msi and append "path=<file>" to GITHUB_OUTPUT.
 REM    verify-msi   Verify the MSI signature given by %MSI_PATH%.
+REM    replace-msi  Copy the single MSI in %SIGNED_MSI_DIR% over %MSI_PATH%.
 REM
 REM  ASCII-only on purpose, so console code pages cannot corrupt parsing.
 REM ============================================================================
@@ -28,7 +29,7 @@ REM STAGE_ROOT is overridable so this can be exercised without a CI runner.
 if "%STAGE_ROOT%"=="" set "STAGE_ROOT=%RUNNER_TEMP%\sign-stage"
 set "STAGE_IN=%STAGE_ROOT%\in"
 set "STAGE_OUT=%STAGE_ROOT%\out"
-set "BIN_DIR=build\bin"
+if "%BIN_DIR%"=="" set "BIN_DIR=build\bin"
 
 if "%~1"=="" goto :usage
 
@@ -36,6 +37,7 @@ if /i "%~1"=="stage"       goto :stage
 if /i "%~1"=="restore"     goto :restore
 if /i "%~1"=="locate-msi"  goto :locate_msi
 if /i "%~1"=="verify-msi"  goto :verify_msi
+if /i "%~1"=="replace-msi" goto :replace_msi
 
 echo [ERROR] Unknown mode: %~1
 goto :usage
@@ -158,6 +160,41 @@ echo [OK] MSI is validly signed: %MSI_PATH%
 exit /b 0
 
 REM ============================================================================
+:replace_msi
+if not defined MSI_PATH (
+    echo [ERROR] MSI_PATH is not set.
+    exit /b 1
+)
+if not defined SIGNED_MSI_DIR (
+    echo [ERROR] SIGNED_MSI_DIR is not set.
+    exit /b 1
+)
+if not exist "%SIGNED_MSI_DIR%" (
+    echo [ERROR] %SIGNED_MSI_DIR% does not exist; SignPath returned no MSI.
+    exit /b 1
+)
+
+set "SIGNED_MSI="
+set "SIGNED_MSI_COUNT=0"
+for %%F in ("%SIGNED_MSI_DIR%\*.msi") do (
+    set /a SIGNED_MSI_COUNT+=1
+    set "SIGNED_MSI=%%~fF"
+)
+if !SIGNED_MSI_COUNT! NEQ 1 (
+    echo [ERROR] expected exactly one MSI in "%SIGNED_MSI_DIR%", found !SIGNED_MSI_COUNT!.
+    exit /b 1
+)
+
+copy /y "!SIGNED_MSI!" "%MSI_PATH%" >nul
+if errorlevel 1 (
+    echo [ERROR] could not replace %MSI_PATH% with the signed MSI.
+    exit /b 1
+)
+
+echo [OK] replaced MSI with !SIGNED_MSI!
+exit /b 0
+
+REM ============================================================================
 :find_signtool
 REM Replaces PowerShell's Get-AuthenticodeSignature, which needs no external tool.
 REM signtool ships with the Windows SDK; it is on PATH in a developer prompt but
@@ -168,6 +205,11 @@ for %%S in (signtool.exe) do if not defined SIGNTOOL if not "%%~$PATH:S"=="" set
 
 if not defined SIGNTOOL (
     for /d %%D in ("%ProgramFiles(x86)%\Windows Kits\10\bin\*") do (
+        if not defined SIGNTOOL if exist "%%~fD\x64\signtool.exe" set "SIGNTOOL=%%~fD\x64\signtool.exe"
+    )
+)
+if not defined SIGNTOOL (
+    for /d %%D in ("%SystemDrive%\Program Files (x86)\Windows Kits\10\bin\*") do (
         if not defined SIGNTOOL if exist "%%~fD\x64\signtool.exe" set "SIGNTOOL=%%~fD\x64\signtool.exe"
     )
 )
@@ -182,5 +224,5 @@ exit /b 0
 
 REM ============================================================================
 :usage
-echo Usage: scripts\ci\ci-windows-signing.bat ^<stage^|restore^|locate-msi^|verify-msi^>
+echo Usage: scripts\ci\ci-windows-signing.bat ^<stage^|restore^|locate-msi^|verify-msi^|replace-msi^>
 exit /b 1

@@ -72,9 +72,15 @@ gh attestation verify <file> --repo Tupig/Tupig_synergy
 That statement says the file came from this repository's workflow and commit.
 It is not an Authenticode signature and it is not Apple notarization.
 
-Windows packages are Authenticode-signed only when all four `WINDOWS_SSL_*`
-secrets are set. They are not set today, so current Windows packages are
-unsigned. macOS signing runs only when the Apple signing secrets are set.
+Windows packages are Authenticode-signed by SignPath Foundation only when
+`SIGNPATH_API_TOKEN`, `SIGNPATH_ORGANIZATION_ID`, and `SIGNPATH_PROJECT_SLUG`
+are set. The private key stays on SignPath's HSM. They are not set today, so
+current Windows packages are unsigned. A local Release build cannot use that
+key, so it stays unsigned. When CI signing is enabled, `signtool verify` must
+succeed or that job stops. macOS
+signing runs only when the Apple signing secrets are set. The Apple
+Developer ID certificate is the base64 P12 in `APPLE_P12_CERTIFICATE`, imported
+into a keychain that exists only for that job. See [build.md](build.md).
 The release published as v1.21.2 was built before provenance was added, so
 those assets have no attestation. The next release build will.
 
@@ -139,7 +145,7 @@ gh attestation verify <file> --repo Tupig/Tupig_synergy
 
 这份声明说明文件来自本仓库的工作流和提交。它不是 Authenticode 签名，也不是 Apple 公证。
 
-只有四个 `WINDOWS_SSL_*` secret 都配好时，Windows 包才会做 Authenticode 签名。现在没有这些 secret，所以当前 Windows 包未签名。macOS 签名只在配好 Apple 签名 secret 时运行。已经发布的 v1.21.2 是在加入来源证明之前构建的，那些资产没有证明。下一次 Release 构建会带上。
+只有配好 `SIGNPATH_API_TOKEN`、`SIGNPATH_ORGANIZATION_ID` 和 `SIGNPATH_PROJECT_SLUG` 时，Windows 包才会由 SignPath Foundation 做 Authenticode 签名。私钥留在 SignPath 的 HSM 上。现在没有这些值，所以当前 Windows 包未签名。本地 Release 构建拿不到这把私钥，因此不签名。CI 启用签名后，`signtool verify` 不通过则该作业停止。macOS 签名只在配好 Apple 签名 secret 时运行。Developer ID 证书是 `APPLE_P12_CERTIFICATE` 里的 base64 P12，只导入当次作业的临时钥匙串。见 [build.md](build.md)。已经发布的 v1.21.2 是在加入来源证明之前构建的，那些资产没有证明。下一次 Release 构建会带上。
 
 Windows 便携包不含 `synergy-daemon.exe`。daemon 是独立进程，由 MSI 安装。本仓库没有任何代码自行注册 Windows 服务。
 
