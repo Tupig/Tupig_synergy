@@ -1,0 +1,34 @@
+---
+description: Track every task on a live todo list and stop if that list is missing or stale
+alwaysApply: true
+---
+
+# Live todo list (R11)
+
+Applies to every task, including an answer that does not change files.
+
+## English
+
+Before the first step and before the final answer:
+
+1. Create one todo per work step. A one-step task still has two items: do the work, then check the result.
+2. Mark exactly one item `in_progress` before starting it.
+3. In the same turn a step finishes, mark it `completed` or `cancelled`, then mark the next item `in_progress`.
+4. Add an item as soon as a new step appears. Work that exists only in the reply is a miss.
+
+Statuses are `pending`, `in_progress`, `completed`, and `cancelled`. Cancel only when that step will not be done, and keep the reason in the item text.
+
+**Stop when the list is missing or stale.** Do not start the next step, and do not say the task is finished. Write the missing items first, with the status they actually have, then continue. A finished-task reply is invalid while any item is `pending` or `in_progress`.
+
+## 中文
+
+第一步动手之前，以及给出最终答复之前：
+
+1. 每个工作环节一条 todo。只有一步的任务也要两条：做这件事，再核对结果。
+2. 开始某条之前，先把它标成 `in_progress`。同一时刻只有一条处于进行中。
+3. 某一步结束的同一轮里，把它标成 `completed` 或 `cancelled`，再把下一条标成 `in_progress`。
+4. 出现新环节就立刻补一条。只写在回复里、没有进列表的工作，算遗漏。
+
+状态只有 `pending`、`in_progress`、`completed`、`cancelled`。只有确定不做的环节才标取消，并在条目文字里写明原因。
+
+**列表缺失或过期时必须停下。** 不得开始下一步，也不得声称任务已完成。先把漏掉的条目按真实状态写上，然后再继续。仍有 `pending` 或 `in_progress` 时，宣布完成的回复无效。

@@ -32,6 +32,20 @@ conflict instead of silently breaking the convention.
 | R8 | Code must compile on Windows, macOS and Linux. Platform code lives under `src/lib/platform/<os>/`. | One source tree, conditional compilation. |
 | R9 | Documentation is bilingual in a single file (sectioned `## English` + `## 中文`). | One document, two audiences. |
 | R10 | Commit messages are written in Chinese. | Project convention. |
+| R11 | Every task is tracked on a live todo list before work starts. Update it on each status change and record every step. If the list is missing or stale, stop and repair it before continuing. Procedure: [Task progress](#task-progress-r11). | Progress stays visible. A finished claim with open items is invalid. |
+
+### Task progress (R11)
+
+The same procedure is injected every session from `.cursor/rules/todo-tracking.mdc`.
+
+Before the first step, and again before the final answer:
+
+1. Create one todo per work step. A one-step task still has two items: do the work, then check the result.
+2. Mark exactly one item in progress before starting it.
+3. In the same turn a step finishes, mark it completed or cancelled, then mark the next item in progress.
+4. Add an item as soon as a new step appears. Work that exists only in the reply is a miss.
+
+**Violation.** There is no separate checker. The agent stops itself: do not start the next step, and do not say the task is finished, until the missing items are written with the status they actually have. A finished-task reply is invalid while any item is still pending or in progress. Cancel only a step that will not be done, and keep the reason in the item text.
 
 ### Directory layout
 
@@ -165,6 +179,20 @@ This section is the authoritative list. The following are deliberate, not defect
 | R8 | 代码必须能在 Windows、macOS、Linux 三平台编译。平台相关代码放在 `src/lib/platform/<os>/`。 | 单一源码树 + 条件编译。 |
 | R9 | 文档在单一文件内中英双语（分节 `## English` + `## 中文`）。 | 一份文档，两类读者。 |
 | R10 | 提交信息使用中文。 | 项目约定。 |
+| R11 | 每项任务在动手前都用实时 todo 列表跟踪。状态一变就更新，每个环节都要有条目。列表缺失或过期时，先停下补记再继续。做法见 [任务进度](#任务进度-r11)。 | 进度必须可见。仍有未完成条目时，宣布完成无效。 |
+
+### 任务进度 R11
+
+同一做法写在 `.cursor/rules/todo-tracking.mdc`，每次会话都会注入。
+
+第一步动手之前，以及给出最终答复之前：
+
+1. 每个工作环节一条 todo。只有一步的任务也要两条：做这件事，再核对结果。
+2. 开始某条之前先标成进行中。同一时刻只有一条处于进行中。
+3. 某一步结束的同一轮里，把它标成已完成或已取消，再把下一条标成进行中。
+4. 出现新环节就立刻补一条。只写在回复里、没有进列表的工作，算遗漏。
+
+**违反时。** 没有另一套检查程序。代理自己停下：漏掉的条目还没按真实状态写上之前，不得开始下一步，也不得声称任务已完成。仍有待办或进行中的条目时，宣布完成的回复无效。只有确定不做的环节才标取消，并在条目文字里写明原因。
 
 ### 目录结构
 
