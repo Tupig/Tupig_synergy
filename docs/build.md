@@ -294,9 +294,9 @@ Pass `-DSKIP_BUILD_TESTS=OFF` to run that ctest invocation automatically after t
 
 ### Source encoding
 
-CI job `lint-encoding` runs `python3 scripts/ci/check-encoding.py` after the version plan and before compile or packaging. The same command works from a checkout. It walks the configured roots, skips excluded directory names, and reads each source file in chunks.
+CI job `lint-encoding` runs `python3 scripts/ci/check-encoding.py` after the version plan and before compile or packaging. The same command works from a checkout. It walks the configured roots, skips excluded directory names, and checks files in parallel. Each file is read in chunks. A NUL byte in the first 4 KiB, with no UTF-8/UTF-16/UTF-32 BOM, is reported as `binary` and the rest of that file is not read.
 
-The default whitelist is `utf-8`, which means UTF-8 without a BOM. An ASCII file is reported as `ascii` and still passes, because ASCII is UTF-8. To allow a BOM, add `utf-8-bom` (aliases `utf-8-sig` and `utf-8-with-bom`). To allow only ASCII, set the whitelist to `ascii` alone.
+The default whitelist is `utf-8`, which means UTF-8 without a BOM. An ASCII file is reported as `ascii` and still passes, because ASCII is UTF-8. To allow a BOM, add `utf-8-bom` (aliases `utf-8-sig` and `utf-8-with-bom`). To allow only ASCII, set the whitelist to `ascii` alone. `binary` and `unreadable` are never accepted.
 
 `on_violation` is `fail` by default: each bad file is printed and the process exits 1, so the build jobs do not start. Set it to `warn`, or pass `--warn`, to print the same lines and exit 0. `--fail` forces the non-zero exit even when the file says `warn`.
 
@@ -313,10 +313,10 @@ A failing line looks like this. The path and the detected encoding are on the sa
 
 ```text
 encoding FAIL src/foo.cpp detected=utf-8-bom allowed=utf-8
-encoding FAIL count=1 checked=669 mode=fail
+encoding FAIL count=1 checked=669 allowed=utf-8 mode=fail
 ```
 
-A clean run is one line: `encoding OK checked=669 allowed=utf-8 mode=fail`.
+A clean run is one line: `encoding OK checked=669 violations=0 allowed=utf-8 mode=fail`. The detail lines list every bad file. The last line is the total.
 
 ---
 
@@ -329,7 +329,7 @@ A clean run is one line: `encoding OK checked=669 allowed=utf-8 mode=fail`.
 | `X11 libs missing` | Install `libx11-dev`, `libxi-dev`, `libxtst-dev`, and the rest of the Linux package list above. |
 | `Wayland protocols` | Install `libwayland-dev` and `wayland-protocols` when the log asks for them. |
 | vcpkg download stalls | Run the build script again. Keep `vendor/vcpkg/downloads/`; partial files are rejected by their SHA-512. |
-| `encoding FAIL ... detected=` | The file is not in the whitelist. Save it as UTF-8 without a BOM, or add that encoding to `allowed`. `ascii` already passes under `utf-8`. |
+| `encoding FAIL ... detected=` | The file is not in the whitelist. Save it as UTF-8 without a BOM, or add that encoding to `allowed`. `ascii` already passes under `utf-8`. `detected=binary` means a NUL byte; resave the file as text. |
 
 ---
 
@@ -590,9 +590,9 @@ ctest --test-dir build/src/unittests -C Release -R "ClipboardTests" --output-on-
 
 ### 源码编码
 
-CI 作业 `lint-encoding` 在版本计划之后、编译和打包之前运行 `python3 scripts/ci/check-encoding.py`。在检出的仓库里执行同一条命令即可。它按配置的根目录往下走，跳过指定的目录名，并分块读取每个源码文件。
+CI 作业 `lint-encoding` 在版本计划之后、编译和打包之前运行 `python3 scripts/ci/check-encoding.py`。在检出的仓库里执行同一条命令即可。它按配置的根目录往下走，跳过指定的目录名，并并行检查文件。每个文件分块读取。前 4 KiB 里出现 NUL、且没有 UTF-8/UTF-16/UTF-32 BOM 时，记为 `binary`，不再读这个文件的剩余部分。
 
-默认白名单是 `utf-8`，即不带 BOM 的 UTF-8。ASCII 文件会被标成 `ascii`，仍然通过，因为 ASCII 属于 UTF-8。要允许 BOM，把 `utf-8-bom` 加进白名单（别名是 `utf-8-sig` 和 `utf-8-with-bom`）。若只允许 ASCII，白名单里就只留 `ascii`。
+默认白名单是 `utf-8`，即不带 BOM 的 UTF-8。ASCII 文件会被标成 `ascii`，仍然通过，因为 ASCII 属于 UTF-8。要允许 BOM，把 `utf-8-bom` 加进白名单（别名是 `utf-8-sig` 和 `utf-8-with-bom`）。若只允许 ASCII，白名单里就只留 `ascii`。`binary` 和 `unreadable` 不会被接受。
 
 `on_violation` 默认是 `fail`：每个不合规文件打一行，进程以 1 退出，编译作业不会开始。设成 `warn`，或加上 `--warn`，会打出同样的行并以 0 退出。配置写成 `warn` 时，`--fail` 仍强制以非零退出。
 
@@ -609,10 +609,10 @@ CI 作业 `lint-encoding` 在版本计划之后、编译和打包之前运行 `p
 
 ```text
 encoding FAIL src/foo.cpp detected=utf-8-bom allowed=utf-8
-encoding FAIL count=1 checked=669 mode=fail
+encoding FAIL count=1 checked=669 allowed=utf-8 mode=fail
 ```
 
-全部通过时只有一行：`encoding OK checked=669 allowed=utf-8 mode=fail`。
+全部通过时只有一行：`encoding OK checked=669 violations=0 allowed=utf-8 mode=fail`。明细行列出每个不合规文件，最后一行是汇总。
 
 ---
 
@@ -625,7 +625,7 @@ encoding FAIL count=1 checked=669 mode=fail
 | `X11 libs missing`（X11 库缺失） | 安装 `libx11-dev`、`libxi-dev`、`libxtst-dev` 以及上面 Linux 软件包列表里的其余项。 |
 | `Wayland protocols`（Wayland 协议） | 日志点名时再安装 `libwayland-dev` 与 `wayland-protocols`。 |
 | vcpkg 下载中断 | 重新运行构建脚本。保留 `vendor/vcpkg/downloads/`；不完整文件会因 SHA-512 校验失败而被拒绝。 |
-| `encoding FAIL ... detected=` | 该文件不在白名单里。另存为不带 BOM 的 UTF-8，或把检测到的编码加进 `allowed`。`utf-8` 已经接受 `ascii`。 |
+| `encoding FAIL ... detected=` | 该文件不在白名单里。另存为不带 BOM 的 UTF-8，或把检测到的编码加进 `allowed`。`utf-8` 已经接受 `ascii`。`detected=binary` 表示文件里有 NUL，需要另存为文本。 |
 
 ---
 

@@ -60,6 +60,7 @@ PR checklist:
 - [ ] Branch targets `main`
 - [ ] Commits follow Conventional Commits (Chinese messages)
 - [ ] Code passes `clang-format`
+- [ ] `python3 scripts/ci/check-encoding.py` passes
 - [ ] Tests pass (`ctest --test-dir build/src/unittests`, plus `-C Release` on Windows)
 - [ ] Docs and GitHub Issues updated if user-facing behavior changed
 
@@ -112,5 +113,6 @@ PR 检查清单：
 - [ ] 分支目标为 `main`
 - [ ] 提交遵循 Conventional Commits（中文信息）
 - [ ] 代码通过 `clang-format`
+- [ ] `python3 scripts/ci/check-encoding.py` 通过
 - [ ] 测试全部通过（`ctest --test-dir build/src/unittests`，Windows 加 `-C Release`）
 - [ ] 用户可见行为有变化时同步更新文档与 GitHub Issues

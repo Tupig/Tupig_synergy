@@ -1,54 +1,51 @@
-# Deskflow Code of Conduct / 行为准则
+# TuPig Synergy Code of Conduct / 行为准则
 
 > **Language / 语言**: [English](#english) | [中文](#中文)
 >
-> Upstream inherited file. The English body is Deskflow's original wording, kept
-> unedited so merges from `upstream` stay reviewable; only the language navigation
-> and headings were added, plus this fork's Chinese translation below.
-> This repository's contributing guide is [`.github/CONTRIBUTING.md`](CONTRIBUTING.md), not the Deskflow wiki.
+> The pledge and the enforcement steps follow the Deskflow community conduct.
+> Contributions to this repository follow [`.github/CONTRIBUTING.md`](CONTRIBUTING.md).
 >
-> 本文件继承自上游。英文正文是 Deskflow 原文，没有改写，这样和 `upstream` 合并时仍能对照审阅。这里只加了语言导航、标题，以及下面这份中文译文。
-> 本仓库的贡献说明是 [`.github/CONTRIBUTING.md`](CONTRIBUTING.md)，不是 Deskflow wiki。
+> 承诺和处置步骤沿用 Deskflow 的社区行为准则。
+> 向本仓库贡献时遵循 [`.github/CONTRIBUTING.md`](CONTRIBUTING.md)。
 
 ---
 
 ## English
 
-## Our Pledge
+### Our Pledge
 
-We want the Deskflow community to be one where everyone can work together. We pledge to keep our community focused on the project and the code around the project. 
+We want this community to be one where everyone can work together. We pledge to keep the community focused on the project and the code around the project.
 
-## Community Standards
+### Community Standards
 
- * Keep interactions respectful and focused on the project
- * Contributions are expected to follow the [contribution guide](https://github.com/deskflow/deskflow/wiki/Contributing).
- 
-## Enforcement
+- Keep interactions respectful and focused on the project.
+- Follow the [contributing guide](CONTRIBUTING.md) for issues, pull requests, and code.
 
-Enforcement will be done at the descression of the Deskflow Moderators.
+### Enforcement
 
- 1. Warning
- 2. Temporary ban
- 3. Permanent banning
+The maintainers of this repository decide how to enforce these standards.
+
+1. Warning
+2. Temporary ban
+3. Permanent ban
 
 ---
 
 ## 中文
 
-## 我们的承诺
+### 我们的承诺
 
-我们希望 Deskflow 社区成为所有人都能协作的地方。我们承诺让社区始终聚焦于项目本身以及
-项目相关的代码。
+我们希望这个社区是所有人都能一起工作的地方。我们承诺让社区始终聚焦于项目本身以及项目相关的代码。
 
-## 社区准则
+### 社区准则
 
- * 保持交流尊重，并聚焦于项目
- * 贡献应遵循[贡献指南](https://github.com/deskflow/deskflow/wiki/Contributing)
+- 保持交流尊重，并聚焦于项目。
+- issue、pull request 和代码遵循[贡献指南](CONTRIBUTING.md)。
 
-## 执行
+### 执行
 
-违规处理由 Deskflow 版主酌情决定。
+由本仓库的维护者决定如何执行这些准则。
 
- 1. 警告
- 2. 临时封禁
- 3. 永久封禁
+1. 警告
+2. 临时封禁
+3. 永久封禁

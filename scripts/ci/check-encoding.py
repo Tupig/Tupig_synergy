@@ -15,11 +15,13 @@ import codecs
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "encoding-check.json"
 _CHUNK = 65536
+_SAMPLE = 4096
 
 # Longer marks first so UTF-32 is not reported as UTF-16.
 _BOMS = (
@@ -41,18 +43,25 @@ _ALIASES = {
 def detect_encoding(path: Path) -> str:
     """Return a short name for the encoding this file actually uses.
 
-    Valid UTF-8 is decoded in chunks so a large file is not held in memory.
-    A file that is not UTF-8 is read fully only to name the fallback encoding.
+    A BOM or a NUL byte is decided from the first sample, so a binary file is
+    not read to the end. Valid UTF-8 is decoded in chunks. A file that is not
+    UTF-8 is read fully only to name the fallback encoding.
     """
+    try:
+        handle = path.open("rb")
+    except OSError:
+        return "unreadable"
     ascii_only = True
     failed = False
-    with path.open("rb") as handle:
-        head = handle.read(4)
+    with handle:
+        sample = handle.read(_SAMPLE)
         for mark, name in _BOMS:
-            if head.startswith(mark):
+            if sample.startswith(mark):
                 return name
+        if b"\x00" in sample:
+            return "binary"
         decoder = codecs.getincrementaldecoder("utf-8")()
-        chunk = head
+        chunk = sample
         try:
             while chunk:
                 if any(byte > 127 for byte in chunk):
@@ -169,16 +178,26 @@ def main() -> int:
         print(f"encoding FAIL no files under {root}")
         return 1
 
+    workers = min(8, os.cpu_count() or 1)
+    if len(files) < 2 or workers == 1:
+        detected_names = [detect_encoding(path) for path in files]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            detected_names = list(pool.map(detect_encoding, files, chunksize=32))
+
     violations: list[tuple[str, str]] = []
-    for path in files:
-        detected = detect_encoding(path)
+    for path, detected in zip(files, detected_names):
         if not is_allowed(detected, allowed):
             violations.append((display_path(root, path), detected))
 
     allowed_text = ",".join(config["allowed"])
     mode_name = config["on_violation"]
+    checked = len(files)
     if not violations:
-        print(f"encoding OK checked={len(files)} allowed={allowed_text} mode={mode_name}")
+        print(
+            f"encoding OK checked={checked} violations=0 "
+            f"allowed={allowed_text} mode={mode_name}"
+        )
         return 0
 
     kind = "WARN" if mode_name == "warn" else "FAIL"
@@ -186,7 +205,10 @@ def main() -> int:
     for rel, detected in violations:
         print(f"encoding {kind} {rel} detected={detected} allowed={allowed_text}")
         print(f"::{level} file={rel},line=1::detected {detected}; allowed: {allowed_text}")
-    print(f"encoding {kind} count={len(violations)} checked={len(files)} mode={mode_name}")
+    print(
+        f"encoding {kind} count={len(violations)} checked={checked} "
+        f"allowed={allowed_text} mode={mode_name}"
+    )
     return 0 if mode_name == "warn" else 1
 
 

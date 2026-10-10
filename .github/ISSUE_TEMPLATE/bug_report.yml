@@ -1,95 +1,95 @@
-name: Bug report
-description: If you find a bug in TuPig Synergy, please let us know so we can fix it.
+name: Bug report / 缺陷报告
+description: Report a defect in TuPig Synergy. 报告 TuPig Synergy 的缺陷。
 type: "Triage [bug]"
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to help us improve TuPig Synergy.
+        Thanks for taking the time to help improve TuPig Synergy.
+        感谢你花时间帮助改进 TuPig Synergy。
 
-        <b>Sanity checks</b>
+        <b>Before you submit / 提交前</b>
         > [!IMPORTANT]
-        > 1. Try the latest [continuous build](https://github.com/Tupig/Tupig_synergy/releases).
-        > 2. Wayland users, please review the [known issues](https://github.com/Tupig/Tupig_synergy/issues).
-        > 3. macOS users, if the app crashes, try [Apple's solution](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac).
-        > 4. Search for existing issues and avoid creating duplicates.
-        > 5. Provide descriptive title for this issue.
+        > 1. Try the latest [release](https://github.com/Tupig/Tupig_synergy/releases). / 先试最新[发布](https://github.com/Tupig/Tupig_synergy/releases)。
+        > 2. Search existing issues and do not file a duplicate. / 先搜索已有 issue，不要重复提交。
+        > 3. Use a title that says what fails. / 标题要写明哪里失败。
 
   - type: checkboxes
     id: sanity-checks
     attributes:
-      label: Before reporting a bug, please complete the sanity checks above.
-      description: This helps us triage and resolve issues more efficiently.
+      label: Checks / 确认
+      description: Complete this before submitting. 提交前勾选。
       options:
-        - label: I have done the sanity checks, and my issue persists.
+        - label: I tried the latest release, searched existing issues, and the problem remains. 我试过最新发布、搜过已有 issue，问题仍在。
           required: true
 
   - type: textarea
     id: version
     attributes:
-      label: TuPig Synergy version info
-      description: Please paste only the TuPig Synergy version info, accessible via the **Help** menu in the **About** dialog using the **Copy version info** button.
+      label: Version / 版本
+      description: |
+        Help, About, Copy version info. Paste that text only.
+        帮助、关于、复制版本信息。只粘贴那段文字。
       placeholder: |
-        TuPig Synergy: 1.2.3.4 (deadc0de)
-        Qt: 3.2.1
-        System: Hannah Montana Linux (Workstation Edition)
-        Session: Unity (Compiz)
+        TuPig Synergy: 1.21.2
+        Qt: 6.7.0
+        System: Windows 11
     validations:
       required: true
 
   - type: dropdown
     id: build
     attributes:
-      label: Build types
-      description: What kind of builds are you running for all servers and clients?
+      label: Build / 构建来源
+      description: Which builds are the server and the clients running? 服务端和客户端各是哪种构建？
       multiple: true
       options:
-        - Official release (installer/package from GitHub releases)
-        - Community package (apt, dnf, pacman/aur, brew, etc.)
-        - Local developer build (built it myself)
-        - Other (please specify)
+        - Official release (installer or package from GitHub Releases) / 官方发布（GitHub Releases 的安装包）
+        - Community package (apt, dnf, pacman, brew, and similar) / 社区软件包
+        - Local build / 本地编译
+        - Other / 其他
     validations:
       required: true
 
   - type: textarea
     id: config
     attributes:
-      label: TuPig Synergy configuration
+      label: Layout / 布局
       description: |
-        Please provide a very brief description of your configuration.
-        There is no need to provide operating system details here, as they are included when you paste the version info in the **TuPig Synergy version info** section above.
-        If you're using Linux, please provide the name of the distribution.
+        Which machine is the server, and where the others sit. Operating system details belong in Version.
+        哪一台是服务端，其他机器在哪一侧。操作系统写在版本一栏。
       placeholder: |
-        - Windows 11 server, Ubuntu client, and macOS 15 client
-        - Each computer has a single monitor
-        - Windows is in the center, Ubuntu is on the left, and macOS is on the right
+        - Windows 11 server, Ubuntu client
+        - One monitor on each computer
+        - Ubuntu is to the left of Windows
     validations:
       required: true
 
   - type: textarea
     id: repro-steps
     attributes:
-      label: What steps will reproduce the problem?
+      label: Steps / 步骤
       description: |
-        Please list the _numbered steps_ to reproduce the issue.
-        If you're not sure, please provide as much detail as possible.
+        Numbered steps that reproduce the problem.
+        用编号写出能复现问题的步骤。
       placeholder: |
         1. Start TuPig Synergy
-        2. Click 'Configure Server'
-        3. Click 'Apply'
+        2. Open the server configuration
+        3. Apply the change
+    validations:
+      required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Log output
+      label: Log / 日志
       description: |
-        Please copy and paste any relevant log output.
-        This will be automatically formatted into code, so no need for backticks.
+        Paste the relevant log. It is already inside a code block.
+        粘贴相关日志。它已经在代码块里。
       value: |
-        <details><summary><h3> Show log </h3></summary>
+        <details><summary><h3>Log / 日志</h3></summary>
 
-        <!-- Please paste your log into the code block below -->
-        ```ceylon
+        ```text
 
         ```
 
@@ -98,14 +98,7 @@ body:
   - type: textarea
     id: additional-info
     attributes:
-      label: Additional information
+      label: Anything else / 其他信息
       description: |
-        Please provide any additional information that may help us understand the issue.
-        This could include screenshots, error messages, or anything else you think is relevant.
-        - Any ideas about what maybe causing the problem?
-        - Any workarounds that you've discovered?
-        - What other apps are you running?
-        - Does the issue stop you using TuPig Synergy entirely?
-        - Did restarting TuPig Synergy or the computer help?
-        - Are the locales matching across all your systems?
-        - Anything else you can think of?
+        Screenshots, messages, workarounds, or other programs that are running.
+        截图、报错、临时办法，或其他正在运行的程序。

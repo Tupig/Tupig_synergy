@@ -26,3 +26,12 @@
 
 <!--- Describe how you tested the change, and the environment you used. -->
 <!--- 说明你怎样测试，以及测试环境。 -->
+
+## Checklist / 检查清单
+
+- [ ] Branch targets `main` / 分支指向 `main`
+- [ ] Commit messages are Chinese Conventional Commits / 提交信息是中文 Conventional Commits
+- [ ] `clang-format` 20.1.0 matches / `clang-format` 20.1.0 通过
+- [ ] `python3 scripts/ci/check-encoding.py` passes / 编码检查通过
+- [ ] Tests pass / 测试通过
+- [ ] Docs updated when behavior changed / 行为有变化时已更新文档

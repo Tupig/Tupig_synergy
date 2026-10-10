@@ -1,11 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ask a question
-    url: https://github.com/Tupig/Tupig_synergy/discussions/new?category=q-a
-    about: Where to ask general questions.
-  - name: Show and Tell
-    url: https://github.com/Tupig/Tupig_synergy/discussions/new?category=show-and-tell
-    about: Show off things you have done with TuPig Synergy
-  - name: Documentation
-    url: https://github.com/Tupig/Tupig_synergy/tree/main/docs
-    about: Build guide, configuration, protocol and troubleshooting docs.
+  - name: Documentation / 文档
+    url: https://github.com/Tupig/Tupig_synergy/blob/main/docs/build.md
+    about: Build, configuration, protocol, and troubleshooting. 构建、配置、协议和故障排查。
+  - name: Security report / 安全报告
+    url: https://github.com/Tupig/Tupig_synergy/blob/main/SECURITY.md
+    about: Report a vulnerability in private. Do not open a public issue. 私下报告漏洞，不要开公开 issue。

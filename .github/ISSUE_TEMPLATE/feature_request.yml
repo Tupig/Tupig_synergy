@@ -1,27 +1,34 @@
-name: Feature request
-description: Had an idea how to improve TuPig Synergy? Share it with us.
+name: Feature request / 功能建议
+description: Suggest a change to TuPig Synergy. 提出对 TuPig Synergy 的改动建议。
 type: "Triage [feature]"
 body:
   - type: markdown
     attributes:
-      value: Thanks for taking the time to help us improve TuPig Synergy.
+      value: |
+        Thanks for taking the time to help improve TuPig Synergy.
+        感谢你花时间帮助改进 TuPig Synergy。
+
+        Search existing issues first. One request per issue.
+        先搜索已有 issue。一个 issue 只提一件事。
 
   - type: textarea
     id: request
     attributes:
-      label: Feature Request
+      label: Request / 建议
       description: |
-        Please describe the feature you have in mind.
+        What should change, and why the current behavior is not enough.
+        希望改成什么样，以及现在的行为为什么不够。
+      placeholder: |
+        When I do X, the app does Y. I need Z because...
     validations:
       required: true
 
   - type: input
     id: votes
     attributes:
-      label: Voting Instructions
-      description: Do not modify these instructions
+      label: Votes / 投票
+      description: Leave this text as it is. 这段文字不要改。
       value: |
-        React with :+1: or :-1: to vote on this request
+        React with :+1: or :-1: to vote. 用 :+1: 或 :-1: 投票。
     validations:
       required: true
-
