@@ -29,8 +29,10 @@ do not control.
 TLS is **on by default**, and peer checking is **on by default**
 (`security/tlsEnabled` and `security/checkPeers`). Peer checking is
 fingerprint TOFU: the first accepted certificate is remembered, and a later
-change is rejected. This is not a public-CA certificate. RSA keys shorter
-than 2048 bits are rejected when peer checking is on.
+change is rejected. This is not a public-CA certificate. A TLS connection
+always requires a peer certificate. RSA keys shorter than 2048 bits are
+rejected. Turning `security/checkPeers` off does not accept a client that has
+no certificate.
 
 Turning TLS off switches that connection to plaintext. Plaintext has no
 confidentiality and no peer authentication. There is no separate server
@@ -39,10 +41,22 @@ password. Settings keys and the real command-line flags are in
 
 The protocol has a message-length limit. The keyboard and mouse path rate-limits
 input. Modifier bits outside the defined mask are cleared. Key-combination
-blocking reads `security/blockedKeyCombos`, which is **empty by default**.
-Blocking `Ctrl+Alt+Del` on Windows stops UAC and the login screen from seeing
-that chord, so it is not blocked unless you list it, and listing it logs a
-warning at startup. A malformed entry is skipped.
+blocking reads `security/blockedKeyCombos`. The default entry is
+`0xEFFF:0x0006` (Ctrl+Alt+Delete), so a remote peer cannot raise the secure
+attention sequence until that entry is removed. The default does not log a
+warning. A warning is logged only when that chord is stored in the setting
+again. A malformed entry is skipped. The local keyboard
+is not affected.
+
+The daemon and core IPC pipes are reachable by the interactive user because the
+service runs as SYSTEM. A command is accepted only after `hello` carries the token
+from the file written beside the system settings. Each file is readable by SYSTEM,
+Administrators, and the active console user. The service refreshes both files
+once a second, because only SYSTEM can see a console session that appears
+after the file was created. Core refreshes its own file as well. The version string is not a credential.
+Screen enter and exit commands run only an existing file under the settings
+directory. Service mode copies the current settings into that directory and
+sends the relative file name.
 
 ### Packages
 
@@ -107,11 +121,13 @@ TuPig Synergy 在你自己控制的几台电脑之间共享键盘、鼠标和剪
 
 ### 网络
 
-TLS **默认开启**，对端校验也 **默认开启**（`security/tlsEnabled` 与 `security/checkPeers`）。对端校验是指纹 TOFU：第一次接受的证书会被记住，之后证书变了就拒绝。这不是公共 CA 签发的证书。开启对端校验时，短于 2048 位的 RSA 密钥会被拒绝。
+TLS **默认开启**，对端校验也 **默认开启**（`security/tlsEnabled` 与 `security/checkPeers`）。对端校验是指纹 TOFU：第一次接受的证书会被记住，之后证书变了就拒绝。这不是公共 CA 签发的证书。TLS 连接始终要求对端证书。短于 2048 位的 RSA 密钥会被拒绝。关掉 `security/checkPeers` 也不会接受没有证书的客户端。
 
 关掉 TLS 后，这条连接变为明文。明文没有机密性，也没有对端身份。没有单独的服务器密码。设置键和真实的命令行参数见 [`configuration.md`](configuration.md)。
 
-协议有消息长度上限。键鼠路径对输入做频率限制。修饰键掩码里未定义的位会被清掉。组合键拦截只读 `security/blockedKeyCombos`，该列表 **默认为空**。在 Windows 上拦截 `Ctrl+Alt+Del` 会让 UAC 和登录界面收不到这个组合，所以除非你写进列表，否则不拦截；写进去之后，启动时会记一条警告。格式错误的条目会被跳过。
+协议有消息长度上限。键鼠路径对输入做频率限制。修饰键掩码里未定义的位会被清掉。组合键拦截读取 `security/blockedKeyCombos`。默认条目是 `0xEFFF:0x0006`（Ctrl+Alt+Delete），对端在删掉这一条之前不能触发安全注意序列。默认值不记警告。只有这个组合再次写入设置时才记警告。本机键盘不受影响。格式错误的条目会被跳过。
+
+守护进程和 core 的 IPC 管道对交互用户可达，因为服务以 SYSTEM 运行。只有 `hello` 带上系统设置目录旁对应令牌文件里的内容，命令才会被接受。每个文件仅 SYSTEM、Administrators 和当前控制台用户可读。服务每秒刷新这两个文件，因为只有 SYSTEM 能看到文件创建之后才出现的控制台会话。core 也会刷新自己的文件。版本号不是凭据。屏幕进入和离开命令只运行设置目录里已经存在的文件。服务模式会把当前设置复制到该目录，再只发送相对文件名。
 
 ### 安装包
 
