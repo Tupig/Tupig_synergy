@@ -10,6 +10,8 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QProcess>
 
 namespace synergy::gui::diagnostic {
@@ -42,18 +44,31 @@ void clearSettings(bool enableRestart)
   // the app config and server configs from being applied.
   Settings::save(false);
 
-  auto profileDir = QDir(Settings::settingsPath());
-  qDebug("removing profile dir: %s", qPrintable(profileDir.absolutePath()));
-  profileDir.removeRecursively();
+  // Capture this before the file disappears. On installed Windows,
+  // settingsPath() is ProgramData, while the user profile is next to the
+  // settings file. Deleting ProgramData would remove the service token and
+  // TLS material for every user. After the portable file is gone,
+  // isPortableMode() would also flip to false.
+  const auto settingsFile = Settings::settingsFile();
+  const auto profilePath = QFileInfo(settingsFile).absolutePath();
+  const bool portable = Settings::isPortableMode();
+
+  qInfo("removing profile dir: %s", qPrintable(profilePath));
+  if (!QDir(profilePath).removeRecursively())
+    qWarning("cannot remove profile dir: %s", qPrintable(profilePath));
 
 #ifdef Q_OS_WIN
-  if (Settings::isPortableMode()) {
-    // make a new empty portable settings file
-    if (profileDir.mkpath(Settings::settingsPath())) {
-      QFile file(Settings::settingsFile());
-      std::ignore = file.open(QIODevice::WriteOnly);
-      file.write(" ", 1);
-      file.close();
+  if (portable) {
+    if (QDir().mkpath(profilePath)) {
+      QFile file(settingsFile);
+      if (!file.open(QIODevice::WriteOnly))
+        qWarning("cannot recreate portable settings file: %s", qPrintable(settingsFile));
+      else {
+        file.write(" ", 1);
+        file.close();
+      }
+    } else {
+      qWarning("cannot recreate portable settings directory: %s", qPrintable(profilePath));
     }
   }
 #endif
