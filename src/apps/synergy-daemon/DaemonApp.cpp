@@ -12,6 +12,7 @@
 #include "base/Log.h"
 #include "base/LogOutputters.h"
 #include "common/ExitCodes.h"
+#include "common/RelativePath.h"
 #include "common/Settings.h"
 #include "ipc/DaemonIpcServer.h"
 
@@ -49,6 +50,11 @@ void DaemonApp::saveLogLevel(const QString &logLevel) const
 
 void DaemonApp::setConfigFile(const QString &configFile)
 {
+  if (!synergy::isSafeRelativePath(configFile)) {
+    LOG_ERR("config file must be a relative path under the settings directory: %s", qPrintable(configFile));
+    return;
+  }
+
   LOG_DEBUG("config file updated: %s", configFile.toUtf8().constData());
   m_configFile = configFile;
   Settings::setValue(Settings::Daemon::ConfigFile, configFile);
@@ -62,29 +68,20 @@ void DaemonApp::applyWatchdogCommand() const
     return;
   }
 
-  // QFileInfo::exists on a UNC path triggers SMB auth from this SYSTEM-context
-  // process, leaking the machine NTLM hash to whoever controls the remote host.
-  // Any local user can reach this via the IPC pipe, so reject remote paths up front.
-  if (m_configFile.startsWith(QStringLiteral("\\\\")) || m_configFile.startsWith(QStringLiteral("//"))) {
-    LOG_ERR("cannot apply watchdog command: remote config file paths are not allowed: %s", qPrintable(m_configFile));
+  // Only a relative path is accepted. It is joined to the settings directory here,
+  // so an IPC caller cannot name a drive, a UNC share, or a parent directory.
+  const auto configPath = synergy::resolveRelativePath(Settings::settingsPath(), m_configFile);
+  if (configPath.isEmpty()) {
+    LOG_ERR("cannot apply watchdog command: config file must be a relative path: %s", qPrintable(m_configFile));
     return;
   }
 
-  // The path is interpolated inside a quoted CreateProcess command line. A quote
-  // or newline would close that quote or split the command. Windows file names
-  // cannot contain either, so rejecting them drops nothing a real config uses.
-  if (m_configFile.contains(QLatin1Char('"')) || m_configFile.contains(QLatin1Char('\n')) ||
-      m_configFile.contains(QLatin1Char('\r'))) {
-    LOG_ERR("cannot apply watchdog command: config file path contains a command-line metacharacter");
+  if (!synergy::canonicalFileIsInsideDirectory(Settings::settingsPath(), configPath)) {
+    LOG_ERR("cannot apply watchdog command: config file must stay inside the settings directory: %s", qPrintable(configPath));
     return;
   }
 
-  if (!QFileInfo::exists(m_configFile)) {
-    LOG_ERR("cannot apply watchdog command: config file does not exist: %s", qPrintable(m_configFile));
-    return;
-  }
-
-  QSettings config(m_configFile, QSettings::IniFormat);
+  QSettings config(configPath, QSettings::IniFormat);
   const auto coreMode = config.value(Settings::Core::CoreMode).toInt();
   const auto elevate = config.value(Settings::Daemon::Elevate, !Settings::isPortableMode()).toBool();
 
@@ -99,7 +96,7 @@ void DaemonApp::applyWatchdogCommand() const
   }
 
   const auto corePath = QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(), kCoreBinName);
-  const auto command = QStringLiteral("\"%1\" %2 --settings \"%3\"").arg(corePath, modeArg, m_configFile).toStdString();
+  const auto command = QStringLiteral("\"%1\" %2 --settings \"%3\"").arg(corePath, modeArg, configPath).toStdString();
 
   LOG_DEBUG("applying watchdog command (elevate: %s)", elevate ? "yes" : "no");
   m_pWatchdog->setProcessConfig(command, elevate);
@@ -179,9 +176,19 @@ void DaemonApp::run(QThread &daemonThread)
 
   if (const auto persistedConfig = Settings::value(Settings::Daemon::ConfigFile).toString();
       !persistedConfig.isEmpty()) {
-    LOG_DEBUG("using last known config file: %s", persistedConfig.toUtf8().constData());
-    m_configFile = persistedConfig;
-    applyWatchdogCommand();
+    auto relativeConfig = persistedConfig;
+    if (!synergy::isSafeRelativePath(relativeConfig)) {
+      relativeConfig = synergy::relativeToDirectory(Settings::settingsPath(), persistedConfig);
+    }
+    if (!synergy::isSafeRelativePath(relativeConfig)) {
+      LOG_ERR("ignoring stored config path that is not relative: %s", qPrintable(persistedConfig));
+      Settings::setValue(Settings::Daemon::ConfigFile);
+    } else {
+      LOG_DEBUG("using last known config file: %s", qPrintable(relativeConfig));
+      m_configFile = relativeConfig;
+      Settings::setValue(Settings::Daemon::ConfigFile, relativeConfig);
+      applyWatchdogCommand();
+    }
   }
 #endif
 

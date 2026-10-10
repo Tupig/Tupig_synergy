@@ -8,6 +8,7 @@
 #include "CoreProcess.h"
 
 #include "common/ExitCodes.h"
+#include "common/RelativePath.h"
 #include "gui/ipc/CoreIpcClient.h"
 #include "gui/ipc/DaemonIpcClient.h"
 
@@ -24,6 +25,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QMetaEnum>
 #include <QMutexLocker>
 #include <QRegularExpression>
@@ -253,7 +255,22 @@ void CoreProcess::startProcessFromDaemon()
     return;
   }
 
-  const auto configFile = Settings::settingsFile();
+  Settings::save(false);
+  const auto settingsDir = Settings::settingsPath();
+  auto configFile = synergy::relativeToDirectory(settingsDir, Settings::settingsFile());
+  if (configFile.isEmpty()) {
+    const auto source = Settings::settingsFile();
+    const auto fileName = QFileInfo(source).fileName();
+    const auto dest = synergy::resolveRelativePath(settingsDir, fileName);
+    if (dest.isEmpty() || !QFileInfo::exists(source) || !QDir().mkpath(settingsDir) ||
+        (QFileInfo::exists(dest) && !QFile::remove(dest)) || !QFile::copy(source, dest)) {
+      qCritical("cannot copy settings into %s", qPrintable(settingsDir));
+      setProcessState(ProcessState::Stopped);
+      Q_EMIT error(Error::StartFailed);
+      return;
+    }
+    configFile = fileName;
+  }
   qInfo("sending start to daemon (config file: %s)", qPrintable(configFile));
 
   auto sendStart = [this, configFile] {
