@@ -10,6 +10,7 @@
 #include <Windows.h>
 
 #include <string>
+#include <vector>
 
 namespace synergy::platform {
 
@@ -38,9 +39,10 @@ public:
 
   static void shutdown(HANDLE handle, DWORD pid, int timeout = kDefaultShutdownTimeout);
 
-  /// Launch @p command as a detached process under the active console user's token, so the
-  /// child does not inherit the caller's (SYSTEM) privileges.
-  static bool startDetachedAsSessionUser(const std::wstring &command);
+  /// Launch @p application under the active console user's token, so the child
+  /// does not inherit the caller's elevated privileges. @p arguments are not
+  /// resolved through PATH.
+  static bool startDetachedAsSessionUser(const std::wstring &application, const std::vector<std::wstring> &arguments);
 
 private:
   void setStartupInfo(STARTUPINFO &si);

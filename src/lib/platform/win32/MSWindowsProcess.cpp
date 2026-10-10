@@ -19,6 +19,37 @@
 #include <UserEnv.h>
 
 #include <string>
+#include <vector>
+
+namespace {
+
+std::wstring quoteWindowsArgument(const std::wstring &arg)
+{
+  if (arg.empty())
+    return L"\"\"";
+  if (arg.find_first_of(L" \t\"") == std::wstring::npos)
+    return arg;
+
+  std::wstring out = L"\"";
+  int backslashes = 0;
+  for (const wchar_t ch : arg) {
+    if (ch == L'\\') {
+      ++backslashes;
+      continue;
+    }
+    if (ch == L'"')
+      out.append(static_cast<size_t>(backslashes) * 2 + 1, L'\\');
+    else
+      out.append(static_cast<size_t>(backslashes), L'\\');
+    out.push_back(ch);
+    backslashes = 0;
+  }
+  out.append(static_cast<size_t>(backslashes) * 2, L'\\');
+  out.push_back(L'"');
+  return out;
+}
+
+} // namespace
 
 namespace synergy::platform {
 
@@ -193,8 +224,15 @@ void MSWindowsProcess::shutdown(HANDLE handle, DWORD pid, int timeout)
   }
 }
 
-bool MSWindowsProcess::startDetachedAsSessionUser(const std::wstring &command)
+bool MSWindowsProcess::startDetachedAsSessionUser(
+    const std::wstring &application, const std::vector<std::wstring> &arguments
+)
 {
+  if (application.empty()) {
+    LOG_ERR("refusing to start a detached process without an application path");
+    return false;
+  }
+
   MSWindowsSession session;
   session.updateActiveSession();
 
@@ -217,19 +255,22 @@ bool MSWindowsProcess::startDetachedAsSessionUser(const std::wstring &command)
   si.cb = sizeof(si);
   PROCESS_INFORMATION pi = {};
 
-  std::wstring mutableCommand = command;
+  std::wstring commandLine = quoteWindowsArgument(application);
+  for (const auto &argument : arguments)
+    commandLine += L' ' + quoteWindowsArgument(argument);
   const DWORD flags = CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE;
 
-  LOG_DEBUG("starting detached process as session user, command: %s", command.c_str());
+  LOG_DEBUG("starting detached process as session user, command: %ls", commandLine.c_str());
   const BOOL ok = CreateProcessAsUserW(
-      userToken, nullptr, mutableCommand.data(), nullptr, nullptr, FALSE, flags, environment, nullptr, &si, &pi
+      userToken, application.c_str(), commandLine.data(), nullptr, nullptr, FALSE, flags, environment, nullptr, &si, &pi
   );
+  const DWORD error = ok ? ERROR_SUCCESS : GetLastError();
 
   DestroyEnvironmentBlock(environment);
   CloseHandle(userToken);
 
   if (!ok) {
-    LOG_ERR("could not start process as session user, error: %s", windowsErrorToString(GetLastError()).c_str());
+    LOG_ERR("could not start process as session user, error: %s", windowsErrorToString(error).c_str());
     return false;
   }
 

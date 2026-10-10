@@ -10,9 +10,14 @@
 #include "MouseTypes.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
+#include "common/RelativePath.h"
 #include "common/Settings.h"
 
+#include <QDir>
+#include <QFileInfo>
 #include <QProcess>
+
+#include <vector>
 
 #ifdef Q_OS_WIN
 #include "MSWindowsProcess.h"
@@ -25,20 +30,35 @@ namespace {
 
 bool runScreenCommand(const QString &commandLine)
 {
+  const auto args = QProcess::splitCommand(commandLine);
+  if (args.isEmpty()) {
+    LOG_ERR("refusing empty screen command");
+    return false;
+  }
+
+  const auto program = QFileInfo(synergy::resolveRelativePath(Settings::settingsPath(), args.constFirst())).canonicalFilePath();
+  if (!synergy::canonicalFileIsInsideDirectory(Settings::settingsPath(), program)) {
+    LOG_ERR("screen command must be an existing file under the settings directory");
+    return false;
+  }
+
+  auto programArgs = args;
+  programArgs[0] = QDir::toNativeSeparators(program);
+
 #ifdef Q_OS_WIN
   using synergy::platform::MSWindowsProcess;
   if (ArchMiscWindows::isProcessElevated()) {
     LOG_DEBUG("current process is elevated, starting detached process as session user");
-    return MSWindowsProcess::startDetachedAsSessionUser(commandLine.toStdWString());
+    std::vector<std::wstring> arguments;
+    arguments.reserve(static_cast<size_t>(programArgs.size() > 0 ? programArgs.size() - 1 : 0));
+    for (int i = 1; i < programArgs.size(); ++i)
+      arguments.push_back(programArgs.at(i).toStdWString());
+    return MSWindowsProcess::startDetachedAsSessionUser(programArgs.at(0).toStdWString(), arguments);
   }
 #endif
 
-  auto args = QProcess::splitCommand(commandLine);
-  if (args.isEmpty()) {
-    return false;
-  }
-  const auto program = args.takeFirst();
-  return QProcess::startDetached(program, args);
+  const auto executable = programArgs.takeFirst();
+  return QProcess::startDetached(executable, programArgs);
 }
 
 } // namespace
