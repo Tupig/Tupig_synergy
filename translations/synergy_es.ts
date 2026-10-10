@@ -793,6 +793,10 @@ Además, verifique que puede %1 el archivo de configuración del servidor: %2</t
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Issues</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>TuPig Synergy is a trademark of TuPig</source>
         <translation type="unfinished"></translation>
     </message>
@@ -829,7 +833,7 @@ Además, verifique que puede %1 el archivo de configuración del servidor: %2</t
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, please contact us.&lt;/p&gt;</source>
+        <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, report it at &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

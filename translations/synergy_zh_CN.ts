@@ -795,6 +795,10 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>许可证：GNU GPL 第 2 版</translation>
     </message>
     <message>
+        <source>Issues</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>TuPig Synergy is a trademark of TuPig</source>
         <translation>TuPig Synergy 是 TuPig 的商标</translation>
     </message>
@@ -831,8 +835,12 @@ Additionally, check you are able to %1 the server config file: %2</source>
         <translation>设置已更新</translation>
     </message>
     <message>
+        <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, report it at &lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>&lt;p&gt;We&apos;ve migrated your settings to a new format used by this version of Synergy.&lt;/p&gt;&lt;p&gt;Your previous settings have been backed up to:&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;If anything looks different, please contact us.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;我们已将您的设置迁移到此版本 Synergy 使用的新格式。&lt;/p&gt;&lt;p&gt;原有设置已备份至：&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;如有任何异常，请与我们联系。&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;我们已将您的设置迁移到此版本 Synergy 使用的新格式。&lt;/p&gt;&lt;p&gt;原有设置已备份至：&lt;/p&gt;&lt;p&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;p&gt;如有任何异常，请与我们联系。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Cannot switch to &apos;All users&apos; scope</source>
