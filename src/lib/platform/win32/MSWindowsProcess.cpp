@@ -50,8 +50,10 @@ BOOL MSWindowsProcess::startInForeground()
   si.dwFlags |= STARTF_USESHOWWINDOW;
   si.wShowWindow = SW_MINIMIZE;
 
+  // CreateProcessW writes into the command line. c_str() is const, so copy first.
+  std::wstring commandLine = m_command;
   m_createProcessResult =
-      CreateProcess(nullptr, LPWSTR(m_command.c_str()), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &m_info);
+      CreateProcess(nullptr, commandLine.data(), nullptr, nullptr, TRUE, 0, nullptr, nullptr, &si, &m_info);
   return m_createProcessResult;
 }
 
@@ -68,13 +70,15 @@ BOOL MSWindowsProcess::startAsUser(HANDLE userToken, LPSECURITY_ATTRIBUTES sa)
 
   ZeroMemory(&m_info, sizeof(PROCESS_INFORMATION));
   const DWORD creationFlags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT;
+  std::wstring commandLine = m_command;
   m_createProcessResult = CreateProcessAsUser(
-      userToken, nullptr, LPWSTR(m_command.c_str()), sa, nullptr, TRUE, creationFlags, environment, nullptr, &si,
-      &m_info
+      userToken, nullptr, commandLine.data(), sa, nullptr, TRUE, creationFlags, environment, nullptr, &si, &m_info
   );
+  const DWORD error = m_createProcessResult ? ERROR_SUCCESS : GetLastError();
 
   DestroyEnvironmentBlock(environment);
   CloseHandle(userToken);
+  SetLastError(error);
 
   return m_createProcessResult;
 }
