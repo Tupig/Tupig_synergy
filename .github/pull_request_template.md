@@ -1,18 +1,28 @@
-## Description
-<!--- Describe what your changes do -->
+## Description / 说明
 
-## AI tools used for this PR
-<!--- If any AI tools were used to create this PR you must tell us  -->
-<!--- Include the model version as well as what it was used for  -->
+<!--- Describe what your changes do. -->
+<!--- 说明这次改动做了什么。 -->
 
-## Fixed/related issues
-<!--- If fixing an issue you must add a `fixes` line for each issues fixed-->
-<!--- Example, if fixing Issues #1234 you would add -->
-<!--- fixes: #1234 -->
+## AI tools used for this PR / 本 PR 用过的 AI 工具
 
-## Documentation
-<!--- If user-facing behavior changed, update the matching file under docs/ or README.md -->
+<!--- If any AI tool was used, say so. -->
+<!--- Include the model version and what it was used for. -->
+<!--- 如果用了 AI 工具，必须写明。 -->
+<!--- 写上模型版本，以及用它做了什么。 -->
 
-## How has this been tested?
-<!--- Please describe how you tested your changes -->
-<!--- Include details of your testing environment -->
+## Fixed/related issues / 修复或相关的 issue
+
+<!--- If this PR fixes an issue, add one `fixes` line per issue. -->
+<!--- Example: fixes: #1234 -->
+<!--- 如果修了 issue，每个 issue 写一行 `fixes`。 -->
+<!--- 例如：fixes: #1234 -->
+
+## Documentation / 文档
+
+<!--- If user-facing behavior changed, update the matching file under docs/ or README.md. -->
+<!--- 用户能看到的行为有变化时，更新 docs/ 里对应的文件或 README.md。 -->
+
+## How has this been tested? / 怎样测试的
+
+<!--- Describe how you tested the change, and the environment you used. -->
+<!--- 说明你怎样测试，以及测试环境。 -->

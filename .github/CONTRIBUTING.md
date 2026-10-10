@@ -11,8 +11,8 @@
 
 ## English
 
-Thank you for your interest in TuPig Synergy! Bug reports, feature requests,
-documentation improvements, code and translations are all welcome.
+Thank you for your interest in TuPig Synergy. Bug reports, feature requests,
+documentation, code, and translations are welcome.
 
 Before opening an issue or a pull request:
 
@@ -62,7 +62,7 @@ PR checklist:
 
 ## 中文
 
-感谢您对 TuPig Synergy 的关注！错误报告、功能建议、文档改进、代码与翻译都欢迎。
+感谢你对 TuPig Synergy 的关注。缺陷报告、功能建议、文档、代码和翻译都欢迎。
 
 在提交 issue 或 pull request 之前：
 

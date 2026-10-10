@@ -19,7 +19,7 @@ The TuPig Synergy protocol enables keyboard and mouse sharing between multiple c
 | • **Primary** | Shares keyboard/mouse (controls others) |
 | • **Secondary** | Receives input events |
 
-> **Note**: Typically the Primary also acts as Server, but roles can be separated for firewall traversal.
+> **Note**: The Primary is usually also the Server. The two roles can be split when a firewall has to be crossed.
 
 ### Protocol Versions
 
@@ -235,13 +235,13 @@ TuPig Synergy 协议实现多台计算机间通过 TCP/IP 共享键盘和鼠标�
 | 角色 | 说明 |
 |------|------|
 | **网络角色** | 连接架构 |
-| • **Server** | 监听 TCP 端口 24800 |
-| • **Client** | 主动连接 Server |
+| • **Server（服务端）** | 监听 TCP 端口 24800 |
+| • **Client（客户端）** | 主动连接服务端 |
 | **控制角色** | 输入流向 |
-| • **Primary** | 共享键鼠（控制其他机器） |
-| • **Secondary** | 接收输入事件 |
+| • **Primary（主控端）** | 共享键鼠（控制其他机器） |
+| • **Secondary（被控端）** | 接收输入事件 |
 
-> **注意**：通常 Primary 兼任 Server，但角色可分离以穿越防火墙。
+> **注意**：通常 Primary（主控端）兼任 Server（服务端），但两个角色可以分开，用来穿过防火墙。
 
 ### 协议版本
 

@@ -4,8 +4,8 @@
 
 ![TuPig Synergy Banner](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,15,30&height=180&section=header&text=TuPig%20Synergy&fontSize=45&fontAlignY=35&desc=跨平台键鼠共享工具%20%7C%20Cross-platform%20Keyboard%20Mouse%20Sharing&descAlignY=55&descAlign=50)
 
-**基于 Synergy 的免许可证现代分支 — 一套键鼠，无缝掌控多台电脑。**  
-**A modern, license-free fork of Synergy — Share one keyboard and mouse across multiple computers seamlessly.**
+**基于 Synergy 的分支，去掉了序列号和许可证激活。一套键盘和鼠标控制多台电脑。**  
+**A fork of Synergy with serial-key and license activation removed. One keyboard and mouse control several computers.**
 
 </div>
 
@@ -24,8 +24,8 @@
 
 </div>
 
-**本项目基于 Synergy/Deskflow，移除了序列号验证与许可证激活，开箱即用。**  
-**This project is based on Synergy/Deskflow, with serial key verification and license activation removed — ready to use out of the box.**
+**本项目基于 Synergy/Deskflow，去掉了序列号校验和许可证激活，安装后即可使用。**  
+**This project is based on Synergy/Deskflow. Serial-key checks and license activation are removed, so it runs after install.**
 
 ---
 
@@ -40,9 +40,9 @@
 | 🔒 **TLS Encryption / TLS 加密** | Secure communication with OpenSSL 3.0+ / OpenSSL 3.0+ 安全通信 | ✅ Enabled / 已启用 |
 | 📋 **Clipboard Sync / 剪贴板同步** | Shared clipboard across all hosts / 所有主机共享剪贴板 | ✅ Full / 完全 |
 | 📁 **File Drag-Drop / 文件拖拽** | Windows + macOS implemented; Linux never was / Win/mac 已实现，Linux 从未实现 | ⚠️ Platform-dependent / 视平台而定 |
-| ⌨️ **Hotkey Switching / 热键切屏** | Instant screen switching via custom hotkeys / 自定义热键瞬间切换 | ✅ Configurable / 可配置 |
-| 🚫 **No License Required / 无需许可证** | Completely free, no serial keys or activation / 完全免费，无序列号/激活 | ✅ Forever / 永久 |
-| 🎨 **Modern Qt6 UI / 现代 Qt6 界面** | Beautiful, responsive graphical interface / 美观、响应式图形界面 | ✅ Polished / 打磨完成 |
+| ⌨️ **Hotkey Switching / 热键切屏** | Switch screens with a configured hotkey / 用配置好的热键切换屏幕 | ✅ Configurable / 可配置 |
+| 🚫 **No License Required / 无需许可证** | No serial key and no activation / 没有序列号，也没有激活 | ✅ No expiry / 无到期 |
+| 🎨 **Qt 6 interface / Qt 6 界面** | Graphical interface, Qt 6.7 or newer / 图形界面，Qt 6.7 或更新 | ✅ Included / 已包含 |
 
 </div>
 
@@ -166,31 +166,31 @@ toFile=false
 
 ### Prebuilt packages / 预编译包
 
-Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在推送到 `main`、以及指向 `main` 的 pull request 上自动跑检查，只构建免费 Linux 子集，不发布安装包。手动运行时，`package-type=release` 忽略平台过滤，用同一条 CMake 命令构建三端 Release（Windows MSVC、macOS AppleClang 的 arm64 与 x86_64、Linux gcc）并发布；`package-type=snapshot` 才按 `platform` 选择平台，且不发布。在 GitHub 上发布一个 Release 也会走全平台构建。打好的安装包会挂到 GitHub Release 标签 `v<X.Y.Z>`（例如 [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)）。仓库还没配置 SignPath Foundation 的 secret 和变量时，Windows 包会跳过签名并给出警告。发布作业会对这些安装包做 GitHub 构建来源证明；下载后可用 `gh attestation verify <文件> --repo Tupig/Tupig_synergy` 核对。已发布的 v1.21.2 是在加入该步骤之前构建的，没有这份证明。
+Actions 工作流 **TuPig Synergy**（`.github/workflows/ci.yml`）在推送到 `main`、以及指向 `main` 的 pull request 上自动跑检查，只构建免费 Linux 子集，不发布安装包。手动运行时，`package-type=release` 忽略平台过滤，用同一条 CMake 命令构建三端 Release（Windows MSVC、macOS AppleClang 的 arm64 与 x86_64、Linux gcc）并发布；`package-type=snapshot` 才按 `platform` 选择平台，且不发布。在 GitHub 上发布一个 Release 也会走全平台构建。打好的安装包会挂到 GitHub Release 标签 `v<X.Y.Z>`（例如 [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)）。仓库还没配置 SignPath Foundation 的 secret 和变量时，Windows 包会跳过签名并给出警告。发布作业会对这些安装包做 GitHub 构建来源证明；下载后可用 `gh attestation verify <文件> --repo Tupig/Tupig_synergy` 核对。已发布的 v1.21.2 是在加入该步骤之前构建的，没有这份证明。另外，每天 8:23（北京时间，UTC+8；cron 写成 UTC 的 `23 0 * * *`）会再走一遍同样的 Release 构建。标签 `v<X.Y.Z>` 的说明里如果已经有当前提交的 `Built-From`，或者标签本身就指向这次提交，这次定时就不编译、也不发布。
 
-The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) runs automatically on a push to `main` and on a pull request into `main`. Those runs build only the free Linux subset and do not publish packages. A manual `package-type=release` ignores the platform filter and builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc, then publishes. `package-type=snapshot` honors `platform` and does not publish. Publishing a Release in the GitHub UI also builds every platform. The packages are attached to the GitHub Release tag `v<X.Y.Z>` (for example [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)). Until the SignPath Foundation secret and variables exist, those Windows packages are unsigned and the job says so. The publish job attaches a GitHub build-provenance attestation to those packages; after downloading one, check it with `gh attestation verify <file> --repo Tupig/Tupig_synergy`. The existing v1.21.2 assets were built before that step, so they have no attestation.
+The **TuPig Synergy** Actions workflow (`.github/workflows/ci.yml`) runs automatically on a push to `main` and on a pull request into `main`. Those runs build only the free Linux subset and do not publish packages. A manual `package-type=release` ignores the platform filter and builds all three platforms from one CMake command: Windows MSVC, macOS AppleClang (arm64 and x86_64), and Linux gcc, then publishes. `package-type=snapshot` honors `platform` and does not publish. Publishing a Release in the GitHub UI also builds every platform. The packages are attached to the GitHub Release tag `v<X.Y.Z>` (for example [v1.21.2](https://github.com/Tupig/Tupig_synergy/releases/tag/v1.21.2)). Until the SignPath Foundation secret and variables exist, those Windows packages are unsigned and the job says so. The publish job attaches a GitHub build-provenance attestation to those packages; after downloading one, check it with `gh attestation verify <file> --repo Tupig/Tupig_synergy`. The existing v1.21.2 assets were built before that step, so they have no attestation. The same Release build also runs every day at 08:23 China time (UTC+8; the cron is `23 0 * * *` in UTC). If the `v<X.Y.Z>` notes already contain `Built-From` for this commit, or the tag itself points at this commit, that scheduled run does not compile or publish.
 
 ---
 
 ## 📁 Project Structure / 项目结构
 
 ```
-TuPig Synergy (repo root)
-├── cmake/                      # CMake modules (incl. version & Synergy helpers)
-├── config/                     # Tool configs (SonarQube, test settings sample)
-├── deploy/                     # Platform packaging (DEB/RPM, DMG, MSI/7Z, Flatpak)
-├── docs/                       # Documentation
-├── scripts/                    # Build & CI scripts (build.bat, build.sh, ci/)
-├── src/                        # Source code
-│   ├── apps/                   # Entry points (core, daemon, gui) + res/ branding
-│   ├── lib/                    # 11 core libraries + synergy overlay
-│   └── unittests/              # Qt Test unit tests
-├── translations/               # Qt .ts translation files
-├── triplets/                   # vcpkg overlay triplets (static linking)
-├── vcpkg.json                  # vcpkg dependency manifest
-├── CMakeLists.txt              # Root build config
-├── CMakePresets.json           # Build presets (per-platform)
-└── README.md                   # This file
+TuPig Synergy (repo root / 仓库根目录)
+├── cmake/                      # CMake modules, including version / CMake 模块，含版本号
+├── config/                     # Tool config: SonarQube, sample settings / 工具配置：SonarQube、设置样例
+├── deploy/                     # Packages: DEB/RPM, DMG, MSI/7Z, Flatpak / 安装包：DEB/RPM、DMG、MSI/7Z、Flatpak
+├── docs/                       # Documentation / 文档
+├── scripts/                    # Build and CI scripts / 构建与 CI 脚本（build.bat、build.sh、ci/）
+├── src/                        # Source / 源码
+│   ├── apps/                   # core, daemon, gui, and res/ branding / 入口与 res/ 品牌资源
+│   ├── lib/                    # 11 libraries plus the synergy overlay / 11 个库，另加 synergy 叠加层
+│   └── unittests/              # Qt Test cases / Qt Test 用例
+├── translations/               # Qt .ts files / Qt .ts 翻译
+├── triplets/                   # vcpkg overlay triplets, static link / vcpkg 叠加 triplet，静态链接
+├── vcpkg.json                  # vcpkg manifest / vcpkg 依赖清单
+├── CMakeLists.txt              # Root build file / 根构建文件
+├── CMakePresets.json           # Per-platform presets / 各平台预设
+└── README.md                   # This file / 本文件
 ```
 
 ---
@@ -207,7 +207,7 @@ Keys are defined in `src/lib/common/Settings.h`. The reference and runnable comm
 
 ## 📚 Documentation / 文档
 
-| Document | Description |
+| Document / 文档 | Description / 说明 |
 |---|---|
 | [build.md](docs/build.md) | Detailed Build Guide / 编译指南 |
 | [protocol.md](docs/protocol.md) | Protocol Reference / 协议参考 (v1.8) |
@@ -231,14 +231,14 @@ This project is licensed under **GPL-2.0-only WITH LicenseRef-OpenSSL-Exception*
 
 ## 🙏 Acknowledgments / 致谢
 
-| Project | Role | License |
+| Project / 项目 | Role / 作用 | License / 许可证 |
 |---|---|---|
-| [Synergy](https://github.com/symless/synergy) | Original upstream | GPL-2.0 |
-| [Deskflow](https://deskflow.org) | Community upstream | GPL-2.0 |
-| [Qt](https://www.qt.io/) | GUI Framework | LGPL-3.0 / Commercial |
-| [OpenSSL](https://www.openssl.org/) | TLS/Crypto | Apache-2.0 |
-| [CMake](https://cmake.org/) | Build System | BSD-3-Clause |
-| [vcpkg](https://github.com/microsoft/vcpkg) | Dependency Manager | MIT |
+| [Synergy](https://github.com/symless/synergy) | Original upstream / 最初上游 | GPL-2.0 |
+| [Deskflow](https://deskflow.org) | Community upstream / 社区上游 | GPL-2.0 |
+| [Qt](https://www.qt.io/) | GUI framework / 图形界面框架 | LGPL-3.0 / Commercial |
+| [OpenSSL](https://www.openssl.org/) | TLS and crypto / TLS 与加密 | Apache-2.0 |
+| [CMake](https://cmake.org/) | Build system / 构建系统 | BSD-3-Clause |
+| [vcpkg](https://github.com/microsoft/vcpkg) | Dependency manager / 依赖管理 | MIT |
 
 ---
 

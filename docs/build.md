@@ -10,7 +10,7 @@
 
 | Component | Minimum Version | Notes |
 |-----------|----------------|-------|
-| **CMake** | 3.25+ | Modern CMake required |
+| **CMake** | 3.25+ | Presets use schema version 6, which needs 3.25 |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/crypto support |
 | **libportal** | 0.8.0+ | Linux/BSD only (Wayland portal) |
@@ -309,7 +309,7 @@ Pass `-DSKIP_BUILD_TESTS=OFF` to run that ctest invocation automatically after t
 
 | 组件 | 最低版本 | 说明 |
 |------|----------|------|
-| **CMake** | 3.25+ | 需要现代 CMake 特性 |
+| **CMake** | 3.25+ | 预设使用 schema 第 6 版，因此需要 3.25 |
 | **Qt** | 6.7.0+ | Core, Widgets, Network, DBus (Linux) |
 | **OpenSSL** | 3.0+ | TLS/加密支持 |
 | **libportal** | 0.8.0+ | 仅 Linux/BSD (Wayland Portal) |
@@ -563,8 +563,8 @@ ctest --test-dir build/src/unittests -C Release -R "ClipboardTests" --output-on-
 |------|----------|
 | `Qt6 not found` | 重新运行 `scripts\build.bat` 或 `scripts/build.sh`。不要把 `Qt6_DIR` 或 `CMAKE_PREFIX_PATH` 指到发行版 Qt。 |
 | `OpenSSL not found` | 同上。OpenSSL 是 vcpkg 清单依赖，不是要另外指给 CMake 的系统包。 |
-| `X11 库缺失` | 安装 `libx11-dev`、`libxi-dev`、`libxtst-dev` 以及上面 Linux 软件包列表里的其余项。 |
-| `Wayland 协议缺失` | 日志点名时再安装 `libwayland-dev` 与 `wayland-protocols`。 |
+| `X11 libs missing`（X11 库缺失） | 安装 `libx11-dev`、`libxi-dev`、`libxtst-dev` 以及上面 Linux 软件包列表里的其余项。 |
+| `Wayland protocols`（Wayland 协议） | 日志点名时再安装 `libwayland-dev` 与 `wayland-protocols`。 |
 | vcpkg 下载中断 | 重新运行构建脚本。保留 `vendor/vcpkg/downloads/`；不完整文件会因 SHA-512 校验失败而被拒绝。 |
 
 ---

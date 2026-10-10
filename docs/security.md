@@ -45,8 +45,7 @@ blocking reads `security/blockedKeyCombos`. The default entry is
 `0xEFFF:0x0006` (Ctrl+Alt+Delete), so a remote peer cannot raise the secure
 attention sequence until that entry is removed. The default does not log a
 warning. A warning is logged only when that chord is stored in the setting
-again. A malformed entry is skipped. The local keyboard
-is not affected.
+again. A malformed entry is skipped. The local keyboard is not affected.
 
 The daemon and core IPC pipes are reachable by the interactive user because the
 service runs as SYSTEM. A command is accepted only after `hello` carries the token
@@ -77,12 +76,11 @@ Windows packages are Authenticode-signed by SignPath Foundation only when
 are set. The private key stays on SignPath's HSM. They are not set today, so
 current Windows packages are unsigned. A local Release build cannot use that
 key, so it stays unsigned. When CI signing is enabled, `signtool verify` must
-succeed or that job stops. macOS
-signing runs only when the Apple signing secrets are set. The Apple
-Developer ID certificate is the base64 P12 in `APPLE_P12_CERTIFICATE`, imported
-into a keychain that exists only for that job. See [build.md](build.md).
+succeed or that job stops. macOS signing runs only when the Apple signing secrets are set. The Apple Developer ID certificate is the base64 P12 in `APPLE_P12_CERTIFICATE`, imported into a keychain that exists only for that job. See [build.md](build.md).
 The release published as v1.21.2 was built before provenance was added, so
 those assets have no attestation. The next release build will.
+
+The workflow also starts a Release build every day at 08:23 China time (UTC+8; cron `23 0 * * *` in UTC). It does not compile or publish when tag `v<X.Y.Z>` already records that commit.
 
 The portable Windows archive does not contain `synergy-daemon.exe`. The daemon
 is a separate process installed by the MSI. Nothing in this tree registers
@@ -131,7 +129,7 @@ TLS **默认开启**，对端校验也 **默认开启**（`security/tlsEnabled` 
 
 关掉 TLS 后，这条连接变为明文。明文没有机密性，也没有对端身份。没有单独的服务器密码。设置键和真实的命令行参数见 [`configuration.md`](configuration.md)。
 
-协议有消息长度上限。键鼠路径对输入做频率限制。修饰键掩码里未定义的位会被清掉。组合键拦截读取 `security/blockedKeyCombos`。默认条目是 `0xEFFF:0x0006`（Ctrl+Alt+Delete），对端在删掉这一条之前不能触发安全注意序列。默认值不记警告。只有这个组合再次写入设置时才记警告。本机键盘不受影响。格式错误的条目会被跳过。
+协议有消息长度上限。键鼠路径对输入做频率限制。修饰键掩码里未定义的位会被清掉。组合键拦截读取 `security/blockedKeyCombos`。默认条目是 `0xEFFF:0x0006`（Ctrl+Alt+Delete），对端在删掉这一条之前不能触发安全注意序列。默认值不记警告。只有这个组合再次写入设置时才记警告。格式错误的条目会被跳过。本机键盘不受影响。
 
 守护进程和 core 的 IPC 管道对交互用户可达，因为服务以 SYSTEM 运行。只有 `hello` 带上系统设置目录旁对应令牌文件里的内容，命令才会被接受。每个文件仅 SYSTEM、Administrators 和当前控制台用户可读。服务每秒刷新这两个文件，因为只有 SYSTEM 能看到文件创建之后才出现的控制台会话。core 也会刷新自己的文件。版本号不是凭据。屏幕进入和离开命令只运行设置目录里已经存在的文件。服务模式会把当前设置复制到该目录，再只发送相对文件名。
 
@@ -146,6 +144,8 @@ gh attestation verify <file> --repo Tupig/Tupig_synergy
 这份声明说明文件来自本仓库的工作流和提交。它不是 Authenticode 签名，也不是 Apple 公证。
 
 只有配好 `SIGNPATH_API_TOKEN`、`SIGNPATH_ORGANIZATION_ID` 和 `SIGNPATH_PROJECT_SLUG` 时，Windows 包才会由 SignPath Foundation 做 Authenticode 签名。私钥留在 SignPath 的 HSM 上。现在没有这些值，所以当前 Windows 包未签名。本地 Release 构建拿不到这把私钥，因此不签名。CI 启用签名后，`signtool verify` 不通过则该作业停止。macOS 签名只在配好 Apple 签名 secret 时运行。Developer ID 证书是 `APPLE_P12_CERTIFICATE` 里的 base64 P12，只导入当次作业的临时钥匙串。见 [build.md](build.md)。已经发布的 v1.21.2 是在加入来源证明之前构建的，那些资产没有证明。下一次 Release 构建会带上。
+
+工作流每天 8:23（北京时间，UTC+8；cron 是 UTC 的 `23 0 * * *`）也会启动一次 Release 构建。标签 `v<X.Y.Z>` 已经记下这次提交时，不编译、不发布。
 
 Windows 便携包不含 `synergy-daemon.exe`。daemon 是独立进程，由 MSI 安装。本仓库没有任何代码自行注册 Windows 服务。
 

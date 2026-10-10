@@ -291,10 +291,10 @@ checkPeerFingerprints = false  # for self-signed
 
 ```text
 [2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
-[2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
+[2026-10-09T16:26:01.000] ERROR: QtDataSocket: peer has no tls certificate
 ```
 
-The level token is `INFO`, `WARNING`, `ERROR`, `DEBUG`, or `VERBOSE`. File logging is off until `[log] toFile=true`. The default path is `~/synergy.log` (`kAppId`), not `synergy-debug.log`. The GUI log panel shows the same lines when file logging is off.
+The level token is `INFO`, `WARNING`, `ERROR`, `DEBUG`, or `VERBOSE`. The second sample line is an error: a TLS peer with no certificate is disconnected, not accepted. File logging is off until `[log] toFile=true`. The default path is `~/synergy.log` (`kAppId`), not `synergy-debug.log`. The GUI log panel shows the same lines when file logging is off.
 
 ---
 
@@ -602,10 +602,10 @@ checkPeerFingerprints = false  # 自签名时
 
 ```text
 [2026-10-09T16:26:00.000] INFO: QtNetworkTransport: connected (TLS)
-[2026-10-09T16:26:01.000] WARNING: QtDataSocket: accepted client without a tls certificate
+[2026-10-09T16:26:01.000] ERROR: QtDataSocket: peer has no tls certificate
 ```
 
-级别标记是 `INFO`、`WARNING`、`ERROR`、`DEBUG` 或 `VERBOSE`。`[log] toFile=true` 之前不会写文件。默认路径是 `~/synergy.log`（`kAppId`），不是 `synergy-debug.log`。未写文件时，GUI 日志面板里是同样的行。
+级别标记是 `INFO`、`WARNING`、`ERROR`、`DEBUG` 或 `VERBOSE`。示例第二行是错误：TLS 对端没有证书时会断开，不会接受这条连接。`[log] toFile=true` 之前不会写文件。默认路径是 `~/synergy.log`（`kAppId`），不是 `synergy-debug.log`。未写文件时，GUI 日志面板里是同样的行。
 
 ---
 
