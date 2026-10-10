@@ -26,6 +26,7 @@ void PacketStreamFilter::close()
 {
   std::scoped_lock lock{m_mutex};
   m_size = 0;
+  m_formatError = false;
   m_buffer.pop(m_buffer.getSize());
   StreamFilter::close();
 }
@@ -116,6 +117,9 @@ bool PacketStreamFilter::readPacketSize()
     m_size =
         ((uint32_t)buffer[0] << 24) | ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[2] << 8) | (uint32_t)buffer[3];
     if (m_size > PROTOCOL_MAX_MESSAGE_LENGTH) {
+      m_size = 0;
+      m_buffer.pop(m_buffer.getSize());
+      m_formatError = true;
       m_events->addEvent(Event(EventTypes::StreamInputFormatError, getEventTarget()));
       return false;
     }
@@ -125,6 +129,10 @@ bool PacketStreamFilter::readPacketSize()
 
 bool PacketStreamFilter::readMore()
 {
+  if (m_formatError) {
+    return false;
+  }
+
   // note if we have whole packet
   bool wasReady = isReadyNoLock();
 

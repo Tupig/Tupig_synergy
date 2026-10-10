@@ -46,5 +46,6 @@ private:
   uint32_t m_size = 0;
   StreamBuffer m_buffer;
   bool m_inputShutdown = false;
+  bool m_formatError = false;
   IEventQueue *m_events = nullptr;
 };
