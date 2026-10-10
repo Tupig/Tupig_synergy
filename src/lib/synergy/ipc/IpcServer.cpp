@@ -57,18 +57,23 @@ IpcServer::~IpcServer()
   m_server->close();
 }
 
-void IpcServer::listen()
+bool IpcServer::listen()
 {
   // IPC server normally runs as system, but GUI runs as regular user, so we need to allow world access.
   m_server->setSocketOptions(QLocalServer::WorldAccessOption);
 
   connect(m_server, &QLocalServer::newConnection, this, &IpcServer::handleNewConnection);
-  QLocalServer::removeServer(m_serverName);
-  if (m_server->listen(m_serverName)) {
-    LOG_DEBUG("%s ipc server listening on: %s", m_typeName.constData(), m_serverName.toUtf8().constData());
-  } else {
-    LOG_ERR("%s ipc server failed to listen on: %s", m_typeName.constData(), m_serverName.toUtf8().constData());
+  if (!m_server->listen(m_serverName)) {
+    if (m_server->serverError() == QAbstractSocket::AddressInUseError)
+      QLocalServer::removeServer(m_serverName);
+    if (!m_server->listen(m_serverName)) {
+      LOG_ERR("%s ipc server failed to listen on: %s", m_typeName.constData(), m_serverName.toUtf8().constData());
+      return false;
+    }
   }
+
+  LOG_DEBUG("%s ipc server listening on: %s", m_typeName.constData(), m_serverName.toUtf8().constData());
+  return true;
 }
 
 void IpcServer::handleNewConnection()

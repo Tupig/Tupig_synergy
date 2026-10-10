@@ -24,7 +24,7 @@ public:
   explicit IpcServer(QObject *parent, const QString &serverName, const QString &typeName);
   ~IpcServer() override;
 
-  void listen();
+  bool listen();
   void broadcastCommand(const QString &command, const QString &args = "");
 
 Q_SIGNALS:

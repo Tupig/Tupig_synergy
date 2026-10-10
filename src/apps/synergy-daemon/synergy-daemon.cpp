@@ -107,7 +107,10 @@ int main(int argc, char **argv)
 #endif
 
     const auto ipcServer = new ipc::DaemonIpcServer(&app, qPrintable(DaemonApp::logFilename())); // NOSONAR - Qt managed
-    ipcServer->listen();
+    if (!ipcServer->listen()) {
+      handleError("ipc server failed to listen");
+      return s_exitFailed;
+    }
     daemon.connectIpcServer(ipcServer);
 
     QThread daemonThread;

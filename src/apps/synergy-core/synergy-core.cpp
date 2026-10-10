@@ -147,7 +147,10 @@ int main(int argc, char **argv)
   QObject::connect(
       ipcServer, &synergy::core::ipc::IpcServer::stopProcessRequested, coreApp, &App::quit, Qt::DirectConnection
   );
-  ipcServer->listen();
+  if (!ipcServer->listen()) {
+    LOG_ERR("ipc server failed to listen");
+    return s_exitFailed;
+  }
 
   QThread coreThread;
   QObject::connect(&coreThread, &QThread::finished, &app, &QApplication::quit);
