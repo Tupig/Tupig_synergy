@@ -332,6 +332,8 @@ A clean run is one line: `encoding OK checked=669 violations=0 allowed=utf-8 mod
 | `Wayland protocols` | Install `libwayland-dev` and `wayland-protocols` when the log asks for them. |
 | vcpkg download stalls | Run the build script again. Keep `vendor/vcpkg/downloads/`; partial files are rejected by their SHA-512. |
 | `encoding FAIL ... detected=` | The file is not in the whitelist. Save it as UTF-8 without a BOM, or add that encoding to `allowed`. `ascii` already passes under `utf-8`. `detected=binary` means a NUL byte; resave the file as text. |
+| `_FORTIFY_SOURCE` redefined | The toolchain already defined it (Flatpak uses level 3). The build keeps that definition and does not add a second one. |
+| MSVC CRT merge module not found | A dynamic-CRT release installs `vcruntime140.dll` and `msvcp140.dll` beside the binaries when the merge module is absent. |
 
 ---
 
@@ -630,6 +632,8 @@ encoding FAIL count=1 checked=669 allowed=utf-8 mode=fail
 | `Wayland protocols`（Wayland 协议） | 日志点名时再安装 `libwayland-dev` 与 `wayland-protocols`。 |
 | vcpkg 下载中断 | 重新运行构建脚本。保留 `vendor/vcpkg/downloads/`；不完整文件会因 SHA-512 校验失败而被拒绝。 |
 | `encoding FAIL ... detected=` | 该文件不在白名单里。另存为不带 BOM 的 UTF-8，或把检测到的编码加进 `allowed`。`utf-8` 已经接受 `ascii`。`detected=binary` 表示文件里有 NUL，需要另存为文本。 |
+| `_FORTIFY_SOURCE` 被重复定义 | 工具链已经定义过（Flatpak 用的是 3）。构建保留那一个定义，不再加第二个。 |
+| 找不到 MSVC CRT 合并模块 | 动态 CRT 的发布构建在没有合并模块时，把 `vcruntime140.dll` 和 `msvcp140.dll` 装到可执行文件旁边。 |
 
 ---
 

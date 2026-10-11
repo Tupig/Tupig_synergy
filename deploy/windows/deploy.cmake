@@ -65,9 +65,44 @@ list(APPEND CPACK_WIX_CUSTOM_XMLNS "util=http://wixtoolset.org/schemas/v4/wxs/ut
 # users don't have to download and install the Visual C++ redistributable
 # themselves. The merge module ships with the Visual Studio build environment.
 # Docs: https://learn.microsoft.com/en-us/cpp/windows/redistributing-components-by-using-merge-modules
-set(REDIST_MERGE_MODULE_DIR "$ENV{VCINSTALLDIR}Redist/MSVC")
-file(GLOB REDIST_MERGE_MODULE_PATHS
-  "${REDIST_MERGE_MODULE_DIR}/*/MergeModules/Microsoft_VC*_CRT_${BUILD_ARCHITECTURE}.msm")
+# VS 2022 names the file Microsoft_VC143_CRT_<arch>.msm and keeps it under
+# Redist/MSVC/v143/MergeModules. VS 2026 uses VC145 and may use a different
+# case for the architecture (ARM64 vs arm64). Search both the VS redist root
+# and VCToolsRedistDir, then match the filename case-insensitively.
+set(_crt_msm_arch "${BUILD_ARCHITECTURE}")
+if(_crt_msm_arch STREQUAL "x86_64" OR _crt_msm_arch STREQUAL "amd64")
+  set(_crt_msm_arch "x64")
+elseif(_crt_msm_arch STREQUAL "aarch64")
+  set(_crt_msm_arch "arm64")
+endif()
+string(TOLOWER "${_crt_msm_arch}" _crt_msm_arch)
+
+set(_crt_msm_roots "")
+if(NOT "$ENV{VCINSTALLDIR}" STREQUAL "")
+  list(APPEND _crt_msm_roots "$ENV{VCINSTALLDIR}Redist/MSVC")
+endif()
+if(NOT "$ENV{VCToolsRedistDir}" STREQUAL "")
+  list(APPEND _crt_msm_roots "$ENV{VCToolsRedistDir}")
+endif()
+
+set(_crt_msm_candidates "")
+foreach(_crt_msm_root IN LISTS _crt_msm_roots)
+  file(GLOB_RECURSE _crt_msm_here "${_crt_msm_root}/*.msm")
+  list(APPEND _crt_msm_candidates ${_crt_msm_here})
+endforeach()
+
+set(REDIST_MERGE_MODULE_PATHS "")
+foreach(_crt_msm IN LISTS _crt_msm_candidates)
+  cmake_path(GET _crt_msm FILENAME _crt_msm_name)
+  string(TOLOWER "${_crt_msm_name}" _crt_msm_name)
+  if(_crt_msm_name MATCHES "^microsoft_vc.+_crt_${_crt_msm_arch}\\.msm$")
+    list(APPEND REDIST_MERGE_MODULE_PATHS "${_crt_msm}")
+  endif()
+endforeach()
+if(REDIST_MERGE_MODULE_PATHS)
+  list(REMOVE_DUPLICATES REDIST_MERGE_MODULE_PATHS)
+endif()
+
 if (REDIST_MERGE_MODULE_PATHS)
   # Multiple toolset versions may be installed; pick the newest.
   list(SORT REDIST_MERGE_MODULE_PATHS)
@@ -82,10 +117,41 @@ elseif(NOT CMAKE_MSVC_RUNTIME_LIBRARY MATCHES "DLL")
   # is not a defect, and the build must not warn about it.
   message(STATUS "Static CRT in use; the installer does not merge the VC++ redistributable")
 elseif(SYNERGY_VERSION_RELEASE OR SYNERGY_VERSION_SNAPSHOT)
-  # A dynamic-CRT shipping build without the merge module installs a broken MSI.
-  message(FATAL_ERROR
-    "MSVC CRT merge module not found under ${REDIST_MERGE_MODULE_DIR}; "
-    "the installer will NOT bundle the Visual C++ runtime")
+  # The Windows ARM image ships the VC++ DLLs without the merge module. Put
+  # those DLLs next to the binaries so the MSI and the portable archive still
+  # run. Prefer the desktop redist over the Spectre and debug copies.
+  set(_crt_dlls "")
+  if(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    set(_crt_dlls "${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}")
+  else()
+    set(_crt_dll_found "")
+    foreach(_crt_msm_root IN LISTS _crt_msm_roots)
+      file(GLOB_RECURSE _crt_dll_here "${_crt_msm_root}/*.dll")
+      list(APPEND _crt_dll_found ${_crt_dll_here})
+    endforeach()
+    foreach(_crt_dll IN LISTS _crt_dll_found)
+      cmake_path(GET _crt_dll FILENAME _crt_dll_name)
+      string(TOLOWER "${_crt_dll_name}" _crt_dll_name)
+      string(TOLOWER "${_crt_dll}" _crt_dll_path)
+      if(_crt_dll_name MATCHES "^(vcruntime140.*|msvcp140.*|concrt140.*)\\.dll$"
+          AND NOT _crt_dll_path MATCHES "debug"
+          AND NOT _crt_dll_path MATCHES "spectre"
+          AND _crt_dll_path MATCHES "[/\\\\]${_crt_msm_arch}[/\\\\]")
+        list(APPEND _crt_dlls "${_crt_dll}")
+      endif()
+    endforeach()
+    if(_crt_dlls)
+      list(REMOVE_DUPLICATES _crt_dlls)
+    endif()
+  endif()
+  if(_crt_dlls)
+    install(FILES ${_crt_dlls} DESTINATION ${CMAKE_INSTALL_BINDIR})
+    message(STATUS "MSVC CRT merge module not found; installing the VC++ runtime DLLs beside the binaries")
+  else()
+    message(FATAL_ERROR
+      "MSVC CRT merge module and runtime DLLs were not found under VCINSTALLDIR or VCToolsRedistDir; "
+      "the installer will NOT bundle the Visual C++ runtime")
+  endif()
 else()
   # Dev builds routinely lack the redist merge module; not bundling it is expected.
   message(STATUS

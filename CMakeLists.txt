@@ -307,9 +307,16 @@ else()
       message(STATUS "AVX2-class code generation enabled (-march=x86-64-v3)")
     endif()
     # _FORTIFY_SOURCE needs optimization and is incompatible with sanitizers, so
-    # it is scoped to release builds and omitted when ASan is on.
+    # it is scoped to release builds and omitted when ASan is on. Flatpak's SDK
+    # already passes -D_FORTIFY_SOURCE=3; defining it again is a macro
+    # redefinition, and -Werror fails the build.
     if(NOT SYNERGY_ENABLE_ASAN)
-      add_compile_options("$<$<CONFIG:Release>:-D_FORTIFY_SOURCE=2>")
+      set(_fortify_flags "$ENV{CFLAGS} $ENV{CXXFLAGS} ${CMAKE_C_FLAGS} ${CMAKE_CXX_FLAGS}")
+      if(_fortify_flags MATCHES "_FORTIFY_SOURCE")
+        message(STATUS "Toolchain already defines _FORTIFY_SOURCE; leaving it unchanged")
+      else()
+        add_compile_options("$<$<CONFIG:Release>:-D_FORTIFY_SOURCE=2>")
+      endif()
     endif()
   endif()
 
