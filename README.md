@@ -214,6 +214,7 @@ Keys are defined in `src/lib/common/Settings.h`. The reference and runnable comm
 | [configuration.md](docs/configuration.md) | Configuration Reference / 配置参考 |
 | [troubleshooting.md](docs/troubleshooting.md) | Troubleshooting Guide / 故障排查 |
 | [security.md](docs/security.md) | Security Policy / 安全策略 |
+| [CONTRIBUTING.md](.github/CONTRIBUTING.md) | Branches, reviews, commit format / 分支、审查和提交格式 |
 | [Wiki](https://github.com/Tupig/Tupig_synergy/wiki) | Short map of these docs / 上述文档的简短索引 |
 
 ---

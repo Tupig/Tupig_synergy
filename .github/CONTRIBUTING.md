@@ -22,6 +22,30 @@ Before opening an issue or a pull request:
   Flags come from `CoreArgs.h` and `synergy-gui.cpp`. There is no `--debug` or `--no-daemon`.
 - **Troubleshooting**: [`docs/troubleshooting.md`](../docs/troubleshooting.md).
 
+How a change lands:
+
+- `main` is the protected default branch. Do not push or force-push to it.
+- Do the work on `feature/<topic>` or `fix/<topic>`, one topic per branch.
+- Open a pull request into `main`. It merges only after the `ci-passed` check is
+  green and the pull request has one approving review.
+- This repository has a single maintainer, so that account may merge a green
+  pull request without a second reviewer. Everyone else needs the review.
+  Direct pushes to `main` stay blocked.
+
+Commit subjects use Conventional Commits, and the subject after the colon is
+Chinese (`AGENTS.md` R10):
+
+```text
+feat: 增加一项用户能看到的能力
+fix: 修正一个缺陷
+docs: 只改文档
+refactor: 行为不变的整理
+test: 只改测试
+ci: 只改持续集成
+build: 只改构建或打包
+chore: 其余仓库杂务
+```
+
 Code standards:
 
 - C++20, enforced by CMake 3.25+.
@@ -37,8 +61,8 @@ Code standards:
 - Tests: Qt Test + CTest. From a Windows Release build,
   `ctest --test-dir build/src/unittests -C Release --output-on-failure`.
   Linux and macOS omit `-C Release`. `ctest --test-dir build` finds nothing.
-- Commits: Conventional Commits; one logical change per commit; commit messages
-  in Chinese (see `AGENTS.md` R10).
+- Commits: one logical change per commit, on a feature or fix branch, using the
+  types above. Do not commit straight to `main`.
 - Windows automation is `.bat` only — no `.ps1` anywhere (AGENTS R1).
 
 Upstream sync: this repository is grafted onto and periodically merged with
@@ -57,8 +81,8 @@ Reporting:
 
 PR checklist:
 
-- [ ] Branch targets `main`
-- [ ] Commits follow Conventional Commits (Chinese messages)
+- [ ] Branch is `feature/<topic>` or `fix/<topic>` and targets `main`
+- [ ] Commits follow Conventional Commits, with a Chinese subject
 - [ ] Code passes `clang-format`
 - [ ] `python3 scripts/ci/check-encoding.py` passes
 - [ ] Tests pass (`ctest --test-dir build/src/unittests`, plus `-C Release` on Windows)
@@ -78,6 +102,26 @@ PR checklist:
   参数以 `CoreArgs.h` 和 `synergy-gui.cpp` 为准。没有 `--debug`，也没有 `--no-daemon`。
 - **故障排查**：[`docs/troubleshooting.md`](../docs/troubleshooting.md)。
 
+改动如何进入仓库：
+
+- `main` 是受保护的默认分支。不要直接推送，也不要强制推送。
+- 工作放在 `feature/<主题>` 或 `fix/<主题>`，一个分支只做一件事。
+- 向 `main` 开 Pull Request。`ci-passed` 检查通过，并且有一次批准审查之后，才能合并。
+- 本仓库目前只有一位维护者，因此该账号可以在检查通过后合并自己的 Pull Request，不必再等第二位审查者。其他人的改动必须经过审查。直接向 `main` 推送仍然被拒绝。
+
+提交标题使用 Conventional Commits，冒号后面的说明使用中文（`AGENTS.md` R10）：
+
+```text
+feat: 增加一项用户能看到的能力
+fix: 修正一个缺陷
+docs: 只改文档
+refactor: 行为不变的整理
+test: 只改测试
+ci: 只改持续集成
+build: 只改构建或打包
+chore: 其余仓库杂务
+```
+
 代码规范：
 
 - C++20，由 CMake 3.25+ 强制。
@@ -92,8 +136,7 @@ PR checklist:
 - 测试：Qt Test + CTest。Windows Release 构建使用
   `ctest --test-dir build/src/unittests -C Release --output-on-failure`。
   Linux 与 macOS 去掉 `-C Release`。`ctest --test-dir build` 找不到用例。
-- 提交：遵循 Conventional Commits；一提交一事；提交信息使用中文（见
-  `AGENTS.md` R10）。
+- 提交：一提交一事，放在功能或修复分支上，类型见上一节。不要直接提交到 `main`。
 - Windows 自动化脚本只允许 `.bat` —— 全仓库禁止 `.ps1`（AGENTS R1）。
 
 上游同步：本仓库嫁接自并定期合并
@@ -110,8 +153,8 @@ PR checklist:
 
 PR 检查清单：
 
-- [ ] 分支目标为 `main`
-- [ ] 提交遵循 Conventional Commits（中文信息）
+- [ ] 分支为 `feature/<主题>` 或 `fix/<主题>`，目标为 `main`
+- [ ] 提交遵循 Conventional Commits，标题为中文
 - [ ] 代码通过 `clang-format`
 - [ ] `python3 scripts/ci/check-encoding.py` 通过
 - [ ] 测试全部通过（`ctest --test-dir build/src/unittests`，Windows 加 `-C Release`）
