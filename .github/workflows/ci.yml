@@ -84,13 +84,13 @@ env:
   # Third-party Node actions (vcpkg) print DeprecationWarning on Node 20. That is not a project defect.
   NODE_OPTIONS: --no-deprecation
 
-# Release shape, propagated to cmake (Synergy.cmake reads these as options).
-# Push, pull request, a published Release, the daily schedule, and
-# package-type=release use the clean X.Y.Z. That is the only version the
-# Windows GUI file can carry (synergy_<X.Y.Z>.exe). package-type=snapshot
-# keeps the snapshot suffix and therefore does not build Windows.
-SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'release' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
-SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot' }}
+  # Release shape, propagated to cmake (Synergy.cmake reads these as options).
+  # Push, pull request, a published Release, the daily schedule, and
+  # package-type=release use the clean X.Y.Z. That is the only version the
+  # Windows GUI file can carry (synergy_<X.Y.Z>.exe). package-type=snapshot
+  # keeps the snapshot suffix and therefore does not build Windows.
+  SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'release' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
+  SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot' }}
 
 jobs:
   # ---------------------------------------------------------------------------
