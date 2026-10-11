@@ -32,7 +32,7 @@ x86_64 and x64 name the same 64-bit Intel/AMD architecture. They are not 32-bit.
 
 A push to `main` and a pull request compile and package Windows, macOS, and Linux in the same run. The version is the clean `X.Y.Z` from `Version.cmake`, so the Windows GUI file stays `synergy_<X.Y.Z>.exe` and the package names match a release. The run uploads those packages as Actions artifacts. The GitHub Release is still published by the daily 08:23 schedule, a manual `package-type=release` run, or a published Release.
 
-Qt and OpenSSL are not stored in this repository. Local release builds take them from the vcpkg manifest. CI Windows and macOS install a prebuilt Qt and build OpenSSL with vcpkg; Linux CI installs the distro packages on the runner. `vendor/` stays untracked. Committing the Qt tree would make the clone unusable, so a fresh checkout still needs a network the first time it fetches those libraries. No extra package host is added for this.
+Those builds run on GitHub-hosted runners. Qt and OpenSSL are downloaded there, not onto the machine that cloned the repository. A clone does not fetch them. `vendor/` stays untracked.
 
 ### Default Build Options
 
@@ -369,7 +369,7 @@ x86_64 与 x64 都是 64 位 Intel/AMD，不是 32 位。
 
 推送到 `main` 和 Pull Request 会在同一次运行里编译并打包 Windows、macOS 和 Linux。版本号用 `Version.cmake` 里的正式 `X.Y.Z`，因此 Windows GUI 仍是 `synergy_<X.Y.Z>.exe`，包名与正式发布一致。这些包作为 Actions 产物上传。GitHub Release 仍由每天 08:23 的定时任务、手动的 `package-type=release`，或一次已发布的 Release 来发布。
 
-Qt 和 OpenSSL 不放进本仓库。本地发布构建从 vcpkg 清单获取它们。CI 的 Windows 和 macOS 安装预编译 Qt，并用 vcpkg 构建 OpenSSL；Linux CI 使用运行器上的发行版软件包。`vendor/` 不入库。把 Qt 源码树提交进来会让克隆无法使用，所以新的检出第一次获取这些库时仍需要网络。这次没有另外增加软件源。
+这些构建跑在 GitHub 托管的运行器上。Qt 和 OpenSSL 下载到运行器，不会下载到克隆仓库的那台机器。只克隆仓库不会去取它们。`vendor/` 不入库。
 
 ### 默认启用组件
 
