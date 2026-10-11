@@ -44,7 +44,7 @@ on:
           - release
           - snapshot
       platform:
-        description: "snapshot only. blank = all platforms. Ignored when package-type is release."
+        description: "snapshot only. blank = macOS/Linux/Flatpak; snapshot never builds Windows. Ignored when package-type is release."
         required: false
         default: ""
         type: choice
