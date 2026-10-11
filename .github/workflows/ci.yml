@@ -7,7 +7,9 @@
 #   5. ci-passed, the branch-protection gate
 #
 # Triggers — one run does not start another:
-#   push to main          lint + free Linux. No publish. A newer push cancels the older one.
+#   push to main          lint, then Windows, macOS, Linux, and Flatpak in parallel.
+#                         Clean X.Y.Z packages, uploaded as artifacts. No GitHub Release.
+#                         A newer push cancels the older one.
 #   pull_request to main  same as push. A newer push to that PR cancels the older run.
 #   release published     all platforms, clean version, attach packages. This fires when a
 #                         person publishes a Release. The publish job uses the workflow
@@ -22,7 +24,7 @@
 #                         records this commit (Built-From, or the tag itself), the
 #                         run stops before compile and publish. GitHub still starts
 #                         the workflow; the jobs are skipped.
-# Push/PR and a manual run use different concurrency groups, so a free Linux
+# Push/PR and a manual run use different concurrency groups, so a three-platform
 # check cannot cancel a release build that is already going.
 
 name: TuPig Synergy
@@ -82,12 +84,13 @@ env:
   # Third-party Node actions (vcpkg) print DeprecationWarning on Node 20. That is not a project defect.
   NODE_OPTIONS: --no-deprecation
 
-  # Release shape, propagated to cmake (Synergy.cmake reads these as options).
-  # Release events, the daily schedule, and package-type=release → clean X.Y.Z.
-  # Push to main + package-type=snapshot → snapshot build.
-  # Pull requests fall through to the cmake dev default.
-  SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'release' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
-  SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot') }}
+# Release shape, propagated to cmake (Synergy.cmake reads these as options).
+# Push, pull request, a published Release, the daily schedule, and
+# package-type=release use the clean X.Y.Z. That is the only version the
+# Windows GUI file can carry (synergy_<X.Y.Z>.exe). package-type=snapshot
+# keeps the snapshot suffix and therefore does not build Windows.
+SYNERGY_VERSION_RELEASE: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'release' || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'release') }}
+SYNERGY_VERSION_SNAPSHOT: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.package-type == 'snapshot' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -124,9 +127,11 @@ jobs:
 
       # One place decides what this event builds. Job `if`s only read these
       # outputs, so a platform is not accidentally both required and skipped.
-      # push/PR: free Linux. release, the daily schedule, and package-type=release:
-      # every platform and a GitHub Release. The schedule skips that when this
-      # commit is already on the tag. snapshot: honor platform; blank means all.
+      # push/PR: Windows, macOS, Linux, and Flatpak together, clean X.Y.Z, no
+      # GitHub Release. release, the daily schedule, and package-type=release:
+      # the same platforms, then publish. The schedule skips that when this
+      # commit is already on the tag. snapshot: macOS, Linux, and Flatpak.
+      # Windows is omitted there because the GUI filename cannot take a suffix.
       - name: Plan builds for this event
         id: plan
         env:
@@ -145,8 +150,11 @@ jobs:
           skip_unchanged=false
           case "$GITHUB_EVENT_NAME" in
             push|pull_request)
-              linux_key=free
+              linux_key=full
+              build_windows=true
+              build_macos=true
               build_linux=true
+              build_flatpak=true
               ;;
             release)
               linux_key=full
@@ -197,7 +205,7 @@ jobs:
                 publish_release=true
               else
                 if [ -z "$PLATFORM" ] || [ "$PLATFORM" = "windows" ]; then
-                  build_windows=true
+                  echo "snapshot skips Windows: the GUI file must be synergy_<X.Y.Z>.exe"
                 fi
                 if [ -z "$PLATFORM" ] || [ "$PLATFORM" = "macos" ]; then
                   build_macos=true
@@ -1227,10 +1235,10 @@ jobs:
 
     steps:
       # 'skipped' is treated as passing because the plan step skips platforms
-      # on purpose (push/PR skip Windows, macOS and Flatpak; snapshot honors
-      # platform; the daily schedule skips everything when the commit is already
-      # published). package-type=release and a published Release do not skip a
-      # platform. A failed job is still a failure. get-version never filters
+      # on purpose (snapshot skips Windows; the daily schedule skips everything
+      # when the commit is already published). push, pull request,
+      # package-type=release, and a published Release build Windows, macOS,
+      # and Linux. A failed job is still a failure. get-version never filters
       # out, so requiring it catches a build skipped by its failure.
       # lint-clang and lint-encoding have no platform filter: a failed lint used
       # to be invisible here (builds skip via needs:, skipped counted as ok).
