@@ -29,7 +29,7 @@
 
 ## Checklist / 检查清单
 
-- [ ] Branch targets `main` / 分支指向 `main`
+- [ ] Branch is `feature/` or `fix/` and targets `main` / 分支为 `feature/` 或 `fix/`，目标是 `main`
 - [ ] Commit messages are Chinese Conventional Commits / 提交信息是中文 Conventional Commits
 - [ ] `clang-format` 20.1.0 matches / `clang-format` 20.1.0 通过
 - [ ] `python3 scripts/ci/check-encoding.py` passes / 编码检查通过

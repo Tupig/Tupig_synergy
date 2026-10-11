@@ -31,7 +31,7 @@ conflict instead of silently breaking the convention.
 | R7 | `vendor/` (vcpkg checkout) and `build/` are never committed — they are bootstrapped locally. | Repository stays small and clonable. |
 | R8 | Code must compile on Windows, macOS and Linux. Platform code lives under `src/lib/platform/<os>/`. | One source tree, conditional compilation. |
 | R9 | Documentation is bilingual in a single file (sectioned `## English` + `## 中文`). | One document, two audiences. |
-| R10 | Commit messages are written in Chinese. | Project convention. |
+| R10 | Commit messages are Chinese Conventional Commits: `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `build`, or `chore`, then a Chinese subject. | Project convention. English subjects would break the existing history and the bilingual docs. |
 | R11 | Every task is tracked on a live todo list before work starts. Update it on each status change and record every step. If the list is missing or stale, stop and repair it before continuing. Procedure: [Task progress](#task-progress-r11). | Progress stays visible. A finished claim with open items is invalid. |
 
 ### Task progress (R11)
@@ -139,7 +139,7 @@ This section is the authoritative list. The following are deliberate, not defect
 ### Modification workflow
 
 1. Propose the approach before changing code; prefer the smallest correct change.
-2. One logical change per commit, committed immediately after it is made.
+2. One logical change per commit, on `feature/<topic>` or `fix/<topic>`. Open a pull request into `main`. Do not push to `main`.
 3. Verify with evidence (build log, command output, real run). Never report success on reasoning alone.
 4. Keep the issue tracker in step with code changes.
 
@@ -178,7 +178,7 @@ This section is the authoritative list. The following are deliberate, not defect
 | R7 | `vendor/`（vcpkg 检出）与 `build/` 永不入库，一律本地引导生成。 | 保持仓库轻量、可克隆。 |
 | R8 | 代码必须能在 Windows、macOS、Linux 三平台编译。平台相关代码放在 `src/lib/platform/<os>/`。 | 单一源码树 + 条件编译。 |
 | R9 | 文档在单一文件内中英双语（分节 `## English` + `## 中文`）。 | 一份文档，两类读者。 |
-| R10 | 提交信息使用中文。 | 项目约定。 |
+| R10 | 提交信息使用中文 Conventional Commits：`feat`、`fix`、`docs`、`refactor`、`test`、`ci`、`build` 或 `chore`，后面跟中文说明。 | 项目约定。英文说明会打断现有历史，也和双语文档不一致。 |
 | R11 | 每项任务在动手前都用实时 todo 列表跟踪。状态一变就更新，每个环节都要有条目。列表缺失或过期时，先停下补记再继续。做法见 [任务进度](#任务进度-r11)。 | 进度必须可见。仍有未完成条目时，宣布完成无效。 |
 
 ### 任务进度 R11
@@ -271,7 +271,7 @@ manifest 仍是发布构建与所有本地构建的唯一真源。该例外附�
 ### 改动流程
 
 1. 动手改代码前先给出方案，优先选择最小且正确的改动。
-2. 一个提交只做一件逻辑独立的事，做完立即提交。
+2. 一个提交只做一件逻辑独立的事，放在 `feature/<主题>` 或 `fix/<主题>` 上。向 `main` 开 Pull Request。不要直接推送到 `main`。
 3. 必须有证据验证（构建日志、命令输出、真实运行）。严禁仅凭推理声称通过。
 4. 代码变更须同步更新 GitHub Issues（问题追踪；关联 issue 验证通过后关闭并附证据）。
 
