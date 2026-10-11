@@ -8,6 +8,8 @@
 
 #include "LogLevel.h"
 #include "NetworkProtocol.h"
+#include "net/TlsPolicy.h"
+#include "synergy/protocol/ProtocolTypes.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -182,7 +184,7 @@ QVariant Settings::defaultValue(const QString &key)
     return QStringLiteral("%1/%2.pem").arg(Settings::tlsDir(), kAppId);
 
   if (key == Security::KeySize)
-    return 2048;
+    return kMinimumRsaBits;
 
   // Ctrl+Alt+Delete. Users who need the remote secure-attention sequence remove this entry.
   if (key == Security::BlockedKeyCombos)
@@ -201,7 +203,7 @@ QVariant Settings::defaultValue(const QString &key)
     return QStringLiteral("%1/%2-server.conf").arg(Settings::settingsPath(), kAppId);
 
   if (key == Core::Port)
-    return 24800;
+    return static_cast<int>(kDefaultPort);
 
   if (key == Server::ClipboardSize)
     return 3; // MiB

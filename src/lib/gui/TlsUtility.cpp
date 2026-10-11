@@ -9,6 +9,7 @@
 
 #include "common/Settings.h"
 #include "net/SecureUtils.h"
+#include "net/TlsPolicy.h"
 
 #include <QDebug>
 #include <QFile>
@@ -106,7 +107,7 @@ bool generateCertificate()
       "all clients must trust the new fingerprint"
   );
 
-  const auto keyLength = std::max(2048, Settings::value(Settings::Security::KeySize).toInt());
+  const auto keyLength = std::max(kMinimumRsaBits, Settings::value(Settings::Security::KeySize).toInt());
   const auto certPath = Settings::value(Settings::Security::Certificate).toString();
 
   QFileInfo info(certPath);

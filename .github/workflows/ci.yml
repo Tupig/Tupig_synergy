@@ -313,8 +313,8 @@ jobs:
       - name: Update Windows Paths
         shell: cmd
         run: |
-          set "DOXYGEN_BIN=C:\Program Files\doxygen\bin"
-          echo %DOXYGEN_BIN%>>"%GITHUB_PATH%"
+          if exist "%ProgramFiles%\doxygen\bin\doxygen.exe" echo %ProgramFiles%\doxygen\bin>>"%GITHUB_PATH%"
+          if exist "%ProgramFiles(x86)%\doxygen\bin\doxygen.exe" echo %ProgramFiles(x86)%\doxygen\bin>>"%GITHUB_PATH%"
 
       # Stage: compile. GUI must be synergy_<X.Y.Z>.exe; core and daemon stay unversioned.
       - name: Configure

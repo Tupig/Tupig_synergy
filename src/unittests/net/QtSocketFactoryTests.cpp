@@ -51,7 +51,7 @@ void QtSocketFactoryTests::initTestCase()
   const QString dir = QDir::tempPath() + "/synergy-qt-transport-tests";
   QDir().mkpath(dir);
   m_certPath = dir + "/test-cert.pem";
-  synergy::generatePemSelfSignedCert(m_certPath, 2048);
+  synergy::generatePemSelfSignedCert(m_certPath, kMinimumRsaBits);
   QVERIFY(QFile::exists(m_certPath));
 
   // Force portable mode so tlsTrustedServersDb()/tlsTrustedClientsDb() resolve
