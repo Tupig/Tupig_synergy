@@ -29,6 +29,7 @@
 #include "gui/ipc/DaemonIpcClient.h"
 #include "gui/widgets/LogDock.h"
 #include "net/FingerprintDatabase.h"
+#include "net/TlsPolicy.h"
 #include "widgets/StatusBar.h"
 
 #ifdef SYNERGY_EXTRA_HEADER
@@ -144,12 +145,12 @@ MainWindow::MainWindow()
 
   // Force generation of a certificate on the host
   if (TlsUtility::isEnabled()) {
-    if (Settings::value(Settings::Security::KeySize).toInt() < 2048) {
+    if (Settings::value(Settings::Security::KeySize).toInt() < kMinimumRsaBits) {
       QMessageBox::information(
           this, kAppName,
           tr("Your current TLS key is smaller than the minimum allowed size, A new key 2048-bit key will be generated.")
       );
-      Settings::setValue(Settings::Security::KeySize, 2048);
+      Settings::setValue(Settings::Security::KeySize, kMinimumRsaBits);
     }
     if (!TlsUtility::isCertValid()) {
       generateCertificate();

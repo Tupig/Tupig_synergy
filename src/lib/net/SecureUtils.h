@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Fingerprint.h"
+#include "net/TlsPolicy.h"
 
 #include <openssl/x509.h>
 
@@ -25,7 +26,7 @@ QString formatSSLFingerprintColumns(const QByteArray &fingerprint);
 
 Fingerprint sslCertFingerprint(const X509 *cert, QCryptographicHash::Algorithm type);
 
-void generatePemSelfSignedCert(const QString &path, int keyLength = 2048);
+void generatePemSelfSignedCert(const QString &path, int keyLength = kMinimumRsaBits);
 
 QString generateFingerprintArt(const QByteArray &rawDigest);
 } // namespace synergy

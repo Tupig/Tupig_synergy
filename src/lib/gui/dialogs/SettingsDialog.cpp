@@ -17,6 +17,7 @@
 #include "gui/Messages.h"
 #include "gui/TlsUtility.h"
 #include "gui/core/NetworkMonitor.h"
+#include "net/TlsPolicy.h"
 
 #ifdef SYNERGY_EXTRA_HEADER
 #include "synergy/hooks/gui_hook.h"
@@ -381,7 +382,7 @@ void SettingsDialog::updateKeyLengthOnFile(const QString &path)
 
   auto length = TlsUtility::getCertKeyLength(path);
   auto labelIcon = QPixmap(QIcon::fromTheme(QStringLiteral("security-low")).pixmap(24, 24));
-  if (length == 2048)
+  if (length == kMinimumRsaBits)
     labelIcon = QPixmap(QIcon::fromTheme(QStringLiteral("security-medium")).pixmap(24, 24));
   if (length == 4096)
     labelIcon = QPixmap(QIcon::fromTheme(QStringLiteral("security-high")).pixmap(24, 24));
