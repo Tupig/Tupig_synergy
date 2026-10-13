@@ -238,7 +238,7 @@ bool ClientProxy1_0::leave()
   return true;
 }
 
-void ClientProxy1_0::setClipboard(ClipboardID id, const IClipboard *clipboard)
+void ClientProxy1_0::setClipboard(ClipboardID, const IClipboard *)
 {
   // ignore -- deprecated in protocol 1.0
 }

@@ -129,7 +129,7 @@ std::string AppUtilUnix::getCurrentLanguageCode()
 
   XkbStateRec state;
   XkbGetState(display, XkbUseCoreKbd, &state);
-  auto neededGroupIndex = static_cast<int>(state.group);
+  auto neededGroupIndex = static_cast<size_t>(state.group);
 
   size_t groupIdx = 0;
   size_t groupStartI = 0;

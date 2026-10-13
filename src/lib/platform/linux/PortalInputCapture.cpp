@@ -353,7 +353,7 @@ void PortalInputCapture::handleInitSession(GObject *object, GAsyncResult *res)
   setupSession(session);
 }
 
-void PortalInputCapture::handleStart(GObject *object, GAsyncResult *res)
+void PortalInputCapture::handleStart(GObject *, GAsyncResult *res)
 {
   g_autoptr(GError) error = nullptr;
 

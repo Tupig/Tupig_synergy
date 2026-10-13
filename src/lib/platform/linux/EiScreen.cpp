@@ -459,7 +459,7 @@ void EiScreen::checkClipboards()
   // Nothing to do here
 }
 
-void EiScreen::openScreensaver(bool notify)
+void EiScreen::openScreensaver(bool /*notify*/)
 {
   // FIXME
 }
@@ -469,7 +469,7 @@ void EiScreen::closeScreensaver()
   // FIXME
 }
 
-void EiScreen::screensaver(bool activate)
+void EiScreen::screensaver(bool /*activate*/)
 {
   // FIXME
 }
