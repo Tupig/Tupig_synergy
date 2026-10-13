@@ -139,19 +139,19 @@ bool KeyMap::addKeyCombinationEntry(KeyID id, int32_t group, const KeyID *keys, 
     if (gtIndex == m_keyIDMap.end()) {
       return false;
     }
-    const KeyGroupTable &groupTable = gtIndex->second;
+    const KeyGroupTable &curTable = gtIndex->second;
 
     // if we allow group switching during composition then search all
     // groups for keys, otherwise search just the given group.
     int32_t n = 1;
     if (m_composeAcrossGroups) {
-      n = (int32_t)groupTable.size();
+      n = (int32_t)curTable.size();
     }
 
     bool found = false;
     for (int32_t gd = 0; gd < n && !found; ++gd) {
       const auto eg = (group + gd) % getNumGroups();
-      const KeyEntryList &entries = groupTable[eg];
+      const KeyEntryList &entries = curTable[eg];
       for (const auto &entry : entries) {
         if (entry.size() == 1) {
           found = true;
@@ -1161,12 +1161,12 @@ bool KeyMap::parseModifiers(std::string &x, KeyModifierMask &mask)
     } else {
       // unknown string
       x.erase(0, tb);
-      std::string::size_type tb = x.find_first_not_of(" \t");
-      std::string::size_type te = x.find_last_not_of(" \t");
-      if (tb == std::string::npos) {
+      std::string::size_type trimmedStart = x.find_first_not_of(" \t");
+      std::string::size_type trimmedEnd = x.find_last_not_of(" \t");
+      if (trimmedStart == std::string::npos) {
         x = "";
       } else {
-        x = x.substr(tb, te - tb + 1);
+        x = x.substr(trimmedStart, trimmedEnd - trimmedStart + 1);
       }
       return true;
     }
