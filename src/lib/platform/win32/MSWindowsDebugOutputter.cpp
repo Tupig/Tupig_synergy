@@ -12,7 +12,7 @@
 
 #include <QString>
 
-void MSWindowsDebugOutputter::open(const QString &title)
+void MSWindowsDebugOutputter::open(const QString &)
 {
   // do nothing
 }
@@ -22,7 +22,7 @@ void MSWindowsDebugOutputter::close()
   // do nothing
 }
 
-bool MSWindowsDebugOutputter::write(LogLevel::Level level, const QString &msg)
+bool MSWindowsDebugOutputter::write(LogLevel::Level, const QString &msg)
 {
   std::wstring out = msg.toStdWString() + L"\n";
   OutputDebugString(out.c_str());

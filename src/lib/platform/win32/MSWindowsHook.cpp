@@ -439,24 +439,24 @@ static LRESULT CALLBACK keyboardLLHook(int code, WPARAM wParam, LPARAM lParam)
       return CallNextHookEx(g_keyboardLL, code, wParam, lParam);
     }
 
-    WPARAM wParam = info->vkCode;
-    LPARAM lParam = 1;                // repeat code
-    lParam |= (info->scanCode << 16); // scan code
+    WPARAM vkCode = info->vkCode;
+    LPARAM keyData = 1;                // repeat code
+    keyData |= (info->scanCode << 16); // scan code
     if (info->flags & LLKHF_EXTENDED) {
-      lParam |= (1lu << 24); // extended key
+      keyData |= (1lu << 24); // extended key
     }
     if (info->flags & LLKHF_ALTDOWN) {
-      lParam |= (1lu << 29); // context code
+      keyData |= (1lu << 29); // context code
     }
     if (info->flags & LLKHF_UP) {
-      lParam |= (1lu << 31); // transition
+      keyData |= (1lu << 31); // transition
     }
     // FIXME -- bit 30 should be set if key was already down but
     // we don't know that info.  as a result we'll never generate
     // key repeat events.
 
     // handle the message
-    if (keyboardHookHandler(wParam, lParam)) {
+    if (keyboardHookHandler(vkCode, keyData)) {
       return 1;
     }
   }

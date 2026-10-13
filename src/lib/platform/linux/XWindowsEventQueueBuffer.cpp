@@ -32,6 +32,7 @@ XWindowsEventQueueBuffer::XWindowsEventQueueBuffer(Display *display, Window wind
   // set up for pipe hack
   int result = pipe2(m_pipefd, O_NONBLOCK);
   assert(result == 0);
+  (void)result;
 }
 
 XWindowsEventQueueBuffer::~XWindowsEventQueueBuffer()

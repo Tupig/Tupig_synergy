@@ -58,7 +58,7 @@ inline void onPreInit()
   }
 }
 
-inline void onMainWindow(QMainWindow *mainWindow, synergy::gui::CoreProcess *coreProcess)
+inline void onMainWindow(QMainWindow *mainWindow, synergy::gui::CoreProcess *)
 {
   // Qt's default link color is unreadable on the dark theme; setting the palette link role
   // once colors every anchor, so dialog copy never needs inline link styles.

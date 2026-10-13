@@ -40,7 +40,7 @@ void OSXEventQueueBuffer::waitForEvent(double timeout)
   }
 }
 
-IEventQueueBuffer::Type OSXEventQueueBuffer::getEvent(Event &event, uint32_t &dataID)
+IEventQueueBuffer::Type OSXEventQueueBuffer::getEvent(Event &, uint32_t &dataID)
 {
   std::unique_lock lock(m_mutex);
   if (m_dataQueue.empty()) {

@@ -253,7 +253,7 @@ Client *ClientApp::openClient(const std::string &name, const NetworkAddress &add
       handleClientDisconnected();
     });
 
-  } catch (std::bad_alloc &ba) {
+  } catch (std::bad_alloc &) {
     delete client;
     throw;
   }

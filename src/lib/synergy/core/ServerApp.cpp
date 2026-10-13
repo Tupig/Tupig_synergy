@@ -467,7 +467,7 @@ Server *ServerApp::openServer(ServerConfig &config, PrimaryClient *primaryClient
   try {
     getEvents()->addHandler(EventTypes::ServerScreenSwitched, server, [this](const auto &) { handleScreenSwitched(); });
 
-  } catch (std::bad_alloc &ba) {
+  } catch (std::bad_alloc &) {
     delete server;
     throw;
   }

@@ -52,7 +52,7 @@ std::unique_ptr<IDataSocket> SecureListenSocket::accept()
       setListeningJob();
     }
     return nullptr;
-  } catch (std::exception &ex) {
+  } catch (std::exception &) {
     if (secureSocket) {
       setListeningJob();
     }

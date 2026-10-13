@@ -43,6 +43,7 @@ QString printLine(FILE *out, const QString &type, const QString &message, const 
   // DbgView++ (only one can be used at once). It's important to send output to
   // the debug output API, because it's difficult to view stdout and stderr from
   // a Windows GUI app.
+  (void)out;
   OutputDebugStringA(terminatedLogLine.toLocal8Bit().constData());
 #else
   QTextStream(out) << terminatedLogLine;

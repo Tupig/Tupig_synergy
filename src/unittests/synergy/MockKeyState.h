@@ -50,7 +50,7 @@ public:
   {
     pressedKeys.insert(1);
   }
-  void fakeKeyDown(KeyID id, KeyModifierMask mask, KeyButton serverID, const std::string &lang) override
+  void fakeKeyDown(KeyID id, KeyModifierMask, KeyButton, const std::string &) override
   {
     m_key.m_button = id;
   }

@@ -334,8 +334,15 @@ jobs:
           set -euo pipefail
           base="${{ needs.get-version.outputs.base }}"
           ver="${{ needs.get-version.outputs.version }}"
-          if [ "$ver" != "$base" ]; then
+          # Release builds must land exactly on the base version; snapshot and
+          # dev builds carry a suffix (X.Y.Z[-STAGE]-snapshot+rN) and only have
+          # to stay derived from it, which also matches the GUI exe name rule.
+          if [ "${{ env.SYNERGY_VERSION_RELEASE }}" = "true" ] && [ "$ver" != "$base" ]; then
             echo "::error::release version must be ${base}, got ${ver}"
+            exit 1
+          fi
+          if [ "${{ env.SYNERGY_VERSION_RELEASE }}" != "true" ] && [[ "$ver" != "$base"* ]]; then
+            echo "::error::version ${ver} does not start with base ${base}"
             exit 1
           fi
           count=$(find build/bin -type f -name "synergy_${base}.exe" | wc -l)

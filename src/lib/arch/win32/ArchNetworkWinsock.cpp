@@ -616,7 +616,7 @@ void ArchNetworkWinsock::setKeepAliveOnSocket(ArchSocket s, bool keepAlive)
   }
 }
 
-bool ArchNetworkWinsock::setReuseAddrOnSocket(ArchSocket s, bool reuse)
+bool ArchNetworkWinsock::setReuseAddrOnSocket(ArchSocket, bool)
 {
   LOG_ERR("socket re-use not supported on windows");
   return false;

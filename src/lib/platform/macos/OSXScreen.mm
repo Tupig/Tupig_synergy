@@ -1337,7 +1337,7 @@ IKeyState *OSXScreen::getKeyState() const
   return m_keyState;
 }
 
-bool OSXScreen::updateScreenShape(const CGDirectDisplayID, const CGDisplayChangeSummaryFlags flags)
+bool OSXScreen::updateScreenShape(const CGDirectDisplayID, const CGDisplayChangeSummaryFlags)
 {
   return updateScreenShape();
 }
@@ -1499,7 +1499,7 @@ void OSXScreen::watchSystemPowerThread(const void *)
   LOG_DEBUG("stopped watchSystemPowerThread");
 }
 
-void OSXScreen::powerChangeCallback(void *refcon, io_service_t service, natural_t messageType, void *messageArg)
+void OSXScreen::powerChangeCallback(void *refcon, io_service_t, natural_t messageType, void *messageArg)
 {
   ((OSXScreen *)refcon)->handlePowerChangeRequest(messageType, messageArg);
 }
@@ -1687,8 +1687,7 @@ bool OSXScreen::HotKeyItem::operator<(const HotKeyItem &x) const
 // Quartz event tap support for the secondary display. This makes sure that we
 // will show the cursor if a local event comes in while Synergy has the cursor
 // off the screen.
-CGEventRef
-OSXScreen::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
+CGEventRef OSXScreen::handleCGInputEventSecondary(CGEventTapProxy, CGEventType type, CGEventRef event, void *refcon)
 {
   // this fix is really screwing with the correct show/hide behavior. it
   // should be tested better before reintroducing.
@@ -1708,7 +1707,7 @@ OSXScreen::handleCGInputEventSecondary(CGEventTapProxy proxy, CGEventType type, 
 }
 
 // Quartz event tap support
-CGEventRef OSXScreen::handleCGInputEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
+CGEventRef OSXScreen::handleCGInputEvent(CGEventTapProxy, CGEventType type, CGEventRef event, void *refcon)
 {
   OSXScreen *screen = (OSXScreen *)refcon;
 

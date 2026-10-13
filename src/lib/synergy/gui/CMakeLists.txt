@@ -24,8 +24,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-file(GLOB_RECURSE sources *.cpp)
-file(GLOB_RECURSE ui_files *.ui)
+# CONFIGURE_DEPENDS: without it the glob is evaluated once at configure time,
+# so a file added or renamed later is silently not built until the cache is
+# wiped. Ninja and Makefiles re-run the glob check before building.
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS *.cpp)
+file(GLOB_RECURSE ui_files CONFIGURE_DEPENDS *.ui)
 
 # Headers are deliberately not listed: CMake does not need them to build a static
 # library, and AUTOMOC finds Q_OBJECT headers on its own. An

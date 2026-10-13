@@ -29,13 +29,13 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.cmake)
 
 # Git short SHA.
 #
-# The repository root is the PARENT of this CMakeLists - the project lives in a
-# subdirectory of a repository that also holds unrelated content. A bare
-# `EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git` test is therefore false in every real
-# clone, which silently left GIT_SHA_SHORT empty: VersionInfo.h's kVersionGitSha
-# compiled to "", and snapshot builds lost the commit from their display version.
-# Ask git itself instead, and treat a failure as "not a checkout" rather than as
-# an error.
+# Ask git itself rather than testing `EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git`:
+# that probe only answers "yes" when the repository metadata happens to sit next
+# to this file, which is layout-dependent (exported archives, worktrees, and the
+# old parent-repository layout all break it). When it silently answered "no",
+# GIT_SHA_SHORT stayed empty, VersionInfo.h's kVersionGitSha compiled to "", and
+# snapshot builds lost the commit from their display version. A git failure here
+# means "not a checkout", not an error.
 find_package(Git QUIET)
 if(GIT_FOUND)
   execute_process(
@@ -63,6 +63,27 @@ project(
 # for diagnosing a toolchain warning; the normal build does not allow it.
 if(NOT DEFINED CMAKE_COMPILE_WARNING_AS_ERROR)
   set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+endif()
+
+# Warning level. cl defaults to /W1 and GCC/Clang default to almost nothing, so
+# the warning-as-error gate above would catch almost nothing on its own. /W4 and
+# -Wall -Wextra surface unused parameters, shadowed declarations, sign
+# conversions and uninitialized reads - the classes this codebase can genuinely
+# regress into - and the tree is kept clean at these levels so the gate has
+# teeth. The GCC/Clang side also runs in CI on Linux and macOS.
+# /external:W0 silences warnings inside SYSTEM includes only (vcpkg, Qt);
+# those directories are third-party code we do not control, and MSVC otherwise
+# applies /W3 to them, which still fires inside OpenSSL's headers. Project
+# headers never use /external:I, so this cannot hide our own warnings.
+# /wd4152 silences C4152 (function/data pointer conversion): OpenSSL's
+# applink.c reaches the compiler as a real source file via OpenSSL::applink,
+# so neither /external:W0 nor a per-source property (tried and unreliable
+# across triplets) can reach it, and the file intentionally performs those
+# conversions as its CRT fixup. Project code never triggers C4152.
+if(MSVC)
+  add_compile_options(/W4 /external:W0 /wd4152)
+else()
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # Project metadata
@@ -211,6 +232,16 @@ if(MSVC)
     set(REQUIRED_MSVC_RUNTIME_MINOR "${CMAKE_MATCH_1}")
   endif()
   message(STATUS "MSVC runtime version: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
+endif()
+
+# MSVC otherwise reads sources as the system ANSI code page (GBK on Chinese
+# Windows), which mangles the UTF-8 comments and string literals the encoding
+# check mandates (scripts/ci/check-encoding.py) and can flip C4819 into an
+# error. /utf-8 pins source and execution charset to UTF-8 for both cl and
+# clang-cl; it applies to every configuration, so it is a plain compile option
+# rather than a per-config flag.
+if(MSVC)
+  add_compile_options(/utf-8)
 endif()
 
 # ---------------------------------------------------------------------------

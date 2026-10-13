@@ -13,7 +13,7 @@
 #include <Wtsapi32.h>
 #include <stdexcept>
 
-MSWindowsSession::MSWindowsSession() : m_activeSessionId(-1)
+MSWindowsSession::MSWindowsSession() : m_activeSessionId(static_cast<DWORD>(-1))
 {
 }
 

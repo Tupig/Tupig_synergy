@@ -372,10 +372,10 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
           LOG_ERR("writef: raw string format specifier with unexpected length: '%d'", len);
           throw SynergyException("Invalid protocol raw string format length");
         }
-        const uint32_t len = va_arg(args, uint32_t);
+        const uint32_t strLen = va_arg(args, uint32_t);
         const uint8_t *src = va_arg(args, uint8_t *);
-        writeInt(len, sizeof(len), buffer);
-        std::copy(src, src + len, std::back_inserter(buffer));
+        writeInt(strLen, sizeof(strLen), buffer);
+        std::copy(src, src + strLen, std::back_inserter(buffer));
         break;
       }
 
@@ -510,7 +510,7 @@ uint32_t ProtocolUtil::read4BytesInt(synergy::IStream *stream)
 void ProtocolUtil::readVector1ByteInt(synergy::IStream *stream, std::vector<uint8_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read1ByteInt(stream));
   }
 }
@@ -518,7 +518,7 @@ void ProtocolUtil::readVector1ByteInt(synergy::IStream *stream, std::vector<uint
 void ProtocolUtil::readVector2BytesInt(synergy::IStream *stream, std::vector<uint16_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read2BytesInt(stream));
   }
 }
@@ -526,7 +526,7 @@ void ProtocolUtil::readVector2BytesInt(synergy::IStream *stream, std::vector<uin
 void ProtocolUtil::readVector4BytesInt(synergy::IStream *stream, std::vector<uint32_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read4BytesInt(stream));
   }
 }

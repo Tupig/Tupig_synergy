@@ -156,7 +156,7 @@ void FeatureHandler::setAttribution(QDialog *parent) const
   description->setFont(font);
   auto palette = description->palette();
   auto color = palette.color(QPalette::WindowText);
-  color.setAlphaF(0.6);
+  color.setAlphaF(0.6f);
   palette.setColor(QPalette::WindowText, color);
   description->setPalette(palette);
   description->setText(

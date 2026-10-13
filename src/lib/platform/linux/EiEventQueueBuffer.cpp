@@ -26,6 +26,7 @@ EiEventQueueBuffer::EiEventQueueBuffer(ei *ei, IEventQueue *events) : m_ei{ei_re
   int pipefd[2];
   int result = pipe2(pipefd, O_NONBLOCK);
   assert(result == 0);
+  (void)result;
 
   m_pipeRead = pipefd[0];
   m_pipeWrite = pipefd[1];

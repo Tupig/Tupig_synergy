@@ -13,7 +13,7 @@
 class MockEventQueue : public IEventQueue
 {
 public:
-  EventQueueTimer *newOneShotTimer(double duration, void *target) override
+  EventQueueTimer *newOneShotTimer(double, void *) override
   {
     return nullptr;
   }
@@ -53,7 +53,7 @@ public:
     // do nothing
   }
 
-  void addEvent(Event &&event) override
+  void addEvent(Event &&) override
   {
     // do nothing
   }

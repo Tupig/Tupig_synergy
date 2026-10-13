@@ -1,10 +1,11 @@
 {
-  "roots": ["src", "cmake", "scripts", "deploy", ".github", "translations"],
+  "roots": ["."],
   "extensions": [
     ".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".hxx", ".inl",
     ".m", ".mm", ".ui", ".qrc", ".rc", ".ts", ".qml",
     ".cmake", ".in", ".py", ".bat", ".sh",
-    ".yml", ".yaml", ".json", ".xml", ".plist", ".desktop", ".service"
+    ".yml", ".yaml", ".json", ".xml", ".plist", ".desktop", ".service",
+    ".md"
   ],
   "names": ["CMakeLists.txt"],
   "allowed": ["utf-8"],
