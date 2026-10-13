@@ -1,6 +1,13 @@
 # SPDX-FileCopyrightText: (C) 2012 - 2026 TuPig
 # SPDX-License-Identifier: MIT
 
+# The root CMakeLists includes this file once, right after project(); the three
+# app CMakeLists include it again only to reach set_output_name() historically.
+# A GLOBAL guard makes those repeats free no-ops: every variable set here lands
+# in the top-level directory scope (so all subdirectories inherit it) and the
+# options/cache entries were global to begin with.
+include_guard(GLOBAL)
+
 # Must be included after the project() call and the CMAKE_PROJECT_*
 # defaults are set, so these overrides take effect.
 set(CMAKE_PROJECT_PROPER_NAME "TuPig Synergy")
