@@ -57,8 +57,6 @@ std::vector<char> makeMessage(const char *filename, int lineNumber, const char *
   // base size includes null terminator, colon, space, etc.
   const int baseSize = 10;
 
-  const auto currentPriority = static_cast<int>(priority);
-
   auto timeStr = QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
 
   auto sectionName = LogLevel::toOption(priority).toStdString();

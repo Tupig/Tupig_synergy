@@ -40,7 +40,7 @@ bool StopLogOutputter::write(LogLevel::Level, const QString &)
 // ConsoleLogOutputter
 //
 
-void ConsoleLogOutputter::open(const QString &title)
+void ConsoleLogOutputter::open(const QString &)
 {
   // do nothing
 }
@@ -145,7 +145,7 @@ bool FileLogOutputter::write(LogLevel::Level, const QString &message)
   return true;
 }
 
-void FileLogOutputter::open(const QString &title)
+void FileLogOutputter::open(const QString &)
 {
   // do nothing
 }
