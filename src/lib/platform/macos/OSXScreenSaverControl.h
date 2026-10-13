@@ -23,12 +23,12 @@
 
 @interface ScreenSaverController : NSObject <ScreenSaverControl>
 
-+ controller;
-+ monitor;
-+ daemonConnectionName;
-+ daemonPath;
-+ enginePath;
-- init;
++ (id)controller;
++ (id)monitor;
++ (id)daemonConnectionName;
++ (id)daemonPath;
++ (id)enginePath;
+- (id)init;
 - (void)dealloc;
 - (void)_connectionClosed:fp12;
 - (BOOL)screenSaverIsRunning;
