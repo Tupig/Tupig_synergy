@@ -194,12 +194,12 @@ void PrimaryClient::screensaver(bool)
   // ignore
 }
 
-void PrimaryClient::sendDragInfo(uint32_t fileCount, const char *info, size_t size)
+void PrimaryClient::sendDragInfo(uint32_t, const char *, size_t)
 {
   // ignore
 }
 
-void PrimaryClient::fileChunkSending(uint8_t mark, char *data, size_t dataSize)
+void PrimaryClient::fileChunkSending(uint8_t, char *, size_t)
 {
   // ignore
 }

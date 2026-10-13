@@ -510,7 +510,7 @@ uint32_t ProtocolUtil::read4BytesInt(synergy::IStream *stream)
 void ProtocolUtil::readVector1ByteInt(synergy::IStream *stream, std::vector<uint8_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read1ByteInt(stream));
   }
 }
@@ -518,7 +518,7 @@ void ProtocolUtil::readVector1ByteInt(synergy::IStream *stream, std::vector<uint
 void ProtocolUtil::readVector2BytesInt(synergy::IStream *stream, std::vector<uint16_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read2BytesInt(stream));
   }
 }
@@ -526,7 +526,7 @@ void ProtocolUtil::readVector2BytesInt(synergy::IStream *stream, std::vector<uin
 void ProtocolUtil::readVector4BytesInt(synergy::IStream *stream, std::vector<uint32_t> &destination)
 {
   auto size = readVectorSize(stream);
-  for (auto i = 0; i < size; ++i) {
+  for (auto i = 0u; i < size; ++i) {
     destination.push_back(read4BytesInt(stream));
   }
 }
