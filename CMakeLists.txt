@@ -213,6 +213,16 @@ if(MSVC)
   message(STATUS "MSVC runtime version: ${REQUIRED_MSVC_RUNTIME_MAJOR}.${REQUIRED_MSVC_RUNTIME_MINOR}")
 endif()
 
+# MSVC otherwise reads sources as the system ANSI code page (GBK on Chinese
+# Windows), which mangles the UTF-8 comments and string literals the encoding
+# check mandates (scripts/ci/check-encoding.py) and can flip C4819 into an
+# error. /utf-8 pins source and execution charset to UTF-8 for both cl and
+# clang-cl; it applies to every configuration, so it is a plain compile option
+# rather than a per-config flag.
+if(MSVC)
+  add_compile_options(/utf-8)
+endif()
+
 # ---------------------------------------------------------------------------
 # Optimization and hardening
 # ---------------------------------------------------------------------------
