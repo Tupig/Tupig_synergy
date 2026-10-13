@@ -165,7 +165,7 @@ Client                                    Server
 | Constraint | Value | Constant |
 |------------|-------|----------|
 | Max Message Size | 4 MB | `PROTOCOL_MAX_MESSAGE_LENGTH` |
-| Max List Elements | 1,048,576 | `PROTOCOL_MAX_LIST_LENGTH` |
+| Max List Elements | 4,096 | `PROTOCOL_MAX_LIST_LENGTH` |
 | Max Hello Size | 1 KB | `kMaxHelloLength` |
 | Keep-alive Interval | 3.0 s | `kKeepAliveRate` |
 | Client Timeout | 9.0 s (3×keepalive) | — |
@@ -387,7 +387,7 @@ Client                                    Server
 | 约束 | 数值 | 常量 |
 |------|------|------|
 | 最大消息大小 | 4 MB | `PROTOCOL_MAX_MESSAGE_LENGTH` |
-| 最大列表元素 | 1,048,576 | `PROTOCOL_MAX_LIST_LENGTH` |
+| 最大列表元素 | 4,096 | `PROTOCOL_MAX_LIST_LENGTH` |
 | 最大 Hello 大小 | 1 KB | `kMaxHelloLength` |
 | 保活间隔 | 3.0 秒 | `kKeepAliveRate` |
 | 客户端超时 | 9.0 秒 (3×保活) | — |
