@@ -29,13 +29,13 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.cmake)
 
 # Git short SHA.
 #
-# The repository root is the PARENT of this CMakeLists - the project lives in a
-# subdirectory of a repository that also holds unrelated content. A bare
-# `EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git` test is therefore false in every real
-# clone, which silently left GIT_SHA_SHORT empty: VersionInfo.h's kVersionGitSha
-# compiled to "", and snapshot builds lost the commit from their display version.
-# Ask git itself instead, and treat a failure as "not a checkout" rather than as
-# an error.
+# Ask git itself rather than testing `EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git`:
+# that probe only answers "yes" when the repository metadata happens to sit next
+# to this file, which is layout-dependent (exported archives, worktrees, and the
+# old parent-repository layout all break it). When it silently answered "no",
+# GIT_SHA_SHORT stayed empty, VersionInfo.h's kVersionGitSha compiled to "", and
+# snapshot builds lost the commit from their display version. A git failure here
+# means "not a checkout", not an error.
 find_package(Git QUIET)
 if(GIT_FOUND)
   execute_process(
