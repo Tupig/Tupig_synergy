@@ -1294,7 +1294,7 @@ UINT MSWindowsKeyState::mapButtonToVirtualKey(KeyButton button) const
 }
 
 KeyID MSWindowsKeyState::getIDForKey(
-    synergy::KeyMap::KeyItem &item, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl
+    synergy::KeyMap::KeyItem &, KeyButton button, UINT virtualKey, PBYTE keyState, HKL hkl
 ) const
 {
   WCHAR unicode[2];

@@ -1063,7 +1063,7 @@ bool MSWindowsScreen::onPreDispatchPrimary(HWND, UINT message, WPARAM wParam, LP
   return false;
 }
 
-bool MSWindowsScreen::onEvent(HWND, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *result)
+bool MSWindowsScreen::onEvent(HWND, UINT msg, WPARAM wParam, LPARAM, LRESULT *result)
 {
   switch (msg) {
 
@@ -1595,7 +1595,7 @@ void MSWindowsScreen::fixClipboardViewer()
   */
 }
 
-void MSWindowsScreen::enableSpecialKeys(bool enable) const
+void MSWindowsScreen::enableSpecialKeys(bool) const
 {
 }
 
