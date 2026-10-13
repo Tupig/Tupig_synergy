@@ -1272,7 +1272,8 @@ void MainWindow::updateIpLabel(const QStringList &addresses)
   const QStringList ipList = addresses.filter(ipListFilter);
 
   bool IPValid = true;
-  if ((filterIpList && (m_serverStartSuggestedIP != m_currentIpAddress)) || !ipList.contains(m_serverStartSuggestedIP)) {
+  if ((filterIpList && (m_serverStartSuggestedIP != m_currentIpAddress)) ||
+      !ipList.contains(m_serverStartSuggestedIP)) {
     IPValid = !ipList.isEmpty();
   }
 
