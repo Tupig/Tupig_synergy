@@ -65,13 +65,16 @@ if(NOT DEFINED CMAKE_COMPILE_WARNING_AS_ERROR)
   set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 endif()
 
-# Warning level (MSVC). cl defaults to /W1, so the warning-as-error gate above
-# would catch almost nothing on its own. /W4 surfaces unused parameters,
-# shadowed declarations, sign conversions and uninitialized reads - the classes
-# this codebase can genuinely regress into - and the tree is kept clean at this
-# level so the gate has teeth.
+# Warning level. cl defaults to /W1 and GCC/Clang default to almost nothing, so
+# the warning-as-error gate above would catch almost nothing on its own. /W4 and
+# -Wall -Wextra surface unused parameters, shadowed declarations, sign
+# conversions and uninitialized reads - the classes this codebase can genuinely
+# regress into - and the tree is kept clean at these levels so the gate has
+# teeth. The GCC/Clang side also runs in CI on Linux and macOS.
 if(MSVC)
   add_compile_options(/W4)
+else()
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # Project metadata
