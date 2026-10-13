@@ -1258,7 +1258,7 @@ void MainWindow::updateIpLabel(const QStringList &addresses)
   const bool serverStarted = m_coreProcess.isStarted();
   const bool fixedIP = !Settings::value(Settings::Core::Interface).toString().isEmpty();
 
-  if (!fixedIP && addresses.isEmpty() && !serverStarted || (serverStarted && m_serverStartSuggestedIP.isEmpty())) {
+  if ((!fixedIP && addresses.isEmpty() && !serverStarted) || (serverStarted && m_serverStartSuggestedIP.isEmpty())) {
     ui->lblIpAddresses->setText(colorText.arg(palette().linkVisited().color().name(), tr("No IP Detected")));
     ui->lblIpAddresses->setToolTip(tr("Unable to detect an IP address. Check your network connection is active."));
     return;
@@ -1272,7 +1272,7 @@ void MainWindow::updateIpLabel(const QStringList &addresses)
   const QStringList ipList = addresses.filter(ipListFilter);
 
   bool IPValid = true;
-  if (filterIpList && (m_serverStartSuggestedIP != m_currentIpAddress) || !ipList.contains(m_serverStartSuggestedIP)) {
+  if ((filterIpList && (m_serverStartSuggestedIP != m_currentIpAddress)) || !ipList.contains(m_serverStartSuggestedIP)) {
     IPValid = !ipList.isEmpty();
   }
 
@@ -1304,5 +1304,5 @@ bool MainWindow::canRunCore() const
   const auto mode = m_coreProcess.mode();
   const bool isServer = mode == Settings::CoreMode::Server;
   const bool isClient = mode == Settings::CoreMode::Client;
-  return ((isServer || isClient) && (isClient && !ui->lineHostname->text().isEmpty()) || isServer);
+  return (((isServer || isClient) && (isClient && !ui->lineHostname->text().isEmpty())) || isServer);
 }

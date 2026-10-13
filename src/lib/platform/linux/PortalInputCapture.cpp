@@ -251,6 +251,8 @@ void PortalInputCapture::claimClipboardOwnership(XdpSession *session)
 {
 #ifdef HAVE_LIBPORTAL_CLIPBOARD
   PortalClipboard::claimOwnership(m_clipboard, session);
+#else
+  (void)session;
 #endif
 }
 
@@ -370,6 +372,8 @@ void PortalInputCapture::handleStart(GObject *, GAsyncResult *res)
   if (!restoreToken.isEmpty()) {
     Settings::setValue(Settings::Server::XdpRestoreToken, restoreToken);
   }
+#else
+  (void)res;
 #endif
   setupSession(m_session);
 }
@@ -559,8 +563,8 @@ void PortalInputCapture::addBarrier(
 gboolean PortalInputCapture::initSession()
 {
   LOG_DEBUG("setting up input capture session");
-  XdpInputCaptureSession *session;
 #ifdef HAVE_LIBPORTAL_INPUTCAPTURE_RESTORE
+  XdpInputCaptureSession *session;
   g_autoptr(GError) error = nullptr;
 
   m_portalVersion = xdp_portal_get_input_capture_version_sync(

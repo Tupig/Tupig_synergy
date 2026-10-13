@@ -52,6 +52,9 @@ void clearSettings(bool enableRestart)
   const auto settingsFile = Settings::settingsFile();
   const auto profilePath = QFileInfo(settingsFile).absolutePath();
   const bool portable = Settings::isPortableMode();
+#ifndef Q_OS_WIN
+  (void)portable;
+#endif
 
   qInfo("removing profile dir: %s", qPrintable(profilePath));
   if (!QDir(profilePath).removeRecursively())
