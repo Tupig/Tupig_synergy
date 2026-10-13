@@ -208,9 +208,6 @@ void MSWindowsScreenSaver::unwatchProcess()
 
 void MSWindowsScreenSaver::watchDesktopThread(const void *)
 {
-  DWORD reserved = 0;
-  TCHAR *name = nullptr;
-
   for (;;) {
     // wait a bit
     Arch::sleep(0.2);
