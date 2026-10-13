@@ -1687,8 +1687,7 @@ bool OSXScreen::HotKeyItem::operator<(const HotKeyItem &x) const
 // Quartz event tap support for the secondary display. This makes sure that we
 // will show the cursor if a local event comes in while Synergy has the cursor
 // off the screen.
-CGEventRef
-OSXScreen::handleCGInputEventSecondary(CGEventTapProxy, CGEventType type, CGEventRef event, void *refcon)
+CGEventRef OSXScreen::handleCGInputEventSecondary(CGEventTapProxy, CGEventType type, CGEventRef event, void *refcon)
 {
   // this fix is really screwing with the correct show/hide behavior. it
   // should be tested better before reintroducing.
