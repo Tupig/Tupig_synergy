@@ -71,8 +71,12 @@ endif()
 # conversions and uninitialized reads - the classes this codebase can genuinely
 # regress into - and the tree is kept clean at these levels so the gate has
 # teeth. The GCC/Clang side also runs in CI on Linux and macOS.
+# /external:W0 silences warnings inside SYSTEM includes only (vcpkg, Qt);
+# those directories are third-party code we do not control, and MSVC otherwise
+# applies /W3 to them, which still fires inside OpenSSL's headers. Project
+# headers never use /external:I, so this cannot hide our own warnings.
 if(MSVC)
-  add_compile_options(/W4)
+  add_compile_options(/W4 /external:W0)
 else()
   add_compile_options(-Wall -Wextra)
 endif()

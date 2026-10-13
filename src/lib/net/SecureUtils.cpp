@@ -205,8 +205,8 @@ QString generateFingerprintArt(const QByteArray &rawDigest)
   }
 
   /* mark starting point and end point*/
-  field[columns / 2][rows / 2] = len - 1;
-  field[x][y] = len;
+  field[columns / 2][rows / 2] = static_cast<std::uint8_t>(len - 1);
+  field[x][y] = static_cast<std::uint8_t>(len);
 
   QString result;
   result.reserve((columns + 3) * (rows + 2));
@@ -216,7 +216,7 @@ QString generateFingerprintArt(const QByteArray &rawDigest)
   for (y = 0; y < rows; y++) {
     result.append(QStringLiteral("║"));
     for (x = 0; x < columns; x++)
-      result.append(characterPool.at(std::min<int>(field[x][y], len)));
+      result.append(characterPool.at(std::min<int>(field[x][y], static_cast<int>(len))));
     result.append(QStringLiteral("║\n"));
   }
 

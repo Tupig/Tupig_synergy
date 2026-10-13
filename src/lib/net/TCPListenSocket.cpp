@@ -107,7 +107,7 @@ std::unique_ptr<IDataSocket> TCPListenSocket::accept()
       setListeningJob();
     }
     return nullptr;
-  } catch (std::exception &ex) {
+  } catch (std::exception &) {
     if (socket) {
       setListeningJob();
     }
