@@ -372,10 +372,10 @@ void ProtocolUtil::writef(std::vector<uint8_t> &buffer, const char *fmt, va_list
           LOG_ERR("writef: raw string format specifier with unexpected length: '%d'", len);
           throw SynergyException("Invalid protocol raw string format length");
         }
-        const uint32_t len = va_arg(args, uint32_t);
+        const uint32_t strLen = va_arg(args, uint32_t);
         const uint8_t *src = va_arg(args, uint8_t *);
-        writeInt(len, sizeof(len), buffer);
-        std::copy(src, src + len, std::back_inserter(buffer));
+        writeInt(strLen, sizeof(strLen), buffer);
+        std::copy(src, src + strLen, std::back_inserter(buffer));
         break;
       }
 
