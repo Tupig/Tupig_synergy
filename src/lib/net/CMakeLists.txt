@@ -64,4 +64,17 @@ if(WIN32)
     PUBLIC OpenSSL::applink
     PRIVATE Crypt32 ws2_32
   )
+  # OpenSSL::applink hands down applink.c as a real source file, not a header,
+  # so /external:W0 cannot reach it - /external only reclassifies includes.
+  # The file is OpenSSL's CRT fixup and deliberately takes function pointer
+  # conversions (C4152), which /W4 + /WX would fail on. Scope the exception to
+  # this one file so project code keeps the full gate; GCC/Clang never see
+  # applink.c because the target is Windows-only.
+  if(MSVC)
+    get_target_property(_applink_sources OpenSSL::applink INTERFACE_SOURCES)
+    if(_applink_sources)
+      set_source_files_properties(${_applink_sources} PROPERTIES COMPILE_OPTIONS "/wd4152")
+    endif()
+    unset(_applink_sources)
+  endif()
 endif()
