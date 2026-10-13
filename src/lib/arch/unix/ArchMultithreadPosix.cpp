@@ -208,9 +208,11 @@ ArchMutex ArchMultithreadPosix::newMutex()
 {
   pthread_mutexattr_t attr;
   int status = pthread_mutexattr_init(&attr);
+  (void)status;
   assert(status == 0);
   auto *mutex = new ArchMutexImpl;
   status = pthread_mutex_init(&mutex->m_mutex, &attr);
+  (void)status;
   assert(status == 0);
   return mutex;
 }
@@ -372,6 +374,7 @@ void ArchMultithreadPosix::cancelThread(ArchThread thread)
 void ArchMultithreadPosix::setPriorityOfThread(ArchThread thread, int /*n*/)
 {
   assert(thread != nullptr);
+  (void)thread;
 
   // FIXME
 }
