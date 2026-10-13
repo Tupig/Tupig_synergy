@@ -75,8 +75,13 @@ endif()
 # those directories are third-party code we do not control, and MSVC otherwise
 # applies /W3 to them, which still fires inside OpenSSL's headers. Project
 # headers never use /external:I, so this cannot hide our own warnings.
+# /wd4152 silences C4152 (function/data pointer conversion): OpenSSL's
+# applink.c reaches the compiler as a real source file via OpenSSL::applink,
+# so neither /external:W0 nor a per-source property (tried and unreliable
+# across triplets) can reach it, and the file intentionally performs those
+# conversions as its CRT fixup. Project code never triggers C4152.
 if(MSVC)
-  add_compile_options(/W4 /external:W0)
+  add_compile_options(/W4 /external:W0 /wd4152)
 else()
   add_compile_options(-Wall -Wextra)
 endif()
