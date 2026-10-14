@@ -38,7 +38,7 @@ AppUtilWindows::AppUtilWindows(IEventQueue *events) : m_events(events), m_exitMo
   // where the dtor is called just before the event loop starts.
   LOG_DEBUG("waiting for event thread to start");
   std::unique_lock lock(m_eventThreadStartedMutex);
-  m_eventThreadStartedCond.wait(lock, [this] { return m_eventThreadRunning; });
+  m_eventThreadStartedCond.wait(lock, [this] { return m_eventThreadRunning.load(); });
   LOG_DEBUG("event thread started");
 }
 
