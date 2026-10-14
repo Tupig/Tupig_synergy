@@ -39,7 +39,14 @@ echo "Baseline (from vcpkg.json): ${BASELINE}"
 # --- clone if absent -------------------------------------------------------
 if [ ! -d "${VCPKG_DIR}/.git" ]; then
     echo "Cloning vcpkg (shallow) into vendor/vcpkg ..."
-    git clone --depth 1 "${VCPKG_REPO}" "${VCPKG_DIR}"
+    # The clone transfers a large pack; on a flaky link it can fail part-way
+    # with "unable to read tree" on a truncated fetch. Retry once from a
+    # clean directory before giving up.
+    if ! git clone --depth 1 "${VCPKG_REPO}" "${VCPKG_DIR}"; then
+        echo "Clone failed, retrying from a clean directory ..."
+        rm -rf "${VCPKG_DIR}"
+        git clone --depth 1 "${VCPKG_REPO}" "${VCPKG_DIR}"
+    fi
 fi
 
 # --- make sure the pinned baseline commit is present ----------------------
