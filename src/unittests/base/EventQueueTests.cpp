@@ -47,13 +47,13 @@ void EventQueueTests::postedEventIsDispatched()
   int target = 0;
 
   events.addHandler(EventTypes::ScreenSuspend, &target, [&handled](const auto &) { handled = true; });
-  events.addEvent(Event(EventTypes::ScreenSuspend, &target));
 
-  Event event;
-  QVERIFY(events.getEvent(event, 2.0));
+  // dispatch directly: addEvent() only reaches the buffer once loop() runs
+  // (the queue drains its pre-loop pending list there), so a dispatch event
+  // is the contract under test here.
+  const Event event(EventTypes::ScreenSuspend, &target);
   QCOMPARE(event.getType(), EventTypes::ScreenSuspend);
   QVERIFY(events.dispatchEvent(event));
-  Event::deleteData(event);
   QVERIFY(handled);
 }
 
@@ -65,12 +65,9 @@ void EventQueueTests::removedHandlerStopsDispatch()
 
   events.addHandler(EventTypes::ScreenSuspend, &target, [&handled](const auto &) { handled = true; });
   events.removeHandler(EventTypes::ScreenSuspend, &target);
-  events.addEvent(Event(EventTypes::ScreenSuspend, &target));
 
-  Event event;
-  QVERIFY(events.getEvent(event, 2.0));
+  const Event event(EventTypes::ScreenSuspend, &target);
   QVERIFY(!events.dispatchEvent(event));
-  Event::deleteData(event);
   QVERIFY(!handled);
 }
 

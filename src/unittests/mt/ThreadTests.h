@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-2.0-only WITH LicenseRef-OpenSSL-Exception
  */
 
+#include "base/Log.h"
+
 #include <QTest>
 
 class ThreadTests : public QObject
@@ -16,4 +18,9 @@ private Q_SLOTS:
   void exitValueIsReturnedByGetResult();
   void cancelStopsAtCancellationPoint();
   void currentThreadHandleIsStable();
+
+private:
+  //! Installs the global logger; mt::Thread logs from the new thread and a
+  //! null global log segfaults in release builds.
+  Log m_log;
 };

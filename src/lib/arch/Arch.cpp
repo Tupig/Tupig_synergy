@@ -53,5 +53,8 @@ double Arch::time()
 {
   auto sinceEpoch = std::chrono::steady_clock::now().time_since_epoch();
   auto uSecSinceEpoch = std::chrono::duration_cast<std::chrono::microseconds>(sinceEpoch).count();
-  return double(uSecSinceEpoch / 1000000);
+  // fractional seconds: the previous integer division truncated to whole
+  // seconds, which gave every Stopwatch (and therefore every EventQueue
+  // timer) a one-second resolution
+  return static_cast<double>(uSecSinceEpoch) / 1000000.0;
 }

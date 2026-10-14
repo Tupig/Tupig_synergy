@@ -57,12 +57,14 @@ void ProtocolUtilTests::readBytesRejectsVariableStringBeyondLimit()
 
 void ProtocolUtilTests::roundTripKeyDownFormat()
 {
-  // real message body: DKDN%2i%2i%2i (key id, modifier mask, button)
+  // real message body: DKDN%2i%2i%2i (key id, modifier mask, button).
+  // writef() takes integer arguments by value (as production callers do);
+  // readf() takes pointers, which is where the read side returns the values.
   MemoryStream stream(MemoryStream::WriteMode::Loopback);
   const uint16_t id = 0x1234;
   const uint16_t mask = 0xabcd;
   const uint16_t button = 0x0042;
-  ProtocolUtil::writef(&stream, kMsgDKeyDown + 4, &id, &mask, &button);
+  ProtocolUtil::writef(&stream, kMsgDKeyDown + 4, id, mask, button);
 
   uint16_t readId = 0;
   uint16_t readMask = 0;
