@@ -95,7 +95,15 @@ void IpcTokenTests::writeSetsOwnerOnlyPermissions()
   const auto token = synergy::generateIpcToken();
   QVERIFY(synergy::writeIpcToken(m_serverName, token));
 
-  QCOMPARE(QFile::permissions(synergy::ipcTokenPath(m_serverName)), QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+  // Qt reports the user read/write bits under both the Owner and User flags on
+  // Unix, so assert the group/other bits are absent rather than exact equality
+  const auto permissions = QFile::permissions(synergy::ipcTokenPath(m_serverName));
+  QVERIFY(permissions.testFlag(QFileDevice::ReadOwner));
+  QVERIFY(permissions.testFlag(QFileDevice::WriteOwner));
+  QVERIFY(!permissions.testFlag(QFileDevice::ReadGroup));
+  QVERIFY(!permissions.testFlag(QFileDevice::WriteGroup));
+  QVERIFY(!permissions.testFlag(QFileDevice::ReadOther));
+  QVERIFY(!permissions.testFlag(QFileDevice::WriteOther));
 }
 
 void IpcTokenTests::refreshRestoresOwnerOnlyPermissions()
@@ -111,7 +119,13 @@ void IpcTokenTests::refreshRestoresOwnerOnlyPermissions()
   );
 
   QVERIFY(synergy::refreshIpcTokenAccess(m_serverName));
-  QCOMPARE(QFile::permissions(path), QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+
+  const auto permissions = QFile::permissions(path);
+  QVERIFY(permissions.testFlag(QFileDevice::ReadOwner));
+  QVERIFY(permissions.testFlag(QFileDevice::WriteOwner));
+  QVERIFY(!permissions.testFlag(QFileDevice::ReadGroup));
+  QVERIFY(!permissions.testFlag(QFileDevice::WriteGroup));
+  QVERIFY(!permissions.testFlag(QFileDevice::ReadOther));
 }
 #else
 void IpcTokenTests::writeAppliesRestrictedDacl()
