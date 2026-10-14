@@ -59,6 +59,17 @@ public:
    */
   static bool isVirtualInterface(const QString &interfaceName);
 
+  /**
+   * @brief Apply a new IP address list
+   *
+   * Emits ipAddressesChanged() when the list differs from the last one and
+   * remembers it otherwise.  Public so a caller that already enumerates
+   * addresses can feed the monitor directly.
+   *
+   * @param newAddresses New IP address list
+   */
+  void setIpAddresses(const QStringList &newAddresses);
+
 Q_SIGNALS:
   /**
    * @brief Emitted when IP addresses change
@@ -67,8 +78,6 @@ Q_SIGNALS:
   void ipAddressesChanged(const QStringList &addresses);
 
 private:
-  void setIpAddresses(const QStringList &newAddresses);
-
   /**
    * @brief Update current network status
    */
