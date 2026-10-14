@@ -9,6 +9,7 @@
 #include "App.h"
 #include "MSWindowsHandle.h"
 #include "arch/Arch.h"
+#include "arch/win32/ArchMiscWindows.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/Log.h"
 #include "base/LogOutputters.h"
@@ -559,8 +560,14 @@ void MSWindowsWatchdog::sasLoop(const void *) // NOSONAR - Thread entry point si
       continue;
     }
 
-    // Create a an event so that other processes can tell the daemon to call the `SendSAS` function.
-    MSWindowsHandle sendSasEvent(CreateEvent(nullptr, FALSE, FALSE, LPCWSTR(kSendSasEventName)));
+    // Create an event so that other processes can tell the daemon to call the `SendSAS` function.
+    // Restricted to SYSTEM and Administrators: only an elevated core may set it, and a
+    // low-privilege process cannot pre-create the name and trick the daemon into signalling.
+    MSWindowsHandle sendSasEvent(
+        ArchMiscWindows::createProtectedGlobalEvent(
+            LPCWSTR(kSendSasEventName), FALSE, FALSE, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+        )
+    );
     if (sendSasEvent.get() == nullptr) {
       LOG_ERR("could not create SAS event, error: %s", windowsErrorToString(GetLastError()).c_str());
       Arch::sleep(1);

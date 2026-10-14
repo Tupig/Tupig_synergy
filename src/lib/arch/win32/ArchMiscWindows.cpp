@@ -14,6 +14,7 @@
 #include "common/Constants.h"
 
 #include <Psapi.h>
+#include <sddl.h>
 
 #include <array>
 #include <filesystem>
@@ -63,6 +64,40 @@ void ArchMiscWindows::init()
 {
   // stop windows system error dialogs from showing.
   SetErrorMode(SEM_FAILCRITICALERRORS);
+}
+
+HANDLE ArchMiscWindows::createProtectedGlobalEvent(
+    const std::wstring &name, BOOL manualReset, BOOL initialState, const wchar_t *sddl
+)
+{
+  PSECURITY_DESCRIPTOR descriptor = nullptr;
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl, SDDL_REVISION_1, &descriptor, nullptr)) {
+    return nullptr;
+  }
+
+  SECURITY_ATTRIBUTES attributes{};
+  attributes.nLength = sizeof(attributes);
+  attributes.lpSecurityDescriptor = descriptor;
+  attributes.bInheritHandle = FALSE;
+
+  const HANDLE event = CreateEventW(&attributes, manualReset, initialState, name.c_str());
+  const auto error = GetLastError();
+  LocalFree(descriptor);
+
+  if (event == nullptr) {
+    return nullptr;
+  }
+
+  // an object with this name already exists: a low-privilege process may have
+  // pre-created it, in which case this handle refers to an attacker-controlled
+  // object. Refuse it so the caller can retry or fail visibly.
+  if (error == ERROR_ALREADY_EXISTS) {
+    CloseHandle(event);
+    SetLastError(ERROR_ALREADY_EXISTS);
+    return nullptr;
+  }
+
+  return event;
 }
 
 HKEY ArchMiscWindows::openKey(HKEY key, const TCHAR *keyName)

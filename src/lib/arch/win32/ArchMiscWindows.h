@@ -41,6 +41,16 @@ public:
   //! Initialize
   static void init();
 
+  //! Create a named Global event protected by an explicit DACL.
+  /*!
+  Returns nullptr if the event cannot be created, or if an object with the
+  same name already exists (so a low-privilege process cannot pre-create the
+  name and hijack the signalling path). \p sddl restricts who may open and
+  modify the event after creation.
+  */
+  static HANDLE
+  createProtectedGlobalEvent(const std::wstring &name, BOOL manualReset, BOOL initialState, const wchar_t *sddl);
+
   //! Open and return a registry key, closing the parent key
   static HKEY openKey(HKEY parent, const TCHAR *child);
 
