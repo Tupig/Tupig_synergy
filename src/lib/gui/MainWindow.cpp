@@ -1352,6 +1352,12 @@ void MainWindow::updateIpLabel(const QStringList &addresses)
     toolTipText = toolTipText.arg(tr("one of the following IPs:<br/>%1").arg(ipList.join("<br/>")));
   }
 
+  if (mode == CoreMode::Server && !fixedIP) {
+    toolTipText.append(
+        tr("\n<p>%1 listens on all network interfaces because no IP is selected in the settings.</p>").arg(kAppName)
+    );
+  }
+
   ui->lblIpAddresses->setText(labelText);
   ui->lblIpAddresses->setToolTip(mode == CoreMode::Server ? toolTipText : QString());
 }

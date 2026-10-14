@@ -67,6 +67,9 @@ void ServerApp::parseArgs()
   if (const auto address = Settings::value(Settings::Core::Interface).toString(); !address.isEmpty()) {
     *m_synergyAddress = NetworkAddress(address.toStdString(), Settings::value(Settings::Core::Port).toInt());
   } else {
+    // No interface selected: bind every network interface so LAN clients can
+    // connect out of the box.  Say so explicitly - this is an exposure surface.
+    LOG_WARN("core/interface is not set: listening on all network interfaces");
     *m_synergyAddress = NetworkAddress(Settings::value(Settings::Core::Port).toInt());
   }
 
