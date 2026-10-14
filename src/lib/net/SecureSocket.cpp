@@ -36,7 +36,6 @@
 //
 // SecureSocket
 //
-static const std::size_t s_maxInputBufferSize = 1024 * 1024;
 
 struct Ssl
 {
@@ -202,11 +201,14 @@ TCPSocket::JobResult SecureSocket::doRead()
   if (bytesRead > 0) {
     bool wasEmpty = (m_inputBuffer.getSize() == 0);
 
-    // slurp up as much as possible
+    // slurp up as much as possible; pause at the high-water mark so a hostile
+    // or stalled peer cannot grow the buffer without bound (the consumer
+    // re-arms reads after draining, see TCPSocket::read)
     do {
       m_inputBuffer.write(m_readBuffer.data(), bytesRead);
 
-      if (m_inputBuffer.getSize() > s_maxInputBufferSize) {
+      if (m_inputBuffer.getSize() >= s_inputBufferHighWater) {
+        m_readPaused = true;
         break;
       }
 
@@ -219,6 +221,10 @@ TCPSocket::JobResult SecureSocket::doRead()
     // send input ready if input buffer was empty
     if (wasEmpty) {
       sendEvent(EventTypes::StreamInputReady);
+    }
+
+    if (m_readPaused) {
+      return New;
     }
   } else {
     // remote write end of stream hungup.  our input side

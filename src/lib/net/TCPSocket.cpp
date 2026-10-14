@@ -21,8 +21,6 @@
 #include <cstdlib>
 #include <cstring>
 
-static const std::size_t s_maxInputBufferSize = 1024 * 1024;
-
 //
 // TCPSocket
 //
@@ -117,20 +115,35 @@ void *TCPSocket::getEventTarget() const
 
 uint32_t TCPSocket::read(void *buffer, uint32_t n)
 {
-  // copy data directly from our input buffer
-  Lock lock(&m_mutex);
-  if (uint32_t size = m_inputBuffer.getSize(); n > size) {
-    n = size;
-  }
-  if (buffer != nullptr && n != 0) {
-    memcpy(buffer, m_inputBuffer.peek(n), n);
-  }
-  m_inputBuffer.pop(n);
+  bool rearmRead = false;
+  {
+    Lock lock(&m_mutex);
 
-  // if no more data and we cannot read or write then send disconnected
-  if (n > 0 && m_inputBuffer.getSize() == 0 && !m_readable && !m_writable) {
-    sendEvent(EventTypes::SocketDisconnected);
-    m_connected = false;
+    // copy data directly from our input buffer
+    if (uint32_t size = m_inputBuffer.getSize(); n > size) {
+      n = size;
+    }
+    if (buffer != nullptr && n != 0) {
+      memcpy(buffer, m_inputBuffer.peek(n), n);
+    }
+    m_inputBuffer.pop(n);
+
+    // re-arm readability polling once the buffer drained below the low mark
+    if (m_readPaused && m_inputBuffer.getSize() <= s_inputBufferHighWater / 2) {
+      m_readPaused = false;
+      rearmRead = true;
+    }
+
+    // if no more data and we cannot read or write then send disconnected
+    if (n > 0 && m_inputBuffer.getSize() == 0 && !m_readable && !m_writable) {
+      sendEvent(EventTypes::SocketDisconnected);
+      m_connected = false;
+    }
+  }
+
+  if (rearmRead) {
+    // newJob()/setJob() run outside this socket's mutex (see write())
+    setJob(newJob());
   }
 
   return n;
@@ -317,11 +330,14 @@ TCPSocket::JobResult TCPSocket::doRead()
   if (bytesRead > 0) {
     bool wasEmpty = (m_inputBuffer.getSize() == 0);
 
-    // slurp up as much as possible
+    // slurp up as much as possible; pause at the high-water mark so a hostile
+    // or stalled peer cannot grow the buffer without bound (the consumer
+    // re-arms reads after draining, see read())
     do {
       m_inputBuffer.write(buffer, static_cast<uint32_t>(bytesRead));
 
-      if (m_inputBuffer.getSize() > s_maxInputBufferSize) {
+      if (m_inputBuffer.getSize() >= s_inputBufferHighWater) {
+        m_readPaused = true;
         break;
       }
 
@@ -331,6 +347,10 @@ TCPSocket::JobResult TCPSocket::doRead()
     // send input ready if input buffer was empty
     if (wasEmpty) {
       sendEvent(EventTypes::StreamInputReady);
+    }
+
+    if (m_readPaused) {
+      return JobResult::New;
     }
   } else {
     // remote write end of stream hungup.  our input side
@@ -391,11 +411,15 @@ ISocketMultiplexerJob *TCPSocket::newJob()
         this, &TCPSocket::serviceConnecting, m_socket, m_readable, m_writable
     );
   } else {
-    if (!(m_readable || (m_writable && (m_outputBuffer.getSize() > 0)))) {
+    const bool wantRead = m_readable && !m_readPaused;
+    const bool wantWrite = m_writable && (m_outputBuffer.getSize() > 0);
+    if (!wantRead && !wantWrite && !m_readPaused) {
       return nullptr;
     }
+    // while paused the job stays registered (with no read interest) so the
+    // socket is not dropped; read() re-arms it after the buffer drains
     return new TSocketMultiplexerMethodJob<TCPSocket>(
-        this, &TCPSocket::serviceConnected, m_socket, m_readable, m_writable && (m_outputBuffer.getSize() > 0)
+        this, &TCPSocket::serviceConnected, m_socket, wantRead, wantWrite
     );
   }
 }
