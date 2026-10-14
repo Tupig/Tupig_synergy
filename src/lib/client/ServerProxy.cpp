@@ -160,6 +160,15 @@ void ServerProxy::handleData()
     n = m_stream->read(code, 4);
   }
 
+  // reply once for the whole batch.  this is intended to work around a delay
+  // when running a linux server and an OS X (any BSD?) client.  the client
+  // waits to send an ACK (if net.inet.tcp.delayed_ack is 1) in hopes of
+  // piggybacking it on a data packet; we provide that packet here.
+  if (m_needNoopReply) {
+    m_needNoopReply = false;
+    ProtocolUtil::writef(m_stream, kMsgCNoop);
+  }
+
   flushCompressedMouse();
 }
 
@@ -370,14 +379,9 @@ ServerProxy::ConnectionResult ServerProxy::parseMessage(const uint8_t *code)
     return Unknown;
   }
 
-  // send a reply.  this is intended to work around a delay when
-  // running a linux server and an OS X (any BSD?) client.  the
-  // client waits to send an ACK (if the system control flag
-  // net.inet.tcp.delayed_ack is 1) in hopes of piggybacking it
-  // on a data packet.  we provide that packet here.  i don't
-  // know why a delayed ACK should cause the server to wait since
-  // TCP_NODELAY is enabled.
-  ProtocolUtil::writef(m_stream, kMsgCNoop);
+  // remember that a reply is due; it is sent once for the whole incoming
+  // batch by handleData instead of once per message
+  m_needNoopReply = true;
 
   return Okay;
 }

@@ -133,6 +133,8 @@ private:
 
   double m_keepAliveAlarm = 0.0;
   EventQueueTimer *m_keepAliveAlarmTimer = nullptr;
+  //! send one NOOP reply per incoming batch instead of one per message
+  bool m_needNoopReply = false;
 
   MessageParser m_parser = &ServerProxy::parseHandshakeMessage;
   IEventQueue *m_events = nullptr;
