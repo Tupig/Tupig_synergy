@@ -11,6 +11,15 @@
 #include <QSettings>
 #include <QTemporaryDir>
 
+namespace {
+
+QList<int> keysOf(const KeySequence &sequence)
+{
+  return sequence.sequence();
+}
+
+} // namespace
+
 void KeySequenceTests::toString_controlShiftPlus_usesNamedPlus()
 {
   KeySequence sequence;
@@ -29,7 +38,7 @@ void KeySequenceTests::startsInvalid()
   QVERIFY(!sequence.valid());
   QVERIFY(!sequence.isMouseButton());
   QVERIFY(sequence.toString().isEmpty());
-  QVERIFY(sequence.sequence().isEmpty());
+  QVERIFY(keysOf(sequence).isEmpty());
   QCOMPARE(sequence.modifiers(), 0);
 }
 
@@ -40,7 +49,7 @@ void KeySequenceTests::repeatedModifierIsNotDuplicated()
   sequence.appendKey(Qt::Key_Control, Qt::ControlModifier);
   sequence.appendKey(Qt::Key_Control, Qt::ControlModifier);
 
-  QCOMPARE(sequence.sequence().size(), 1);
+  QCOMPARE(keysOf(sequence).size(), 1);
   QCOMPARE(sequence.modifiers(), static_cast<int>(Qt::ControlModifier));
 }
 
@@ -67,7 +76,7 @@ void KeySequenceTests::rejectsUnknownKeysAndAltGr()
   // validate the sequence
   QVERIFY(!sequence.appendKey(0x100000, 0));
   QVERIFY(!sequence.valid());
-  QVERIFY(sequence.sequence().isEmpty());
+  QVERIFY(keysOf(sequence).isEmpty());
 }
 
 void KeySequenceTests::capsSequenceAtFourKeys()
@@ -80,7 +89,7 @@ void KeySequenceTests::capsSequenceAtFourKeys()
   QVERIFY(sequence.appendKey(Qt::Key_F4, 0));
   sequence.appendKey(Qt::Key_F5, 0);
 
-  QCOMPARE(sequence.sequence().size(), 4);
+  QCOMPARE(keysOf(sequence).size(), 4);
   QCOMPARE(sequence.toString(), QStringLiteral("F1+F2+F3+F4"));
 }
 
@@ -115,7 +124,7 @@ void KeySequenceTests::settingsRoundTripPreservesSequence()
   }
 
   QVERIFY(loaded.valid());
-  QVERIFY(loaded.sequence() == original.sequence());
+  QVERIFY(keysOf(loaded) == keysOf(original));
   QCOMPARE(loaded.toString(), original.toString());
 }
 
