@@ -23,6 +23,7 @@
 #include "net/SocketException.h"
 #include "net/SocketMultiplexer.h"
 #include "net/TCPSocketFactory.h"
+#include "synergy/core/AppSettings.h"
 
 #if defined(Q_OS_WIN)
 #include "MSWindowsScreen.h"
@@ -237,7 +238,8 @@ void ClientApp::handleClientDisconnected()
 
 Client *ClientApp::openClient(const std::string &name, const NetworkAddress &address, synergy::Screen *screen)
 {
-  auto *client = new Client(getEvents(), name, address, getSocketFactory(), screen);
+  auto *client =
+      new Client(getEvents(), name, address, getSocketFactory(), screen, synergy::core::AppSettings::clientConfig());
 
   try {
     getEvents()->addHandler(EventTypes::ClientConnected, client->getEventTarget(), [this](const auto &) {
@@ -389,13 +391,15 @@ void ClientApp::startNode()
 
 std::unique_ptr<ISocketFactory> ClientApp::getSocketFactory() const
 {
+  const TlsConfig tls = synergy::core::AppSettings::tlsConfig();
+
   // Qt is the default transport; USE_LEGACY_NETWORK=1 rolls back to the
   // raw-socket stack for one release cycle.
   if (shouldUseLegacyNetwork()) {
     LOG_DEBUG("using the legacy network stack (USE_LEGACY_NETWORK=1)");
-    return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer());
+    return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer(), tls);
   }
-  return std::make_unique<QtSocketFactory>(getEvents());
+  return std::make_unique<QtSocketFactory>(getEvents(), tls);
 }
 
 double ClientApp::retryTime() const

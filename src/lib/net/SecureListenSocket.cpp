@@ -10,8 +10,9 @@
 #include "SecureSocket.h"
 #include "arch/Arch.h"
 #include "arch/ArchException.h"
-#include "common/Settings.h"
 #include "net/SocketMultiplexer.h"
+
+#include <QString>
 
 //
 // SecureListenSocket
@@ -19,10 +20,11 @@
 
 SecureListenSocket::SecureListenSocket(
     IEventQueue *events, SocketMultiplexer *socketMultiplexer, IArchNetwork::AddressFamily family,
-    SecurityLevel securityLevel
+    SecurityLevel securityLevel, const TlsConfig &tlsConfig
 )
     : TCPListenSocket(events, socketMultiplexer, family),
-      m_securityLevel{securityLevel}
+      m_securityLevel{securityLevel},
+      m_tlsConfig(tlsConfig)
 
 {
   // do nothing
@@ -33,14 +35,14 @@ std::unique_ptr<IDataSocket> SecureListenSocket::accept()
   std::unique_ptr<SecureSocket> secureSocket;
   try {
     secureSocket = std::make_unique<SecureSocket>(
-        events(), socketMultiplexer(), ARCH->acceptSocket(socket(), nullptr), m_securityLevel
+        events(), socketMultiplexer(), ARCH->acceptSocket(socket(), nullptr), m_securityLevel, m_tlsConfig
     );
     secureSocket->initSsl(true);
 
     setListeningJob();
 
     // default location of the TLS cert file in users dir
-    if (!secureSocket->loadCertificate(Settings::value(Settings::Security::Certificate).toString())) {
+    if (!secureSocket->loadCertificate(QString::fromStdString(m_tlsConfig.certificatePath))) {
       return nullptr;
     }
 

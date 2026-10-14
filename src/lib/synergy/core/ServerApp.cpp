@@ -28,6 +28,7 @@
 #include "server/Config.h"
 #include "server/PrimaryClient.h"
 #include "server/Server.h"
+#include "synergy/core/AppSettings.h"
 
 // must be before screen header includes
 #include <QFileInfo>
@@ -466,7 +467,10 @@ ClientListener *ServerApp::openClientListener(const NetworkAddress &address)
 
 Server *ServerApp::openServer(ServerConfig &config, PrimaryClient *primaryClient)
 {
-  auto *server = new Server(config, primaryClient, m_serverScreen, getEvents());
+  auto *server = new Server(
+      config, primaryClient, m_serverScreen, getEvents(), synergy::core::AppSettings::serverProtocol(),
+      synergy::core::AppSettings::fileTransferSettings()
+  );
   try {
     getEvents()->addHandler(EventTypes::ServerScreenSwitched, server, [this](const auto &) { handleScreenSwitched(); });
 
@@ -485,13 +489,15 @@ void ServerApp::handleScreenSwitched() const
 
 std::unique_ptr<ISocketFactory> ServerApp::getSocketFactory() const
 {
+  const TlsConfig tls = synergy::core::AppSettings::tlsConfig();
+
   // Qt is the default transport; USE_LEGACY_NETWORK=1 rolls back to the
   // raw-socket stack for one release cycle.
   if (shouldUseLegacyNetwork()) {
     LOG_DEBUG("using the legacy network stack (USE_LEGACY_NETWORK=1)");
-    return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer());
+    return std::make_unique<TCPSocketFactory>(getEvents(), getSocketMultiplexer(), tls);
   }
-  return std::make_unique<QtSocketFactory>(getEvents());
+  return std::make_unique<QtSocketFactory>(getEvents(), tls);
 }
 
 NetworkAddress ServerApp::getAddress(const NetworkAddress &address) const

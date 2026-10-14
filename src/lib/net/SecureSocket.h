@@ -9,6 +9,7 @@
 
 #include "net/SecurityLevel.h"
 #include "net/TCPSocket.h"
+#include "net/TlsConfig.h"
 
 #include <array>
 #include <cstdint>
@@ -32,11 +33,11 @@ class SecureSocket : public TCPSocket
 public:
   SecureSocket(
       IEventQueue *events, SocketMultiplexer *socketMultiplexer, IArchNetwork::AddressFamily family,
-      SecurityLevel securityLevel = SecurityLevel::EncryptedTestOnly
+      SecurityLevel securityLevel, const TlsConfig &tlsConfig
   );
   SecureSocket(
-      IEventQueue *events, SocketMultiplexer *socketMultiplexer, ArchSocket socket,
-      SecurityLevel securityLevel = SecurityLevel::EncryptedTestOnly
+      IEventQueue *events, SocketMultiplexer *socketMultiplexer, ArchSocket socket, SecurityLevel securityLevel,
+      const TlsConfig &tlsConfig
   );
   SecureSocket(SecureSocket const &) = delete;
   SecureSocket(SecureSocket &&) = delete;
@@ -98,6 +99,7 @@ private:
   bool m_secureReady = false;
   bool m_fatal = false;
   SecurityLevel m_securityLevel = SecurityLevel::EncryptedTestOnly;
+  TlsConfig m_tlsConfig;
 
   // Per-socket write-retry state. These used to be function-level statics in
   // doWrite(), shared by every SecureSocket on the multiplexer: a pending

@@ -12,6 +12,7 @@
 
 #include "IClipboard.h"
 #include "base/EventTypes.h"
+#include "client/ClientConfig.h"
 #include "client/IServerProxyClient.h"
 #include "common/Enums.h"
 #include "net/NetworkAddress.h"
@@ -63,7 +64,7 @@ public:
   */
   Client(
       IEventQueue *events, const std::string &name, const NetworkAddress &address,
-      std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen
+      std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen, const ClientConfig &config
   );
   Client(Client const &) = delete;
   Client(Client &&) = delete;
@@ -214,6 +215,12 @@ private:
   size_t m_maximumClipboardReceiveSize = 0;
   size_t m_maximumClipboardSize = INT_MAX;
   size_t m_resolvedAddressesCount = 0;
+
+  //! Network interface to bind to; empty leaves the choice to the OS.
+  std::string m_connectInterface;
+
+  //! Configuration handed to the server proxy on connect.
+  ServerProxyConfig m_serverProxyConfig;
 
   //! Invalidates in-flight asynchronous hostname lookups when a new attempt
   //! starts or the connection is torn down.

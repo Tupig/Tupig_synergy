@@ -24,10 +24,11 @@
 #include "server/ClientProxy.h"
 #include "server/ClientProxyUnknown.h"
 #include "server/PrimaryClient.h"
-
-#include "common/Settings.h"
 #include "synergy/protocol/FileChunk.h"
 #include "synergy/protocol/FileTransferOutbound.h"
+
+#include <QString>
+#include <QStringList>
 
 #ifdef _WIN32
 #include <algorithm>
@@ -40,6 +41,7 @@
 #include <cstring>
 #include <ctime>
 #include <optional>
+#include <utility>
 
 using namespace synergy::server;
 
@@ -47,13 +49,18 @@ using namespace synergy::server;
 // Server
 //
 
-Server::Server(ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events)
+Server::Server(
+    ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events,
+    NetworkProtocol protocol, FileTransferSettings fileTransfer
+)
     : m_primaryClient(primaryClient),
       m_active(primaryClient),
       m_config(&config),
       m_inputFilter(config.getInputFilter()),
       m_screen(screen),
-      m_events(events)
+      m_events(events),
+      m_protocol(protocol),
+      m_fileTransferSettings(std::move(fileTransfer))
 {
   // must have a primary client and it must have a canonical name
   assert(m_primaryClient != nullptr);
@@ -334,14 +341,14 @@ void Server::fileChunkSending(uint8_t mark, char *data, size_t dataSize)
 uint64_t Server::sendLocalFiles(const std::vector<std::string> &paths)
 {
   FileTransferOutbound::Options options;
-  options.enabled = Settings::value(Settings::FileTransfer::Enabled).toBool();
+  options.enabled = m_fileTransferSettings.enabled;
 
-  if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
-    options.maxFileSize = bytesFromMegabyteSetting(maxMb, options.maxFileSize);
+  if (m_fileTransferSettings.maxFileSizeMb > 0) {
+    options.maxFileSize = bytesFromMegabyteSetting(m_fileTransferSettings.maxFileSizeMb, options.maxFileSize);
   }
-  if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
-    constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
-    options.maxFileCount = static_cast<size_t>((std::min)(maxCount, kMaxFileCount));
+  if (m_fileTransferSettings.maxFileCount > 0) {
+    constexpr auto kMaxFileCount = static_cast<uint64_t>(4096);
+    options.maxFileCount = static_cast<size_t>((std::min)(m_fileTransferSettings.maxFileCount, kMaxFileCount));
   }
 
   FileTransferSender::Emitter emitter;
@@ -1204,7 +1211,6 @@ void Server::processOptions()
     stopRelativeMoves();
   }
   m_relativeMoves = newRelativeMoves;
-  m_protocol = Settings::value(Settings::Server::Protocol).value<NetworkProtocol>();
 }
 
 void Server::handleShapeChanged(BaseClientProxy *client)

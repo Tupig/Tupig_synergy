@@ -8,7 +8,6 @@
 #include "net/QtNetworkTransport.h"
 
 #include "base/Log.h"
-#include "common/Settings.h"
 #include "net/NetworkAddress.h"
 #include "net/TlsPolicy.h"
 
@@ -115,17 +114,20 @@ protected:
 // QtNetworkTransport
 //
 
-QtNetworkTransport::QtNetworkTransport(SecurityLevel securityLevel) : m_securityLevel(securityLevel)
+QtNetworkTransport::QtNetworkTransport(SecurityLevel securityLevel, const TlsConfig &tlsConfig)
+    : m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig)
 {
   createSocket();
   connectSignals();
   LOG_DEBUG("QtNetworkTransport: created (tls=%d)", wantsTls() ? 1 : 0);
 }
 
-QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securityLevel)
+QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securityLevel, const TlsConfig &tlsConfig)
     : m_socket(socket),
       m_connected(socket != nullptr && socket->state() == QAbstractSocket::ConnectedState),
-      m_securityLevel(securityLevel)
+      m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig)
 {
   if (m_socket) {
     m_socket->setParent(this);
@@ -183,9 +185,9 @@ bool QtNetworkTransport::applyCertificate(QSslSocket *ssl, bool /*isServer*/)
     return false;
   }
 
-  const QString path = Settings::value(Settings::Security::Certificate).toString();
+  const QString path = QString::fromStdString(m_tlsConfig.certificatePath);
   if (path.isEmpty()) {
-    LOG_ERR("QtNetworkTransport: security/certificate setting is empty");
+    LOG_ERR("QtNetworkTransport: certificate path is empty");
     return false;
   }
 
@@ -456,7 +458,9 @@ void QtNetworkTransport::processWriteQueue()
 // QtTransportListenSocket
 //
 
-QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : m_securityLevel(securityLevel)
+QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel, const TlsConfig &tlsConfig)
+    : m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig)
 {
   // QSslServer is Qt 6+; Qt 5 (RHEL/Rocky, and Debian/Ubuntu legs that fall
   // back when system Qt 6 is below the project floor) only has QTcpServer.
@@ -510,9 +514,9 @@ bool QtTransportListenSocket::configureSslServer()
     return false;
   }
 
-  const QString path = Settings::value(Settings::Security::Certificate).toString();
+  const QString path = QString::fromStdString(m_tlsConfig.certificatePath);
   if (path.isEmpty()) {
-    LOG_ERR("QtTransportListenSocket: security/certificate setting is empty");
+    LOG_ERR("QtTransportListenSocket: certificate path is empty");
     return false;
   }
 
@@ -541,9 +545,9 @@ bool QtTransportListenSocket::configureSslServer()
     return false;
   }
 
-  const QString path = Settings::value(Settings::Security::Certificate).toString();
+  const QString path = QString::fromStdString(m_tlsConfig.certificatePath);
   if (path.isEmpty()) {
-    LOG_ERR("QtTransportListenSocket: security/certificate setting is empty");
+    LOG_ERR("QtTransportListenSocket: certificate path is empty");
     return false;
   }
 
@@ -573,7 +577,7 @@ std::unique_ptr<INetworkTransport> QtTransportListenSocket::accept()
   }
 
   LOG_DEBUG("QtTransportListenSocket: accepted connection (tls=%d)", wantsTls() ? 1 : 0);
-  return std::make_unique<QtNetworkTransport>(tcpSocket, m_securityLevel);
+  return std::make_unique<QtNetworkTransport>(tcpSocket, m_securityLevel, m_tlsConfig);
 }
 
 ArchSocket QtTransportListenSocket::getSocket() const

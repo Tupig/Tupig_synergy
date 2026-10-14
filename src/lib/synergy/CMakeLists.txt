@@ -33,6 +33,7 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   core/ClientApp.h
   core/ServerApp.cpp
   core/ServerApp.h
+  core/AppSettings.h
   core/IApp.h
   core/IClient.h
   core/SynergyException.cpp
@@ -72,6 +73,7 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   protocol/FileTransferPath.h
   protocol/FileTransferReceiver.cpp
   protocol/FileTransferReceiver.h
+  protocol/FileTransferSettings.h
   protocol/FileTransferSender.cpp
   protocol/FileTransferSender.h
   protocol/FileTransferSource.cpp

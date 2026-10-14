@@ -17,6 +17,7 @@
 #include "net/NetworkAddress.h"
 #include "net/QtSocketFactory.h"
 #include "net/SecureUtils.h"
+#include "net/TlsConfig.h"
 
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -28,9 +29,23 @@
 
 // End-to-end coverage for the Qt network adapters that now back every
 // connection: real loopback sockets, the IEventQueue event contract, the TLS
-// handshake and the TOFU fingerprint database. Settings are redirected to a
-// temporary directory (via portable mode) so the certificate and trust
-// databases never touch the machine's real configuration.
+// handshake and the TOFU fingerprint database. The trust-store paths still
+// come from the settings directory helpers (redirected to a temporary
+// directory via portable mode), but the factory receives them by injection:
+// the network layer itself never reads the settings.
+
+namespace {
+
+TlsConfig testTlsConfig(const QString &certPath)
+{
+  TlsConfig tls;
+  tls.certificatePath = certPath.toStdString();
+  tls.trustedClientsDbPath = Settings::tlsTrustedClientsDb().toStdString();
+  tls.trustedServersDbPath = Settings::tlsTrustedServersDb().toStdString();
+  return tls;
+}
+
+} // namespace
 
 QtSocketFactoryTests::~QtSocketFactoryTests()
 {
@@ -66,7 +81,6 @@ void QtSocketFactoryTests::initTestCase()
 
   Settings::setSettingsFile(m_testDir + "/test-settings.conf");
   Settings::setStateFile(m_testDir + "/test-state.conf");
-  Settings::setValue(Settings::Security::Certificate, m_certPath);
 }
 
 void QtSocketFactoryTests::cleanupTestCase()
@@ -129,7 +143,7 @@ void QtSocketFactoryTests::legacyNetworkFlagHonorsEnv()
 
 void QtSocketFactoryTests::plaintextRoundTrip()
 {
-  QtSocketFactory factory(m_events);
+  QtSocketFactory factory(m_events, testTlsConfig(m_certPath));
 
   auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::PlainText);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
@@ -181,7 +195,7 @@ void QtSocketFactoryTests::plaintextRoundTrip()
 
 void QtSocketFactoryTests::tlsRejectsUntrustedServer()
 {
-  QtSocketFactory factory(m_events);
+  QtSocketFactory factory(m_events, testTlsConfig(m_certPath));
 
   auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
@@ -236,7 +250,7 @@ void QtSocketFactoryTests::tlsRejectsUntrustedServer()
 
 void QtSocketFactoryTests::tlsRejectsWrongFingerprint()
 {
-  QtSocketFactory factory(m_events);
+  QtSocketFactory factory(m_events, testTlsConfig(m_certPath));
 
   // Trust a fingerprint that does not belong to the server certificate.
   FingerprintDatabase db;
@@ -286,8 +300,6 @@ void QtSocketFactoryTests::tlsRejectsWrongFingerprint()
 
 void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
 {
-  QtSocketFactory factory(m_events);
-
   // The server presents a 1024-bit RSA certificate; the client must reject it
   // even though its fingerprint is trusted.
   const QString smallCertPath = QFileInfo(m_certPath).absolutePath() + "/small-cert.pem";
@@ -302,8 +314,8 @@ void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
   QDir().mkpath(QFileInfo(dbPath).absolutePath());
   QVERIFY(db.write(dbPath));
 
-  const auto previousCert = Settings::value(Settings::Security::Certificate).toString();
-  Settings::setValue(Settings::Security::Certificate, smallCertPath);
+  // The weak identity is injected directly; no settings mutation needed.
+  QtSocketFactory factory(m_events, testTlsConfig(smallCertPath));
 
   auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
@@ -347,13 +359,11 @@ void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
           failureReason.contains(QStringLiteral("SSL Context")),
       qPrintable(failureReason)
   );
-
-  Settings::setValue(Settings::Security::Certificate, previousCert);
 }
 
 void QtSocketFactoryTests::tlsTrustedServerRoundTrip()
 {
-  QtSocketFactory factory(m_events);
+  QtSocketFactory factory(m_events, testTlsConfig(m_certPath));
 
   // Trust the generated identity as if the user had accepted it (TOFU).
   const QList<QSslCertificate> certs = QSslCertificate::fromPath(m_certPath);

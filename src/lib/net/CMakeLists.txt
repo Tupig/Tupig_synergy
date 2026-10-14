@@ -36,6 +36,7 @@ add_library(net STATIC
   SecurityLevel.h
   SecureSocket.cpp
   SecureSocket.h
+  TlsConfig.h
   SocketException.cpp
   SocketException.h
   SocketMultiplexer.cpp

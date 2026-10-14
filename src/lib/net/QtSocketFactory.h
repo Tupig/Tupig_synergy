@@ -11,6 +11,7 @@
 #include "net/IListenSocket.h"
 #include "net/ISocketFactory.h"
 #include "net/SecurityLevel.h"
+#include "net/TlsConfig.h"
 
 #include <QElapsedTimer>
 #include <QtGlobal>
@@ -38,9 +39,12 @@ class QtDataSocket : public IDataSocket
 {
 public:
   //! Outbound (client) socket.
-  QtDataSocket(IEventQueue *events, SecurityLevel securityLevel);
+  QtDataSocket(IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig);
   //! Accepted (server-side) socket; adopts \p transport.
-  QtDataSocket(IEventQueue *events, SecurityLevel securityLevel, std::unique_ptr<QtNetworkTransport> transport);
+  QtDataSocket(
+      IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig,
+      std::unique_ptr<QtNetworkTransport> transport
+  );
   ~QtDataSocket() override;
 
   // ISocket / IDataSocket
@@ -79,6 +83,7 @@ private:
 
   IEventQueue *m_events = nullptr;
   SecurityLevel m_securityLevel = SecurityLevel::PlainText;
+  TlsConfig m_tlsConfig;
   std::unique_ptr<QtNetworkTransport> m_transport;
   bool m_serverSide = false;
   bool m_inputShutdown = false;
@@ -97,7 +102,7 @@ Wraps \c QtTransportListenSocket; forwards "connection pending" through the
 class QtListenSocket : public IListenSocket
 {
 public:
-  QtListenSocket(IEventQueue *events, SecurityLevel securityLevel);
+  QtListenSocket(IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig);
   ~QtListenSocket() override;
 
   void bind(const NetworkAddress &address) override;
@@ -117,6 +122,7 @@ private:
 
   IEventQueue *m_events = nullptr;
   SecurityLevel m_securityLevel = SecurityLevel::PlainText;
+  TlsConfig m_tlsConfig;
   std::unique_ptr<QtTransportListenSocket> m_listen;
   // QSslServer announces a connection before the TLS handshake finishes
   // and never re-announces it; retry accept() within this window.
@@ -132,7 +138,7 @@ socket stack for one release cycle.
 class QtSocketFactory : public ISocketFactory
 {
 public:
-  explicit QtSocketFactory(IEventQueue *events);
+  explicit QtSocketFactory(IEventQueue *events, const TlsConfig &tlsConfig);
 
   std::unique_ptr<IDataSocket> create(
       IArchNetwork::AddressFamily family = IArchNetwork::AddressFamily::INet,
@@ -145,6 +151,7 @@ public:
 
 private:
   IEventQueue *m_events = nullptr;
+  TlsConfig m_tlsConfig;
 };
 
 //! True when `USE_LEGACY_NETWORK=1` selects the raw-socket stack (rollback).

@@ -10,6 +10,7 @@
 
 #include "arch/IArchNetwork.h"
 #include "net/ISocketFactory.h"
+#include "net/TlsConfig.h"
 
 class IEventQueue;
 class SocketMultiplexer;
@@ -18,7 +19,7 @@ class SocketMultiplexer;
 class TCPSocketFactory : public ISocketFactory
 {
 public:
-  TCPSocketFactory(IEventQueue *events, SocketMultiplexer *socketMultiplexer);
+  TCPSocketFactory(IEventQueue *events, SocketMultiplexer *socketMultiplexer, const TlsConfig &tlsConfig);
   ~TCPSocketFactory() override = default;
 
   // ISocketFactory overrides
@@ -34,4 +35,5 @@ public:
 private:
   IEventQueue *m_events;
   SocketMultiplexer *m_socketMultiplexer;
+  TlsConfig m_tlsConfig;
 };

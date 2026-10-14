@@ -16,6 +16,7 @@
 #include "base/Stopwatch.h"
 #include "common/NetworkProtocol.h"
 #include "server/Config.h"
+#include "synergy/protocol/FileTransferSettings.h"
 
 #include <climits>
 #include <map>
@@ -135,7 +136,10 @@ public:
   client (local screen) \p primaryClient.  The client retains
   ownership of \p primaryClient.
   */
-  Server(ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events);
+  Server(
+      ServerConfig &config, PrimaryClient *primaryClient, synergy::Screen *screen, IEventQueue *events,
+      NetworkProtocol protocol, FileTransferSettings fileTransfer
+  );
   Server(Server const &) = delete;
   Server(Server &&) = delete;
   ~Server();
@@ -460,6 +464,7 @@ private:
 
   // used in hello message sent to the client
   NetworkProtocol m_protocol = NetworkProtocol::Synergy;
+  FileTransferSettings m_fileTransferSettings;
 
   // the sequence number of enter messages
   uint32_t m_seqNum = 0;
