@@ -50,6 +50,8 @@ const QString kErrorHelloRequired = QStringLiteral("error=hello required\n");
 
 void IpcServerTests::initTestCase()
 {
+  m_log.setFilter(LogLevel::Level::Error);
+
   // per-process settings directory so tokens are written to a scratch path
   m_testDir = QDir::tempPath() + QString("/synergy-ipc-server-tests-%1").arg(QCoreApplication::applicationPid());
   QDir().mkpath(m_testDir);

@@ -83,6 +83,11 @@ private:
 
 } // namespace
 
+void InputFilterTests::initTestCase()
+{
+  m_log.setFilter(LogLevel::Level::Error);
+}
+
 void InputFilterTests::ruleWithoutConditionNeverMatches()
 {
   InputFilter::Rule rule;

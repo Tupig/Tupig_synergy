@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "base/Log.h"
+
 #include <QTest>
 
 class IpcServerTests : public QObject
@@ -23,6 +25,7 @@ private Q_SLOTS:
   void oversizedMessageDisconnects();
 
 private:
+  Log m_log;
   QString m_testDir;
   QString m_serverName;
 };
