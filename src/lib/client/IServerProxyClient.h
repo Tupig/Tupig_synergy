@@ -8,6 +8,7 @@
 
 #include "ClipboardTypes.h"
 #include "KeyTypes.h"
+#include "MouseTypes.h"
 #include "OptionTypes.h"
 #include "common/Enums.h"
 
