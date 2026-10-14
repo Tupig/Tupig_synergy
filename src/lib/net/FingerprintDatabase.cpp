@@ -9,9 +9,12 @@
 
 #include "SecureUtils.h"
 #include "base/Log.h"
+#include "common/IpcToken.h"
 #include "ipc/CoreIpc.h"
 
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QSaveFile>
 #include <QTextStream>
 
@@ -51,6 +54,17 @@ void FingerprintDatabase::readStream(QTextStream &in)
 
 bool FingerprintDatabase::write(const QString &path)
 {
+  const auto dir = QFileInfo(path).absolutePath();
+  if (!QDir().mkpath(dir)) {
+    return false;
+  }
+  // Harden the machine-wide directory this trust store lives in (best effort;
+  // no-op on platforms without a DACL model) so other local users cannot
+  // replace or tamper with the trust stores.
+  if (!synergy::restrictSystemDirectoryPermissions(dir)) {
+    LOG_WARN("failed to restrict the trust store directory: %s", qPrintable(dir));
+  }
+
   // write atomically so a failed write (full disk, permissions) cannot leave a
   // truncated trust store behind
   QSaveFile file(path);
@@ -66,7 +80,17 @@ bool FingerprintDatabase::write(const QString &path)
     file.cancelWriting();
     return false;
   }
-  return file.commit();
+  if (!file.commit()) {
+    return false;
+  }
+
+  // The trust store decides which peers are accepted: keep it beyond the
+  // reach of other local users.
+  if (!synergy::restrictSecretFilePermissions(path)) {
+    LOG_WARN("failed to restrict the trust store file: %s", qPrintable(path));
+    return false;
+  }
+  return true;
 }
 
 bool FingerprintDatabase::writeStream(QTextStream &out)

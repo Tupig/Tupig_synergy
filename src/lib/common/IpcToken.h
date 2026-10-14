@@ -36,4 +36,13 @@ bool refreshIpcTokenAccess(const QString &serverName);
 //! gap for writers that cannot pass security attributes at creation time.
 bool restrictSecretFilePermissions(const QString &path);
 
+//! Restrict a machine-wide data directory (ProgramData on Windows) to SYSTEM,
+//! Administrators, and the active console user (falling back to the writing
+//! process); interactive users keep read and traverse only. Creates the
+//! directory when missing and blocks inheritance from the parent, so other
+//! local users cannot create or replace the settings file, IPC token, TLS
+//! material, or the fingerprint trust stores inside. A no-op returning true on
+//! other platforms.
+bool restrictSystemDirectoryPermissions(const QString &path);
+
 } // namespace synergy

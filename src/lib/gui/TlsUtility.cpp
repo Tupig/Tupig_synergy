@@ -7,6 +7,7 @@
 
 #include "TlsUtility.h"
 
+#include "common/IpcToken.h"
 #include "common/Settings.h"
 #include "net/SecureUtils.h"
 #include "net/TlsPolicy.h"
@@ -111,6 +112,12 @@ bool generateCertificateAt(const QString &certPath, int keyLength)
   if (QDir dir(info.absolutePath()); !dir.exists() && !dir.mkpath(".")) {
     qCritical("failed to create directory for tls certificate");
     return false;
+  }
+  // best effort defense in depth: block other local users from replacing the
+  // certificate or trust stores in this directory; the private key file gets
+  // its own explicit DACL when it is written (SecureUtils.cpp)
+  if (!synergy::restrictSystemDirectoryPermissions(info.absolutePath())) {
+    qWarning() << "failed to restrict the directory for the tls certificate:" << info.absolutePath();
   }
 
   try {

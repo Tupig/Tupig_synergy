@@ -8,6 +8,7 @@
 
 #include "common/Settings.h"
 
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -75,7 +76,10 @@ std::wstring consoleUserSid()
   return sid;
 }
 
-void appendAce(std::wstring &sddl, const wchar_t *rights, const std::wstring &sid, std::vector<std::wstring> &seen)
+void appendAce(
+    std::wstring &sddl, const wchar_t *flags, const wchar_t *rights, const std::wstring &sid,
+    std::vector<std::wstring> &seen
+)
 {
   if (sid.empty())
     return;
@@ -84,7 +88,9 @@ void appendAce(std::wstring &sddl, const wchar_t *rights, const std::wstring &si
       return;
   }
   seen.push_back(sid);
-  sddl += L"(A;;";
+  sddl += L"(A;";
+  sddl += flags;
+  sddl += L";";
   sddl += rights;
   sddl += L";;;";
   sddl += sid;
@@ -99,15 +105,33 @@ std::wstring tokenFileSddl()
   // WTSQueryUserToken fails); otherwise that process would be a fourth principal.
   std::wstring sddl = L"D:P";
   std::vector<std::wstring> seen;
-  appendAce(sddl, L"GA", L"SY", seen);
-  appendAce(sddl, L"GA", L"BA", seen);
+  appendAce(sddl, L"", L"GA", L"SY", seen);
+  appendAce(sddl, L"", L"GA", L"BA", seen);
   const auto process = currentProcessSid();
   const auto console = consoleUserSid();
   if (!console.empty()) {
-    appendAce(sddl, console == process ? L"GA" : L"GR", console, seen);
+    appendAce(sddl, L"", console == process ? L"GA" : L"GR", console, seen);
   } else {
-    appendAce(sddl, L"GA", process, seen);
+    appendAce(sddl, L"", L"GA", process, seen);
   }
+  return sddl;
+}
+
+std::wstring systemDirSddl()
+{
+  // Machine-wide data directory (ProgramData). SYSTEM, Administrators, and
+  // the active console user get full control; every other interactive user is
+  // limited to read and traverse, so they cannot create or replace the
+  // settings file, IPC token, TLS material, or fingerprint trust stores
+  // inside. Inheritance flags propagate the same DACL to new children.
+  std::wstring sddl = L"D:P";
+  std::vector<std::wstring> seen;
+  appendAce(sddl, L"OICI", L"FA", L"SY", seen);
+  appendAce(sddl, L"OICI", L"FA", L"BA", seen);
+  appendAce(sddl, L"OICI", L"GRGX", L"IU", seen);
+  const auto process = currentProcessSid();
+  const auto console = consoleUserSid();
+  appendAce(sddl, L"OICI", L"FA", console.empty() ? process : console, seen);
   return sddl;
 }
 #endif
@@ -178,8 +202,15 @@ bool writeIpcToken(const QString &serverName, const QString &token)
     return false;
 
   const auto path = ipcTokenPath(serverName);
-  if (!QDir().mkpath(QFileInfo(path).absolutePath()))
+  const auto dir = QFileInfo(path).absolutePath();
+  if (!QDir().mkpath(dir))
     return false;
+  // best effort defense in depth: harden the machine-wide directory so other
+  // local users cannot replace or tamper with its contents; the token file
+  // itself is restricted explicitly below and remains protected either way
+  if (!restrictSystemDirectoryPermissions(dir)) {
+    qWarning("failed to restrict the system directory: %s", qPrintable(dir));
+  }
 
   const auto bytes = token.toUtf8();
 #if defined(Q_OS_WIN)
@@ -235,6 +266,65 @@ bool refreshIpcTokenAccess(const QString &serverName)
 bool restrictSecretFilePermissions(const QString &path)
 {
   return restrictTokenFile(path);
+}
+
+bool restrictSystemDirectoryPermissions(const QString &path)
+{
+#if defined(Q_OS_WIN)
+  if (!QDir().mkpath(path))
+    return false;
+
+  const auto sddl = systemDirSddl();
+  PSECURITY_DESCRIPTOR descriptor = nullptr;
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr)) {
+    qWarning("failed to build the security descriptor for %s", qPrintable(path));
+    return false;
+  }
+
+  BOOL present = FALSE;
+  BOOL defaulted = FALSE;
+  PACL dacl = nullptr;
+  if (!GetSecurityDescriptorDacl(descriptor, &present, &dacl, &defaulted) || !present || dacl == nullptr) {
+    LocalFree(descriptor);
+    qWarning("system directory security descriptor has no DACL: %s", qPrintable(path));
+    return false;
+  }
+
+  // Named string, not a temporary c_str(): SetNamedSecurityInfoW keeps the pointer.
+  std::wstring nativePath = path.toStdWString();
+  const DWORD status = SetNamedSecurityInfoW(
+      nativePath.data(), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, nullptr,
+      nullptr, dacl, nullptr
+  );
+  LocalFree(descriptor);
+  if (status != ERROR_SUCCESS) {
+    qWarning(
+        "failed to restrict the system directory (error %lu): %s", static_cast<unsigned long>(status), qPrintable(path)
+    );
+    return false;
+  }
+
+  // Best effort: hand ownership to Administrators so a standard user who
+  // created the directory first cannot silently re-grant themselves access
+  // through the owner's implicit WRITE_DAC right.  This can fail when the
+  // caller lacks the required privilege; the explicit DACL above still
+  // keeps other local users out.
+  PSECURITY_DESCRIPTOR ownerDescriptor = nullptr;
+  if (ConvertStringSecurityDescriptorToSecurityDescriptorW(L"O:BA", SDDL_REVISION_1, &ownerDescriptor, nullptr)) {
+    PSID owner = nullptr;
+    BOOL ownerDefaulted = FALSE;
+    if (GetSecurityDescriptorOwner(ownerDescriptor, &owner, &ownerDefaulted) && owner != nullptr) {
+      SetNamedSecurityInfoW(
+          nativePath.data(), SE_FILE_OBJECT, OWNER_SECURITY_INFORMATION, owner, nullptr, nullptr, nullptr
+      );
+    }
+    LocalFree(ownerDescriptor);
+  }
+  return true;
+#else
+  Q_UNUSED(path);
+  return true;
+#endif
 }
 
 } // namespace synergy
