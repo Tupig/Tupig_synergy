@@ -40,7 +40,7 @@ create_test(
 create_test(
   NAME StopwatchTests
   DEPENDS base
-  LIBS arch
+  LIBS arch ${extra_libs}
   SOURCE StopwatchTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/base"
 )
@@ -48,7 +48,7 @@ create_test(
 create_test(
   NAME EventQueueTests
   DEPENDS base
-  LIBS arch mt
+  LIBS arch mt ${extra_libs}
   SOURCE EventQueueTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/base"
 )
