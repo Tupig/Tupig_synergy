@@ -18,6 +18,12 @@
 # in the JSON report artifact and the job log. Add triage exceptions via a VEX
 # file (cve-bin-tool --vex-file) and record them in the repository.
 #
+# Data sources: only NVD is kept. GAD/REDHAT/EPSS/CURL carry distro or exploit
+# metadata this gate does not consume, and OSV downloads a multi-GB all.zip
+# that repeatedly outlived the hosted runners (cancelled mid-download at
+# ~20-30 min, three attempts on 2026-10-14). NVD version ranges cover the
+# C/C++ packages in the manifest, which is what the SBOM lists.
+#
 # CI-only tooling: cve-bin-tool is installed from pip here, in the same
 # category as the apt packages and GitHub actions the CI already uses. It is
 # not part of the release build or the vcpkg manifest.
@@ -94,7 +100,7 @@ jobs:
       - name: Self-test with a known vulnerable fixture
         run: |
           cve-bin-tool --disable-version-check -n json-mirror \
-            --disable-data-source GAD,REDHAT,EPSS,CURL \
+            --disable-data-source GAD,REDHAT,EPSS,CURL,OSV \
             --sbom cyclonedx --sbom-file scripts/ci/testdata/known-vulnerable.cdx.json \
             --format json2 --output-file selftest-report.json
           python3 scripts/ci/check-cve-report.py selftest-report.json \
@@ -103,7 +109,7 @@ jobs:
       - name: Scan the resolved dependency SBOM
         run: |
           cve-bin-tool --disable-version-check -n json-mirror \
-            --disable-data-source GAD,REDHAT,EPSS,CURL \
+            --disable-data-source GAD,REDHAT,EPSS,CURL,OSV \
             --sbom cyclonedx --sbom-file synergy-deps.cdx.json \
             --format json2 --output-file cve-report.json
           test -s cve-report.json
