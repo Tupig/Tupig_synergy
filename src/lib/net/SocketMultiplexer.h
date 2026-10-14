@@ -58,14 +58,24 @@ private:
   // Snapshot of job list for lock-free iteration in serviceThread.
   using JobSnapshot = std::vector<SocketJobEntry>;
 
+  // Result of executing one job during a poll iteration.  The next job may be
+  // the same pointer (job continues), a new job (ownership transfers to the
+  // multiplexer), or nullptr (socket no longer serviced).
+  struct JobTransition
+  {
+    ISocket *socket = nullptr;
+    ISocketMultiplexerJob *previousJob = nullptr;
+    ISocketMultiplexerJob *nextJob = nullptr;
+  };
+
   // Service sockets in a loop.
   [[noreturn]] void serviceThread(const void *);
 
   // Build a snapshot of active jobs under lock, then unlock.
   JobSnapshot buildJobSnapshot();
 
-  // Update internal state after jobs have been executed.
-  void updateJobState(const JobSnapshot &snapshot);
+  // Apply the results of job execution to m_jobs under lock.
+  void updateJobState(const std::vector<JobTransition> &transitions);
 
 private:
   std::unique_ptr<Mutex> m_mutex;
@@ -80,6 +90,8 @@ private:
   // Pending removals: sockets to erase from m_jobs after execution.
   std::vector<ISocket *> m_pendingRemovals;
 
-  // Flag indicating m_jobs has changed since last snapshot.
-  bool m_update = false;
+  // Jobs displaced by a concurrent addSocket() while serviceThread may still
+  // be executing them from its snapshot.  Deleted by updateJobState() once
+  // the current poll iteration has finished.
+  std::vector<ISocketMultiplexerJob *> m_retiredJobs;
 };
