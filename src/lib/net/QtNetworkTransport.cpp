@@ -65,7 +65,7 @@ void applyMinimumTlsVersion(QSslConfiguration &config)
   // The OpenSSL backend does not honour the *OrLater protocol floor on some
   // Qt versions (5.13), so pin the backend minimum as well. Non-OpenSSL
   // backends ignore the unknown key.
-  config.setBackendConfigurationOption(QStringLiteral("MinProtocol"), QStringLiteral("TLSv1.2"));
+  config.setBackendConfigurationOption("MinProtocol", "TLSv1.2");
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -456,7 +456,8 @@ QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : 
     // Self-signed client certificates must not abort the handshake (raw-stack
     // parity); the fingerprint database is the trust gate.
     QObject::connect(
-        sslServer, &QSslServer::sslErrors, sslServer, [](QSslSocket *socket, const QList<QSslError> &errors) {
+        sslServer, &QSslServer::sslErrors, sslServer,
+        [](QSslSocket *socket, const QList<QSslError> &errors) {
           for (const auto &err : errors) {
             LOG_DEBUG("QtTransportListenSocket: ignoring SSL error: %s", err.errorString().toStdString().c_str());
           }
