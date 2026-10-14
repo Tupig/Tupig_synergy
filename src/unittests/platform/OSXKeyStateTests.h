@@ -22,7 +22,13 @@ private Q_SLOTS:
   void fakePollCharWithModifier();
 
 private:
-  bool isKeyPressed(const OSXKeyState &keyState, KeyButton button);
+  //! Poll the OS key state until \p button reaches \p expected, up to
+  //! \p timeoutSeconds; returns whether the expected state was reached and
+  //! reports the last observed state through \p lastObserved.
+  bool waitForKeyState(
+      const OSXKeyState &keyState, KeyButton button, bool expected, double timeoutSeconds, bool &lastObserved
+  );
+
   Arch m_arch;
   Log m_log;
 };
