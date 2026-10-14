@@ -95,8 +95,11 @@ BOOL MSWindowsProcess::startAsUser(HANDLE userToken, LPSECURITY_ATTRIBUTES sa)
 
   LPVOID environment;
   if (!CreateEnvironmentBlock(&environment, userToken, FALSE)) {
+    const DWORD error = GetLastError();
     LOG_ERR("could not create environment block");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
+    // this function takes ownership of the token on every path
+    CloseHandle(userToken);
+    throw std::runtime_error(windowsErrorToString(error));
   }
 
   ZeroMemory(&m_info, sizeof(PROCESS_INFORMATION));
@@ -181,7 +184,7 @@ void MSWindowsProcess::shutdown(HANDLE handle, DWORD pid, int timeout)
     LOG_DEBUG("could not send close event to process");
   }
 
-  DWORD exitCode;
+  DWORD exitCode = 0;
   if (GetExitCodeProcess(handle, &exitCode)) {
     if (exitCode == STILL_ACTIVE) {
       LOG_DEBUG("process %d is still running", pid);
