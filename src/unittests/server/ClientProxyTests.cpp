@@ -113,11 +113,17 @@ void copyCode(const char *code, uint8_t out[4])
 
 } // namespace
 
+void ClientProxyTests::initTestCase()
+{
+  m_log.setFilter(LogLevel::Level::Error);
+}
+
 void ClientProxyTests::handshakeNoopReturnsTrue()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  // the proxy adopts the stream and deletes it on destruction
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   uint8_t code[4];
   copyCode(kMsgCNoop, code);
@@ -127,8 +133,8 @@ void ClientProxyTests::handshakeNoopReturnsTrue()
 void ClientProxyTests::handshakeUnknownCodeReturnsFalse()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   const uint8_t code[4] = {'Z', 'Z', 'Z', 'Z'};
   QVERIFY(!proxy.parseHandshakeMessage(code));
@@ -137,11 +143,11 @@ void ClientProxyTests::handshakeUnknownCodeReturnsFalse()
 void ClientProxyTests::handshakeInfoCompletesHandshake()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   // the payload parsed by recvInfo (format without the leading code)
-  ProtocolUtil::writef(&stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
+  ProtocolUtil::writef(stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
 
   uint8_t code[4];
   copyCode(kMsgDInfo, code);
@@ -151,8 +157,8 @@ void ClientProxyTests::handshakeInfoCompletesHandshake()
 void ClientProxyTests::parseMessageNoopReturnsTrue()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   uint8_t code[4];
   copyCode(kMsgCNoop, code);
@@ -162,8 +168,8 @@ void ClientProxyTests::parseMessageNoopReturnsTrue()
 void ClientProxyTests::parseMessageUnknownReturnsFalse()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   const uint8_t code[4] = {'Z', 'Z', 'Z', 'Z'};
   QVERIFY(!proxy.parseMessage(code));
@@ -172,10 +178,10 @@ void ClientProxyTests::parseMessageUnknownReturnsFalse()
 void ClientProxyTests::parseMessageInfoUpdatesShape()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
-  ProtocolUtil::writef(&stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
+  ProtocolUtil::writef(stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
 
   uint8_t code[4];
   copyCode(kMsgDInfo, code);
@@ -195,8 +201,8 @@ void ClientProxyTests::parseMessageInfoUpdatesShape()
 void ClientProxyTests::parseMessageTruncatedInfoReturnsFalse()
 {
   MockEventQueue events;
-  FakeStream stream;
-  TestableClientProxy1_0 proxy("test-client", &stream, &events);
+  auto *stream = new FakeStream();
+  TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   // the stream does not contain the payload the parser expects
   uint8_t code[4];
