@@ -123,6 +123,21 @@ jobs:
 
           asyncio.run(main())
           PYEOF
+          python3 - <<'PYEOF'
+          import asyncio
+          import logging
+
+          logging.basicConfig(level=logging.DEBUG)
+
+          from cve_bin_tool.data_sources.nvd_source import NVD_Source
+
+          async def main():
+              source = NVD_Source(nvd_type="json-mirror")
+              await source.fetch_cves()
+              print("nvd probe years:", source.nvd_years())
+
+          asyncio.run(main())
+          PYEOF
 
       - name: Self-test with a known vulnerable fixture
         run: |
