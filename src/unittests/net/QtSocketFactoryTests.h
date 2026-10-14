@@ -31,6 +31,8 @@ private Q_SLOTS:
   void plaintextRoundTrip();
   void tlsRejectsUntrustedServer();
   void tlsTrustedServerRoundTrip();
+  void tlsRejectsWrongFingerprint();
+  void tlsRejectsSmallRsaKey();
 
 private:
   bool pump(const std::function<bool()> &done, int timeoutMs = 10000);
@@ -39,4 +41,5 @@ private:
   EventQueue *m_events = nullptr;
   QString m_certPath;
   QString m_markerFile;
+  QString m_testDir;
 };
