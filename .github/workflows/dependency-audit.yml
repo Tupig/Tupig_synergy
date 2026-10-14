@@ -15,8 +15,9 @@
 #   5. scan the real SBOM and gate on the report
 #
 # Policy: findings at CRITICAL severity fail the job; HIGH and below are kept
-# in the JSON report artifact and the job log. Add triage exceptions via a VEX
-# file (cve-bin-tool --vex-file) and record them in the repository.
+# in the JSON report artifact and the job log. Accepted false positives are
+# listed with a written reason in scripts/ci/cve-exceptions.json and filtered
+# by the gate; that file is re-reviewed on every vcpkg baseline bump.
 #
 # Data sources: only NVD is kept. GAD/REDHAT/EPSS/CURL carry distro or exploit
 # metadata this gate does not consume, and OSV downloads a multi-GB all.zip
@@ -136,4 +137,4 @@ jobs:
 
       - name: Gate on critical findings
         if: always()
-        run: python3 scripts/ci/check-cve-report.py cve-report.json --fail-severity critical
+        run: python3 scripts/ci/check-cve-report.py cve-report.json --fail-severity critical --exceptions scripts/ci/cve-exceptions.json
