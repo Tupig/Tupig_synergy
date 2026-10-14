@@ -38,6 +38,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <optional>
 
 using namespace synergy::server;
 
@@ -1789,16 +1790,25 @@ void Server::onMouseMoveSecondary(int32_t dx, int32_t dy)
   LOG_VERBOSE("mouse move on secondary: %+d,%+d", dx, dy);
 
   // TODO: move this to client side and use a qt setting or cli arg instead of env var.
-  const static auto adjustEnv = "SYNERGY_MOUSE_ADJUSTMENT";
-  if (const char *envVal = std::getenv(adjustEnv); envVal) {
-    try {
-      double multiplier = std::stod(envVal);
-      dx = static_cast<int32_t>(std::round(dx * multiplier));
-      dy = static_cast<int32_t>(std::round(dy * multiplier));
-      LOG_VERBOSE("adjusted mouse x %.2f: %+d,%+d", multiplier, dx, dy);
-    } catch (const std::exception &e) {
-      LOG_ERR("invalid %s value: %s", adjustEnv, e.what());
+  // parse once and cache: getenv + stod on every mouse event is wasteful
+  const static auto adjustMultiplier = []() -> std::optional<double> {
+    constexpr auto kAdjustEnv = "SYNERGY_MOUSE_ADJUSTMENT";
+    const char *envVal = std::getenv(kAdjustEnv);
+    if (envVal == nullptr) {
+      return std::nullopt;
     }
+    try {
+      return std::stod(envVal);
+    } catch (const std::exception &e) {
+      LOG_ERR("invalid %s value: %s", kAdjustEnv, e.what());
+      return std::nullopt;
+    }
+  }();
+  if (adjustMultiplier.has_value()) {
+    const double multiplier = adjustMultiplier.value();
+    dx = static_cast<int32_t>(std::round(dx * multiplier));
+    dy = static_cast<int32_t>(std::round(dy * multiplier));
+    LOG_VERBOSE("adjusted mouse x %.2f: %+d,%+d", multiplier, dx, dy);
   }
 
   // mouse move on secondary (client's) screen
