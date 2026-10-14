@@ -21,6 +21,9 @@ private Q_SLOTS:
   void findBestKey_noRequiredDown_cannotMatch();
   void isCommand();
   void mapkey();
+  void mapKey_plainKey_mapsToItsButton();
+  void mapKey_unknownKey_returnsNull();
+  void mapKey_requiredModifier_synthesizesModifierPress();
   void parseModifiers_plusKey_keepsPlusAsKey();
   void parseKey_plusSymbol_parsesAsAsciiKey();
 

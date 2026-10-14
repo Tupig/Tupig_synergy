@@ -32,6 +32,17 @@
 # database (observed 2026-10-14). Only git main speaks the 2.0 mirror
 # (cveb.in/get/nvd/json/cve/2.0). Re-evaluate the pin when PyPI 3.5 ships.
 #
+# Data sources: only NVD is kept. GAD/REDHAT/EPSS/CURL carry distro or exploit
+# metadata this gate does not consume, and OSV downloads a multi-GB all.zip
+# that repeatedly outlived the hosted runners (cancelled mid-download at
+# ~20-30 min, three attempts on 2026-10-14). NVD version ranges cover the
+# C/C++ packages in the manifest, which is what the SBOM lists.
+#
+# NVD transport: the json-mirror feed (cveb.in) drives the scanner through
+# cve-bin-tool's async client; the reachability diagnostic step records
+# whether that feed answers the runner, because an unreachable mirror
+# silently yields an empty database (CVEDataMissing) instead of an error.
+#
 # CI-only tooling: cve-bin-tool is installed from pip here, in the same
 # category as the apt packages and GitHub actions the CI already uses. It is
 # not part of the release build or the vcpkg manifest.

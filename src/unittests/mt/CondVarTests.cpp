@@ -83,9 +83,12 @@ void CondVarTests::waitReturnsTrueWhenSignalled()
   Mutex mutex;
   CondVar<bool> ready(&mutex, false);
 
+  // hold the mutex across the spawn: the notifier locks the same mutex before
+  // signalling, so it cannot complete before the wait below starts (an early
+  // signal would wake nobody and the wait would time out)
+  mutex.lock();
   Thread notifier(new NotifyJob(mutex, ready));
 
-  mutex.lock();
   // the Stopwatch overload is the bounded wait: the plain wait(seconds) only
   // performs a single (cancellation-latency capped) wait and returns false on
   // that timeout even though the deadline has not passed

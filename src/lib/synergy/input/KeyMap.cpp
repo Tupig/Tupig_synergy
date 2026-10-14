@@ -6,6 +6,7 @@
  */
 
 #include "KeyMap.h"
+#include "KeyMapDetail.h"
 #include "KeyTypes.h"
 #include "base/Log.h"
 #include "common/PlatformInfo.h"
@@ -555,7 +556,7 @@ KeyMap::getKeyItemList(const KeyMap::KeyGroupTable &keyGroupTable, int32_t group
   // find best key in any group, starting with the active group
   for (int32_t groupOffset = 0; groupOffset < getNumGroups(); ++groupOffset) {
     const auto effectiveGroup = getEffectiveGroup(group, groupOffset);
-    auto keyIndex = findBestKey(keyGroupTable[effectiveGroup], desiredMask);
+    auto keyIndex = input::detail::findBestKeyIndex(keyGroupTable[effectiveGroup], desiredMask);
     if (keyIndex != -1) {
       LOG_VERBOSE("found key in group %d", effectiveGroup);
       itemList = &keyGroupTable[effectiveGroup][keyIndex];
@@ -632,11 +633,13 @@ const KeyMap::KeyItem *KeyMap::mapModifierKey(
   return mapCharacterKey(keys, id, group, activeModifiers, currentState, desiredMask, isAutoRepeat, lang);
 }
 
-int32_t KeyMap::findBestKey(const KeyEntryList &entryList, KeyModifierMask desiredState) const
+namespace input::detail {
+
+int32_t findBestKeyIndex(const std::vector<KeyMap::KeyItemList> &entryList, KeyModifierMask desiredState)
 {
   // check for an item that can accommodate the desiredState exactly
   for (int32_t i = 0; i < (int32_t)entryList.size(); ++i) {
-    const KeyItem &item = entryList[i].back();
+    const KeyMap::KeyItem &item = entryList[i].back();
     if ((item.m_required & desiredState) == item.m_required &&
         (item.m_required & desiredState) == (item.m_sensitive & desiredState)) {
       LOG_VERBOSE("best key index %d of %d (exact)", i + 1, entryList.size());
@@ -648,9 +651,14 @@ int32_t KeyMap::findBestKey(const KeyEntryList &entryList, KeyModifierMask desir
   int32_t bestCount = 32;
   int32_t bestIndex = -1;
   for (int32_t i = 0; i < (int32_t)entryList.size(); ++i) {
-    const KeyItem &item = entryList[i].back();
+    const KeyMap::KeyItem &item = entryList[i].back();
     KeyModifierMask change = ((item.m_required ^ desiredState) & item.m_sensitive);
-    int32_t n = getNumModifiers(change);
+    int32_t n = 0;
+    for (KeyModifierMask bits = change; bits != 0; bits >>= 1) {
+      if ((bits & 1) != 0) {
+        ++n;
+      }
+    }
     if (n < bestCount) {
       bestCount = n;
       bestIndex = i;
@@ -662,6 +670,8 @@ int32_t KeyMap::findBestKey(const KeyEntryList &entryList, KeyModifierMask desir
 
   return bestIndex;
 }
+
+} // namespace input::detail
 
 const KeyMap::KeyItem *KeyMap::keyForModifier(KeyButton button, int32_t group, int32_t modifierBit) const
 {
@@ -994,17 +1004,6 @@ void KeyMap::addKeystrokes(
     }
     break;
   }
-}
-
-int32_t KeyMap::getNumModifiers(KeyModifierMask state)
-{
-  int32_t n = 0;
-  for (; state != 0; state >>= 1) {
-    if ((state & 1) != 0) {
-      ++n;
-    }
-  }
-  return n;
 }
 
 bool KeyMap::isDeadKey(KeyID key)

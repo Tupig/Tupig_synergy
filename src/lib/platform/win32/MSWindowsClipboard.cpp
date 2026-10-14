@@ -33,20 +33,29 @@ MSWindowsClipboard::MSWindowsClipboard(HWND window)
   m_converters.push_back(new MSWindowsClipboardHTMLConverter);
 }
 
+MSWindowsClipboard::MSWindowsClipboard(HWND window, IMSWindowsClipboardFacade &facade) : MSWindowsClipboard(window)
+{
+  delete m_facade;
+  m_facade = &facade;
+  m_deleteFacade = false;
+}
+
 MSWindowsClipboard::~MSWindowsClipboard()
 {
   clearConverters();
 
-  // dependency injection causes confusion over ownership, so we need
-  // logic to decide whether or not we delete the facade. there must
-  // be a more elegant way of doing this.
+  // an injected facade is owned by the caller; only free the internal default
   if (m_deleteFacade)
     delete m_facade;
 }
 
 void MSWindowsClipboard::setFacade(IMSWindowsClipboardFacade &facade)
 {
-  delete m_facade;
+  // deleting an injected facade would free a caller-owned object when this
+  // seam is used more than once
+  if (m_deleteFacade) {
+    delete m_facade;
+  }
   m_facade = &facade;
   m_deleteFacade = false;
 }

@@ -11,6 +11,14 @@ if (WIN32)
   )
 
   create_test(
+    NAME MSWindowsClipboardConversionTests
+    DEPENDS platform
+    LIBS base arch
+    SOURCE MSWindowsClipboardConversionTests.cpp
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/platform"
+  )
+
+  create_test(
     NAME Win32DropDataTests
     DEPENDS platform
     LIBS base arch

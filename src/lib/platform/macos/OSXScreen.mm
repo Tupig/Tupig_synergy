@@ -75,9 +75,6 @@ void avoidHesitatingCursor();
 // OSXScreen
 //
 
-bool OSXScreen::s_testedForGHOM = false;
-bool OSXScreen::s_hasGHOM = false;
-
 OSXScreen::OSXScreen(IEventQueue *events, bool isPrimary, bool enableLangSync)
     : PlatformScreen(events),
       m_isPrimary(isPrimary),
@@ -1562,100 +1559,6 @@ bool OSXScreen::checkAXPermissions()
 }
 
 #pragma mark -
-
-//
-// GLOBAL HOTKEY OPERATING MODE SUPPORT (10.3)
-//
-// CoreGraphics private API (OSX 10.3)
-// Source: http://ichiro.nnip.org/osx/Cocoa/GlobalHotkey.html
-//
-// We load the functions dynamically because they're not available in
-// older SDKs.  We don't use weak linking because we want users of
-// older SDKs to build an app that works on newer systems and older
-// SDKs will not provide the symbols.
-//
-// FIXME: This is hosed as of OS 10.5; patches to repair this are
-// a good thing.
-//
-#if 0
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef int CGSConnection;
-typedef enum {
-  CGSGlobalHotKeyEnable = 0,
-  CGSGlobalHotKeyDisable = 1,
-} CGSGlobalHotKeyOperatingMode;
-
-extern CGSConnection _CGSDefaultConnection(void) WEAK_IMPORT_ATTRIBUTE;
-extern CGError CGSGetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode *mode) WEAK_IMPORT_ATTRIBUTE;
-extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode) WEAK_IMPORT_ATTRIBUTE;
-
-typedef CGSConnection (*_CGSDefaultConnection_t)(void);
-typedef CGError (*CGSGetGlobalHotKeyOperatingMode_t)(CGSConnection connection, CGSGlobalHotKeyOperatingMode *mode);
-typedef CGError (*CGSSetGlobalHotKeyOperatingMode_t)(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
-
-static _CGSDefaultConnection_t				s__CGSDefaultConnection;
-static CGSGetGlobalHotKeyOperatingMode_t	s_CGSGetGlobalHotKeyOperatingMode;
-static CGSSetGlobalHotKeyOperatingMode_t	s_CGSSetGlobalHotKeyOperatingMode;
-
-#ifdef __cplusplus
-}
-#endif
-
-#define LOOKUP(name_)                                                                                                  \
-  s_##name_ = nullptr;                                                                                                 \
-  if (NSIsSymbolNameDefinedWithHint("_" #name_, "CoreGraphics")) {                                                     \
-    s_##name_ = (name_##_t)NSAddressOfSymbol(NSLookupAndBindSymbolWithHint("_" #name_, "CoreGraphics"));               \
-  }
-
-bool OSXScreen::isGlobalHotKeyOperatingModeAvailable()
-{
-  if (!s_testedForGHOM) {
-    s_testedForGHOM = true;
-    LOOKUP(_CGSDefaultConnection);
-    LOOKUP(CGSGetGlobalHotKeyOperatingMode);
-    LOOKUP(CGSSetGlobalHotKeyOperatingMode);
-    s_hasGHOM = (s__CGSDefaultConnection != nullptr &&
-                 s_CGSGetGlobalHotKeyOperatingMode != nullptr &&
-                 s_CGSSetGlobalHotKeyOperatingMode != nullptr);
-  }
-  return s_hasGHOM;
-}
-
-void OSXScreen::setGlobalHotKeysEnabled(bool enabled)
-{
-  if (isGlobalHotKeyOperatingModeAvailable()) {
-    CGSConnection conn = s__CGSDefaultConnection();
-
-    CGSGlobalHotKeyOperatingMode mode;
-    s_CGSGetGlobalHotKeyOperatingMode(conn, &mode);
-
-    if (enabled && mode == CGSGlobalHotKeyDisable) {
-      s_CGSSetGlobalHotKeyOperatingMode(conn, CGSGlobalHotKeyEnable);
-    }
-    else if (!enabled && mode == CGSGlobalHotKeyEnable) {
-      s_CGSSetGlobalHotKeyOperatingMode(conn, CGSGlobalHotKeyDisable);
-    }
-  }
-}
-
-bool OSXScreen::getGlobalHotKeysEnabled()
-{
-  CGSGlobalHotKeyOperatingMode mode;
-  if (isGlobalHotKeyOperatingModeAvailable()) {
-    CGSConnection conn = s__CGSDefaultConnection();
-    s_CGSGetGlobalHotKeyOperatingMode(conn, &mode);
-  }
-  else {
-    mode = CGSGlobalHotKeyEnable;
-  }
-  return (mode == CGSGlobalHotKeyEnable);
-}
-
-#endif
 
 //
 // OSXScreen::HotKeyItem

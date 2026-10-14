@@ -9,12 +9,44 @@
 #include "OSXKeyStateTests.h"
 
 #include "base/EventQueue.h"
+#include "base/Stopwatch.h"
 
 #define SHIFT_ID_L kKeyShift_L
 #define SHIFT_ID_R kKeyShift_R
 #define SHIFT_BUTTON 57
 #define A_CHAR_ID 0x00000061
 #define A_CHAR_BUTTON 001
+
+namespace {
+
+//! Release any synthetic keys on scope exit, including an early return from a
+//! failed assertion, so the active session is never left with a stuck key.
+class InjectedKeyGuard
+{
+public:
+  explicit InjectedKeyGuard(OSXKeyState &keyState) : m_keyState(keyState)
+  {
+  }
+  InjectedKeyGuard(const InjectedKeyGuard &) = delete;
+  InjectedKeyGuard &operator=(const InjectedKeyGuard &) = delete;
+  ~InjectedKeyGuard()
+  {
+    m_keyState.fakeAllKeysUp();
+  }
+
+private:
+  OSXKeyState &m_keyState;
+};
+
+QString keyStateFailure(KeyButton button, bool expected, bool observed)
+{
+  return QStringLiteral("button %1: expected %2, last observed %3")
+      .arg(button)
+      .arg(expected ? QStringLiteral("pressed") : QStringLiteral("released"))
+      .arg(observed ? QStringLiteral("pressed") : QStringLiteral("released"));
+}
+
+} // namespace
 
 void OSXKeyStateTests::initTestCase()
 {
@@ -61,18 +93,33 @@ void OSXKeyStateTests::fakePollShift()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  InjectedKeyGuard guard(keyState);
+
+  bool observed = false;
 
   keyState.fakeKeyDown(SHIFT_ID_L, 0, 1, "en");
-  QVERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, SHIFT_BUTTON, true, 5.0, observed),
+      qPrintable(keyStateFailure(SHIFT_BUTTON, true, observed))
+  );
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, SHIFT_BUTTON, false, 5.0, observed),
+      qPrintable(keyStateFailure(SHIFT_BUTTON, false, observed))
+  );
 
   keyState.fakeKeyDown(SHIFT_ID_R, 0, 2, "en");
-  QVERIFY(isKeyPressed(keyState, SHIFT_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, SHIFT_BUTTON, true, 5.0, observed),
+      qPrintable(keyStateFailure(SHIFT_BUTTON, true, observed))
+  );
 
   keyState.fakeKeyUp(2);
-  QVERIFY(!isKeyPressed(keyState, SHIFT_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, SHIFT_BUTTON, false, 5.0, observed),
+      qPrintable(keyStateFailure(SHIFT_BUTTON, false, observed))
+  );
 }
 
 void OSXKeyStateTests::fakePollChar()
@@ -81,12 +128,21 @@ void OSXKeyStateTests::fakePollChar()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  InjectedKeyGuard guard(keyState);
+
+  bool observed = false;
 
   keyState.fakeKeyDown(A_CHAR_ID, 0, 1, "en");
-  QVERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, A_CHAR_BUTTON, true, 5.0, observed),
+      qPrintable(keyStateFailure(A_CHAR_BUTTON, true, observed))
+  );
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, A_CHAR_BUTTON, false, 5.0, observed),
+      qPrintable(keyStateFailure(A_CHAR_BUTTON, false, observed))
+  );
 
   // HACK: delete the key in case it was typed into a text editor.
   // we should really set focus to an invisible window.
@@ -100,12 +156,21 @@ void OSXKeyStateTests::fakePollCharWithModifier()
   EventQueue eventQueue;
   OSXKeyState keyState(&eventQueue, keyMap, {"en"}, true);
   keyState.updateKeyMap();
+  InjectedKeyGuard guard(keyState);
+
+  bool observed = false;
 
   keyState.fakeKeyDown(A_CHAR_ID, KeyModifierShift, 1, "en");
-  QVERIFY(isKeyPressed(keyState, A_CHAR_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, A_CHAR_BUTTON, true, 5.0, observed),
+      qPrintable(keyStateFailure(A_CHAR_BUTTON, true, observed))
+  );
 
   keyState.fakeKeyUp(1);
-  QVERIFY(!isKeyPressed(keyState, A_CHAR_BUTTON));
+  QVERIFY2(
+      waitForKeyState(keyState, A_CHAR_BUTTON, false, 5.0, observed),
+      qPrintable(keyStateFailure(A_CHAR_BUTTON, false, observed))
+  );
 
   // HACK: delete the key in case it was typed into a text editor.
   // we should really set focus to an invisible window.
@@ -113,22 +178,27 @@ void OSXKeyStateTests::fakePollCharWithModifier()
   keyState.fakeKeyUp(2);
 }
 
-bool OSXKeyStateTests::isKeyPressed(const OSXKeyState &keyState, KeyButton button)
+bool OSXKeyStateTests::waitForKeyState(
+    const OSXKeyState &keyState, KeyButton button, bool expected, double timeoutSeconds, bool &lastObserved
+)
 {
-  // HACK: allow os to realize key state changes.
-  Arch::sleep(.2);
+  constexpr double kPollInterval = 0.05;
 
-  IKeyState::KeyButtonSet pressed;
-  keyState.pollPressedKeys(pressed);
+  const auto isPressed = [&keyState](KeyButton button) {
+    IKeyState::KeyButtonSet pressed;
+    keyState.pollPressedKeys(pressed);
+    return pressed.count(button) != 0;
+  };
 
-  IKeyState::KeyButtonSet::const_iterator it;
-  for (it = pressed.begin(); it != pressed.end(); ++it) {
-    LOG_DEBUG("checking key %d", *it);
-    if (*it == button) {
-      return true;
-    }
+  Stopwatch timer;
+  bool observed = isPressed(button);
+  while (observed != expected && timer.getTime() < timeoutSeconds) {
+    Arch::sleep(kPollInterval);
+    observed = isPressed(button);
   }
-  return false;
+
+  lastObserved = observed;
+  return observed == expected;
 }
 
 QTEST_MAIN(OSXKeyStateTests)

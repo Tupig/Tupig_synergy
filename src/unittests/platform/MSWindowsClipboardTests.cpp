@@ -12,6 +12,9 @@
 
 #include <windows.h>
 
+#include <cstdio>
+#include <cstdlib>
+
 namespace {
 // The Windows clipboard is a single global resource: if another process holds it
 // open, or the session blocks access to it, every OpenClipboard() call fails
@@ -37,6 +40,13 @@ bool clipboardAccessible()
   do {                                                                                                                 \
     if (!(clipboard).open(time)) {                                                                                     \
       if (!clipboardAccessible()) {                                                                                    \
+        if (std::getenv("CI") != nullptr) {                                                                            \
+          std::fprintf(                                                                                                \
+              stdout,                                                                                                  \
+              "::warning title=clipboard unavailable::MSWindowsClipboardTests is being skipped because this CI "       \
+              "session blocks the Windows clipboard\n"                                                                 \
+          );                                                                                                           \
+        }                                                                                                              \
         QSKIP(                                                                                                         \
             "the Windows clipboard is unavailable "                                                                    \
             "(held by another process or blocked by the session)"                                                      \

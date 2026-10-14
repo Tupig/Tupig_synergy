@@ -49,6 +49,7 @@ add_library(${lib_name} STATIC ${PLATFORM_CODE}
   # Input
   input/KeyMap.cpp
   input/KeyMap.h
+  input/KeyMapDetail.h
   input/KeyState.cpp
   input/KeyState.h
   input/KeyTypes.cpp
