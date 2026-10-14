@@ -44,15 +44,12 @@ void LoggerTests::newLine()
 
 void LoggerTests::noNewLine()
 {
-  bool newLineEmitted = false;
-
   QSignalSpy spy(Logger::instance(), &Logger::newLine);
   QVERIFY(spy.isValid());
 
   Settings::setValue(Settings::Log::GuiDebug, false);
   Logger::instance()->handleMessage(QtDebugMsg, "stub", "test");
   QCOMPARE(spy.count(), 0);
-  QVERIFY(!newLineEmitted);
 }
 
 QTEST_MAIN(LoggerTests)
