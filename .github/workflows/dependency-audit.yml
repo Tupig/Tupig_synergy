@@ -138,6 +138,30 @@ jobs:
 
           asyncio.run(main())
           PYEOF
+          python3 - <<'PYEOF'
+          import asyncio
+
+          import aiohttp
+
+          from cve_bin_tool.async_utils import RateLimiter, make_connector
+          from cve_bin_tool.data_sources.nvd_source import NVD_Source
+          from cve_bin_tool.version import HTTP_HEADERS
+
+          async def main():
+              source = NVD_Source(nvd_type="json-mirror")
+              connector = make_connector(limit_per_host=19)
+              session = RateLimiter(aiohttp.ClientSession(connector=connector, headers=HTTP_HEADERS, trust_env=True))
+              print("feed url:", source.feed)
+              async with await session.get(source.feed) as response:
+                  text = await response.text()
+                  print("tool session:", response.status, response.url, "len", len(text))
+                  print("tool metas:", len(NVD_Source.META_REGEX_MIRROR.findall(text)))
+                  if text:
+                      print("body:", text[:200].replace("\n", " "))
+              await session.close()
+
+          asyncio.run(main())
+          PYEOF
 
       - name: Self-test with a known vulnerable fixture
         run: |
