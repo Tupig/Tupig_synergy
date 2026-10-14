@@ -20,6 +20,7 @@
 
 #if defined(Q_OS_WIN)
 #include "arch/win32/ArchMiscWindows.h"
+#include <wtsapi32.h>
 #endif
 
 #include <QApplication>
@@ -154,13 +155,26 @@ int main(int argc, char **argv)
     return s_exitFailed;
   }
 
-  // Core can start on the secure desktop before a console user exists. Refresh
-  // the token ACL the same way the daemon does, so the GUI can read it after login.
+#if defined(Q_OS_WIN)
+  // Core can start on the secure desktop before a console user exists. Widen
+  // the token ACL when the active console session changes (logon, logout,
+  // switch user) instead of rewriting the DACL every second. On other
+  // platforms the token file is created owner-only and needs no refresh.
   QTimer tokenAccessTimer;
   QObject::connect(&tokenAccessTimer, &QTimer::timeout, &app, [] {
-    synergy::refreshIpcTokenAccess(QString::fromLatin1(kCoreIpcName));
+    static constexpr DWORD kNoConsoleSession = 0xFFFFFFFF;
+    static DWORD lastSessionId = kNoConsoleSession;
+    const DWORD sessionId = WTSGetActiveConsoleSessionId();
+    if (sessionId == lastSessionId) {
+      return;
+    }
+    lastSessionId = sessionId;
+    if (sessionId != kNoConsoleSession) {
+      synergy::refreshIpcTokenAccess(QString::fromLatin1(kCoreIpcName));
+    }
   });
   tokenAccessTimer.start(1000);
+#endif
 
   QThread coreThread;
   QObject::connect(&coreThread, &QThread::finished, &app, &QApplication::quit);

@@ -13,6 +13,19 @@
 #include <QLocalSocket>
 #include <QTimer>
 
+#if defined(Q_OS_WIN)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+
+#include <vector>
+#else
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 namespace synergy::gui::ipc {
 
 namespace {
@@ -27,6 +40,99 @@ QStringList splitIpcMessage(const QString &message)
   }
   return {message.left(separator), message.mid(separator + 1)};
 }
+
+#if defined(Q_OS_WIN)
+//! Read the user SID out of a process token into \p buffer.
+bool readTokenUserSid(HANDLE token, std::vector<unsigned char> &buffer)
+{
+  DWORD needed = 0;
+  GetTokenInformation(token, TokenUser, nullptr, 0, &needed);
+  if (needed < sizeof(TOKEN_USER))
+    return false;
+  buffer.resize(needed);
+  return GetTokenInformation(token, TokenUser, buffer.data(), static_cast<DWORD>(buffer.size()), &needed) != 0;
+}
+
+//! True when the connected pipe server runs as this process's user or as
+//! LocalSystem.
+bool verifyServerIsTrusted(const QLocalSocket *socket)
+{
+  const auto handle = reinterpret_cast<HANDLE>(static_cast<qintptr>(socket->socketDescriptor()));
+  if (handle == nullptr || handle == INVALID_HANDLE_VALUE)
+    return false;
+
+  ULONG serverPid = 0;
+  if (!GetNamedPipeServerProcessId(handle, &serverPid) || serverPid == 0)
+    return false;
+
+  HANDLE serverProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, serverPid);
+  if (serverProcess == nullptr)
+    return false;
+
+  HANDLE serverToken = nullptr;
+  const BOOL tokenOpened = OpenProcessToken(serverProcess, TOKEN_QUERY, &serverToken);
+  CloseHandle(serverProcess);
+  if (!tokenOpened)
+    return false;
+
+  std::vector<unsigned char> serverUser;
+  const bool serverSidRead = readTokenUserSid(serverToken, serverUser);
+  CloseHandle(serverToken);
+  if (!serverSidRead)
+    return false;
+  PSID serverSid = reinterpret_cast<TOKEN_USER *>(serverUser.data())->User.Sid;
+
+  HANDLE ownToken = nullptr;
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &ownToken))
+    return false;
+
+  std::vector<unsigned char> ownUser;
+  const bool ownSidRead = readTokenUserSid(ownToken, ownUser);
+  CloseHandle(ownToken);
+  if (!ownSidRead)
+    return false;
+  PSID ownSid = reinterpret_cast<TOKEN_USER *>(ownUser.data())->User.Sid;
+
+  if (EqualSid(serverSid, ownSid))
+    return true;
+
+  unsigned char systemSid[SECURITY_MAX_SID_SIZE];
+  DWORD systemSidSize = sizeof(systemSid);
+  return CreateWellKnownSid(WinLocalSystemSid, nullptr, systemSid, &systemSidSize) != 0 &&
+         EqualSid(serverSid, systemSid) != 0;
+}
+#elif defined(Q_OS_LINUX)
+//! True when the local socket's server runs as this process's user or as root.
+bool verifyServerIsTrusted(const QLocalSocket *socket)
+{
+  const int fd = static_cast<int>(socket->socketDescriptor());
+  if (fd < 0)
+    return false;
+
+  struct ucred credentials = {};
+  socklen_t length = sizeof(credentials);
+  if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &credentials, &length) != 0)
+    return false;
+
+  const auto uid = getuid();
+  return credentials.uid == uid || credentials.uid == 0;
+}
+#else
+//! macOS and other platforms: verify the peer with getpeereid().
+bool verifyServerIsTrusted(const QLocalSocket *socket)
+{
+  const int fd = static_cast<int>(socket->socketDescriptor());
+  if (fd < 0)
+    return false;
+
+  uid_t peerUid = 0;
+  gid_t peerGid = 0;
+  if (getpeereid(fd, &peerUid, &peerGid) != 0)
+    return false;
+
+  return peerUid == getuid() || peerUid == 0;
+}
+#endif
 
 //! Maximum connection attempts per connectToServer() call.
 constexpr int kRetryLimit = 3;
@@ -108,6 +214,17 @@ void IpcClient::attemptConnection()
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         disconnect(m_socket, &QLocalSocket::connected, this, nullptr);
 #endif
+        // A low-privilege process can take the pipe name before the real
+        // server listens.  Never hand the hello token to such a squatter:
+        // only accept a server that runs with the same identity as the
+        // daemon/core (this user, SYSTEM on Windows, root on Unix).
+        if (!verifyServerIsTrusted(m_socket)) {
+          qWarning().noquote(
+          ) << QStringLiteral("%1 ipc server failed peer verification, refusing to send hello").arg(m_typeName);
+          disconnectFromServer();
+          Q_EMIT connectionFailed();
+          return;
+        }
         // Divergence from upstream: kVersion already carries the build metadata; don't re-append the git sha.
         const auto versionId = QString::fromUtf8(kVersion);
         const auto token = synergy::readIpcToken(m_socketName);

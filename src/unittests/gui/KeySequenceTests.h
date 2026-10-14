@@ -11,4 +11,11 @@ class KeySequenceTests : public QObject
   Q_OBJECT
 private Q_SLOTS:
   void toString_controlShiftPlus_usesNamedPlus();
+  void startsInvalid();
+  void repeatedModifierIsNotDuplicated();
+  void mouseButtonsRenderAsDigits();
+  void rejectsUnknownKeysAndAltGr();
+  void capsSequenceAtFourKeys();
+  void unicodeKeyUsesEscapeForm();
+  void settingsRoundTripPreservesSequence();
 };

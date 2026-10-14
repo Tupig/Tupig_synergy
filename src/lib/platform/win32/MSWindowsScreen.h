@@ -166,11 +166,15 @@ private:
   //! Offer the drop window under the cursor and pump messages briefly.
   void offerDropWindowAtCursor();
 
-  // convenience function to send events
-public: // HACK
+  //! Post an event on behalf of this screen.
+  /*!
+  Public like the equivalent entry points on the other platform screens: it
+  is the screen's event-forwarding contract, used by platform helpers and
+  tests instead of reaching into the window-message dispatch.
+  */
   void sendEvent(EventTypes type, void * = nullptr);
 
-private: // HACK
+private:
   void sendClipboardEvent(EventTypes type, ClipboardID id);
 
   // handle message before it gets dispatched.  returns true iff

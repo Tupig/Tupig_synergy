@@ -130,8 +130,18 @@ protected:
   void sendEvent(EventTypes);
   void discardWrittenData(int bytesWrote);
 
+  //! Input buffer high-water mark.  While the buffer is at or above this the
+  //! socket stops polling for readability, so TCP backpressure closes the
+  //! peer's window instead of letting the buffer grow without bound.  read()
+  //! re-arms the job once the buffer drains below half of this mark.
+  static constexpr std::size_t s_inputBufferHighWater = 1024 * 1024;
+
   StreamBuffer m_inputBuffer;
   StreamBuffer m_outputBuffer;
+
+  //! True while readability polling is paused because the input buffer is
+  //! full (guarded by m_mutex).
+  bool m_readPaused = false;
 
 private:
   void init();

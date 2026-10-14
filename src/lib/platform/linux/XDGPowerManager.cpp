@@ -14,11 +14,14 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-namespace {
-
-bool sleepInhibitCall(bool state, XDGPowerManager::InhibitScreenServices serviceID)
+XDGPowerManager::~XDGPowerManager()
 {
-  if (std::string error; !XDGPowerManager::inhibitScreenCall(serviceID, state, error)) {
+  enableSleep();
+}
+
+bool XDGPowerManager::sleepInhibitCall(bool state, XDGPowerManager::InhibitScreenServices serviceID) const
+{
+  if (std::string error; !inhibitScreenCall(serviceID, state, error)) {
     LOG_DEBUG("dbus inhibit error %s", error.c_str());
     return false;
   }
@@ -26,35 +29,27 @@ bool sleepInhibitCall(bool state, XDGPowerManager::InhibitScreenServices service
   return true;
 }
 
-} // namespace
-
-XDGPowerManager::~XDGPowerManager()
-{
-  enableSleep();
-}
-
 void XDGPowerManager::disableSleep() const
 {
-  if (!sleepInhibitCall(true, XDGPowerManager::InhibitScreenServices::kScreenSaver) &&
-      !sleepInhibitCall(true, XDGPowerManager::InhibitScreenServices::kSessionManager)) {
+  if (!sleepInhibitCall(true, InhibitScreenServices::kScreenSaver) &&
+      !sleepInhibitCall(true, InhibitScreenServices::kSessionManager)) {
     LOG_WARN("failed to prevent system from going to sleep");
   }
 }
 
 void XDGPowerManager::enableSleep() const
 {
-  if (!sleepInhibitCall(false, XDGPowerManager::InhibitScreenServices::kScreenSaver) &&
-      !sleepInhibitCall(false, XDGPowerManager::InhibitScreenServices::kSessionManager)) {
+  if (!sleepInhibitCall(false, InhibitScreenServices::kScreenSaver) &&
+      !sleepInhibitCall(false, InhibitScreenServices::kSessionManager)) {
     LOG_WARN("failed to enable system idle sleep");
   }
 }
 
-bool XDGPowerManager::inhibitScreenCall(InhibitScreenServices serviceID, bool state, std::string &error)
+bool XDGPowerManager::inhibitScreenCall(InhibitScreenServices serviceID, bool state, std::string &error) const
 {
   error = "";
   static const std::array<QString, 2> services = {"org.freedesktop.ScreenSaver", "org.gnome.SessionManager"};
   static const std::array<QString, 2> paths = {"/org/freedesktop/ScreenSaver", "/org/gnome/SessionManager"};
-  static std::array<uint, 2> cookies;
 
   auto serviceNum = static_cast<uint8_t>(serviceID);
 
@@ -71,9 +66,9 @@ bool XDGPowerManager::inhibitScreenCall(InhibitScreenServices serviceID, bool st
     return false;
   }
 
-  QDBusReply<uint> reply;
+  QDBusReply<uint32_t> reply;
   if (state) {
-    if (cookies[serviceNum]) {
+    if (m_cookies[serviceNum]) {
       error = "cookies are not empty";
       return false;
     }
@@ -81,14 +76,14 @@ bool XDGPowerManager::inhibitScreenCall(InhibitScreenServices serviceID, bool st
     QString msg = "Sleep is manually prevented by the %1 preferences";
     reply = screenSaverInterface.call("Inhibit", kAppName, msg.arg(kAppName));
     if (reply.isValid())
-      cookies[serviceNum] = reply.value();
+      m_cookies[serviceNum] = reply.value();
   } else {
-    if (!cookies[serviceNum]) {
+    if (!m_cookies[serviceNum]) {
       error = "cookies are empty";
       return false;
     }
-    reply = screenSaverInterface.call("UnInhibit", cookies[serviceNum]);
-    cookies[serviceNum] = 0;
+    reply = screenSaverInterface.call("UnInhibit", m_cookies[serviceNum]);
+    m_cookies[serviceNum] = 0;
   }
 
   if (!reply.isValid()) {

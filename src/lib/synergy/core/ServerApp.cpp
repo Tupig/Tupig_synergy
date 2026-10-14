@@ -67,6 +67,9 @@ void ServerApp::parseArgs()
   if (const auto address = Settings::value(Settings::Core::Interface).toString(); !address.isEmpty()) {
     *m_synergyAddress = NetworkAddress(address.toStdString(), Settings::value(Settings::Core::Port).toInt());
   } else {
+    // No interface selected: bind every network interface so LAN clients can
+    // connect out of the box.  Say so explicitly - this is an exposure surface.
+    LOG_WARN("core/interface is not set: listening on all network interfaces");
     *m_synergyAddress = NetworkAddress(Settings::value(Settings::Core::Port).toInt());
   }
 
@@ -444,7 +447,7 @@ ClientListener *ServerApp::openClientListener(const NetworkAddress &address)
   using enum SecurityLevel;
   auto securityLevel = PlainText;
   if (Settings::value(Settings::Security::TlsEnabled).toBool()) {
-    // Encrypted-without-a-certificate accepted any client on the same network.
+    // TLS-without-peer-authentication accepted any client on the same network.
     // TLS stays peer-authenticated even when checkPeers is turned off.
     if (!Settings::value(Settings::Security::CheckPeers).toBool()) {
       LOG_WARN("security/checkPeers is off; peer certificates are still required");

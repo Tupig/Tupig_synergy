@@ -7,6 +7,8 @@
 
 #include "MSWindowsClipboardAnyTextConverter.h"
 
+#include "base/String.h"
+
 //
 // MSWindowsClipboardAnyTextConverter
 //
@@ -20,7 +22,7 @@ HANDLE
 MSWindowsClipboardAnyTextConverter::fromIClipboard(const std::string &data) const
 {
   // convert linefeeds and then convert to desired encoding
-  std::string text = doFromIClipboard(convertLinefeedToWin32(data));
+  std::string text = doFromIClipboard(synergy::string::convertLinefeedsFromLf(data, "\r\n"));
   uint32_t size = (uint32_t)text.size();
 
   // copy to memory handle
@@ -55,67 +57,6 @@ std::string MSWindowsClipboardAnyTextConverter::toIClipboard(HANDLE data) const
   // release handle
   GlobalUnlock(data);
 
-  // convert newlines
-  return convertLinefeedToUnix(text);
-}
-
-std::string MSWindowsClipboardAnyTextConverter::convertLinefeedToWin32(const std::string &src) const
-{
-  // note -- we assume src is a valid UTF-8 string
-
-  // count newlines in string
-  uint32_t numNewlines = 0;
-  uint32_t n = (uint32_t)src.size();
-  for (const char *scan = src.c_str(); n > 0; ++scan, --n) {
-    if (*scan == '\n') {
-      ++numNewlines;
-    }
-  }
-  if (numNewlines == 0) {
-    return src;
-  }
-
-  // allocate new string
-  std::string dst;
-  dst.reserve(src.size() + numNewlines);
-
-  // copy string, converting newlines
-  n = (uint32_t)src.size();
-  for (const char *scan = src.c_str(); n > 0; ++scan, --n) {
-    if (scan[0] == '\n') {
-      dst += '\r';
-    }
-    dst += scan[0];
-  }
-
-  return dst;
-}
-
-std::string MSWindowsClipboardAnyTextConverter::convertLinefeedToUnix(const std::string &src) const
-{
-  // count newlines in string
-  uint32_t numNewlines = 0;
-  uint32_t n = (uint32_t)src.size();
-  for (const char *scan = src.c_str(); n > 0; ++scan, --n) {
-    if (scan[0] == '\r' && scan[1] == '\n') {
-      ++numNewlines;
-    }
-  }
-  if (numNewlines == 0) {
-    return src;
-  }
-
-  // allocate new string
-  std::string dst;
-  dst.reserve(src.size());
-
-  // copy string, converting newlines
-  n = (uint32_t)src.size();
-  for (const char *scan = src.c_str(); n > 0; ++scan, --n) {
-    if (scan[0] != '\r' || scan[1] != '\n') {
-      dst += scan[0];
-    }
-  }
-
-  return dst;
+  // the shared clipboard uses LF line endings
+  return synergy::string::convertLinefeedsToLf(text);
 }

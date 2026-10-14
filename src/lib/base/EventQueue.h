@@ -115,6 +115,10 @@ private:
   TimerQueue m_timerQueue;
   TimerEvent m_timerEvent;
 
+  //! Time of the last Qt event pump, so the pump runs at a bounded rate even
+  //! while synergy events keep the buffer busy.
+  Stopwatch m_qtPumpTimer;
+
   // event handlers
   HandlerTable m_handlers;
 

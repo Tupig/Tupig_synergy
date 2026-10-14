@@ -36,18 +36,29 @@ if [ -z "${BASELINE}" ]; then
 fi
 echo "Baseline (from vcpkg.json): ${BASELINE}"
 
-# --- clone if absent -------------------------------------------------------
+# --- fetch the pinned baseline commit ---------------------------------------
 if [ ! -d "${VCPKG_DIR}/.git" ]; then
-    echo "Cloning vcpkg (shallow) into vendor/vcpkg ..."
-    git clone --depth 1 "${VCPKG_REPO}" "${VCPKG_DIR}"
+    echo "Fetching vcpkg at the pinned baseline into vendor/vcpkg ..."
+    # A shallow clone of the default branch failed deterministically on
+    # GitHub-hosted runners (git exited 0 while the pack's tree objects were
+    # missing, so the later checkout died with "unable to read tree").
+    # Fetching the baseline commit directly is deterministic, skips unrelated
+    # master history, and resumes naturally when a partial transfer left the
+    # repository behind (re-running goes straight to the repair below).
+    rm -rf "${VCPKG_DIR}"
+    mkdir -p "${VCPKG_DIR}"
+    git -c init.defaultBranch=master -C "${VCPKG_DIR}" init -q
+    git -C "${VCPKG_DIR}" remote add origin "${VCPKG_REPO}"
+    git -C "${VCPKG_DIR}" fetch --depth 1 origin "${BASELINE}"
+    git -C "${VCPKG_DIR}" checkout -q FETCH_HEAD
 fi
 
-# --- make sure the pinned baseline commit is present ----------------------
-if ! git -C "${VCPKG_DIR}" rev-parse --verify --quiet "${BASELINE}" >/dev/null; then
+# --- make sure the pinned baseline commit and its tree are present ----------
+if ! git -C "${VCPKG_DIR}" cat-file -e "${BASELINE}^{tree}" 2>/dev/null; then
     echo "Fetching pinned baseline commit ..."
     git -C "${VCPKG_DIR}" fetch --depth 1 origin "${BASELINE}"
+    git -C "${VCPKG_DIR}" checkout --quiet "${BASELINE}"
 fi
-git -C "${VCPKG_DIR}" checkout --quiet "${BASELINE}"
 
 # --- bootstrap the vcpkg tool ---------------------------------------------
 if [ ! -x "${VCPKG_DIR}/vcpkg" ]; then

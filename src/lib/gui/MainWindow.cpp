@@ -42,6 +42,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QHideEvent>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMenu>
@@ -54,6 +55,7 @@
 #include <QRegularExpressionValidator>
 #include <QScreen>
 #include <QScrollBar>
+#include <QShowEvent>
 
 #include <memory>
 #include <thread>
@@ -919,6 +921,24 @@ void MainWindow::handlePeerFingerprint(const QString &fingerprint)
   }
 }
 
+void MainWindow::hideEvent(QHideEvent *event)
+{
+  // No UI is visible while hidden (tray or minimized); suspend the periodic
+  // network poll and resume it in showEvent().
+  m_networkMonitor->stopMonitoring();
+  QMainWindow::hideEvent(event);
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+  QMainWindow::showEvent(event);
+  if (m_coreProcess.mode() == Settings::CoreMode::Server) {
+    // startMonitoring() runs an immediate update, which refreshes the IP label
+    // if the network changed while the window was hidden.
+    m_networkMonitor->startMonitoring();
+  }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (Settings::value(Settings::Gui::CloseToTray).toBool() && event->spontaneous()) {
@@ -1350,6 +1370,12 @@ void MainWindow::updateIpLabel(const QStringList &addresses)
     toolTipText = toolTipText.arg(tr("the suggested IP."));
   } else {
     toolTipText = toolTipText.arg(tr("one of the following IPs:<br/>%1").arg(ipList.join("<br/>")));
+  }
+
+  if (mode == CoreMode::Server && !fixedIP) {
+    toolTipText.append(
+        tr("\n<p>%1 listens on all network interfaces because no IP is selected in the settings.</p>").arg(kAppName)
+    );
   }
 
   ui->lblIpAddresses->setText(labelText);

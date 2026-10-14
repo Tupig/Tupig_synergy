@@ -38,4 +38,44 @@ void StringTests::sprintfKeepsStringThatFillsTheFirstBuffer()
   QCOMPARE(result, payload);
 }
 
+void StringTests::linefeedsNormalizeMixedInputToLf()
+{
+  using synergy::string::convertLinefeedsToLf;
+
+  QCOMPARE(convertLinefeedsToLf("a\r\nb"), std::string("a\nb"));
+  QCOMPARE(convertLinefeedsToLf("a\rb"), std::string("a\nb"));
+  QCOMPARE(convertLinefeedsToLf("a\nb"), std::string("a\nb"));
+  QCOMPARE(convertLinefeedsToLf("x\r\ny\rz\n"), std::string("x\ny\nz\n"));
+
+  // no line endings: identity
+  QCOMPARE(convertLinefeedsToLf("plain"), std::string("plain"));
+  QCOMPARE(convertLinefeedsToLf(""), std::string(""));
+}
+
+void StringTests::linefeedsExpandToPlatformTerminator()
+{
+  using synergy::string::convertLinefeedsFromLf;
+
+  // Windows terminator
+  QCOMPARE(convertLinefeedsFromLf("a\nb", "\r\n"), std::string("a\r\nb"));
+
+  // classic Mac terminator
+  QCOMPARE(convertLinefeedsFromLf("a\nb", "\r"), std::string("a\rb"));
+
+  // no line endings: identity
+  QCOMPARE(convertLinefeedsFromLf("plain", "\r\n"), std::string("plain"));
+}
+
+void StringTests::linefeedsRoundTripAcrossPlatforms()
+{
+  // the canonical form plus an expansion must return the original text for
+  // both platform conventions, including mixed input from a broken peer
+  const std::string mixed = "one\r\ntwo\rthree\nfour";
+  const auto canonical = synergy::string::convertLinefeedsToLf(mixed);
+  QCOMPARE(canonical, std::string("one\ntwo\nthree\nfour"));
+
+  QCOMPARE(synergy::string::convertLinefeedsFromLf(canonical, "\r\n"), std::string("one\r\ntwo\r\nthree\r\nfour"));
+  QCOMPARE(synergy::string::convertLinefeedsFromLf(canonical, "\r"), std::string("one\rtwo\rthree\rfour"));
+}
+
 QTEST_MAIN(StringTests)

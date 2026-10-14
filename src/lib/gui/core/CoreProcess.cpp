@@ -8,6 +8,7 @@
 #include "CoreProcess.h"
 
 #include "common/ExitCodes.h"
+#include "common/IpcToken.h"
 #include "common/RelativePath.h"
 #include "gui/ipc/CoreIpcClient.h"
 #include "gui/ipc/DaemonIpcClient.h"
@@ -35,6 +36,12 @@
 namespace synergy::gui {
 
 const int kRetryDelay = 1000;
+
+//! Upper bound for the blocking waitForStarted() in startForegroundProcess().
+//! The GUI mutex is held for this wait, so it must stay short: 5s is ample for
+//! a local exec, while the default 30s freezes the GUI on slow spawns.
+constexpr int kStartTimeoutMs = 5000;
+
 const auto kLineSplitRegex = QRegularExpression("\r|\n|\r\n");
 
 QString CoreProcess::processModeToString(const Settings::ProcessMode mode)
@@ -249,7 +256,7 @@ void CoreProcess::startForegroundProcess(const QStringList &args)
 
   m_process->start(m_appPath, args);
 
-  if (m_process->waitForStarted()) {
+  if (m_process->waitForStarted(kStartTimeoutMs)) {
     m_startedAt = std::chrono::steady_clock::now();
     setProcessState(Started);
   } else {
@@ -272,9 +279,28 @@ void CoreProcess::startProcessFromDaemon()
     const auto source = Settings::settingsFile();
     const auto fileName = QFileInfo(source).fileName();
     const auto dest = synergy::resolveRelativePath(settingsDir, fileName);
-    if (dest.isEmpty() || !QFileInfo::exists(source) || !QDir().mkpath(settingsDir) ||
-        (QFileInfo::exists(dest) && !QFile::remove(dest)) || !QFile::copy(source, dest)) {
+    if (dest.isEmpty() || !QFileInfo::exists(source) || !QDir().mkpath(settingsDir)) {
       qCritical("cannot copy settings into %s", qPrintable(settingsDir));
+      setProcessState(ProcessState::Stopped);
+      Q_EMIT error(Error::StartFailed);
+      return;
+    }
+    // harden the machine-wide directory before copying so that other local
+    // users cannot tamper with the daemon's config; best effort, the copied
+    // file is explicitly restricted below
+    if (!synergy::restrictSystemDirectoryPermissions(settingsDir)) {
+      qWarning("failed to restrict the settings directory: %s", qPrintable(settingsDir));
+    }
+    if ((QFileInfo::exists(dest) && !QFile::remove(dest)) || !QFile::copy(source, dest)) {
+      qCritical("cannot copy settings into %s", qPrintable(settingsDir));
+      setProcessState(ProcessState::Stopped);
+      Q_EMIT error(Error::StartFailed);
+      return;
+    }
+    // the config that the SYSTEM service executes must not be modifiable by
+    // other local users (it can carry screen enter/exit commands)
+    if (!synergy::restrictSecretFilePermissions(dest)) {
+      qCritical("cannot restrict the copied settings file: %s", qPrintable(dest));
       setProcessState(ProcessState::Stopped);
       Q_EMIT error(Error::StartFailed);
       return;

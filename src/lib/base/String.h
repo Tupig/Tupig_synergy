@@ -10,6 +10,7 @@
 
 #include <cstdarg>
 #include <string>
+#include <string_view>
 
 //! std::string utilities
 /*!
@@ -40,6 +41,21 @@ std::string vformat(const char *fmt, va_list);
 Equivalent to sprintf() except the result is returned as a String.
 */
 std::string sprintf(const char *fmt, ...);
+
+//! Normalize line endings to LF
+/*!
+Converts CRLF pairs and lone CR characters to LF, so text from any platform
+shares one canonical in-memory form.
+*/
+std::string convertLinefeedsToLf(std::string_view src);
+
+//! Expand LF line endings to \p terminator
+/*!
+Replaces every LF with \p terminator (for example "\r\n" on Windows or "\r"
+for the classic Mac OS convention).  The input is expected to be in the
+canonical LF form produced by convertLinefeedsToLf().
+*/
+std::string convertLinefeedsFromLf(std::string_view src, std::string_view terminator);
 
 //! Case-insensitive comparisons
 /*!

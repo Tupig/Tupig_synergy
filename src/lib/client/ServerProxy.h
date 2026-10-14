@@ -69,6 +69,12 @@ private:
   // if compressing mouse motion then send the last motion now
   void flushCompressedMouse();
 
+  //! Read a message body from the server, disconnecting the peer when the
+  //! stream ends mid-message.  ProtocolUtil::readf returns false on such a
+  //! truncation and leaves output arguments partially written, so the caller
+  //! must not forward them.  Returns false after disconnecting.
+  template <typename... Args> bool readOrDisconnect(const char *format, Args &&...args);
+
   void sendInfo(const ClientInfo &);
 
   void resetKeepAliveAlarm();

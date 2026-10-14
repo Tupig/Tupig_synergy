@@ -388,9 +388,14 @@ void ArchMultithreadWindows::setPriorityOfThread(ArchThread thread, int n)
 
 void ArchMultithreadWindows::testCancelThread()
 {
-  // find current thread
-  std::scoped_lock lock{m_threadMutex};
-  ArchThreadImpl *thread = findNoRefOrInsert(GetCurrentThreadId());
+  // find current thread; testCancelThreadImpl takes m_threadMutex itself, so
+  // that lock must be released first (std::mutex is not recursive on MSVC,
+  // and re-locking it would throw std::system_error EDEADLK)
+  ArchThreadImpl *thread = nullptr;
+  {
+    std::scoped_lock lock{m_threadMutex};
+    thread = findNoRefOrInsert(GetCurrentThreadId());
+  }
 
   // test cancel on thread
   testCancelThreadImpl(thread);

@@ -120,4 +120,59 @@ void SettingsTests::emptyBlockedComboSurvivesClean()
   QVERIFY(!blocked.contains(QStringLiteral("0xEFFF:0x0006")));
 }
 
+void SettingsTests::missingKeysReturnDefaults()
+{
+  const auto path = QDir(m_settingsPathTemp).filePath(QStringLiteral("empty.conf"));
+  QDir().mkpath(m_settingsPathTemp);
+  QFile::remove(path);
+  Settings::setSettingsFile(path);
+
+  QCOMPARE(Settings::value(Settings::Core::Port).toInt(), Settings::defaultValue(Settings::Core::Port).toInt());
+  QCOMPARE(Settings::value(Settings::Log::Level).toString(), Settings::defaultValue(Settings::Log::Level).toString());
+  QCOMPARE(
+      Settings::value(Settings::Client::RemoteHost).toString(),
+      Settings::defaultValue(Settings::Client::RemoteHost).toString()
+  );
+}
+
+void SettingsTests::corruptedConfigFallsBackToDefaults()
+{
+  const auto path = QDir(m_settingsPathTemp).filePath(QStringLiteral("corrupt.conf"));
+  QDir().mkpath(m_settingsPathTemp);
+  QFile::remove(path);
+  {
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    file.write("not an ini at all [broken\n%%%\n\x01\x02\x03\n");
+    file.close();
+  }
+
+  Settings::setSettingsFile(path);
+
+  // loading a file repairs the computer name by design (setupComputerName);
+  // every other missing key falls back to its default
+  QVERIFY(!Settings::value(Settings::Core::ComputerName).toString().isEmpty());
+  QCOMPARE(Settings::value(Settings::Core::Port).toInt(), Settings::defaultValue(Settings::Core::Port).toInt());
+}
+
+void SettingsTests::wrongTypeValueIsReturnedAsStored()
+{
+  const auto path = QDir(m_settingsPathTemp).filePath(QStringLiteral("wrongtype.conf"));
+  QDir().mkpath(m_settingsPathTemp);
+  QFile::remove(path);
+  {
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+    file.write("[core]\nport=not-a-number\n");
+    file.close();
+  }
+
+  Settings::setSettingsFile(path);
+
+  // the stored string is preserved (no crash, no silent default); numeric
+  // conversion of the malformed value yields zero
+  QCOMPARE(Settings::value(Settings::Core::Port).toString(), QStringLiteral("not-a-number"));
+  QCOMPARE(Settings::value(Settings::Core::Port).toInt(), 0);
+}
+
 QTEST_MAIN(SettingsTests)

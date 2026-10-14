@@ -58,7 +58,7 @@ public:
     virtual void testCancelThread();
   };
 
-  explicit ArchNetworkBSD(std::shared_ptr<Deps> deps = std::make_shared<Deps>()) : m_pDeps(deps)
+  explicit ArchNetworkBSD(std::shared_ptr<Deps> deps = std::make_shared<Deps>()) : m_deps(deps)
   {
   }
   ArchNetworkBSD(ArchNetworkBSD const &) = delete;
@@ -107,6 +107,6 @@ private:
   [[noreturn]] void throwError(int) const override;
   [[noreturn]] void throwNameError(int) const override;
 
-  std::shared_ptr<Deps> m_pDeps;
+  std::shared_ptr<Deps> m_deps;
   std::mutex m_mutex;
 };

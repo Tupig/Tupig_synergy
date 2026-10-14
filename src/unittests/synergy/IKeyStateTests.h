@@ -11,4 +11,8 @@ class IKeyStateTests : public QObject
   Q_OBJECT
 private Q_SLOTS:
   void allocDestination();
+  void allocCopyPreservesFields();
+  void isDefaultDetectsUnsetLists();
+  void containsMatchesWholeNames();
+  void joinAndSplitRoundTrip();
 };

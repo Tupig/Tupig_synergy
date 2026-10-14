@@ -16,6 +16,39 @@
 
 namespace synergy::string {
 
+std::string convertLinefeedsToLf(std::string_view src)
+{
+  std::string dst;
+  dst.reserve(src.size());
+  for (size_t i = 0; i < src.size(); ++i) {
+    const char ch = src[i];
+    if (ch == '\r') {
+      // a CRLF pair collapses to one LF; a lone CR also becomes LF
+      if (i + 1 < src.size() && src[i + 1] == '\n') {
+        ++i;
+      }
+      dst += '\n';
+    } else {
+      dst += ch;
+    }
+  }
+  return dst;
+}
+
+std::string convertLinefeedsFromLf(std::string_view src, std::string_view terminator)
+{
+  std::string dst;
+  dst.reserve(src.size());
+  for (const char ch : src) {
+    if (ch == '\n') {
+      dst.append(terminator);
+    } else {
+      dst += ch;
+    }
+  }
+  return dst;
+}
+
 std::string format(const char *fmt, ...)
 {
   va_list args;

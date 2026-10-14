@@ -13,9 +13,13 @@
 
 #include <QFile>
 #include <QString>
-#include <QTextStream>
 
 constexpr auto s_logFileSizeLimit = 1024 * 1024; //!< Max Log size before rotating (1Mb)
+
+//! How many bytes to write before checking the log size again.  Checking on
+//! every line is a stat-like syscall per line; the exact rotation point may
+//! overshoot by up to this amount, which is irrelevant for a log.
+constexpr auto s_logFileSizeCheckBytes = 64 * 1024;
 
 //
 // StopLogOutputter
@@ -124,24 +128,53 @@ FileLogOutputter::FileLogOutputter(const QString &logFile)
 void FileLogOutputter::setLogFilename(const QString &logFile)
 {
   assert(logFile != nullptr);
+  if (m_fileName == logFile) {
+    return;
+  }
+  m_file.close();
   m_fileName = logFile;
+  m_bytesSinceCheck = 0;
+}
+
+bool FileLogOutputter::ensureOpen()
+{
+  if (m_file.isOpen()) {
+    return true;
+  }
+  return m_file.open(QFile::WriteOnly | QFile::Append);
+}
+
+void FileLogOutputter::rotateIfNeeded()
+{
+  m_bytesSinceCheck = 0;
+  if (m_file.size() <= s_logFileSizeLimit) {
+    return;
+  }
+
+  const auto oldFile = QStringLiteral("%1.1").arg(m_fileName);
+  // rotate: drop any previous backup, then rename the current log into
+  // its place; the next write recreates the log file from scratch
+  m_file.close();
+  QFile::remove(oldFile);
+  QFile::rename(m_fileName, oldFile);
 }
 
 bool FileLogOutputter::write(LogLevel::Level, const QString &message)
 {
-  QFile file(m_fileName);
-  if (!file.open(QFile::WriteOnly | QFile::Append))
+  if (!ensureOpen()) {
     return false;
+  }
 
-  QTextStream(&file) << message << '\n';
-  file.close();
+  const auto line = message.toUtf8() + '\n';
+  if (m_file.write(line) != line.size()) {
+    return false;
+  }
+  // flush per line so log tails (the GUI log dock) see new lines promptly
+  m_file.flush();
 
-  if (file.size() > s_logFileSizeLimit) {
-    const auto oldFile = QStringLiteral("%1.1").arg(m_fileName);
-    // rotate: drop any previous backup, then rename the current log into
-    // its place; the next write recreates the log file from scratch
-    QFile::remove(oldFile);
-    QFile::rename(m_fileName, oldFile);
+  m_bytesSinceCheck += line.size();
+  if (m_bytesSinceCheck >= s_logFileSizeCheckBytes) {
+    rotateIfNeeded();
   }
 
   return true;
@@ -154,5 +187,5 @@ void FileLogOutputter::open(const QString &)
 
 void FileLogOutputter::close()
 {
-  // do nothing
+  m_file.close();
 }

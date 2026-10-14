@@ -146,7 +146,7 @@ QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securit
 
 bool QtNetworkTransport::wantsTls() const
 {
-  return m_securityLevel == SecurityLevel::Encrypted || m_securityLevel == SecurityLevel::PeerAuth;
+  return m_securityLevel == SecurityLevel::EncryptedTestOnly || m_securityLevel == SecurityLevel::PeerAuth;
 }
 
 void QtNetworkTransport::createSocket()
@@ -284,15 +284,25 @@ bool QtNetworkTransport::isConnected() const
 
 uint32_t QtNetworkTransport::read(void *buffer, uint32_t size)
 {
-  if (!m_connected || m_readBuffer.isEmpty()) {
+  const auto available = m_readBuffer.size() - m_readOffset;
+  if (!m_connected || available <= 0) {
     return 0;
   }
 
-  uint32_t available = static_cast<uint32_t>(m_readBuffer.size());
-  uint32_t toRead = std::min(size, available);
+  const uint32_t toRead = (std::min)(size, static_cast<uint32_t>(available));
 
-  std::memcpy(buffer, m_readBuffer.constData(), toRead);
-  m_readBuffer.remove(0, static_cast<int>(toRead));
+  std::memcpy(buffer, m_readBuffer.constData() + m_readOffset, toRead);
+  m_readOffset += static_cast<int>(toRead);
+
+  // drop the consumed prefix only once it is at least half of the buffer, so
+  // the memmove cost is amortized O(1) per byte instead of O(buffer) per read
+  if (m_readOffset == m_readBuffer.size()) {
+    m_readBuffer.clear();
+    m_readOffset = 0;
+  } else if (m_readOffset >= m_readBuffer.size() / 2) {
+    m_readBuffer.remove(0, m_readOffset);
+    m_readOffset = 0;
+  }
 
   return toRead;
 }
@@ -323,7 +333,7 @@ void QtNetworkTransport::flush()
 
 bool QtNetworkTransport::isReady() const
 {
-  return m_connected && !m_readBuffer.isEmpty();
+  return m_connected && m_readBuffer.size() > m_readOffset;
 }
 
 bool QtNetworkTransport::isFatal() const
@@ -333,7 +343,8 @@ bool QtNetworkTransport::isFatal() const
 
 uint32_t QtNetworkTransport::getSize() const
 {
-  return static_cast<uint32_t>(m_readBuffer.size());
+  const auto pending = m_readBuffer.size() - m_readOffset;
+  return pending > 0 ? static_cast<uint32_t>(pending) : 0;
 }
 
 ArchSocket QtNetworkTransport::getSocket() const
@@ -488,7 +499,7 @@ QtTransportListenSocket::~QtTransportListenSocket()
 
 bool QtTransportListenSocket::wantsTls() const
 {
-  return m_securityLevel == SecurityLevel::Encrypted || m_securityLevel == SecurityLevel::PeerAuth;
+  return m_securityLevel == SecurityLevel::EncryptedTestOnly || m_securityLevel == SecurityLevel::PeerAuth;
 }
 
 bool QtTransportListenSocket::configureSslServer()

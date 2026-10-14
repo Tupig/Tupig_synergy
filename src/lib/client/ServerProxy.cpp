@@ -79,7 +79,7 @@ ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, I
     }
     if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
       constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
-      options.maxFileCount = static_cast<size_t>(std::min(maxCount, kMaxFileCount));
+      options.maxFileCount = static_cast<size_t>((std::min)(maxCount, kMaxFileCount));
     }
 
     m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);
@@ -106,6 +106,17 @@ synergy::KeyboardLayoutManager &ServerProxy::layoutManager()
     m_layoutManager = std::make_unique<synergy::KeyboardLayoutManager>();
   }
   return *m_layoutManager;
+}
+
+template <typename... Args> bool ServerProxy::readOrDisconnect(const char *format, Args &&...args)
+{
+  if (ProtocolUtil::readf(m_stream, format, args...)) {
+    return true;
+  }
+  // readf returns false when the stream ends mid-message, leaving the output
+  // arguments partially written; never forward those values
+  m_client->disconnect("truncated message");
+  return false;
 }
 
 void ServerProxy::resetKeepAliveAlarm()
@@ -231,9 +242,11 @@ ServerProxy::ConnectionResult ServerProxy::parseHandshakeMessage(const uint8_t *
   }
 
   else if (memcmp(code, kMsgEIncompatible, 4) == 0) {
-    int32_t major;
-    int32_t minor;
-    ProtocolUtil::readf(m_stream, kMsgEIncompatible + 4, &major, &minor);
+    int32_t major = 0;
+    int32_t minor = 0;
+    if (!readOrDisconnect(kMsgEIncompatible + 4, &major, &minor)) {
+      return Disconnect;
+    }
     LOG_ERR("server has incompatible version %d.%d", major, minor);
     m_client->refuseConnection(IncompatibleVersion, "server has incompatible version");
     return Disconnect;
@@ -292,7 +305,9 @@ ServerProxy::ConnectionResult ServerProxy::parseMessage(const uint8_t *code)
     uint16_t id = 0;
     uint16_t mask = 0;
     uint16_t button = 0;
-    ProtocolUtil::readf(m_stream, kMsgDKeyDown + 4, &id, &mask, &button);
+    if (!readOrDisconnect(kMsgDKeyDown + 4, &id, &mask, &button)) {
+      return Disconnect;
+    }
     LOG_VERBOSE("recv key down id=0x%08x, mask=0x%04x, button=0x%04x", id, mask, button);
 
     keyDown(id, mask, button, "");
@@ -304,7 +319,9 @@ ServerProxy::ConnectionResult ServerProxy::parseMessage(const uint8_t *code)
     uint16_t mask = 0;
     uint16_t button = 0;
 
-    ProtocolUtil::readf(m_stream, kMsgDKeyDownLang + 4, &id, &mask, &button, &lang);
+    if (!readOrDisconnect(kMsgDKeyDownLang + 4, &id, &mask, &button, &lang)) {
+      return Disconnect;
+    }
     LOG_VERBOSE("recv key down id=0x%08x, mask=0x%04x, button=0x%04x, lang=\"%s\"", id, mask, button, lang.c_str());
 
     keyDown(id, mask, button, lang);
@@ -555,11 +572,13 @@ KeyModifierMask ServerProxy::translateModifierMask(KeyModifierMask mask) const
 void ServerProxy::enter()
 {
   // parse
-  int16_t x;
-  int16_t y;
-  uint16_t mask;
-  uint32_t seqNum;
-  ProtocolUtil::readf(m_stream, kMsgCEnter + 4, &x, &y, &seqNum, &mask);
+  int16_t x = 0;
+  int16_t y = 0;
+  uint16_t mask = 0;
+  uint32_t seqNum = 0;
+  if (!readOrDisconnect(kMsgCEnter + 4, &x, &y, &seqNum, &mask)) {
+    return;
+  }
   LOG_VERBOSE("recv enter, %d,%d %d %04x", x, y, seqNum, mask);
 
   // discard old compressed mouse motion, if any
@@ -619,9 +638,11 @@ void ServerProxy::setClipboard()
 void ServerProxy::grabClipboard()
 {
   // parse
-  ClipboardID id;
-  uint32_t seqNum;
-  ProtocolUtil::readf(m_stream, kMsgCClipboard + 4, &id, &seqNum);
+  ClipboardID id = 0;
+  uint32_t seqNum = 0;
+  if (!readOrDisconnect(kMsgCClipboard + 4, &id, &seqNum)) {
+    return;
+  }
   LOG_DEBUG("recv grab clipboard %d", id);
 
   // validate
@@ -676,12 +697,14 @@ void ServerProxy::keyRepeat()
   flushCompressedMouse();
 
   // parse
-  uint16_t id;
-  uint16_t mask;
-  uint16_t count;
-  uint16_t button;
+  uint16_t id = 0;
+  uint16_t mask = 0;
+  uint16_t count = 0;
+  uint16_t button = 0;
   std::string lang;
-  ProtocolUtil::readf(m_stream, kMsgDKeyRepeat + 4, &id, &mask, &count, &button, &lang);
+  if (!readOrDisconnect(kMsgDKeyRepeat + 4, &id, &mask, &count, &button, &lang)) {
+    return;
+  }
   LOG(
       (CLOG_VERBOSE "recv key repeat id=0x%08x, mask=0x%04x, count=%d, "
                     "button=0x%04x, lang=\"%s\"",
@@ -721,10 +744,12 @@ void ServerProxy::keyUp()
   flushCompressedMouse();
 
   // parse
-  uint16_t id;
-  uint16_t mask;
-  uint16_t button;
-  ProtocolUtil::readf(m_stream, kMsgDKeyUp + 4, &id, &mask, &button);
+  uint16_t id = 0;
+  uint16_t mask = 0;
+  uint16_t button = 0;
+  if (!readOrDisconnect(kMsgDKeyUp + 4, &id, &mask, &button)) {
+    return;
+  }
   LOG_VERBOSE("recv key up id=0x%08x, mask=0x%04x, button=0x%04x", id, mask, button);
 
   // Sanitize, but never rate limit a key release: swallowing it would leave the
@@ -750,8 +775,10 @@ void ServerProxy::mouseDown()
   flushCompressedMouse();
 
   // parse
-  int8_t id;
-  ProtocolUtil::readf(m_stream, kMsgDMouseDown + 4, &id);
+  int8_t id = 0;
+  if (!readOrDisconnect(kMsgDMouseDown + 4, &id)) {
+    return;
+  }
   LOG_VERBOSE("recv mouse down id=%d", id);
 
   // Logged, not rejected: the wire format allows ids from devices with more
@@ -772,8 +799,10 @@ void ServerProxy::mouseUp()
   flushCompressedMouse();
 
   // parse
-  int8_t id;
-  ProtocolUtil::readf(m_stream, kMsgDMouseUp + 4, &id);
+  int8_t id = 0;
+  if (!readOrDisconnect(kMsgDMouseUp + 4, &id)) {
+    return;
+  }
   LOG_VERBOSE("recv mouse up id=%d", id);
 
   // Logged, not rejected - see mouseDown.
@@ -790,9 +819,11 @@ void ServerProxy::mouseMove()
 {
   // parse
   bool ignore;
-  int16_t x;
-  int16_t y;
-  ProtocolUtil::readf(m_stream, kMsgDMouseMove + 4, &x, &y);
+  int16_t x = 0;
+  int16_t y = 0;
+  if (!readOrDisconnect(kMsgDMouseMove + 4, &x, &y)) {
+    return;
+  }
 
   // note if we should ignore the move
   ignore = m_ignoreMouse;
@@ -823,9 +854,11 @@ void ServerProxy::mouseRelativeMove()
 {
   // parse
   bool ignore;
-  int16_t dx;
-  int16_t dy;
-  ProtocolUtil::readf(m_stream, kMsgDMouseRelMove + 4, &dx, &dy);
+  int16_t dx = 0;
+  int16_t dy = 0;
+  if (!readOrDisconnect(kMsgDMouseRelMove + 4, &dx, &dy)) {
+    return;
+  }
 
   // note if we should ignore the move
   ignore = m_ignoreMouse;
@@ -855,9 +888,11 @@ void ServerProxy::mouseWheel()
   flushCompressedMouse();
 
   // parse
-  int16_t xDelta;
-  int16_t yDelta;
-  ProtocolUtil::readf(m_stream, kMsgDMouseWheel + 4, &xDelta, &yDelta);
+  int16_t xDelta = 0;
+  int16_t yDelta = 0;
+  if (!readOrDisconnect(kMsgDMouseWheel + 4, &xDelta, &yDelta)) {
+    return;
+  }
   LOG_VERBOSE("recv mouse wheel %+d,%+d", xDelta, yDelta);
 
   // forward
@@ -867,8 +902,10 @@ void ServerProxy::mouseWheel()
 void ServerProxy::screensaver()
 {
   // parse
-  int8_t on;
-  ProtocolUtil::readf(m_stream, kMsgCScreenSaver + 4, &on);
+  int8_t on = 0;
+  if (!readOrDisconnect(kMsgCScreenSaver + 4, &on)) {
+    return;
+  }
   LOG_VERBOSE("recv screen saver on=%d", on);
 
   // forward
@@ -896,7 +933,9 @@ void ServerProxy::setOptions()
 {
   // parse
   OptionsList options;
-  ProtocolUtil::readf(m_stream, kMsgDSetOptions + 4, &options);
+  if (!readOrDisconnect(kMsgDSetOptions + 4, &options)) {
+    return;
+  }
   LOG_VERBOSE("recv set options size=%d", options.size());
 
   if (options.size() % 2 != 0) {
@@ -951,7 +990,9 @@ void ServerProxy::infoAcknowledgment()
 void ServerProxy::secureInputNotification()
 {
   std::string app;
-  ProtocolUtil::readf(m_stream, kMsgDSecureInputNotification + 4, &app);
+  if (!readOrDisconnect(kMsgDSecureInputNotification + 4, &app)) {
+    return;
+  }
   LOG_INFO("application \"%s\" is blocking the keyboard", app.c_str());
 }
 
@@ -991,7 +1032,9 @@ void ServerProxy::fileChunk()
 void ServerProxy::setServerLanguages()
 {
   std::string serverLayout;
-  ProtocolUtil::readf(m_stream, kMsgDLanguageSynchronisation + 4, &serverLayout);
+  if (!readOrDisconnect(kMsgDLanguageSynchronisation + 4, &serverLayout)) {
+    return;
+  }
   layoutManager().setRemoteLayouts(serverLayout);
 }
 

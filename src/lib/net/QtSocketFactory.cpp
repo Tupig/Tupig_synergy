@@ -64,7 +64,7 @@ QtDataSocket::~QtDataSocket()
 
 bool QtDataSocket::wantsTls() const
 {
-  return m_securityLevel == SecurityLevel::Encrypted || m_securityLevel == SecurityLevel::PeerAuth;
+  return m_securityLevel == SecurityLevel::EncryptedTestOnly || m_securityLevel == SecurityLevel::PeerAuth;
 }
 
 void QtDataSocket::wireTransport()
@@ -186,8 +186,8 @@ void QtDataSocket::handleConnected()
   }
 
   // The client always checks the server fingerprint. The server checks the
-  // client fingerprint only for PeerAuth; Encrypted still rejects a missing
-  // certificate, which is what the unit test round-trip relies on.
+  // client fingerprint only for PeerAuth; EncryptedTestOnly still rejects a
+  // missing certificate, which is what the unit test round-trip relies on.
   const bool checkFingerprint =
       m_serverSide ? m_securityLevel == SecurityLevel::PeerAuth : tlsRequiresPeerCertificate(m_securityLevel);
 

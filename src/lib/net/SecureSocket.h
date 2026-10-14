@@ -32,11 +32,11 @@ class SecureSocket : public TCPSocket
 public:
   SecureSocket(
       IEventQueue *events, SocketMultiplexer *socketMultiplexer, IArchNetwork::AddressFamily family,
-      SecurityLevel securityLevel = SecurityLevel::Encrypted
+      SecurityLevel securityLevel = SecurityLevel::EncryptedTestOnly
   );
   SecureSocket(
       IEventQueue *events, SocketMultiplexer *socketMultiplexer, ArchSocket socket,
-      SecurityLevel securityLevel = SecurityLevel::Encrypted
+      SecurityLevel securityLevel = SecurityLevel::EncryptedTestOnly
   );
   SecureSocket(SecureSocket const &) = delete;
   SecureSocket(SecureSocket &&) = delete;
@@ -97,7 +97,7 @@ private:
   std::unique_ptr<Ssl> m_ssl;
   bool m_secureReady = false;
   bool m_fatal = false;
-  SecurityLevel m_securityLevel = SecurityLevel::Encrypted;
+  SecurityLevel m_securityLevel = SecurityLevel::EncryptedTestOnly;
 
   // Per-socket write-retry state. These used to be function-level statics in
   // doWrite(), shared by every SecureSocket on the multiplexer: a pending

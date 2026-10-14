@@ -32,6 +32,21 @@ QStringList splitIpcMessage(const QString &message)
 constexpr int kMaxPendingIpcMessages = 32;
 constexpr int kMaxIpcMessageBytes = 64 * 1024;
 
+//! Constant-time byte equality so a local attacker cannot probe the token one
+//! byte at a time through comparison timing.
+bool constantTimeEquals(const QByteArray &a, const QByteArray &b)
+{
+  if (a.size() != b.size()) {
+    return false;
+  }
+  auto diff = static_cast<unsigned char>(0);
+  const auto size = a.size();
+  for (decltype(a.size()) i = 0; i < size; ++i) {
+    diff |= static_cast<unsigned char>(a.at(i)) ^ static_cast<unsigned char>(b.at(i));
+  }
+  return diff == 0;
+}
+
 } // namespace
 
 // QLocalSocket::errorOccurred was added in Qt 5.15; pre-5.15 uses error(),
@@ -196,7 +211,7 @@ void IpcServer::processMessage(QLocalSocket *clientSocket, const QString &messag
     const auto separator = helloValue.indexOf(QLatin1Char(' '));
     const auto clientVersion = separator < 0 ? helloValue : helloValue.left(separator);
     const auto clientToken = separator < 0 ? QString() : helloValue.mid(separator + 1);
-    if (m_token.isEmpty() || clientToken != m_token) {
+    if (m_token.isEmpty() || !constantTimeEquals(clientToken.toUtf8(), m_token.toUtf8())) {
       LOG_WARN("%s ipc server rejected hello", m_typeName.constData());
       writeToClientSocket(clientSocket, QStringLiteral("error=hello required"));
       clientSocket->flush();

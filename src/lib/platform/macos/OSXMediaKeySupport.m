@@ -105,6 +105,10 @@ bool isMediaKeyEvent(CGEventRef event)
       return true;
     }
   } @catch (NSException *e) {
+    // A foreign or malformed CGEvent has no NSEvent representation and is
+    // therefore not a media key. Log it so intermittent classification
+    // failures have a trace in diagnostics.
+    NSLog(@"Synergy: isMediaKeyEvent: cannot create NSEvent: %@", e);
   }
   return false;
 }

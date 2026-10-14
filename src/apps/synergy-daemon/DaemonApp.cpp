@@ -101,7 +101,7 @@ void DaemonApp::applyWatchdogCommand() const
   const auto command = QStringLiteral("\"%1\" %2 --settings \"%3\"").arg(corePath, modeArg, configPath).toStdString();
 
   LOG_DEBUG("applying watchdog command (elevate: %s)", elevate ? "yes" : "no");
-  m_pWatchdog->setProcessConfig(command, elevate);
+  m_watchdog->setProcessConfig(command, elevate);
 #else
   LOG_ERR("applying watchdog command not implemented on this platform");
 #endif
@@ -116,7 +116,7 @@ void DaemonApp::clearWatchdogCommand()
   Settings::setValue(Settings::Daemon::ConfigFile);
 
 #if defined(Q_OS_WIN)
-  m_pWatchdog->setProcessConfig("", false);
+  m_watchdog->setProcessConfig("", false);
 #else
   LOG_ERR("clearing watchdog command not implemented on this platform");
 #endif
@@ -174,7 +174,7 @@ void DaemonApp::run(QThread &daemonThread)
   });
 
 #if defined(Q_OS_WIN)
-  m_pWatchdog = std::make_unique<MSWindowsWatchdog>(m_foreground, *m_pFileLogOutputter);
+  m_watchdog = std::make_unique<MSWindowsWatchdog>(m_foreground, *m_fileLogOutputter);
 
   if (const auto persistedConfig = Settings::value(Settings::Daemon::ConfigFile).toString();
       !persistedConfig.isEmpty()) {
@@ -211,7 +211,7 @@ int DaemonApp::daemonLoop()
 int DaemonApp::mainLoop()
 {
 #if defined(Q_OS_WIN)
-  if (m_pWatchdog == nullptr) {
+  if (m_watchdog == nullptr) {
     LOG_ERR("watchdog not initialized");
     return s_exitFailed;
   }
@@ -226,7 +226,7 @@ int DaemonApp::mainLoop()
     m_events.adoptBuffer(new MSWindowsEventQueueBuffer(&m_events));
 
     LOG_DEBUG("starting watchdog threads");
-    m_pWatchdog->startAsync();
+    m_watchdog->startAsync();
 #endif
 
     LOG_INFO("daemon is running");
@@ -242,7 +242,7 @@ int DaemonApp::mainLoop()
 #if defined(Q_OS_WIN)
   try {
     LOG_DEBUG("stopping process watchdog");
-    m_pWatchdog->stop();
+    m_watchdog->stop();
   } catch (std::exception &e) { // NOSONAR - Catching all exceptions
     LOG_CRIT("daemon stop watchdog error: %s", e.what());
   } catch (...) { // NOSONAR - Catching remaining exceptions
@@ -275,8 +275,8 @@ void DaemonApp::initLogging()
   }
 #endif
 
-  m_pFileLogOutputter = new FileLogOutputter(qPrintable(logFilename())); // NOSONAR - Adopted by `Log`
-  CLOG->insert(m_pFileLogOutputter);
+  m_fileLogOutputter = new FileLogOutputter(qPrintable(logFilename())); // NOSONAR - Adopted by `Log`
+  CLOG->insert(m_fileLogOutputter);
 }
 
 void DaemonApp::showConsole()

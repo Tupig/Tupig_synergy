@@ -17,6 +17,7 @@
 #include "net/NetworkAddress.h"
 
 #include <climits>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -166,6 +167,8 @@ private:
   void sendClipboard(ClipboardID);
   void sendEvent(synergy::EventTypes);
   void sendConnectionFailedEvent(const char *msg);
+  //! Continue a connection attempt once the server hostname is resolved.
+  void continueConnect(size_t addressIndex);
   void setupConnecting();
   void setupConnection();
   void setupScreen();
@@ -211,4 +214,17 @@ private:
   size_t m_maximumClipboardReceiveSize = 0;
   size_t m_maximumClipboardSize = INT_MAX;
   size_t m_resolvedAddressesCount = 0;
+
+  //! Invalidates in-flight asynchronous hostname lookups when a new attempt
+  //! starts or the connection is torn down.
+  uint64_t m_resolveGeneration = 0;
+
+  //! IP strings from the most recent asynchronous hostname lookup; the next
+  //! connection attempt uses them instead of performing DNS synchronously.
+  std::vector<std::string> m_resolvedIps;
+
+  //! Lifetime guard for the asynchronous lookup callback: the client can be
+  //! deleted while a lookup is still in flight, so the callback holds only a
+  //! weak reference and gives up when the flag is gone or cleared.
+  std::shared_ptr<bool> m_alive = std::make_shared<bool>(true);
 };
