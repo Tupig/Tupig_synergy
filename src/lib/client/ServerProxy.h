@@ -17,7 +17,6 @@
 
 #include <memory>
 
-class Client;
 class ClientInfo;
 class EventQueueTimer;
 class IClipboard;
@@ -25,6 +24,7 @@ namespace synergy {
 class IStream;
 }
 class IEventQueue;
+class IServerProxyClient;
 
 //! Proxy for server
 /*!
@@ -38,7 +38,7 @@ public:
   Process messages from the server on \p stream and forward to
   \p client.
   */
-  ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *events);
+  ServerProxy(IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events);
   ServerProxy(ServerProxy const &) = delete;
   ServerProxy(ServerProxy &&) = delete;
   ~ServerProxy();
@@ -112,7 +112,7 @@ private:
 private:
   using MessageParser = ConnectionResult (ServerProxy::*)(const uint8_t *);
 
-  Client *m_client = nullptr;
+  IServerProxyClient *m_client = nullptr;
   synergy::IStream *m_stream = nullptr;
 
   //! Validates input arriving from the server before it reaches the platform layer.

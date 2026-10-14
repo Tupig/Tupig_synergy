@@ -12,6 +12,7 @@
 
 #include "IClipboard.h"
 #include "base/EventTypes.h"
+#include "client/IServerProxyClient.h"
 #include "common/Enums.h"
 #include "net/NetworkAddress.h"
 
@@ -39,7 +40,7 @@ class TCPSocket;
 /*!
 This class implements the top-level client algorithms for Synergy.
 */
-class Client : public IClient
+class Client : public IClient, public IServerProxyClient
 {
 public:
   class FailInfo
@@ -85,23 +86,23 @@ public:
   /*!
   Disconnects from the server with an optional error message.
   */
-  void disconnect(const char *msg);
+  void disconnect(const char *msg) override;
 
   //! Refuse connection
   /*!
   Disconnects from the server with an optional error message.
   Unlike disconnect this function doesn't try to use other ip addresses
   */
-  void refuseConnection(synergy::core::ConnectionRefusal reason, const char *msg);
+  void refuseConnection(synergy::core::ConnectionRefusal reason, const char *msg) override;
 
   //! Notify of handshake complete
   /*!
   Notifies the client that the connection handshake has completed.
   */
-  virtual void handshakeComplete();
+  void handshakeComplete() override;
 
   //! Offer received files as a platform drag (Windows Explorer drop).
-  void offerReceivedFiles(const std::vector<std::string> &paths);
+  void offerReceivedFiles(const std::vector<std::string> &paths) override;
 
   //@}
   //! @name accessors
@@ -132,7 +133,7 @@ public:
   {
     return m_resolvedAddressesCount;
   }
-  size_t getMaximumClipboardReceiveSizeBytes() const;
+  size_t getMaximumClipboardReceiveSizeBytes() const override;
 
   //@}
 

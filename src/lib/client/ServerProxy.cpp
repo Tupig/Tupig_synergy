@@ -32,7 +32,7 @@
 // ServerProxy
 //
 
-ServerProxy::ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *events)
+ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events)
     : m_client(client),
       m_stream(stream),
       m_events(events)
