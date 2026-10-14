@@ -24,6 +24,11 @@
 # ~20-30 min, three attempts on 2026-10-14). NVD version ranges cover the
 # C/C++ packages in the manifest, which is what the SBOM lists.
 #
+# NVD transport: the json-mirror feed (cveb.in) drives the scanner through
+# cve-bin-tool's async client; the reachability diagnostic step records
+# whether that feed answers the runner, because an unreachable mirror
+# silently yields an empty database (CVEDataMissing) instead of an error.
+#
 # CI-only tooling: cve-bin-tool is installed from pip here, in the same
 # category as the apt packages and GitHub actions the CI already uses. It is
 # not part of the release build or the vcpkg manifest.
@@ -96,6 +101,16 @@ jobs:
 
       - name: Install cve-bin-tool
         run: python3 -m pip install --disable-pip-version-check "cve-bin-tool>=3.3,<4"
+
+      - name: Diagnose CVE feed reachability
+        run: |
+          curl -sS -o mirror-index.html -w "cveb.in index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
+          grep -c "\.meta" mirror-index.html || true
+          curl -sS -o nvd-feeds.html -w "nvd data-feeds: HTTP %{http_code} size=%{size_download}\n" https://nvd.nist.gov/vuln/data-feeds || true
+          grep -c "\.meta" nvd-feeds.html || true
+          head -c 300 mirror-index.html || true
+          echo
+          head -c 300 nvd-feeds.html || true
 
       - name: Self-test with a known vulnerable fixture
         run: |
