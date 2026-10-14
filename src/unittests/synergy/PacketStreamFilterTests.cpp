@@ -8,6 +8,7 @@
 
 #include "PacketStreamFilter.h"
 #include "ProtocolTypes.h"
+#include "TestStreams.h"
 #include "io/IStream.h"
 
 #include "MockEventQueue.h"
@@ -18,82 +19,6 @@
 #include <string>
 
 namespace {
-
-class MemoryStream : public synergy::IStream
-{
-public:
-  void push(const std::string &bytes)
-  {
-    m_queue.push_back(bytes);
-  }
-
-  void close() override
-  {
-    m_queue.clear();
-    m_inputShutdown = true;
-  }
-
-  uint32_t read(void *buffer, uint32_t n) override
-  {
-    if (m_inputShutdown || m_queue.empty() || n == 0) {
-      return 0;
-    }
-
-    auto &front = m_queue.front();
-    const size_t take = std::min(static_cast<size_t>(n), front.size());
-    if (buffer != nullptr) {
-      std::memcpy(buffer, front.data(), take);
-    }
-
-    front.erase(0, take);
-    if (front.empty()) {
-      m_queue.pop_front();
-    }
-
-    return static_cast<uint32_t>(take);
-  }
-
-  void write(const void *buffer, uint32_t n) override
-  {
-    m_queue.emplace_back(static_cast<const char *>(buffer), n);
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-    close();
-  }
-
-  void shutdownOutput() override
-  {
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<MemoryStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return !m_inputShutdown && !m_queue.empty();
-  }
-
-  uint32_t getSize() const override
-  {
-    size_t total = 0;
-    for (const auto &chunk : m_queue) {
-      total += chunk.size();
-    }
-    return static_cast<uint32_t>(std::min<size_t>(total, UINT32_MAX));
-  }
-
-private:
-  std::deque<std::string> m_queue;
-  bool m_inputShutdown = false;
-};
 
 //! Exposes the protected event hook so tests can simulate input-ready.
 class TestableFilter : public PacketStreamFilter
@@ -127,7 +52,7 @@ void PacketStreamFilterTests::initTestCase()
 
 void PacketStreamFilterTests::splitFrame_reassemblesPayloadAcrossChunks()
 {
-  MemoryStream stream;
+  MemoryStream stream(MemoryStream::WriteMode::Loopback);
   MockEventQueue events;
   TestableFilter filter(&events, &stream, false);
 
@@ -147,7 +72,7 @@ void PacketStreamFilterTests::splitFrame_reassemblesPayloadAcrossChunks()
 
 void PacketStreamFilterTests::oversizedHeader_marksFormatErrorAndDropsStream()
 {
-  MemoryStream stream;
+  MemoryStream stream(MemoryStream::WriteMode::Loopback);
   MockEventQueue events;
   TestableFilter filter(&events, &stream, false);
 
@@ -163,7 +88,7 @@ void PacketStreamFilterTests::oversizedHeader_marksFormatErrorAndDropsStream()
 
 void PacketStreamFilterTests::declaredLengthBeyondData_staysNotReady()
 {
-  MemoryStream stream;
+  MemoryStream stream(MemoryStream::WriteMode::Loopback);
   MockEventQueue events;
   TestableFilter filter(&events, &stream, false);
 
@@ -179,7 +104,7 @@ void PacketStreamFilterTests::declaredLengthBeyondData_staysNotReady()
 
 void PacketStreamFilterTests::write_prependsFourByteLengthPrefix()
 {
-  MemoryStream stream;
+  MemoryStream stream(MemoryStream::WriteMode::Loopback);
   MockEventQueue events;
   TestableFilter filter(&events, &stream, false);
 

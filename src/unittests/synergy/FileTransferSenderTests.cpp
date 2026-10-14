@@ -8,6 +8,7 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "TestStreams.h"
 #include "io/IStream.h"
 #include "synergy/protocol/FileChunk.h"
 #include "synergy/protocol/FileTransferPath.h"
@@ -50,82 +51,6 @@ struct SentMessage
   // Chunk only.
   uint8_t mark = 0;
   std::string payload;
-};
-
-//! Replays bytes as a receiver would read them.
-class MemoryStream : public synergy::IStream
-{
-public:
-  void push(const std::string &bytes)
-  {
-    m_queue.push_back(bytes);
-  }
-
-  void close() override
-  {
-    m_queue.clear();
-    m_inputShutdown = true;
-  }
-
-  uint32_t read(void *buffer, uint32_t n) override
-  {
-    if (m_inputShutdown || m_queue.empty() || n == 0) {
-      return 0;
-    }
-
-    auto &front = m_queue.front();
-    const size_t take = std::min(static_cast<size_t>(n), front.size());
-    if (buffer != nullptr) {
-      std::memcpy(buffer, front.data(), take);
-    }
-
-    front.erase(0, take);
-    if (front.empty()) {
-      m_queue.pop_front();
-    }
-
-    return static_cast<uint32_t>(take);
-  }
-
-  void write(const void *, uint32_t) override
-  {
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-    close();
-  }
-
-  void shutdownOutput() override
-  {
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<MemoryStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return !m_inputShutdown && !m_queue.empty();
-  }
-
-  uint32_t getSize() const override
-  {
-    size_t total = 0;
-    for (const auto &chunk : m_queue) {
-      total += chunk.size();
-    }
-    return static_cast<uint32_t>(std::min<size_t>(total, UINT32_MAX));
-  }
-
-private:
-  std::deque<std::string> m_queue;
-  bool m_inputShutdown = false;
 };
 
 //! Collects what a sender emits.
@@ -185,49 +110,13 @@ Reproducing that here is what makes the round-trip faithful.
 */
 std::string encodeChunkForReceiver(uint8_t mark, const std::string &payload)
 {
-  struct BufferStream : synergy::IStream
-  {
-    std::string buffer;
-    void close() override
-    {
-    }
-    uint32_t read(void *, uint32_t) override
-    {
-      return 0;
-    }
-    void write(const void *data, uint32_t n) override
-    {
-      buffer.append(static_cast<const char *>(data), n);
-    }
-    void flush() override
-    {
-    }
-    void shutdownInput() override
-    {
-    }
-    void shutdownOutput() override
-    {
-    }
-    void *getEventTarget() const override
-    {
-      return const_cast<BufferStream *>(this);
-    }
-    bool isReady() const override
-    {
-      return false;
-    }
-    uint32_t getSize() const override
-    {
-      return 0;
-    }
-  };
-
-  BufferStream stream;
+  BufferWriteStream stream;
   auto data = payload;
   ProtocolUtil::writef(&stream, kMsgDFileTransfer, static_cast<uint32_t>(mark), &data);
 
   constexpr size_t kMessageCodeSize = 4;
-  return stream.buffer.size() < kMessageCodeSize ? std::string() : stream.buffer.substr(kMessageCodeSize);
+  const auto bytes = stream.str();
+  return bytes.size() < kMessageCodeSize ? std::string() : bytes.substr(kMessageCodeSize);
 }
 
 } // namespace

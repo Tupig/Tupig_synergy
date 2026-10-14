@@ -8,6 +8,7 @@
 
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
+#include "TestStreams.h"
 #include "io/IStream.h"
 #include "synergy/protocol/FileTransferPath.h"
 #include "synergy/protocol/FileTransferReceiver.h"
@@ -25,146 +26,6 @@
 #include <vector>
 
 namespace {
-
-//! A stream the receiver reads message bodies from.
-/*!
-The receiver expects to be positioned just past the 4-byte message code, so the
-code is stripped when messages are pushed - the same contract the real dispatchers
-honour.
-*/
-class MemoryStream : public synergy::IStream
-{
-public:
-  void push(const std::string &bytes)
-  {
-    m_queue.push_back(bytes);
-  }
-
-  void close() override
-  {
-    m_queue.clear();
-    m_inputShutdown = true;
-  }
-
-  uint32_t read(void *buffer, uint32_t n) override
-  {
-    if (m_inputShutdown || m_queue.empty() || n == 0) {
-      return 0;
-    }
-
-    auto &front = m_queue.front();
-    const size_t take = std::min(static_cast<size_t>(n), front.size());
-    if (buffer != nullptr) {
-      std::memcpy(buffer, front.data(), take);
-    }
-
-    front.erase(0, take);
-    if (front.empty()) {
-      m_queue.pop_front();
-    }
-
-    return static_cast<uint32_t>(take);
-  }
-
-  void write(const void *, uint32_t) override
-  {
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-    close();
-  }
-
-  void shutdownOutput() override
-  {
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<MemoryStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return !m_inputShutdown && !m_queue.empty();
-  }
-
-  uint32_t getSize() const override
-  {
-    size_t total = 0;
-    for (const auto &chunk : m_queue) {
-      total += chunk.size();
-    }
-    return static_cast<uint32_t>(std::min<size_t>(total, UINT32_MAX));
-  }
-
-private:
-  std::deque<std::string> m_queue;
-  bool m_inputShutdown = false;
-};
-
-//! Captures what the sender writes, so the exact wire bytes can be replayed.
-class BufferWriteStream : public synergy::IStream
-{
-public:
-  const std::string &str() const
-  {
-    return m_buffer;
-  }
-
-  void close() override
-  {
-    m_outputShutdown = true;
-  }
-
-  uint32_t read(void *, uint32_t) override
-  {
-    return 0;
-  }
-
-  void write(const void *buffer, uint32_t n) override
-  {
-    if (!m_outputShutdown && n != 0) {
-      m_buffer.append(static_cast<const char *>(buffer), n);
-    }
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-  }
-
-  void shutdownOutput() override
-  {
-    m_outputShutdown = true;
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<BufferWriteStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return false;
-  }
-
-  uint32_t getSize() const override
-  {
-    return 0;
-  }
-
-private:
-  std::string m_buffer;
-  bool m_outputShutdown = false;
-};
 
 //! Encode a `DDRG` body (no message code), as the dispatcher would leave it.
 std::string encodeDragInfo(uint32_t fileCount, const std::string &payload)
@@ -187,43 +48,6 @@ std::string encodeFileChunk(uint8_t mark, const std::string &payload)
   constexpr size_t kMessageCodeSize = 4;
   return stream.str().substr(kMessageCodeSize);
 }
-
-//! A stream that swallows writes, for driving the sender without a network.
-class NullWriteStream : public synergy::IStream
-{
-public:
-  void close() override
-  {
-  }
-  uint32_t read(void *, uint32_t) override
-  {
-    return 0;
-  }
-  void write(const void *, uint32_t) override
-  {
-  }
-  void flush() override
-  {
-  }
-  void shutdownInput() override
-  {
-  }
-  void shutdownOutput() override
-  {
-  }
-  void *getEventTarget() const override
-  {
-    return const_cast<NullWriteStream *>(this);
-  }
-  bool isReady() const override
-  {
-    return false;
-  }
-  uint32_t getSize() const override
-  {
-    return 0;
-  }
-};
 
 } // namespace
 
