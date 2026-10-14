@@ -186,7 +186,15 @@ void MSWindowsWatchdog::mainLoop(const void *)
 {
   using enum ProcessState;
 
-  shutdownExistingProcesses();
+  // this can throw when the snapshot/enumeration fails; letting it escape the
+  // thread entry point would call std::terminate and kill the whole daemon
+  try {
+    shutdownExistingProcesses();
+  } catch (std::exception &e) {
+    LOG_ERR("could not shut down existing processes: %s", e.what());
+  } catch (...) {
+    LOG_ERR("could not shut down existing processes");
+  }
 
   LOG_DEBUG("starting watchdog main loop");
   while (m_running) {
@@ -294,8 +302,11 @@ bool MSWindowsWatchdog::isProcessRunning()
     return false;
   }
 
-  DWORD exitCode;
-  GetExitCodeProcess(m_process->info().hProcess, &exitCode);
+  DWORD exitCode = 0;
+  if (!GetExitCodeProcess(m_process->info().hProcess, &exitCode)) {
+    LOG_WARN("could not query process exit code, treating process as not running");
+    return false;
+  }
   return exitCode == STILL_ACTIVE;
 }
 
