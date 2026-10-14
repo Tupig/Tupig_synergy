@@ -104,13 +104,25 @@ jobs:
 
       - name: Diagnose CVE feed reachability
         run: |
-          curl -sS -o mirror-index.html -w "cveb.in index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
+          curl -sSL -o mirror-index.html -w "cveb.in index: HTTP %{http_code} size=%{size_download} final=%{url_effective}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
           grep -c "\.meta" mirror-index.html || true
-          curl -sS -o nvd-feeds.html -w "nvd data-feeds: HTTP %{http_code} size=%{size_download}\n" https://nvd.nist.gov/vuln/data-feeds || true
-          grep -c "\.meta" nvd-feeds.html || true
           head -c 300 mirror-index.html || true
           echo
-          head -c 300 nvd-feeds.html || true
+          python3 - <<'PYEOF'
+          import asyncio, re
+          import aiohttp
+
+          async def main():
+              headers = {"User-Agent": "cve-bin-tool/3.4"}
+              async with aiohttp.ClientSession(headers=headers, trust_env=True) as session:
+                  async with session.get("https://cveb.in/get/nvd/json/cve/2.0") as response:
+                      text = await response.text()
+                      metas = re.findall(r"nvdcve-[0-9]*\.[0-9]*-[0-9]*\.meta", text)
+                      print("aiohttp:", response.status, response.url, "len", len(text), "metas", len(metas))
+                      print(text[:300].replace("\n", " "))
+
+          asyncio.run(main())
+          PYEOF
 
       - name: Self-test with a known vulnerable fixture
         run: |
