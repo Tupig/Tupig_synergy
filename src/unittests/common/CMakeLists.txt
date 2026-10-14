@@ -35,3 +35,10 @@ create_test(
   SOURCE IpcTokenTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/common"
 )
+
+create_test(
+  NAME QSettingsProxyTests
+  DEPENDS common
+  SOURCE QSettingsProxyTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/common"
+)

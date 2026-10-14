@@ -24,3 +24,16 @@ create_test(
   SOURCE ScreenSetupModelTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
+
+# The migration overlay lives in the synergy-gui sublibrary, which only
+# exists when the GUI is built.
+if(BUILD_GUI)
+  create_test(
+    NAME SettingsMigrationTests
+    DEPENDS gui
+    LIBS synergy-gui
+    SOURCE SettingsMigrationTests.cpp
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
+  )
+  target_include_directories(SettingsMigrationTests PRIVATE ${CMAKE_SOURCE_DIR}/src/lib)
+endif()
