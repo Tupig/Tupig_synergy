@@ -50,5 +50,8 @@ __pycache__/
 /.omo/
 opencode.jsonc
 
+# Local handoff document (never committed or pushed)
+HANDOFF.md
+
 # Spell check (local only)
 aqtinstall.log
