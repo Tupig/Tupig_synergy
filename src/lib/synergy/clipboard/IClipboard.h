@@ -27,6 +27,17 @@ public:
   */
   using Time = uint32_t;
 
+  //! Check whether marshalled clipboard data exceeds the configured limit.
+  /*!
+  The limit is configured in kilobytes; a non-positive limit disables the
+  check. Both the client and the server use this predicate so the boundary
+  behaves identically on each side.
+  */
+  static bool exceedsSizeLimit(size_t size, int maximumSizeKb)
+  {
+    return maximumSizeKb > 0 && size > static_cast<size_t>(maximumSizeKb) * 1024;
+  }
+
   //! Clipboard formats
   /*!
   The list of known clipboard formats.  TotalFormats must be last and
