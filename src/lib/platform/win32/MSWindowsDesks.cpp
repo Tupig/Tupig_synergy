@@ -57,6 +57,11 @@
 #define VK_XBUTTON2 0x06
 #endif
 
+// seconds to wait for the desk thread to acknowledge an injected input
+// message; bounds the caller so a stalled desk thread cannot hang the
+// core event thread forever
+constexpr double kDeskReadyTimeout = 2.0;
+
 // <unused>; <unused>
 #define SYNERGY_MSG_SWITCH SYNERGY_HOOK_LAST_MSG + 1
 // <unused>; <unused>
@@ -325,7 +330,10 @@ void MSWindowsDesks::fakeMouseWheel(int32_t xDelta, int32_t yDelta) const
 void MSWindowsDesks::sendMessage(UINT msg, WPARAM wParam, LPARAM lParam) const
 {
   if (m_activeDesk != nullptr && m_activeDesk->m_window != nullptr) {
-    PostThreadMessage(m_activeDesk->m_threadID, msg, wParam, lParam);
+    if (!PostThreadMessage(m_activeDesk->m_threadID, msg, wParam, lParam)) {
+      LOG_WARN("could not post message %i to desk thread (error: %i)", msg, GetLastError());
+      return;
+    }
     waitForDesk();
   }
 }
@@ -860,8 +868,12 @@ void MSWindowsDesks::waitForDesk() const
   MSWindowsDesks *self = const_cast<MSWindowsDesks *>(this);
 
   Lock lock(&m_mutex);
+  // bound the wait so a stalled desk thread cannot hang the caller forever
   while (!(bool)m_deskReady) {
-    m_deskReady.wait();
+    if (!m_deskReady.wait(kDeskReadyTimeout)) {
+      LOG_ERR("timed out waiting for desk thread; desk may be stalled");
+      break;
+    }
   }
   self->m_deskReady = false;
 }
