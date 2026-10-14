@@ -8,6 +8,7 @@
 
 #include "arch/Arch.h"
 #include "base/IJob.h"
+#include "base/Stopwatch.h"
 #include "mt/CondVar.h"
 #include "mt/Mutex.h"
 #include "mt/Thread.h"
