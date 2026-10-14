@@ -25,6 +25,9 @@ private Q_SLOTS:
   void checkCleanScreenName();
   void checkCleanScreenName_LongName();
   void emptyBlockedComboSurvivesClean();
+  void missingKeysReturnDefaults();
+  void corruptedConfigFallsBackToDefaults();
+  void wrongTypeValueIsReturnedAsStored();
 
 private:
   inline static const QString m_settingsPathTemp = QStringLiteral("tmp/test");
