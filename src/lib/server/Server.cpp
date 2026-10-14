@@ -34,6 +34,7 @@
 #include <array>
 #endif
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -1301,7 +1302,7 @@ void Server::handleClipboardChanged(const Event &event, BaseClientProxy *client)
 void Server::handleKeyDownEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = getCurrentLanguageCached();
   onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_screens.c_str());
 }
 
@@ -1314,8 +1315,21 @@ void Server::handleKeyUpEvent(const Event &event)
 void Server::handleKeyRepeatEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = getCurrentLanguageCached();
   onKeyRepeat(info->m_key, info->m_mask, info->m_count, info->m_button, lang);
+}
+
+const std::string &Server::getCurrentLanguageCached()
+{
+  // querying the layout is expensive on some platforms (X11 opens a display
+  // connection per call), so reuse the last result for a short interval
+  constexpr double kCacheSeconds = 2.0;
+  const double now = std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+  if (m_languageCodeCache.empty() || now - m_languageCodeCachedAt > kCacheSeconds) {
+    m_languageCodeCache = AppUtil::instance().getCurrentLanguageCode();
+    m_languageCodeCachedAt = now;
+  }
+  return m_languageCodeCache;
 }
 
 void Server::handleButtonDownEvent(const Event &event)
@@ -1950,24 +1964,37 @@ void Server::onMouseMoveSecondary(int32_t dx, int32_t dy)
     // same screen.  clamp mouse to edge.
     m_x = xOld + dx;
     m_y = yOld + dy;
+    // these diagnostics run for every motion event; only build the client
+    // name when verbose logging is actually enabled
+    const bool verboseLogs = CLOG->getFilter() >= LogLevel::Level::Verbose;
     if (m_x < ax) {
       m_x = ax;
-      LOG_VERBOSE("clamp to left of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to left of \"%s\"", getName(m_active).c_str());
+      }
     } else if (m_x > ax + aw - 1) {
       m_x = ax + aw - 1;
-      LOG_VERBOSE("clamp to right of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to right of \"%s\"", getName(m_active).c_str());
+      }
     }
     if (m_y < ay) {
       m_y = ay;
-      LOG_VERBOSE("clamp to top of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to top of \"%s\"", getName(m_active).c_str());
+      }
     } else if (m_y > ay + ah - 1) {
       m_y = ay + ah - 1;
-      LOG_VERBOSE("clamp to bottom of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to bottom of \"%s\"", getName(m_active).c_str());
+      }
     }
 
     // warp cursor if it moved.
     if (m_x != xOld || m_y != yOld) {
-      LOG_VERBOSE("move on %s to %d,%d", getName(m_active).c_str(), m_x, m_y);
+      if (verboseLogs) {
+        LOG_VERBOSE("move on %s to %d,%d", getName(m_active).c_str(), m_x, m_y);
+      }
       m_active->mouseMove(m_x, m_y);
     }
   }
