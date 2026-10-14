@@ -70,8 +70,8 @@ void IpcClient::connectToServer()
   }
 
   if (m_socket->state() != QLocalSocket::UnconnectedState) {
-    qWarning().noquote()
-        << QStringLiteral("%1 ipc client socket not in unconnected state, disconnecting").arg(m_typeName);
+    qWarning().noquote(
+    ) << QStringLiteral("%1 ipc client socket not in unconnected state, disconnecting").arg(m_typeName);
     disconnectFromServer();
   }
 
@@ -157,8 +157,8 @@ void IpcClient::handleDisconnected()
 void IpcClient::handleErrorOccurred()
 {
   if (m_state == State::Connecting) {
-    qWarning().noquote()
-        << QStringLiteral("%1 ipc client failed to connect: %2").arg(m_typeName, m_socket->errorString());
+    qWarning().noquote(
+    ) << QStringLiteral("%1 ipc client failed to connect: %2").arg(m_typeName, m_socket->errorString());
     m_socket->disconnectFromServer();
     m_state = State::Unconnected;
     scheduleRetry();
@@ -225,8 +225,8 @@ void IpcClient::handleHandshakeMessage(const QStringList &parts)
 
   if (parts.at(0) == QStringLiteral("versionMismatch")) {
     const auto serverVersion = parts.size() >= 2 ? parts.at(1) : QStringLiteral("unknown");
-    qWarning().noquote()
-        << QStringLiteral("%1 ipc version mismatch (client: %2, server: %3)").arg(m_typeName, versionId, serverVersion);
+    qWarning().noquote(
+    ) << QStringLiteral("%1 ipc version mismatch (client: %2, server: %3)").arg(m_typeName, versionId, serverVersion);
     m_state = State::Connected;
     Q_EMIT versionMismatch();
     return;
