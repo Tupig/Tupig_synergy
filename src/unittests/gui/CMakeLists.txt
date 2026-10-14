@@ -4,6 +4,12 @@
 add_subdirectory(config)
 add_subdirectory(core)
 
+# Settings/SecureUtils pull in arch's Windows version resource helpers, so
+# these tests need Version.lib like the other arch-linked test targets
+if(WIN32)
+  set(extra_libs version)
+endif()
+
 create_test(
   NAME LoggerTests
   DEPENDS gui
@@ -28,6 +34,7 @@ create_test(
 create_test(
   NAME ValidatorTests
   DEPENDS gui
+  LIBS ${extra_libs}
   SOURCE ValidatorTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
@@ -35,6 +42,7 @@ create_test(
 create_test(
   NAME TlsUtilityTests
   DEPENDS gui
+  LIBS ${extra_libs}
   SOURCE TlsUtilityTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
