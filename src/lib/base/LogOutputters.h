@@ -10,6 +10,7 @@
 
 #include "base/ILogOutputter.h"
 
+#include <QFile>
 #include <QString>
 //! Stop traversing log chain outputter
 /*!
@@ -67,7 +68,17 @@ public:
   void setLogFilename(const QString &title);
 
 private:
+  //! Open the log file for appending when it is not open yet.
+  bool ensureOpen();
+  //! Rotate the log file when it exceeds the size limit.
+  void rotateIfNeeded();
+
   QString m_fileName;
+  //! Long-lived append handle: avoids an open/write/close cycle per line.
+  QFile m_file;
+  //! Bytes written since the last rotation check; file.size() is only called
+  //! once per interval instead of on every line.
+  qint64 m_bytesSinceCheck = 0;
 };
 
 //! Write log to system log
