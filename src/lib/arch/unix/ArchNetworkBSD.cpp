@@ -248,13 +248,13 @@ int ArchNetworkBSD::pollSocket(PollEntry pe[], int num, double timeout)
   // return if nothing to do
   if (num == 0) {
     if (timeout > 0.0) {
-      m_pDeps->sleep(timeout);
+      m_deps->sleep(timeout);
     }
     return 0;
   }
 
   // allocate space for translated query
-  auto pfdPtr = m_pDeps->makePollFD(1 + num);
+  auto pfdPtr = m_deps->makePollFD(1 + num);
   auto *pfd = pfdPtr.get();
 
   // translate query
@@ -282,14 +282,14 @@ int ArchNetworkBSD::pollSocket(PollEntry pe[], int num, double timeout)
   int t = (timeout < 0.0) ? -1 : static_cast<int>(1000.0 * timeout);
 
   // do the poll
-  n = m_pDeps->poll(pfd, n, t);
+  n = m_deps->poll(pfd, n, t);
 
   // reset the unblock pipe
   if (n > 0 && unblockPipe != nullptr && (pfd[num].revents & POLLIN) != 0) {
     // the unblock event was signalled.  flush the pipe.
     char dummy[100];
     do {
-      m_pDeps->read(unblockPipe[0], dummy, sizeof(dummy));
+      m_deps->read(unblockPipe[0], dummy, sizeof(dummy));
     } while (errno != EAGAIN);
 
     // don't count this unblock pipe in return value
@@ -300,7 +300,7 @@ int ArchNetworkBSD::pollSocket(PollEntry pe[], int num, double timeout)
   if (n == -1) {
     if (errno == EINTR) {
       // interrupted system call
-      m_pDeps->testCancelThread();
+      m_deps->testCancelThread();
       return 0;
     }
     throwError(errno);

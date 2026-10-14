@@ -54,11 +54,11 @@ private:
   static void showConsole();
 
 #if defined(Q_OS_WIN)
-  std::unique_ptr<MSWindowsWatchdog> m_pWatchdog;
+  std::unique_ptr<MSWindowsWatchdog> m_watchdog;
 #endif
 
   IEventQueue &m_events;
-  FileLogOutputter *m_pFileLogOutputter = nullptr;
+  FileLogOutputter *m_fileLogOutputter = nullptr;
   synergy::core::ipc::DaemonIpcServer *m_ipcServer = nullptr;
   QString m_configFile;
   bool m_foreground = false;

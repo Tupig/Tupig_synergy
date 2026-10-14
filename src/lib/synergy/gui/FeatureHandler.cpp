@@ -55,7 +55,7 @@ using namespace synergy::gui;
 
 void FeatureHandler::handleMainWindow(QMainWindow *mainWindow)
 {
-  m_pMainWindow = mainWindow;
+  m_mainWindow = mainWindow;
   styleUpdateNotice(mainWindow);
 }
 
@@ -80,19 +80,19 @@ void FeatureHandler::handleAppStart()
 
 void FeatureHandler::addTestMenu()
 {
-  if (m_pMainWindow == nullptr) {
+  if (m_mainWindow == nullptr) {
     qWarning("cannot add test menu, main window not set");
     return;
   }
 
-  auto testMenu = new QMenu(QObject::tr("Test"), m_pMainWindow);
-  m_pMainWindow->menuBar()->addMenu(testMenu);
+  auto testMenu = new QMenu(QObject::tr("Test"), m_mainWindow);
+  m_mainWindow->menuBar()->addMenu(testMenu);
 
-  auto fatalAction = new QAction(QObject::tr("Trigger fatal error"), m_pMainWindow);
+  auto fatalAction = new QAction(QObject::tr("Trigger fatal error"), m_mainWindow);
   QObject::connect(fatalAction, &QAction::triggered, [] { qFatal("test fatal error"); });
   testMenu->addAction(fatalAction);
 
-  auto criticalAction = new QAction(QObject::tr("Trigger critical error"), m_pMainWindow);
+  auto criticalAction = new QAction(QObject::tr("Trigger critical error"), m_mainWindow);
   QObject::connect(criticalAction, &QAction::triggered, [] { qCritical("test critical error"); });
   testMenu->addAction(criticalAction);
 }

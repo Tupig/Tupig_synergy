@@ -46,5 +46,5 @@ private:
   void addLicenseLinks(QDialog *parent) const;
   void addTrademark(QDialog *parent) const;
 
-  QMainWindow *m_pMainWindow = nullptr;
+  QMainWindow *m_mainWindow = nullptr;
 };
