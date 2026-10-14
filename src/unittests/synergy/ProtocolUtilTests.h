@@ -16,6 +16,11 @@ private Q_SLOTS:
   void initTestCase();
   void readBytesAcceptsVariableStringWithinLimit();
   void readBytesRejectsVariableStringBeyondLimit();
+  void roundTripKeyDownFormat();
+  void truncatedKeyDownFormatReturnsFalse();
+  void roundTripOptionsListFormat();
+  void truncatedOptionsListReturnsFalse();
+  void invalidIntegerLengthThrows();
 
 private:
   Log m_log;
