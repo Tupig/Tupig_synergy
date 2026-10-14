@@ -80,7 +80,7 @@ bool verifyServerIsTrusted(const QLocalSocket *socket)
   CloseHandle(serverToken);
   if (!serverSidRead)
     return false;
-  const auto *serverSid = reinterpret_cast<const TOKEN_USER *>(serverUser.data())->User.Sid;
+  PSID serverSid = reinterpret_cast<TOKEN_USER *>(serverUser.data())->User.Sid;
 
   HANDLE ownToken = nullptr;
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &ownToken))
@@ -91,7 +91,7 @@ bool verifyServerIsTrusted(const QLocalSocket *socket)
   CloseHandle(ownToken);
   if (!ownSidRead)
     return false;
-  const auto *ownSid = reinterpret_cast<const TOKEN_USER *>(ownUser.data())->User.Sid;
+  PSID ownSid = reinterpret_cast<TOKEN_USER *>(ownUser.data())->User.Sid;
 
   if (EqualSid(serverSid, ownSid))
     return true;
