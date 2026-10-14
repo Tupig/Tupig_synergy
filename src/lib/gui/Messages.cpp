@@ -207,14 +207,14 @@ bool showNewClientPrompt(QWidget *parent, const QString &clientName)
     QMessageBox::information(
         parent, QObject::tr("%1 - New Client").arg(kAppName),
         QObject::tr("A new client called '%1' has been accepted. You'll need to add it to your server's screen layout.")
-            .arg(clientName)
+            .arg(clientName.toHtmlEscaped())
     );
     return true;
   }
   QMessageBox message(parent);
   message.addButton(QObject::tr("Ignore"), QMessageBox::RejectRole);
   message.addButton(QObject::tr("Add client"), QMessageBox::AcceptRole);
-  message.setText(QObject::tr("A new client called '%1' wants to connect").arg(clientName));
+  message.setText(QObject::tr("A new client called '%1' wants to connect").arg(clientName.toHtmlEscaped()));
   message.exec();
   return message.buttonRole(message.clickedButton()) == QMessageBox::AcceptRole;
 }

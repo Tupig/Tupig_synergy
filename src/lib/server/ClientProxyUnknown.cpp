@@ -25,9 +25,37 @@
 #include "server/ClientProxy1_8.h"
 #include "server/Server.h"
 
+#include <algorithm>
+
 //
 // ClientProxyUnknown
 //
+
+namespace {
+
+//! Strip control characters (so a client name cannot forge log lines) and cap
+//! the length before the name reaches logs, the GUI, and screen names.  Bytes
+//! are filtered at the ASCII level only, so UTF-8 sequences stay intact.
+std::string sanitizeClientName(const std::string &name)
+{
+  constexpr size_t kMaxClientNameLength = 255;
+
+  std::string clean;
+  clean.reserve(std::min(name.size(), kMaxClientNameLength));
+  for (const char ch : name) {
+    const auto byte = static_cast<unsigned char>(ch);
+    if (byte < 0x20 || byte == 0x7F) {
+      continue;
+    }
+    clean.push_back(ch);
+    if (clean.size() >= kMaxClientNameLength) {
+      break;
+    }
+  }
+  return clean.empty() ? std::string("<unknown>") : clean;
+}
+
+} // namespace
 
 ClientProxyUnknown::ClientProxyUnknown(synergy::IStream *stream, double timeout, Server *server, IEventQueue *events)
     : m_stream(stream),
@@ -207,6 +235,7 @@ void ClientProxyUnknown::handleData()
     if (std::string protocolName; !ProtocolUtil::readf(m_stream, kMsgHelloBack, &protocolName, &major, &minor, &name)) {
       throw BadClientException();
     }
+    name = sanitizeClientName(name);
 
     // disallow invalid version numbers
     if (major <= 0 || minor < 0) {
