@@ -15,8 +15,22 @@
 #   5. scan the real SBOM and gate on the report
 #
 # Policy: findings at CRITICAL severity fail the job; HIGH and below are kept
-# in the JSON report artifact and the job log. Add triage exceptions via a VEX
-# file (cve-bin-tool --vex-file) and record them in the repository.
+# in the JSON report artifact and the job log. Accepted false positives are
+# listed with a written reason in scripts/ci/cve-exceptions.json and filtered
+# by the gate; that file is re-reviewed on every vcpkg baseline bump.
+#
+# Data sources: only NVD is kept. GAD/REDHAT/EPSS/CURL carry distro or exploit
+# metadata this gate does not consume, and OSV downloads a multi-GB all.zip
+# that repeatedly outlived the hosted runners (cancelled mid-download at
+# ~20-30 min, three attempts on 2026-10-14). NVD version ranges cover the
+# C/C++ packages in the manifest, which is what the SBOM lists.
+#
+# Tool version: cve-bin-tool is pinned to a git commit, NOT PyPI. PyPI 3.4 is
+# the newest release and still scrapes the NVD 1.1 mirror path
+# (mirror.cveb.in/nvd/json/cve/1.1), whose directory is now empty because NVD
+# retired the 1.1 feeds; that path yields zero .meta links and an empty
+# database (observed 2026-10-14). Only git main speaks the 2.0 mirror
+# (cveb.in/get/nvd/json/cve/2.0). Re-evaluate the pin when PyPI 3.5 ships.
 #
 # Data sources: only NVD is kept. GAD/REDHAT/EPSS/CURL carry distro or exploit
 # metadata this gate does not consume, and OSV downloads a multi-GB all.zip
@@ -100,7 +114,12 @@ jobs:
             cve-bin-tool-data-
 
       - name: Install cve-bin-tool
-        run: python3 -m pip install --disable-pip-version-check "cve-bin-tool>=3.3,<4"
+        run: python3 -m pip install --disable-pip-version-check "git+https://github.com/intel/cve-bin-tool@b3176d820559d7ec30bd7a99b62cf0535fc16e00"
+
+      - name: Check NVD mirror reachability
+        run: |
+          curl -sSL -o mirror-index.html -w "cveb.in 2.0 index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
+          echo "meta links: $(grep -c '\.meta' mirror-index.html || true)"
 
       - name: Diagnose CVE feed reachability
         run: |
@@ -139,4 +158,4 @@ jobs:
 
       - name: Gate on critical findings
         if: always()
-        run: python3 scripts/ci/check-cve-report.py cve-report.json --fail-severity critical
+        run: python3 scripts/ci/check-cve-report.py cve-report.json --fail-severity critical --exceptions scripts/ci/cve-exceptions.json
