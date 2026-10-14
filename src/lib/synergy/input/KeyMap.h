@@ -23,9 +23,6 @@ This class provides a keyboard mapping.
 class KeyMap
 {
 public:
-  // Class used for testing
-  friend class KeyMapTests;
-
   KeyMap();
   virtual ~KeyMap() = default;
 
@@ -368,7 +365,7 @@ private:
   // returns the index into \p entryList of the KeyItemList requiring
   // the fewest modifier changes between \p currentState and
   // \p desiredState.
-  int32_t findBestKey(const KeyEntryList &entryList, KeyModifierMask desiredState) const;
+  // (algorithm lives in synergy::input::detail::findBestKeyIndex)
 
   // gets the \c KeyItem used to synthesize the modifier who's bit is
   // given by \p modifierBit in group \p group and does not synthesize
@@ -411,9 +408,6 @@ private:
       EKeystroke type, const KeyItem &keyItem, ModifierToKeys &activeModifiers, KeyModifierMask &currentState,
       Keystrokes &keystrokes
   ) const;
-
-  // Returns the number of modifiers indicated in \p state.
-  static int32_t getNumModifiers(KeyModifierMask state);
 
   // Ways to synthesize a KeyID over multiple keyboard groups
   using KeyGroupTable = std::vector<KeyEntryList>;

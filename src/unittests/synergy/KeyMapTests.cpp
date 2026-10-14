@@ -7,6 +7,7 @@
 #include "KeyMapTests.h"
 
 #include "KeyMap.h"
+#include "KeyMapDetail.h"
 
 using namespace synergy;
 using KeyItemList = KeyMap::KeyItemList;
@@ -14,7 +15,6 @@ using KeyEntryList = std::vector<KeyItemList>;
 
 void KeyMapTests::findBestKey_requiredDown_matchExactFirstItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList;
   KeyMap::KeyItem item;
@@ -24,12 +24,11 @@ void KeyMapTests::findBestKey_requiredDown_matchExactFirstItem()
   itemList.push_back(item);
   entryList.push_back(itemList);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 0);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 0);
 }
 
 void KeyMapTests::findBestKey_requiredAndExtraSensitiveDown_matchExactFirstItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList;
   KeyMap::KeyItem item;
@@ -39,12 +38,11 @@ void KeyMapTests::findBestKey_requiredAndExtraSensitiveDown_matchExactFirstItem(
   itemList.push_back(item);
   entryList.push_back(itemList);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 0);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 0);
 }
 
 void KeyMapTests::findBestKey_requiredAndExtraSensitiveDown_matchExactSecondItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList1;
   KeyMap::KeyItem item1;
@@ -59,12 +57,11 @@ void KeyMapTests::findBestKey_requiredAndExtraSensitiveDown_matchExactSecondItem
   itemList2.push_back(item2);
   entryList.push_back(itemList1);
   entryList.push_back(itemList2);
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 1);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 1);
 }
 
 void KeyMapTests::findBestKey_extraSensitiveDown_matchExactSecondItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList1;
   KeyMap::KeyItem item1;
@@ -80,12 +77,11 @@ void KeyMapTests::findBestKey_extraSensitiveDown_matchExactSecondItem()
   entryList.push_back(itemList1);
   entryList.push_back(itemList2);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 1);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 1);
 }
 
 void KeyMapTests::findBestKey_noRequiredDown_matchOneRequiredChangeItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList1;
   KeyMap::KeyItem item1;
@@ -101,12 +97,11 @@ void KeyMapTests::findBestKey_noRequiredDown_matchOneRequiredChangeItem()
   entryList.push_back(itemList1);
   entryList.push_back(itemList2);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 1);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 1);
 }
 
 void KeyMapTests::findBestKey_onlyOneRequiredDown_matchTwoRequiredChangesItem()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList1;
   KeyMap::KeyItem item1;
@@ -122,12 +117,11 @@ void KeyMapTests::findBestKey_onlyOneRequiredDown_matchTwoRequiredChangesItem()
   entryList.push_back(itemList1);
   entryList.push_back(itemList2);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), 1);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), 1);
 }
 
 void KeyMapTests::findBestKey_noRequiredDown_cannotMatch()
 {
-  KeyMap keyMap;
   KeyEntryList entryList;
   KeyItemList itemList;
   KeyMap::KeyItem item;
@@ -137,7 +131,7 @@ void KeyMapTests::findBestKey_noRequiredDown_cannotMatch()
   itemList.push_back(item);
   entryList.push_back(itemList);
 
-  QCOMPARE(keyMap.findBestKey(entryList, desiredState), -1);
+  QCOMPARE(input::detail::findBestKeyIndex(entryList, desiredState), -1);
 }
 
 void KeyMapTests::isCommand()
@@ -181,6 +175,86 @@ void KeyMapTests::mapkey()
   desiredMask = KeyModifierControl;
   result = keyMap.mapKey(strokes, kKeySetModifiers, 1, activeModifiers, currentState, desiredMask, false, "en");
   QVERIFY(result == nullptr);
+}
+
+void KeyMapTests::mapKey_plainKey_mapsToItsButton()
+{
+  KeyMap keyMap;
+  KeyMap::KeyItem item;
+  item.m_id = 'a';
+  item.m_group = 0;
+  item.m_button = 0x20;
+  keyMap.addKeyEntry(item);
+  keyMap.finish();
+
+  KeyMap::Keystrokes strokes;
+  KeyMap::ModifierToKeys activeModifiers;
+  KeyModifierMask currentState = 0;
+  const auto *mapped = keyMap.mapKey(strokes, 'a', 0, activeModifiers, currentState, 0, false, "");
+
+  QVERIFY(mapped != nullptr);
+  QCOMPARE(mapped->m_button, static_cast<KeyButton>(0x20));
+  QVERIFY(!strokes.empty());
+}
+
+void KeyMapTests::mapKey_unknownKey_returnsNull()
+{
+  KeyMap keyMap;
+  keyMap.finish();
+
+  KeyMap::Keystrokes strokes;
+  KeyMap::ModifierToKeys activeModifiers;
+  KeyModifierMask currentState = 0;
+  const auto *mapped = keyMap.mapKey(strokes, 'z', 0, activeModifiers, currentState, 0, false, "");
+
+  QVERIFY(mapped == nullptr);
+  QVERIFY(strokes.empty());
+}
+
+void KeyMapTests::mapKey_requiredModifier_synthesizesModifierPress()
+{
+  KeyMap keyMap;
+
+  KeyMap::KeyItem shift;
+  shift.m_id = kKeyShift_L;
+  shift.m_group = 0;
+  shift.m_button = 0x10;
+  shift.m_generates = KeyModifierShift;
+  keyMap.addKeyEntry(shift);
+
+  KeyMap::KeyItem letter;
+  letter.m_id = 'a';
+  letter.m_group = 0;
+  letter.m_button = 0x20;
+  letter.m_required = KeyModifierShift;
+  letter.m_sensitive = KeyModifierShift;
+  keyMap.addKeyEntry(letter);
+  keyMap.finish();
+
+  KeyMap::Keystrokes strokes;
+  KeyMap::ModifierToKeys activeModifiers;
+  KeyModifierMask currentState = 0;
+  const auto *mapped = keyMap.mapKey(strokes, 'a', 0, activeModifiers, currentState, KeyModifierShift, false, "");
+
+  QVERIFY(mapped != nullptr);
+  QCOMPARE(mapped->m_button, static_cast<KeyButton>(0x20));
+
+  // the end-to-end path must press the shift key before the letter
+  bool shiftPressed = false;
+  bool letterPressed = false;
+  for (const auto &stroke : strokes) {
+    if (stroke.m_type != KeyMap::Keystroke::KeyType::Button) {
+      continue;
+    }
+    if (stroke.m_data.m_button.m_button == 0x10 && stroke.m_data.m_button.m_press) {
+      shiftPressed = true;
+    }
+    if (stroke.m_data.m_button.m_button == 0x20 && stroke.m_data.m_button.m_press) {
+      letterPressed = true;
+    }
+  }
+  QVERIFY(shiftPressed);
+  QVERIFY(letterPressed);
 }
 
 void KeyMapTests::parseModifiers_plusKey_keepsPlusAsKey()
