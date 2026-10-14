@@ -107,8 +107,22 @@ void EventQueue::adoptBuffer(IEventQueueBuffer *buffer)
   }
 }
 
+//! Qt events are pumped at most once per this interval.  The pump must not
+//! block: events bridged from Qt during the pump (transportDataReady ->
+//! addEvent) are only dispatched once processEvents returns.
+constexpr double kQtPumpInterval = 0.01; // 10 ms
+
 bool EventQueue::processEvent(Event &event, double timeout, Stopwatch &timer)
 {
+  // Pump Qt even while synergy events flood the buffer: QTcpSocket /
+  // QSslSocket readiness must not be starved behind a busy input queue
+  // (e.g. a mouse-move storm), or network read/write latency grows without
+  // bound for as long as the flood lasts.
+  if (QCoreApplication::instance() != nullptr && m_qtPumpTimer.getTime() >= kQtPumpInterval) {
+    m_qtPumpTimer.reset();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+  }
+
   // if no events are waiting then handle timers and then wait
   while (m_buffer->isEmpty()) {
     // handle timers first
@@ -130,14 +144,10 @@ bool EventQueue::processEvent(Event &event, double timeout, Stopwatch &timer)
       timeLeft = timerTimeout;
     }
 
-    // Pump Qt so QTcpSocket / QSslSocket signals fire when the Qt network
-    // path is in use (Phase 2). The pump must not block: events bridged from
-    // Qt during the pump (transportDataReady -> addEvent) are only dispatched
-    // once processEvents returns, and a blocking pump delays them (and any
-    // Synergy event from other threads) by the whole slice. The condvar wait
-    // below is capped instead, so idle polling stays bounded.
-    constexpr double kQtPumpInterval = 0.01; // 10 ms
+    // keep pumping Qt while waiting; the condvar wait below is capped to the
+    // pump interval instead, so idle polling stays bounded.
     if (QCoreApplication::instance() != nullptr) {
+      m_qtPumpTimer.reset();
       QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
       if (timeLeft < 0.0 || timeLeft > kQtPumpInterval) {
         timeLeft = kQtPumpInterval;
@@ -371,6 +381,8 @@ bool EventQueue::hasTimerExpired(Event &event)
   // return true if there's a timer in the timer priority queue that
   // has expired.  if returning true then fill in event appropriately
   // and reset and reinsert the timer.
+  std::scoped_lock lock{m_mutex};
+
   if (m_timerQueue.empty()) {
     return false;
   }
@@ -411,6 +423,8 @@ double EventQueue::getNextTimerTimeout() const
   // return -1 if no timers, 0 if the top timer has expired, otherwise
   // the time until the top timer in the timer priority queue will
   // expire.
+  std::scoped_lock lock{m_mutex};
+
   if (m_timerQueue.empty()) {
     return -1.0;
   }
@@ -428,12 +442,17 @@ void *EventQueue::getSystemTarget()
 
 void EventQueue::waitForReady() const
 {
-  double timeout = Arch::time() + 10;
-  Lock lock(m_readyMutex.get());
+  // Wait in slices so the deadline is actually reachable: a single wait()
+  // with no timeout would only re-check the clock after a spurious signal.
+  constexpr double kWaitSliceSeconds = 1.0;
+  constexpr double kReadyTimeoutSeconds = 10.0;
 
-  while (!m_readyCondVar->wait()) {
-    if (Arch::time() > timeout) {
-      throw std::runtime_error("event queue is not ready within 5 sec");
+  Lock lock(m_readyMutex.get());
+  Stopwatch timer(true);
+
+  while (!m_readyCondVar->wait(kWaitSliceSeconds)) {
+    if (timer.getTime() > kReadyTimeoutSeconds) {
+      throw std::runtime_error("event queue is not ready within 10 seconds");
     }
   }
 }
