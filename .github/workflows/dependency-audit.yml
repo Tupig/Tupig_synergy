@@ -121,16 +121,6 @@ jobs:
           curl -sSL -o mirror-index.html -w "cveb.in 2.0 index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
           echo "meta links: $(grep -c '\.meta' mirror-index.html || true)"
 
-      - name: Diagnose CVE feed reachability
-        run: |
-          curl -sS -o mirror-index.html -w "cveb.in index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
-          grep -c "\.meta" mirror-index.html || true
-          curl -sS -o nvd-feeds.html -w "nvd data-feeds: HTTP %{http_code} size=%{size_download}\n" https://nvd.nist.gov/vuln/data-feeds || true
-          grep -c "\.meta" nvd-feeds.html || true
-          head -c 300 mirror-index.html || true
-          echo
-          head -c 300 nvd-feeds.html || true
-
       - name: Self-test with a known vulnerable fixture
         run: |
           cve-bin-tool --disable-version-check -n json-mirror \
