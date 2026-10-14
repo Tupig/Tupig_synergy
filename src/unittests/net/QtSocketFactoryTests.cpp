@@ -339,7 +339,14 @@ void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
   QVERIFY(pump([&] { return connectFailed || clientConnected; }, 20000));
   QVERIFY(connectFailed);
   QVERIFY(!clientConnected);
-  QVERIFY2(failureReason.contains(QStringLiteral("RSA key too small")), qPrintable(failureReason));
+  // On OpenSSL 3 with the system security level, a 1024-bit key is refused
+  // before the handshake, so accept either message; what matters is that the
+  // weak key never connects.
+  QVERIFY2(
+      failureReason.contains(QStringLiteral("RSA key too small")) ||
+          failureReason.contains(QStringLiteral("SSL Context")),
+      qPrintable(failureReason)
+  );
 
   Settings::setValue(Settings::Security::Certificate, previousCert);
 }
