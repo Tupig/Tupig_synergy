@@ -28,12 +28,12 @@ void IClipboard::unmarshall(IClipboard *clipboard, const std::string_view &data,
     clipboard->empty();
 
     // read the number of formats
-    const uint32_t numFormats = readUInt32(index);
     if (end - index < 4) {
       LOG_ERR("clipboard unmarshall: truncated header");
       clipboard->close();
       return;
     }
+    const uint32_t numFormats = readUInt32(index);
     index += 4;
 
     // read each format
