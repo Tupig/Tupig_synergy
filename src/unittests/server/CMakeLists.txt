@@ -21,3 +21,19 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/server"
 )
 
+create_test(
+  NAME ConfigReadTests
+  DEPENDS server
+  LIBS base arch ${extra_libs}
+  SOURCE ConfigReadTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/server"
+)
+
+create_test(
+  NAME InputFilterTests
+  DEPENDS server
+  LIBS base arch ${extra_libs}
+  SOURCE InputFilterTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/server"
+)
+
