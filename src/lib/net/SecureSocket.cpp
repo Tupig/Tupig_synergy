@@ -12,7 +12,6 @@
 #include "arch/ArchException.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "common/Settings.h"
 #include "ipc/CoreIpc.h"
 #include "mt/Lock.h"
 #include "net/FingerprintDatabase.h"
@@ -20,6 +19,8 @@
 #include "net/TCPSocket.h"
 #include "net/TSocketMultiplexerMethodJob.h"
 #include <net/SslLogger.h>
+
+#include <QString>
 
 #include <cstdlib>
 #include <cstring>
@@ -110,19 +111,22 @@ static int verifyCertificateCallback(X509_STORE_CTX *store_ctx, void * /* arg */
 
 SecureSocket::SecureSocket(
     IEventQueue *events, SocketMultiplexer *socketMultiplexer, IArchNetwork::AddressFamily family,
-    SecurityLevel securityLevel
+    SecurityLevel securityLevel, const TlsConfig &tlsConfig
 )
     : TCPSocket(events, socketMultiplexer, family),
-      m_securityLevel{securityLevel}
+      m_securityLevel{securityLevel},
+      m_tlsConfig(tlsConfig)
 {
   // do nothing
 }
 
 SecureSocket::SecureSocket(
-    IEventQueue *events, SocketMultiplexer *socketMultiplexer, ArchSocket socket, SecurityLevel securityLevel
+    IEventQueue *events, SocketMultiplexer *socketMultiplexer, ArchSocket socket, SecurityLevel securityLevel,
+    const TlsConfig &tlsConfig
 )
     : TCPSocket(events, socketMultiplexer, socket),
-      m_securityLevel{securityLevel}
+      m_securityLevel{securityLevel},
+      m_tlsConfig(tlsConfig)
 {
   // do nothing
 }
@@ -515,7 +519,8 @@ int SecureSocket::secureAccept(int socket)
 
   // If not fatal and no retry, state is good
   if (retry == 0) {
-    if (m_securityLevel == SecurityLevel::PeerAuth && !verifyCertFingerprint(Settings::tlsTrustedClientsDb())) {
+    if (m_securityLevel == SecurityLevel::PeerAuth &&
+        !verifyCertFingerprint(QString::fromStdString(m_tlsConfig.trustedClientsDbPath))) {
       retry = 0;
       disconnect();
       return -1; // Fail
@@ -541,7 +546,7 @@ int SecureSocket::secureAccept(int socket)
 
 int SecureSocket::secureConnect(int socket)
 {
-  if (!loadCertificate(Settings::value(Settings::Security::Certificate).toString())) {
+  if (!loadCertificate(QString::fromStdString(m_tlsConfig.certificatePath))) {
     LOG_ERR("could not load client certificates");
     disconnect();
     return -1;
@@ -584,7 +589,7 @@ int SecureSocket::secureConnect(int socket)
   retry = 0;
   // No error, set ready, process and return ok
   m_secureReady = true;
-  if (verifyCertFingerprint(Settings::tlsTrustedServersDb())) {
+  if (verifyCertFingerprint(QString::fromStdString(m_tlsConfig.trustedServersDbPath))) {
     LOG_INFO("connected to secure socket");
     if (!showCertificate()) {
       disconnect();

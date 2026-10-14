@@ -12,6 +12,7 @@
 #include "ClipboardTypes.h"
 #include "KeyTypes.h"
 #include "KeyboardLayoutManager.h"
+#include "client/ClientConfig.h"
 #include "synergy/input/InputValidator.h"
 #include "synergy/protocol/FileTransferReceiver.h"
 
@@ -38,7 +39,9 @@ public:
   Process messages from the server on \p stream and forward to
   \p client.
   */
-  ServerProxy(IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events);
+  ServerProxy(
+      IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events, const ServerProxyConfig &config
+  );
   ServerProxy(ServerProxy const &) = delete;
   ServerProxy(ServerProxy &&) = delete;
   ~ServerProxy();

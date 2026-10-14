@@ -16,9 +16,12 @@
 // TCPSocketFactory
 //
 
-TCPSocketFactory::TCPSocketFactory(IEventQueue *events, SocketMultiplexer *socketMultiplexer)
+TCPSocketFactory::TCPSocketFactory(
+    IEventQueue *events, SocketMultiplexer *socketMultiplexer, const TlsConfig &tlsConfig
+)
     : m_events(events),
-      m_socketMultiplexer(socketMultiplexer)
+      m_socketMultiplexer(socketMultiplexer),
+      m_tlsConfig(tlsConfig)
 {
   // do nothing
 }
@@ -27,7 +30,8 @@ std::unique_ptr<IDataSocket>
 TCPSocketFactory::create(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
 {
   if (securityLevel != SecurityLevel::PlainText) {
-    auto secureSocket = std::make_unique<SecureSocket>(m_events, m_socketMultiplexer, family, securityLevel);
+    auto secureSocket =
+        std::make_unique<SecureSocket>(m_events, m_socketMultiplexer, family, securityLevel, m_tlsConfig);
     secureSocket->initSsl(false);
     return secureSocket;
   }
@@ -38,7 +42,7 @@ std::unique_ptr<IListenSocket>
 TCPSocketFactory::createListen(IArchNetwork::AddressFamily family, SecurityLevel securityLevel) const
 {
   if (securityLevel != SecurityLevel::PlainText) {
-    return std::make_unique<SecureListenSocket>(m_events, m_socketMultiplexer, family, securityLevel);
+    return std::make_unique<SecureListenSocket>(m_events, m_socketMultiplexer, family, securityLevel, m_tlsConfig);
   }
   return std::make_unique<TCPListenSocket>(m_events, m_socketMultiplexer, family);
 }

@@ -9,6 +9,7 @@
 
 #include "net/SecurityLevel.h"
 #include "net/TCPListenSocket.h"
+#include "net/TlsConfig.h"
 
 class IEventQueue;
 class SocketMultiplexer;
@@ -19,7 +20,7 @@ class SecureListenSocket : public TCPListenSocket
 public:
   SecureListenSocket(
       IEventQueue *events, SocketMultiplexer *socketMultiplexer, IArchNetwork::AddressFamily family,
-      SecurityLevel securityLevel = SecurityLevel::PlainText
+      SecurityLevel securityLevel, const TlsConfig &tlsConfig
   );
 
   // IListenSocket overrides
@@ -27,4 +28,5 @@ public:
 
 private:
   const SecurityLevel m_securityLevel;
+  const TlsConfig m_tlsConfig;
 };

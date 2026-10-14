@@ -18,7 +18,6 @@
 #include "base/IEventQueue.h"
 #include "base/Log.h"
 #include "client/Client.h"
-#include "common/Settings.h"
 #include "io/IStream.h"
 #include "ipc/CoreIpc.h"
 
@@ -32,7 +31,9 @@
 // ServerProxy
 //
 
-ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events)
+ServerProxy::ServerProxy(
+    IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events, const ServerProxyConfig &config
+)
     : m_client(client),
       m_stream(stream),
       m_events(events)
@@ -53,16 +54,9 @@ ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, I
   });
 
   // Default list blocks Ctrl+Alt+Delete. An explicit empty list blocks nothing.
-  const auto blocked = Settings::value(Settings::Security::BlockedKeyCombos).toStringList();
-  if (!blocked.isEmpty()) {
-    std::vector<std::string> entries;
-    entries.reserve(static_cast<size_t>(blocked.size()));
-    for (const auto &entry : blocked) {
-      entries.push_back(entry.toStdString());
-    }
-
+  if (!config.blockedKeyCombos.empty()) {
     m_inputValidator.setBlockedCombinations(
-        InputValidator::parseBlockedCombinations(entries), Settings::contains(Settings::Security::BlockedKeyCombos)
+        InputValidator::parseBlockedCombinations(config.blockedKeyCombos), config.blockedKeyCombosConfigured
     );
     LOG_INFO("blocked key combinations configured: %zu", m_inputValidator.blockedCombinationCount());
   }
@@ -71,15 +65,15 @@ ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, I
   // it means writing bytes chosen by the peer onto this machine.
   {
     FileTransferReceiver::Options options;
-    options.enabled = Settings::value(Settings::FileTransfer::Enabled).toBool();
-    options.dropDirectory = Settings::value(Settings::FileTransfer::DropDirectory).toString().toStdString();
+    options.enabled = config.fileTransfer.enabled;
+    options.dropDirectory = config.fileTransfer.dropDirectory;
 
-    if (const auto maxMb = Settings::value(Settings::FileTransfer::MaxFileSizeMb).toULongLong(); maxMb > 0) {
-      options.maxFileSize = bytesFromMegabyteSetting(maxMb, options.maxFileSize);
+    if (config.fileTransfer.maxFileSizeMb > 0) {
+      options.maxFileSize = bytesFromMegabyteSetting(config.fileTransfer.maxFileSizeMb, options.maxFileSize);
     }
-    if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
-      constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
-      options.maxFileCount = static_cast<size_t>((std::min)(maxCount, kMaxFileCount));
+    if (config.fileTransfer.maxFileCount > 0) {
+      constexpr auto kMaxFileCount = static_cast<uint64_t>(4096);
+      options.maxFileCount = static_cast<size_t>((std::min)(config.fileTransfer.maxFileCount, kMaxFileCount));
     }
 
     m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);

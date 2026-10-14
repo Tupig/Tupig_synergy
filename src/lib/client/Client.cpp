@@ -20,7 +20,6 @@
 #include "base/Log.h"
 #include "client/ServerProxy.h"
 #include "common/NetworkProtocol.h"
-#include "common/Settings.h"
 #include "ipc/CoreIpc.h"
 #include "net/IDataSocket.h"
 #include "net/ISocketFactory.h"
@@ -41,17 +40,17 @@
 
 Client::Client(
     IEventQueue *events, const std::string &name, const NetworkAddress &address,
-    std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen
+    std::unique_ptr<ISocketFactory> socketFactory, synergy::Screen *screen, const ClientConfig &config
 )
     : m_name(name),
       m_serverAddress(address),
       m_socketFactory(std::move(socketFactory)),
       m_screen(screen),
       m_events(events),
-      m_useSecureNetwork(Settings::value(Settings::Security::TlsEnabled).toBool()),
-      m_maximumClipboardReceiveSize(
-          static_cast<size_t>(Settings::value(Settings::Server::ClipboardSize).toUInt()) * 1024 * 1024
-      )
+      m_useSecureNetwork(config.useSecureNetwork),
+      m_maximumClipboardReceiveSize(config.maxClipboardReceiveBytes),
+      m_connectInterface(config.bindInterface),
+      m_serverProxyConfig(config.serverProxy)
 {
   assert(m_socketFactory != nullptr);
   assert(m_screen != nullptr);
@@ -447,7 +446,7 @@ void Client::setupConnecting()
 {
   assert(m_stream != nullptr);
 
-  if (Settings::value(Settings::Security::TlsEnabled).toBool()) {
+  if (m_useSecureNetwork) {
     m_events->addHandler(EventTypes::DataSocketSecureConnected, m_stream->getEventTarget(), [this](const auto &) {
       handleConnected();
     });
@@ -487,7 +486,7 @@ void Client::setupScreen()
   assert(m_server == nullptr);
 
   m_ready = false;
-  m_server = new ServerProxy(this, m_stream, m_events);
+  m_server = new ServerProxy(this, m_stream, m_events, m_serverProxyConfig);
   m_events->addHandler(EventTypes::ScreenShapeChanged, getEventTarget(), [this](const auto &) {
     handleShapeChanged();
   });
@@ -715,13 +714,13 @@ void Client::handleResume()
 
 void Client::bindNetworkInterface(IDataSocket *socket) const
 {
-  const auto address = Settings::value(Settings::Core::Interface).toString();
-  if (address.isEmpty())
+  if (m_connectInterface.empty()) {
     return;
+  }
 
-  LOG_DEBUG("bind to network interface: %s", qPrintable(address));
+  LOG_DEBUG("bind to network interface: %s", m_connectInterface.c_str());
 
-  NetworkAddress bindAddress(address.toStdString());
+  NetworkAddress bindAddress(m_connectInterface);
   bindAddress.resolve();
 
   socket->bind(bindAddress);

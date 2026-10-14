@@ -165,7 +165,7 @@ void ServerProxyTests::unknownMessageReturnsUnknown()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream;
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   const uint8_t code[4] = {'Z', 'Z', 'Z', 'Z'};
   QCOMPARE(proxy.parseMessage(code), TestableServerProxy::ConnectionResult::Unknown);
@@ -176,7 +176,7 @@ void ServerProxyTests::serverNoopReturnsOkay()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream;
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   uint8_t code[4];
   copyCode(kMsgCNoop, code);
@@ -189,7 +189,7 @@ void ServerProxyTests::serverCloseDisconnects()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream;
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   uint8_t code[4];
   copyCode(kMsgCClose, code);
@@ -202,7 +202,7 @@ void ServerProxyTests::keepAliveIsEchoed()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream(MemoryStream::WriteMode::Loopback);
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   uint8_t code[4];
   copyCode(kMsgCKeepAlive, code);
@@ -220,7 +220,7 @@ void ServerProxyTests::mouseMoveForwardsToClient()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream;
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   // DMMV payload: x=12, y=34 as two 2-byte big-endian ints
   stream.push(std::string("\x00\x0c\x00\x22", 4));
@@ -238,7 +238,7 @@ void ServerProxyTests::enterAndLeaveForwardToClient()
   MockEventQueue events;
   FakeServerProxyClient client;
   MemoryStream stream;
-  TestableServerProxy proxy(&client, &stream, &events);
+  TestableServerProxy proxy(&client, &stream, &events, ServerProxyConfig{});
 
   // CINN payload: x=100, y=200, seqNum=7, mask=0
   stream.push(std::string("\x00\x64\x00\xc8", 4) + std::string("\x00\x00\x00\x07", 4) + std::string("\x00\x00", 2));

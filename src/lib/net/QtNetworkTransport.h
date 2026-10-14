@@ -8,6 +8,7 @@
 #pragma once
 
 #include "net/INetworkTransport.h"
+#include "net/TlsConfig.h"
 
 #include <QByteArray>
 #include <QSslSocket>
@@ -19,8 +20,9 @@
 //! Qt-based TCP / TLS transport
 /*!
 Plaintext uses `QTcpSocket`. `SecurityLevel::EncryptedTestOnly` and `PeerAuth` use
-`QSslSocket` (Phase 2 Step 4). Certificate PEM path comes from
-`Settings::Security::Certificate`, matching the legacy `SecureSocket` path.
+`QSslSocket` (Phase 2 Step 4). The certificate PEM path is injected via
+`TlsConfig`, matching the legacy `SecureSocket` path, so the transport never
+reads the settings singleton.
 Fingerprint / trust-store checks remain the application's responsibility for
 `EncryptedTestOnly`; `PeerAuth` asks Qt to verify the peer certificate.
 */
@@ -29,10 +31,12 @@ class QtNetworkTransport : public QObject, public INetworkTransport
   Q_OBJECT
 
 public:
-  explicit QtNetworkTransport(SecurityLevel securityLevel = SecurityLevel::PlainText);
+  explicit QtNetworkTransport(SecurityLevel securityLevel = SecurityLevel::PlainText, const TlsConfig &tlsConfig = {});
 
   //! Wrap an already-connected socket (plain or SSL); takes ownership.
-  QtNetworkTransport(QTcpSocket *socket, SecurityLevel securityLevel = SecurityLevel::PlainText);
+  QtNetworkTransport(
+      QTcpSocket *socket, SecurityLevel securityLevel = SecurityLevel::PlainText, const TlsConfig &tlsConfig = {}
+  );
 
   ~QtNetworkTransport() override;
 
@@ -92,6 +96,7 @@ private:
   bool m_connected = false;
   bool m_fatalError = false;
   SecurityLevel m_securityLevel = SecurityLevel::PlainText;
+  TlsConfig m_tlsConfig;
 };
 
 //! Qt listen socket: `QTcpServer` or `QSslServer` depending on security level.
@@ -100,7 +105,9 @@ class QtTransportListenSocket : public QObject, public ITransportListenSocket
   Q_OBJECT
 
 public:
-  explicit QtTransportListenSocket(SecurityLevel securityLevel = SecurityLevel::PlainText);
+  explicit QtTransportListenSocket(
+      SecurityLevel securityLevel = SecurityLevel::PlainText, const TlsConfig &tlsConfig = {}
+  );
   ~QtTransportListenSocket() override;
 
   std::unique_ptr<INetworkTransport> accept() override;
@@ -126,4 +133,5 @@ private:
 
   SecurityLevel m_securityLevel = SecurityLevel::PlainText;
   QTcpServer *m_server = nullptr;
+  TlsConfig m_tlsConfig;
 };

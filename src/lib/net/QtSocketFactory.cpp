@@ -9,7 +9,6 @@
 #include "base/Event.h"
 #include "base/IEventQueue.h"
 #include "base/Log.h"
-#include "common/Settings.h"
 #include "ipc/CoreIpc.h"
 #include "net/FingerprintDatabase.h"
 #include "net/QtNetworkTransport.h"
@@ -30,21 +29,24 @@
 // QtDataSocket
 //
 
-QtDataSocket::QtDataSocket(IEventQueue *events, SecurityLevel securityLevel)
+QtDataSocket::QtDataSocket(IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig)
     : IDataSocket(events),
       m_events(events),
-      m_securityLevel(securityLevel)
+      m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig)
 {
-  m_transport = std::make_unique<QtNetworkTransport>(securityLevel);
+  m_transport = std::make_unique<QtNetworkTransport>(securityLevel, m_tlsConfig);
   wireTransport();
 }
 
 QtDataSocket::QtDataSocket(
-    IEventQueue *events, SecurityLevel securityLevel, std::unique_ptr<QtNetworkTransport> transport
+    IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig,
+    std::unique_ptr<QtNetworkTransport> transport
 )
     : IDataSocket(events),
       m_events(events),
       m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig),
       m_transport(std::move(transport)),
       m_serverSide(true)
 {
@@ -207,7 +209,8 @@ void QtDataSocket::handleConnected()
   }
 
   if (checkFingerprint) {
-    const QString dbPath = m_serverSide ? Settings::tlsTrustedClientsDb() : Settings::tlsTrustedServersDb();
+    const QString dbPath =
+        QString::fromStdString(m_serverSide ? m_tlsConfig.trustedClientsDbPath : m_tlsConfig.trustedServersDbPath);
     if (!verifyFingerprint(dbPath)) {
       handleTlsFailure(QStringLiteral("failed to verify peer certificate fingerprint"));
       return;
@@ -319,11 +322,12 @@ void QtDataSocket::sendConnectionFailed(const QString &message)
 // QtListenSocket
 //
 
-QtListenSocket::QtListenSocket(IEventQueue *events, SecurityLevel securityLevel)
+QtListenSocket::QtListenSocket(IEventQueue *events, SecurityLevel securityLevel, const TlsConfig &tlsConfig)
     : m_events(events),
-      m_securityLevel(securityLevel)
+      m_securityLevel(securityLevel),
+      m_tlsConfig(tlsConfig)
 {
-  m_listen = std::make_unique<QtTransportListenSocket>(securityLevel);
+  m_listen = std::make_unique<QtTransportListenSocket>(securityLevel, m_tlsConfig);
 }
 
 QtListenSocket::~QtListenSocket() = default;
@@ -378,7 +382,9 @@ std::unique_ptr<IDataSocket> QtListenSocket::accept()
     return nullptr;
   }
 
-  return std::make_unique<QtDataSocket>(m_events, m_securityLevel, std::unique_ptr<QtNetworkTransport>(qtTransport));
+  return std::make_unique<QtDataSocket>(
+      m_events, m_securityLevel, m_tlsConfig, std::unique_ptr<QtNetworkTransport>(qtTransport)
+  );
 }
 
 quint16 QtListenSocket::serverPort() const
@@ -395,20 +401,22 @@ void QtListenSocket::sendEvent(synergy::EventTypes type)
 // QtSocketFactory
 //
 
-QtSocketFactory::QtSocketFactory(IEventQueue *events) : m_events(events)
+QtSocketFactory::QtSocketFactory(IEventQueue *events, const TlsConfig &tlsConfig)
+    : m_events(events),
+      m_tlsConfig(tlsConfig)
 {
 }
 
 std::unique_ptr<IDataSocket>
 QtSocketFactory::create(IArchNetwork::AddressFamily /*family*/, SecurityLevel securityLevel) const
 {
-  return std::make_unique<QtDataSocket>(m_events, securityLevel);
+  return std::make_unique<QtDataSocket>(m_events, securityLevel, m_tlsConfig);
 }
 
 std::unique_ptr<IListenSocket>
 QtSocketFactory::createListen(IArchNetwork::AddressFamily /*family*/, SecurityLevel securityLevel) const
 {
-  return std::make_unique<QtListenSocket>(m_events, securityLevel);
+  return std::make_unique<QtListenSocket>(m_events, securityLevel, m_tlsConfig);
 }
 
 bool shouldUseLegacyNetwork()
