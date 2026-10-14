@@ -129,7 +129,7 @@ void PacketStreamFilterTests::splitFrame_reassemblesPayloadAcrossChunks()
 {
   MemoryStream stream;
   MockEventQueue events;
-  TestableFilter filter(&events, &stream, true);
+  TestableFilter filter(&events, &stream, false);
 
   const std::string payload("hello");
   stream.push(makeFrameHeader(static_cast<uint32_t>(payload.size())).substr(0, 3));
@@ -149,7 +149,7 @@ void PacketStreamFilterTests::oversizedHeader_marksFormatErrorAndDropsStream()
 {
   MemoryStream stream;
   MockEventQueue events;
-  TestableFilter filter(&events, &stream, true);
+  TestableFilter filter(&events, &stream, false);
 
   // 4 raw bytes on the wire: declares a 4GB packet, larger than any
   // legitimate peer would send. must be rejected before buffering it.
@@ -165,7 +165,7 @@ void PacketStreamFilterTests::declaredLengthBeyondData_staysNotReady()
 {
   MemoryStream stream;
   MockEventQueue events;
-  TestableFilter filter(&events, &stream, true);
+  TestableFilter filter(&events, &stream, false);
 
   // header claims 8 bytes of payload but only 4 follow; the frame is
   // incomplete and must never be delivered
@@ -181,7 +181,7 @@ void PacketStreamFilterTests::write_prependsFourByteLengthPrefix()
 {
   MemoryStream stream;
   MockEventQueue events;
-  TestableFilter filter(&events, &stream, true);
+  TestableFilter filter(&events, &stream, false);
 
   filter.write("abcd", 4);
 
@@ -193,3 +193,4 @@ void PacketStreamFilterTests::write_prependsFourByteLengthPrefix()
   QCOMPARE(framed.substr(0, 4), makeFrameHeader(4));
   QCOMPARE(framed.substr(4), std::string("abcd"));
 }
+QTEST_MAIN(PacketStreamFilterTests)
