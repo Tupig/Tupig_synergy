@@ -400,6 +400,26 @@ void MSWindowsWatchdog::outputLoop(const void *)
   // In future when we move to Qt process APIs, this can all be simplified.
   QStringDecoder decoder(QStringDecoder::Utf8);
 
+  // Buffer a partial line across reads: a 4KB read can split a log line, and
+  // writing every chunk straight to the file log produced fragments.  The
+  // file log outputter appends its own newline, so only complete lines are
+  // handed over.
+  QString pending;
+  const auto writeCompleteLines = [this](QString text) {
+    int newline = -1;
+    while ((newline = text.indexOf(QLatin1Char('\n'))) >= 0) {
+      QString line = text.left(newline);
+      if (line.endsWith(QLatin1Char('\r'))) {
+        line.chop(1);
+      }
+      if (!line.isEmpty()) {
+        m_fileLogOutputter.write(LogLevel::Level::Print, line);
+      }
+      text.remove(0, newline + 1);
+    }
+    return text;
+  };
+
   while (m_running) {
     const BOOL ok = ::ReadFile(m_outputReadPipe, raw, kBufSize, &bytesRead, nullptr);
 
@@ -410,21 +430,25 @@ void MSWindowsWatchdog::outputLoop(const void *)
       }
 
       // Retry immediately when nothing to read or we get a transient error like ERROR_NO_DATA (pipe is non-blocking).
-      Arch::sleep(0.1);
+      // A short poll keeps the log latency low without busy-spinning.
+      Arch::sleep(0.02);
       continue;
     }
 
     const QString decoded =
         decoder.decode(QByteArray::fromRawData(reinterpret_cast<const char *>(raw), int(bytesRead)));
 
-    // The file log outputter adds its own newlines, so trim the decoded string to avoid double newlines.
-    const auto trimmed = decoded.trimmed();
-    m_fileLogOutputter.write(LogLevel::Level::Print, trimmed);
-
     if (m_foreground) {
       // Doesn't add it's own newlines, so use the original ones from the process output.
       ::OutputDebugString(decoded.toStdWString().c_str());
     }
+
+    pending = writeCompleteLines(pending + decoded);
+  }
+
+  // flush a trailing partial line when the loop stops
+  if (!pending.isEmpty()) {
+    m_fileLogOutputter.write(LogLevel::Level::Print, pending);
   }
 }
 
