@@ -9,6 +9,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QObject>
 #include <QTextStream>
@@ -46,9 +47,35 @@ void FileTail::setWatchedFile(const QString &filePath)
   m_lastPos = m_file.size();
 }
 
-void FileTail::handleFileChanged(const QString &)
+void FileTail::handleFileChanged(const QString &path)
 {
-  m_file.seek(m_lastPos);
+  if (path != m_file.fileName()) {
+    return;
+  }
+
+  // the watcher drops the path when the file is renamed or removed (log
+  // rotation); re-arm it so a recreated file is watched again
+  if (!m_watcher->files().contains(path)) {
+    m_watcher->addPath(path);
+  }
+
+  // rotation leaves this handle on the renamed file and truncation resets a
+  // same-name file below our position; reopen and start from the beginning in
+  // both cases so the recreated file is read
+  const bool replaced = !QFileInfo::exists(path) || QFileInfo(path).size() < m_file.size();
+  if (replaced || m_file.size() < m_lastPos) {
+    m_file.close();
+    if (!m_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      qWarning() << "failed to reopen tailed file:" << path;
+      return;
+    }
+    m_lastPos = 0;
+  }
+
+  if (!m_file.seek(m_lastPos)) {
+    qWarning() << "failed to seek in tailed file:" << path;
+    return;
+  }
   QTextStream stream(&m_file);
   while (!stream.atEnd()) {
     QString line = stream.readLine();
