@@ -12,6 +12,7 @@
 #include "ipc/CoreIpc.h"
 
 #include <QFile>
+#include <QSaveFile>
 #include <QTextStream>
 
 void FingerprintDatabase::read(const QString &path)
@@ -50,11 +51,22 @@ void FingerprintDatabase::readStream(QTextStream &in)
 
 bool FingerprintDatabase::write(const QString &path)
 {
-  QFile file(path);
+  // write atomically so a failed write (full disk, permissions) cannot leave a
+  // truncated trust store behind
+  QSaveFile file(path);
   if (!file.open(QIODevice::WriteOnly))
     return false;
   QTextStream out(&file);
-  return (writeStream(out));
+  if (!writeStream(out)) {
+    file.cancelWriting();
+    return false;
+  }
+  out.flush();
+  if (out.status() != QTextStream::Ok) {
+    file.cancelWriting();
+    return false;
+  }
+  return file.commit();
 }
 
 bool FingerprintDatabase::writeStream(QTextStream &out)
@@ -69,7 +81,7 @@ bool FingerprintDatabase::writeStream(QTextStream &out)
   for (const auto &fingerprint : std::as_const(m_fingerprints)) {
     out << fingerprint.toDbLine() << "\n";
   }
-  return true;
+  return out.status() == QTextStream::Ok;
 }
 
 void FingerprintDatabase::clear()
