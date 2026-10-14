@@ -108,7 +108,7 @@ synergy::KeyboardLayoutManager &ServerProxy::layoutManager()
   return *m_layoutManager;
 }
 
-template <typename... Args> bool ServerProxy::readOrDisconnect(const char *format, Args &...args)
+template <typename... Args> bool ServerProxy::readOrDisconnect(const char *format, Args &&...args)
 {
   if (ProtocolUtil::readf(m_stream, format, args...)) {
     return true;

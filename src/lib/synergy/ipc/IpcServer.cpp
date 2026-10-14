@@ -41,7 +41,7 @@ bool constantTimeEquals(const QByteArray &a, const QByteArray &b)
   }
   auto diff = static_cast<unsigned char>(0);
   const auto size = a.size();
-  for (decltype(size) i = 0; i < size; ++i) {
+  for (decltype(a.size()) i = 0; i < size; ++i) {
     diff |= static_cast<unsigned char>(a.at(i)) ^ static_cast<unsigned char>(b.at(i));
   }
   return diff == 0;

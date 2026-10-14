@@ -284,7 +284,7 @@ bool QtNetworkTransport::isConnected() const
 
 uint32_t QtNetworkTransport::read(void *buffer, uint32_t size)
 {
-  const int available = m_readBuffer.size() - m_readOffset;
+  const auto available = m_readBuffer.size() - m_readOffset;
   if (!m_connected || available <= 0) {
     return 0;
   }
@@ -343,7 +343,8 @@ bool QtNetworkTransport::isFatal() const
 
 uint32_t QtNetworkTransport::getSize() const
 {
-  return static_cast<uint32_t>(std::max(0, m_readBuffer.size() - m_readOffset));
+  const auto pending = m_readBuffer.size() - m_readOffset;
+  return pending > 0 ? static_cast<uint32_t>(pending) : 0;
 }
 
 ArchSocket QtNetworkTransport::getSocket() const
