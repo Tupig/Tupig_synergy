@@ -24,10 +24,12 @@
 # ~20-30 min, three attempts on 2026-10-14). NVD version ranges cover the
 # C/C++ packages in the manifest, which is what the SBOM lists.
 #
-# NVD transport: the json-mirror feed (cveb.in) drives the scanner through
-# cve-bin-tool's async client; the reachability diagnostic step records
-# whether that feed answers the runner, because an unreachable mirror
-# silently yields an empty database (CVEDataMissing) instead of an error.
+# Tool version: cve-bin-tool is pinned to a git commit, NOT PyPI. PyPI 3.4 is
+# the newest release and still scrapes the NVD 1.1 mirror path
+# (mirror.cveb.in/nvd/json/cve/1.1), whose directory is now empty because NVD
+# retired the 1.1 feeds; that path yields zero .meta links and an empty
+# database (observed 2026-10-14). Only git main speaks the 2.0 mirror
+# (cveb.in/get/nvd/json/cve/2.0). Re-evaluate the pin when PyPI 3.5 ships.
 #
 # CI-only tooling: cve-bin-tool is installed from pip here, in the same
 # category as the apt packages and GitHub actions the CI already uses. It is
@@ -100,68 +102,12 @@ jobs:
             cve-bin-tool-data-
 
       - name: Install cve-bin-tool
-        run: python3 -m pip install --disable-pip-version-check "cve-bin-tool>=3.3,<4"
+        run: python3 -m pip install --disable-pip-version-check "git+https://github.com/intel/cve-bin-tool@b3176d820559d7ec30bd7a99b62cf0535fc16e00"
 
-      - name: Diagnose CVE feed reachability
+      - name: Check NVD mirror reachability
         run: |
-          curl -sSL -o mirror-index.html -w "cveb.in index: HTTP %{http_code} size=%{size_download} final=%{url_effective}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
-          grep -c "\.meta" mirror-index.html || true
-          head -c 300 mirror-index.html || true
-          echo
-          python3 - <<'PYEOF'
-          import asyncio, re
-          import aiohttp
-
-          async def main():
-              headers = {"User-Agent": "cve-bin-tool/3.4"}
-              async with aiohttp.ClientSession(headers=headers, trust_env=True) as session:
-                  async with session.get("https://cveb.in/get/nvd/json/cve/2.0") as response:
-                      text = await response.text()
-                      metas = re.findall(r"nvdcve-[0-9]*\.[0-9]*-[0-9]*\.meta", text)
-                      print("aiohttp:", response.status, response.url, "len", len(text), "metas", len(metas))
-                      print(text[:300].replace("\n", " "))
-
-          asyncio.run(main())
-          PYEOF
-          python3 - <<'PYEOF'
-          import asyncio
-          import logging
-
-          logging.basicConfig(level=logging.DEBUG)
-
-          from cve_bin_tool.data_sources.nvd_source import NVD_Source
-
-          async def main():
-              source = NVD_Source(nvd_type="json-mirror")
-              await source.fetch_cves()
-              print("nvd probe years:", source.nvd_years())
-
-          asyncio.run(main())
-          PYEOF
-          python3 - <<'PYEOF'
-          import asyncio
-
-          import aiohttp
-
-          from cve_bin_tool.async_utils import RateLimiter, make_connector
-          from cve_bin_tool.data_sources.nvd_source import NVD_Source
-          from cve_bin_tool.version import HTTP_HEADERS
-
-          async def main():
-              source = NVD_Source(nvd_type="json-mirror")
-              connector = make_connector(limit_per_host=19)
-              session = RateLimiter(aiohttp.ClientSession(connector=connector, headers=HTTP_HEADERS, trust_env=True))
-              print("feed url:", source.feed)
-              async with await session.get(source.feed) as response:
-                  text = await response.text()
-                  print("tool session:", response.status, response.url, "len", len(text))
-                  print("tool metas:", len(NVD_Source.META_REGEX_MIRROR.findall(text)))
-                  if text:
-                      print("body:", text[:200].replace("\n", " "))
-              await session.close()
-
-          asyncio.run(main())
-          PYEOF
+          curl -sSL -o mirror-index.html -w "cveb.in 2.0 index: HTTP %{http_code} size=%{size_download}\n" https://cveb.in/get/nvd/json/cve/2.0 || true
+          echo "meta links: $(grep -c '\.meta' mirror-index.html || true)"
 
       - name: Self-test with a known vulnerable fixture
         run: |
