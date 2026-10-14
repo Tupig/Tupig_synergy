@@ -100,3 +100,5 @@ void MutexTests::lockBlocksUntilOwnerUnlocks()
   QVERIFY(helper.wait(5.0));
   QVERIFY(acquired.load());
 }
+
+QTEST_MAIN(MutexTests)

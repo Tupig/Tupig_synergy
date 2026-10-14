@@ -48,7 +48,7 @@ create_test(
 create_test(
   NAME EventQueueTests
   DEPENDS base
-  LIBS arch
+  LIBS arch mt
   SOURCE EventQueueTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/base"
 )
