@@ -103,7 +103,7 @@ void ActionDialog::accept()
 
 void ActionDialog::updateSize()
 {
-  setMaximumSize(QSize(16777215, 1677215));
+  setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
   adjustSize();
   if (!isKeyAction(ui->comboActionType->currentIndex()))
     setMaximumSize(size());
