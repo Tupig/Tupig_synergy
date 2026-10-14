@@ -119,7 +119,9 @@ int main(int argc, char *argv[])
     // Ping the running instance to have it show itself
     QLocalSocket socket;
     socket.connectToServer(shmId, QLocalSocket::ReadOnly);
-    if (!socket.waitForConnected()) {
+    // A local-socket connect completes immediately or the peer is gone;
+    // do not stall startup on the multi-second default timeout.
+    if (!socket.waitForConnected(1000)) {
       // If we can't connect to the other instance tell the user its running.
       // This should never happen but just incase we should show something
       QMessageBox::information(nullptr, kAppName, QObject::tr("%1 is already running").arg(kAppName));
