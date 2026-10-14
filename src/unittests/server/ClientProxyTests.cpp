@@ -9,13 +9,13 @@
 #include "../synergy/MockEventQueue.h"
 
 #include "ProtocolTypes.h"
-#include "ProtocolUtil.h"
 #include "io/IStream.h"
 #include "server/ClientProxy1_0.h"
 
 #include <algorithm>
 #include <cstring>
 #include <deque>
+#include <initializer_list>
 #include <string>
 
 namespace {
@@ -111,6 +111,17 @@ void copyCode(const char *code, uint8_t out[4])
   std::memcpy(out, code, 4);
 }
 
+//! The DINF payload (without the message code): seven 2-byte big-endian ints.
+std::string infoPayload(std::initializer_list<int> values)
+{
+  std::string bytes;
+  for (const int value : values) {
+    bytes += static_cast<char>((value >> 8) & 0xff);
+    bytes += static_cast<char>(value & 0xff);
+  }
+  return bytes;
+}
+
 } // namespace
 
 void ClientProxyTests::initTestCase()
@@ -147,7 +158,7 @@ void ClientProxyTests::handshakeInfoCompletesHandshake()
   TestableClientProxy1_0 proxy("test-client", stream, &events);
 
   // the payload parsed by recvInfo (format without the leading code)
-  ProtocolUtil::writef(stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
+  stream->push(infoPayload({10, 20, 800, 600, 0, 5, 6}));
 
   uint8_t code[4];
   copyCode(kMsgDInfo, code);
@@ -181,7 +192,7 @@ void ClientProxyTests::parseMessageInfoUpdatesShape()
   auto *stream = new FakeStream();
   TestableClientProxy1_0 proxy("test-client", stream, &events);
 
-  ProtocolUtil::writef(stream, kMsgDInfo + 4, 10, 20, 800, 600, 0, 5, 6);
+  stream->push(infoPayload({10, 20, 800, 600, 0, 5, 6}));
 
   uint8_t code[4];
   copyCode(kMsgDInfo, code);
