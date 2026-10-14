@@ -58,7 +58,10 @@ void IpcServerTests::initTestCase()
   Settings::setSettingsFile(m_testDir + "/Synergy.conf");
   Settings::setStateFile(m_testDir + "/Synergy.state");
 
-  m_serverName = QStringLiteral("synergy-ipc-server-tests-%1").arg(QCoreApplication::applicationPid());
+  // The pipe name must differ from the settings directory above: on Unix
+  // QLocalServer creates the socket under the temp directory under this name,
+  // so a colliding directory would make listen fail.
+  m_serverName = QStringLiteral("synergy-ipc-tests-%1").arg(QCoreApplication::applicationPid());
 }
 
 void IpcServerTests::cleanupTestCase()
