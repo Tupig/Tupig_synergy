@@ -53,11 +53,11 @@ void ConsoleLogOutputter::close()
 bool ConsoleLogOutputter::write(LogLevel::Level level, const QString &msg)
 {
   using enum LogLevel::Level;
+  // std::endl already flushes the target stream
   if ((level >= Fatal) && (level <= Warning))
     std::cerr << qPrintable(msg) << std::endl;
   else
     std::cout << qPrintable(msg) << std::endl;
-  std::cout.flush();
   return true;
 }
 
@@ -138,7 +138,9 @@ bool FileLogOutputter::write(LogLevel::Level, const QString &message)
 
   if (file.size() > s_logFileSizeLimit) {
     const auto oldFile = QStringLiteral("%1.1").arg(m_fileName);
-    QFile::remove(m_fileName);
+    // rotate: drop any previous backup, then rename the current log into
+    // its place; the next write recreates the log file from scratch
+    QFile::remove(oldFile);
     QFile::rename(m_fileName, oldFile);
   }
 
