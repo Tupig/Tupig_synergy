@@ -160,11 +160,6 @@ private:
 
   bool checkAXPermissions();
 
-  // global hotkey operating mode
-  static bool isGlobalHotKeyOperatingModeAvailable();
-  static void setGlobalHotKeysEnabled(bool enabled);
-  static bool getGlobalHotKeysEnabled();
-
   // Quartz event tap support
   static CGEventRef handleCGInputEvent(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
   static CGEventRef
@@ -290,10 +285,6 @@ private:
   uint32_t m_activeModifierHotKey;
   KeyModifierMask m_activeModifierHotKeyMask;
   HotKeyToIDMap m_hotKeyToIDMap;
-
-  // global hotkey operating mode
-  static bool s_testedForGHOM;
-  static bool s_hasGHOM;
 
   // Quartz input event support
   CFMachPortRef m_eventTapPort;
