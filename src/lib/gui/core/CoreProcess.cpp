@@ -30,6 +30,8 @@
 #include <QMutexLocker>
 #include <QRegularExpression>
 
+#include <algorithm>
+
 namespace synergy::gui {
 
 const int kRetryDelay = 1000;
@@ -196,10 +198,17 @@ void CoreProcess::onProcessFinished(int exitCode, QProcess::ExitStatus)
   qDebug("desktop process exited normally");
 
   if (const auto wasStarted = m_processState == Started; wasStarted) {
-    qDebug("desktop process was running, retrying in %d ms", kRetryDelay);
+    // a process that ran for a while counts as a healthy start; a quick exit
+    // keeps accumulating the retry delay
+    constexpr auto kStableUptime = std::chrono::seconds(10);
+    if (std::chrono::steady_clock::now() - m_startedAt >= kStableUptime) {
+      m_retryDelayMs = kRetryDelayMs;
+    }
+    qDebug("desktop process was running, retrying in %d ms", m_retryDelayMs);
     setProcessState(RetryPending);
     m_retryTimer.setSingleShot(true);
-    m_retryTimer.start(kRetryDelay);
+    m_retryTimer.start(m_retryDelayMs);
+    m_retryDelayMs = std::min(m_retryDelayMs * 2, kMaxRetryDelayMs);
   } else {
     setProcessState(Stopped);
   }
@@ -241,6 +250,7 @@ void CoreProcess::startForegroundProcess(const QStringList &args)
   m_process->start(m_appPath, args);
 
   if (m_process->waitForStarted()) {
+    m_startedAt = std::chrono::steady_clock::now();
     setProcessState(Started);
   } else {
     setProcessState(Stopped);

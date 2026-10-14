@@ -17,6 +17,7 @@
 #include <QProcess>
 #include <QTimer>
 
+#include <chrono>
 #include <optional>
 
 namespace synergy::gui {
@@ -105,6 +106,11 @@ private Q_SLOTS:
   void daemonIpcClientConnected();
 
 private:
+  //! base delay before the first automatic retry
+  static constexpr int kRetryDelayMs = 1000;
+  //! upper bound for the exponential retry delay
+  static constexpr int kMaxRetryDelayMs = 60000;
+
   void startForegroundProcess(const QStringList &args);
   void startProcessFromDaemon();
   void stopForegroundProcess() const;
@@ -131,6 +137,10 @@ private:
   QString m_secureSocketVersion;
   std::optional<ProcessMode> m_lastProcessMode = std::nullopt;
   QTimer m_retryTimer;
+  //! delay before the next automatic retry; doubles on consecutive retries
+  int m_retryDelayMs = kRetryDelayMs;
+  //! when the current desktop process last reached the started state
+  std::chrono::steady_clock::time_point m_startedAt;
   synergy::gui::ipc::CoreIpcClient *m_coreIpcClient = nullptr;
   synergy::gui::ipc::DaemonIpcClient *m_daemonIpcClient = nullptr;
   FileTail *m_daemonFileTail = nullptr;
