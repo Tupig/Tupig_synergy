@@ -100,15 +100,12 @@ QByteArray certFingerprint(const QString &certPath)
   return cert.digest(QCryptographicHash::Sha256);
 }
 
-bool generateCertificate()
+bool generateCertificateAt(const QString &certPath, int keyLength)
 {
   qDebug(
       "generating tls certificate, "
       "all clients must trust the new fingerprint"
   );
-
-  const auto keyLength = std::max(kMinimumRsaBits, Settings::value(Settings::Security::KeySize).toInt());
-  const auto certPath = Settings::value(Settings::Security::Certificate).toString();
 
   QFileInfo info(certPath);
   if (QDir dir(info.absolutePath()); !dir.exists() && !dir.mkpath(".")) {
@@ -124,6 +121,14 @@ bool generateCertificate()
   }
   qDebug("tls certificate generated");
   return true;
+}
+
+bool generateCertificate()
+{
+  return generateCertificateAt(
+      Settings::value(Settings::Security::Certificate).toString(),
+      std::max(kMinimumRsaBits, Settings::value(Settings::Security::KeySize).toInt())
+  );
 }
 
 } // namespace synergy::gui::TlsUtility

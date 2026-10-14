@@ -14,6 +14,18 @@ namespace synergy::gui::TlsUtility {
 bool generateCertificate();
 
 /**
+ * @brief Generate a certificate at the given path with the given key size.
+ *
+ * Thread-safe with respect to the settings file: all inputs are passed in, so
+ * this overload can run on a worker thread.
+ *
+ * @param certPath path of the certificate to write
+ * @param keyLength RSA key size in bits
+ * @return true when successful
+ */
+bool generateCertificateAt(const QString &certPath, int keyLength);
+
+/**
  * @brief Checks the settings values Settings::Security::TlsEnabled
  * @return true when tls is enabled
  */
