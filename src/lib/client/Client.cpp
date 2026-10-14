@@ -27,8 +27,10 @@
 #include "net/SecureSocket.h"
 #include "net/TCPSocket.h"
 
+#include <QHostInfo>
 #include <QMetaEnum>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
@@ -61,6 +63,9 @@ Client::Client(
 
 Client::~Client()
 {
+  // invalidate any hostname lookup still in flight before this object goes away
+  *m_alive = false;
+
   m_events->removeHandler(EventTypes::ScreenSuspend, getEventTarget());
   m_events->removeHandler(EventTypes::ScreenResume, getEventTarget());
 
@@ -85,29 +90,75 @@ void Client::connect(size_t addressIndex)
     return;
   }
 
+  const auto hostname = QString::fromStdString(m_serverAddress.getHostname());
+  if (hostname.isEmpty()) {
+    continueConnect(addressIndex);
+    return;
+  }
+
+  // Resolve the server hostname asynchronously: a synchronous getaddrinfo
+  // against a dead DNS server blocks this thread for seconds and freezes the
+  // whole core event loop. The lookup result is used directly, so no second
+  // (potentially blocking) DNS call happens afterwards. Stale results are
+  // dropped via the generation counter.
+  const auto generation = ++m_resolveGeneration;
+  std::weak_ptr<bool> alive = m_alive;
+  QHostInfo::lookupHost(hostname, [this, addressIndex, generation, alive](const QHostInfo &info) {
+    const auto clientAlive = alive.lock();
+    if (!clientAlive || !*clientAlive) {
+      return; // client destroyed while resolving
+    }
+    if (generation != m_resolveGeneration || m_stream != nullptr || m_suspended) {
+      return; // stale result, or the state changed while resolving
+    }
+    if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
+      LOG_VERBOSE(
+          "could not resolve server address '%s': %s", m_serverAddress.getHostname().c_str(),
+          info.errorString().toStdString().c_str()
+      );
+      sendConnectionFailedEvent("could not resolve server address");
+      return;
+    }
+
+    m_resolvedIps.clear();
+    for (const auto &address : info.addresses()) {
+      m_resolvedIps.push_back(address.toString().toStdString());
+    }
+    continueConnect(addressIndex);
+  });
+}
+
+void Client::continueConnect(size_t addressIndex)
+{
   auto securityLevel = m_useSecureNetwork ? SecurityLevel::PeerAuth : SecurityLevel::PlainText;
 
   try {
-    // resolve the server hostname.  do this every time we connect
-    // in case we couldn't resolve the address earlier or the address
-    // has changed (which can happen frequently if this is a laptop
-    // being shuttled between various networks).  patch by Brent
-    // Priddy.
-    m_resolvedAddressesCount = m_serverAddress.resolve(addressIndex);
-
-    // m_serverAddress will be null if the hostname address is not reolved
-    if (m_serverAddress.getAddress() != nullptr) {
-      // to help users troubleshoot, show server host name (issue: 60)
-      LOG_DEBUG(
-          "connecting to '%s': %s:%i", m_serverAddress.getHostname().c_str(),
-          ARCH->addrToString(m_serverAddress.getAddress()).c_str(), m_serverAddress.getPort()
-      );
-      ipcSendConnectionState(synergy::core::ConnectionState::Connecting);
+    // Resolve the server hostname.  This is done every time we connect in case
+    // the address has changed (which can happen frequently if this is a laptop
+    // being shuttled between various networks).  The IPs come from the
+    // asynchronous lookup; converting them back to an address is a local
+    // operation and does not perform DNS.  patch by Brent Priddy.
+    NetworkAddress target(m_serverAddress);
+    if (!m_resolvedIps.empty()) {
+      const auto index = std::min(addressIndex, m_resolvedIps.size() - 1);
+      target = NetworkAddress(m_resolvedIps[index], m_serverAddress.getPort());
+      m_resolvedAddressesCount = m_resolvedIps.size();
+      target.resolve(0);
+    } else {
+      // No asynchronous lookup ran (empty hostname); resolve directly.
+      m_resolvedAddressesCount = target.resolve(addressIndex);
     }
+
+    // to help users troubleshoot, show server host name (issue: 60)
+    LOG_DEBUG(
+        "connecting to '%s': %s:%i", m_serverAddress.getHostname().c_str(),
+        ARCH->addrToString(target.getAddress()).c_str(), target.getPort()
+    );
+    ipcSendConnectionState(synergy::core::ConnectionState::Connecting);
 
     // create the socket
     std::unique_ptr<IDataSocket> socket =
-        m_socketFactory->create(ARCH->getAddrFamily(m_serverAddress.getAddress()), securityLevel);
+        m_socketFactory->create(ARCH->getAddrFamily(target.getAddress()), securityLevel);
     bindNetworkInterface(socket.get());
 
     // filter socket messages, including a packetizing filter (adopts the socket)
@@ -118,7 +169,7 @@ void Client::connect(size_t addressIndex)
     LOG_VERBOSE("connecting to server");
     setupConnecting();
     setupTimer();
-    socketPtr->connect(m_serverAddress);
+    socketPtr->connect(target);
   } catch (BaseException &e) {
     cleanupTimer();
     cleanupConnecting();
@@ -455,6 +506,8 @@ void Client::setupTimer()
 
 void Client::cleanup()
 {
+  // invalidate any hostname lookup still in flight
+  ++m_resolveGeneration;
   m_connectOnResume = false;
   cleanupTimer();
   cleanupScreen();
