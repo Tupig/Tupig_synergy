@@ -195,7 +195,9 @@ gboolean PortalRemoteDesktop::initSession()
     m_sessionRestoreToken = strdup(sessionToken.data());
   }
 
-  LOG_DEBUG("setting up remote desktop session with restore token %s", m_sessionRestoreToken);
+  LOG_DEBUG(
+      "setting up remote desktop session (restore token %s)", m_sessionRestoreToken != nullptr ? "present" : "absent"
+  );
   xdp_portal_create_remote_desktop_session_full(
       m_portal, static_cast<XdpDeviceType>(XDP_DEVICE_POINTER | XDP_DEVICE_KEYBOARD), XDP_OUTPUT_NONE,
       XDP_REMOTE_DESKTOP_FLAG_NONE, XDP_CURSOR_MODE_HIDDEN, XDP_PERSIST_MODE_PERSISTENT, m_sessionRestoreToken,
