@@ -57,6 +57,17 @@ bool loadPemIdentity(QSslConfiguration &config, const QString &path)
   return true;
 }
 
+void applyMinimumTlsVersion(QSslConfiguration &config)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+  config.setProtocol(QSsl::TlsV1_2OrLater);
+#endif
+  // The OpenSSL backend does not honour the *OrLater protocol floor on some
+  // Qt versions (5.13), so pin the backend minimum as well. Non-OpenSSL
+  // backends ignore the unknown key.
+  config.setBackendConfigurationOption(QStringLiteral("MinProtocol"), QStringLiteral("TLSv1.2"));
+}
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 //! Qt 5 has no QSslServer; upgrade every accepted socket manually.
 /*!
@@ -182,6 +193,7 @@ bool QtNetworkTransport::applyCertificate(QSslSocket *ssl, bool /*isServer*/)
   if (!loadPemIdentity(config, path)) {
     return false;
   }
+  applyMinimumTlsVersion(config);
   ssl->setSslConfiguration(config);
   return true;
 }
@@ -501,6 +513,7 @@ bool QtTransportListenSocket::configureSslServer()
   // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT. Chain errors are
   // ignored (see onSslErrors); trust is decided by the fingerprint database.
   config.setPeerVerifyMode(QSslSocket::VerifyPeer);
+  applyMinimumTlsVersion(config);
 
   sslServer->setSslConfiguration(config);
   return true;
@@ -529,6 +542,7 @@ bool QtTransportListenSocket::configureSslServer()
 
   // Always request the peer certificate, like the raw stack.
   config.setPeerVerifyMode(QSslSocket::VerifyPeer);
+  applyMinimumTlsVersion(config);
 
   tlsServer->sslConfiguration = config;
   return true;
