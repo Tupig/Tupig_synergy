@@ -447,7 +447,7 @@ ClientListener *ServerApp::openClientListener(const NetworkAddress &address)
   using enum SecurityLevel;
   auto securityLevel = PlainText;
   if (Settings::value(Settings::Security::TlsEnabled).toBool()) {
-    // Encrypted-without-a-certificate accepted any client on the same network.
+    // TLS-without-peer-authentication accepted any client on the same network.
     // TLS stays peer-authenticated even when checkPeers is turned off.
     if (!Settings::value(Settings::Security::CheckPeers).toBool()) {
       LOG_WARN("security/checkPeers is off; peer certificates are still required");

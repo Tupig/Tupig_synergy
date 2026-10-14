@@ -146,7 +146,7 @@ QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securit
 
 bool QtNetworkTransport::wantsTls() const
 {
-  return m_securityLevel == SecurityLevel::Encrypted || m_securityLevel == SecurityLevel::PeerAuth;
+  return m_securityLevel == SecurityLevel::EncryptedTestOnly || m_securityLevel == SecurityLevel::PeerAuth;
 }
 
 void QtNetworkTransport::createSocket()
@@ -488,7 +488,7 @@ QtTransportListenSocket::~QtTransportListenSocket()
 
 bool QtTransportListenSocket::wantsTls() const
 {
-  return m_securityLevel == SecurityLevel::Encrypted || m_securityLevel == SecurityLevel::PeerAuth;
+  return m_securityLevel == SecurityLevel::EncryptedTestOnly || m_securityLevel == SecurityLevel::PeerAuth;
 }
 
 bool QtTransportListenSocket::configureSslServer()

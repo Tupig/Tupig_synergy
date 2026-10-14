@@ -183,7 +183,7 @@ void QtSocketFactoryTests::tlsRejectsUntrustedServer()
 {
   QtSocketFactory factory(m_events);
 
-  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
   QVERIFY(qtListener != nullptr);
 
@@ -208,7 +208,7 @@ void QtSocketFactoryTests::tlsRejectsUntrustedServer()
   const quint16 port = qtListener->serverPort();
   QVERIFY(port != 0);
 
-  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   bool clientConnected = false;
   bool connectFailed = false;
   QString failureReason;
@@ -247,7 +247,7 @@ void QtSocketFactoryTests::tlsRejectsWrongFingerprint()
   QDir().mkpath(QFileInfo(dbPath).absolutePath());
   QVERIFY(db.write(dbPath));
 
-  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
   QVERIFY(qtListener != nullptr);
 
@@ -262,7 +262,7 @@ void QtSocketFactoryTests::tlsRejectsWrongFingerprint()
   const quint16 port = qtListener->serverPort();
   QVERIFY(port != 0);
 
-  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   bool clientConnected = false;
   bool connectFailed = false;
   QString failureReason;
@@ -305,7 +305,7 @@ void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
   const auto previousCert = Settings::value(Settings::Security::Certificate).toString();
   Settings::setValue(Settings::Security::Certificate, smallCertPath);
 
-  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
   QVERIFY(qtListener != nullptr);
 
@@ -320,7 +320,7 @@ void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
   const quint16 port = qtListener->serverPort();
   QVERIFY(port != 0);
 
-  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   bool clientConnected = false;
   bool connectFailed = false;
   QString failureReason;
@@ -364,7 +364,7 @@ void QtSocketFactoryTests::tlsTrustedServerRoundTrip()
   QDir().mkpath(QFileInfo(dbPath).absolutePath());
   QVERIFY(db.write(dbPath));
 
-  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
   QVERIFY(qtListener != nullptr);
 
@@ -386,7 +386,7 @@ void QtSocketFactoryTests::tlsTrustedServerRoundTrip()
   const quint16 port = qtListener->serverPort();
   QVERIFY(port != 0);
 
-  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::EncryptedTestOnly);
   bool clientConnected = false;
   m_events->addHandler(synergy::EventTypes::DataSocketSecureConnected, client->getEventTarget(), [&](const auto &) {
     clientConnected = true;

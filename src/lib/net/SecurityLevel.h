@@ -12,7 +12,9 @@
  */
 enum class SecurityLevel
 {
-  PlainText, /** Connections will not be encrypted */
-  Encrypted, /** Connections will be encrypted */
-  PeerAuth   /** Connections will be encrypted and peers must be authenticated */
+  PlainText,         /** Connections will not be encrypted */
+  EncryptedTestOnly, /** TLS without peer authentication. Test-only: production
+                          paths must use PeerAuth (or PlainText), because this
+                          level would accept any peer holding a certificate. */
+  PeerAuth           /** Connections will be encrypted and peers must be authenticated */
 };

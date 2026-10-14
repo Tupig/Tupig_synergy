@@ -18,11 +18,11 @@
 
 //! Qt-based TCP / TLS transport
 /*!
-Plaintext uses `QTcpSocket`. `SecurityLevel::Encrypted` and `PeerAuth` use
+Plaintext uses `QTcpSocket`. `SecurityLevel::EncryptedTestOnly` and `PeerAuth` use
 `QSslSocket` (Phase 2 Step 4). Certificate PEM path comes from
 `Settings::Security::Certificate`, matching the legacy `SecureSocket` path.
 Fingerprint / trust-store checks remain the application's responsibility for
-`Encrypted`; `PeerAuth` asks Qt to verify the peer certificate.
+`EncryptedTestOnly`; `PeerAuth` asks Qt to verify the peer certificate.
 */
 class QtNetworkTransport : public QObject, public INetworkTransport
 {
