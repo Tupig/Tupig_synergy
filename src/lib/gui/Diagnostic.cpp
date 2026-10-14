@@ -46,9 +46,8 @@ void clearSettings(bool enableRestart)
 
   // Capture this before the file disappears. On installed Windows,
   // settingsPath() is ProgramData, while the user profile is next to the
-  // settings file. Deleting ProgramData would remove the service token and
-  // TLS material for every user. After the portable file is gone,
-  // isPortableMode() would also flip to false.
+  // settings file. After the portable file is gone, isPortableMode() would
+  // also flip to false.
   const auto settingsFile = Settings::settingsFile();
   const auto profilePath = QFileInfo(settingsFile).absolutePath();
   const bool portable = Settings::isPortableMode();
@@ -56,9 +55,25 @@ void clearSettings(bool enableRestart)
   (void)portable;
 #endif
 
-  qInfo("removing profile dir: %s", qPrintable(profilePath));
-  if (!QDir(profilePath).removeRecursively())
-    qWarning("cannot remove profile dir: %s", qPrintable(profilePath));
+  // Remove only files this application owns.  Never remove the directory
+  // recursively: in portable mode it is the user's own folder and may hold
+  // unrelated files (data loss), and in system scope it is ProgramData with
+  // the IPC token, service config, and TLS material for every user.
+  qInfo("removing settings file: %s", qPrintable(settingsFile));
+  if (QFile::exists(settingsFile) && !QFile::remove(settingsFile))
+    qWarning("cannot remove settings file: %s", qPrintable(settingsFile));
+
+  // When the settings file is in the user scope (all platforms except
+  // installed Windows), the TLS material sits in an app-owned directory next
+  // to it.  Clear only that directory, never anything else in the folder.
+  if (Settings::settingsPath() == profilePath) {
+    const auto tlsDir = Settings::tlsDir();
+    if (QDir(tlsDir).exists()) {
+      qInfo("removing tls directory: %s", qPrintable(tlsDir));
+      if (!QDir(tlsDir).removeRecursively())
+        qWarning("cannot remove tls directory: %s", qPrintable(tlsDir));
+    }
+  }
 
 #ifdef Q_OS_WIN
   if (portable) {
