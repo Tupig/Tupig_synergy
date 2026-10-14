@@ -99,8 +99,8 @@ private:
 class TestableFilter : public PacketStreamFilter
 {
 public:
-  using PacketStreamFilter::PacketStreamFilter;
   using PacketStreamFilter::filterEvent;
+  using PacketStreamFilter::PacketStreamFilter;
 };
 
 std::string makeFrameHeader(uint32_t size)
