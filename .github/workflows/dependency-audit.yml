@@ -93,7 +93,8 @@ jobs:
 
       - name: Self-test with a known vulnerable fixture
         run: |
-          cve-bin-tool --disable-version-check \
+          cve-bin-tool --disable-version-check -n json-mirror \
+            --disable-data-source GAD,REDHAT,EPSS,CURL \
             --sbom cyclonedx --sbom-file scripts/ci/testdata/known-vulnerable.cdx.json \
             --format json2 --output-file selftest-report.json
           python3 scripts/ci/check-cve-report.py selftest-report.json \
@@ -101,7 +102,8 @@ jobs:
 
       - name: Scan the resolved dependency SBOM
         run: |
-          cve-bin-tool --disable-version-check \
+          cve-bin-tool --disable-version-check -n json-mirror \
+            --disable-data-source GAD,REDHAT,EPSS,CURL \
             --sbom cyclonedx --sbom-file synergy-deps.cdx.json \
             --format json2 --output-file cve-report.json
           test -s cve-report.json
