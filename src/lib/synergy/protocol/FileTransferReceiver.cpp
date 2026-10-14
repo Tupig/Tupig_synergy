@@ -260,6 +260,8 @@ TransferState FileTransferReceiver::onFileChunk(synergy::IStream *stream)
 void FileTransferReceiver::reset()
 {
   m_acceptedNames.clear();
+  m_writtenFiles.clear();
+  m_totalWritten = 0;
   m_nextName = 0;
   m_buffer.clear();
   m_state = {};
