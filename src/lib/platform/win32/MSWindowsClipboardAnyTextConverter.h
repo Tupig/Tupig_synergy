@@ -38,8 +38,4 @@ protected:
   linefeed conversion is done by this class.
   */
   virtual std::string doToIClipboard(const std::string &) const = 0;
-
-private:
-  std::string convertLinefeedToWin32(const std::string &) const;
-  std::string convertLinefeedToUnix(const std::string &) const;
 };

@@ -13,4 +13,7 @@ private Q_SLOTS:
   void formatWithArgs();
   void formatedString();
   void sprintfKeepsStringThatFillsTheFirstBuffer();
+  void linefeedsNormalizeMixedInputToLf();
+  void linefeedsExpandToPlatformTerminator();
+  void linefeedsRoundTripAcrossPlatforms();
 };
