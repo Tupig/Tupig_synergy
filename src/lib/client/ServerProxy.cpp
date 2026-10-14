@@ -79,7 +79,7 @@ ServerProxy::ServerProxy(IServerProxyClient *client, synergy::IStream *stream, I
     }
     if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
       constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
-      options.maxFileCount = static_cast<size_t>(std::min(maxCount, kMaxFileCount));
+      options.maxFileCount = static_cast<size_t>((std::min)(maxCount, kMaxFileCount));
     }
 
     m_fileTransferReceiver = std::make_unique<FileTransferReceiver>(options);

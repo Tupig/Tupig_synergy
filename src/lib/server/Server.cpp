@@ -341,7 +341,7 @@ uint64_t Server::sendLocalFiles(const std::vector<std::string> &paths)
   }
   if (const auto maxCount = Settings::value(Settings::FileTransfer::MaxFileCount).toULongLong(); maxCount > 0) {
     constexpr auto kMaxFileCount = static_cast<qulonglong>(4096);
-    options.maxFileCount = static_cast<size_t>(std::min(maxCount, kMaxFileCount));
+    options.maxFileCount = static_cast<size_t>((std::min)(maxCount, kMaxFileCount));
   }
 
   FileTransferSender::Emitter emitter;

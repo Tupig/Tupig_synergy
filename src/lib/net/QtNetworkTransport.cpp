@@ -289,7 +289,7 @@ uint32_t QtNetworkTransport::read(void *buffer, uint32_t size)
     return 0;
   }
 
-  const uint32_t toRead = std::min(size, static_cast<uint32_t>(available));
+  const uint32_t toRead = (std::min)(size, static_cast<uint32_t>(available));
 
   std::memcpy(buffer, m_readBuffer.constData() + m_readOffset, toRead);
   m_readOffset += static_cast<int>(toRead);
