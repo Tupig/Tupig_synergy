@@ -24,6 +24,19 @@
 // ClientListener
 //
 
+namespace {
+
+//! Upper bound on concurrent connections (active and still handshaking).
+//! Refusing the excess keeps a flood of unauthenticated connections from
+//! exhausting descriptors and memory.
+constexpr size_t kMaxConnections = 32;
+
+//! First-packet (hello) timeout for a newly accepted connection.  A hello is
+//! tiny, so a short deadline limits how long silent connections hold resources.
+constexpr double kHandshakeTimeoutSeconds = 10.0;
+
+} // namespace
+
 ClientListener::ClientListener(
     const NetworkAddress &address, std::unique_ptr<ISocketFactory> socketFactory, IEventQueue *events,
     SecurityLevel securityLevel
@@ -134,6 +147,11 @@ void ClientListener::handleClientConnecting()
   if (!socket)
     return;
 
+  if (m_clientSockets.size() >= kMaxConnections) {
+    LOG_WARN("refusing client connection: %zu connections already active or pending", m_clientSockets.size());
+    return;
+  }
+
   auto rawSocketPointer = socket.release();
   m_clientSockets.insert(rawSocketPointer);
 
@@ -169,7 +187,7 @@ void ClientListener::handleClientAccepted(IDataSocket *socket)
   synergy::IStream *stream = new PacketStreamFilter(m_events, socket, false);
 
   // create proxy for unknown client
-  auto *client = new ClientProxyUnknown(stream, 30.0, m_server, m_events);
+  auto *client = new ClientProxyUnknown(stream, kHandshakeTimeoutSeconds, m_server, m_events);
 
   m_newClients.insert(client);
 
