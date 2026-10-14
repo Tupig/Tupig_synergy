@@ -1350,6 +1350,13 @@ void Server::handleWheelEvent(const Event &event)
 
 void Server::handleSwitchWaitTimeout()
 {
+  // the target client may have disconnected, or the switch may have been
+  // stopped, while this one-shot timer was in flight
+  if (m_switchScreen == nullptr) {
+    stopSwitchWait();
+    return;
+  }
+
   // ignore if mouse is locked to screen
   if (isLockedToScreen()) {
     LOG_VERBOSE("locked to screen");
@@ -2035,6 +2042,12 @@ bool Server::removeClient(BaseClientProxy *client)
     if (clipboard.m_clipboardOwner == name) {
       clipboard.m_clipboardOwner = primaryName;
     }
+  }
+
+  // if we were waiting to switch to this client, cancel the pending switch
+  // before the client object is destroyed
+  if (client == m_switchScreen) {
+    stopSwitch();
   }
 
   return true;
