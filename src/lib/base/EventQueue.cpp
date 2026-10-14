@@ -131,21 +131,16 @@ bool EventQueue::processEvent(Event &event, double timeout, Stopwatch &timer)
     }
 
     // Pump Qt so QTcpSocket / QSslSocket signals fire when the Qt network
-    // path is in use (Phase 2). Cap the wait so we return to processEvents
-    // frequently enough without spinning.
-    constexpr double kQtPumpSlice = 0.01; // 10 ms
+    // path is in use (Phase 2). The pump must not block: events bridged from
+    // Qt during the pump (transportDataReady -> addEvent) are only dispatched
+    // once processEvents returns, and a blocking pump delays them (and any
+    // Synergy event from other threads) by the whole slice. The condvar wait
+    // below is capped instead, so idle polling stays bounded.
+    constexpr double kQtPumpInterval = 0.01; // 10 ms
     if (QCoreApplication::instance() != nullptr) {
-      double slice = kQtPumpSlice;
-      if (timeLeft >= 0.0 && timeLeft < slice) {
-        slice = timeLeft;
-      }
-      if (slice < 0.0) {
-        slice = 0.0;
-      }
-      const int ms = static_cast<int>(slice * 1000.0);
-      QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
-      if (timeLeft < 0.0 || timeLeft > kQtPumpSlice) {
-        timeLeft = kQtPumpSlice;
+      QCoreApplication::processEvents(QEventLoop::AllEvents, 0);
+      if (timeLeft < 0.0 || timeLeft > kQtPumpInterval) {
+        timeLeft = kQtPumpInterval;
       }
     }
 
