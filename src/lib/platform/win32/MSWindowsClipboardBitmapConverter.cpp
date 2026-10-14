@@ -52,8 +52,15 @@ std::string MSWindowsClipboardBitmapConverter::toIClipboard(HANDLE data) const
   }
   uint32_t srcSize = (uint32_t)GlobalSize(data);
 
-  // check image type
+  // the header must fit in the handle before any of its fields are read
   const BITMAPINFO *bitmap = static_cast<const BITMAPINFO *>(src);
+  if (srcSize < sizeof(BITMAPINFOHEADER) || bitmap->bmiHeader.biSize < sizeof(BITMAPINFOHEADER) ||
+      bitmap->bmiHeader.biSize > srcSize) {
+    GlobalUnlock(data);
+    return {};
+  }
+
+  // check image type
   LOG(
       (CLOG_INFO "bitmap: %dx%d %d", bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
        (int)bitmap->bmiHeader.biBitCount)
@@ -66,12 +73,22 @@ std::string MSWindowsClipboardBitmapConverter::toIClipboard(HANDLE data) const
     return image;
   }
 
+  // reject empty dimensions and outputs whose 32-bit size would overflow
+  const LONG w = bitmap->bmiHeader.biWidth;
+  const LONG h = bitmap->bmiHeader.biHeight;
+  if (w <= 0 || h == 0) {
+    GlobalUnlock(data);
+    return {};
+  }
+  const int64_t dstBytes = 4LL * w * (h > 0 ? static_cast<int64_t>(h) : -static_cast<int64_t>(h));
+  if (dstBytes <= 0 || dstBytes > INT32_MAX) {
+    GlobalUnlock(data);
+    return {};
+  }
+
   // create a destination DIB section
   LOG_INFO("convert image from: depth=%d comp=%d", bitmap->bmiHeader.biBitCount, bitmap->bmiHeader.biCompression);
-  void *raw;
   BITMAPINFOHEADER info;
-  LONG w = bitmap->bmiHeader.biWidth;
-  LONG h = bitmap->bmiHeader.biHeight;
   info.biSize = sizeof(BITMAPINFOHEADER);
   info.biWidth = w;
   info.biHeight = h;
@@ -83,8 +100,6 @@ std::string MSWindowsClipboardBitmapConverter::toIClipboard(HANDLE data) const
   info.biYPelsPerMeter = 1000;
   info.biClrUsed = 0;
   info.biClrImportant = 0;
-  HDC dc = GetDC(nullptr);
-  HBITMAP dst = CreateDIBSection(dc, (BITMAPINFO *)&info, DIB_RGB_COLORS, &raw, nullptr, 0);
 
   // find the start of the pixel data
   const char *srcBits = (const char *)bitmap + bitmap->bmiHeader.biSize;
@@ -100,9 +115,36 @@ std::string MSWindowsClipboardBitmapConverter::toIClipboard(HANDLE data) const
     srcBits += (1i64 << bitmap->bmiHeader.biBitCount) * sizeof(RGBQUAD);
   }
 
+  // the palette or masks must still be inside the handle
+  const auto srcOffset = static_cast<size_t>(srcBits - static_cast<const char *>(src));
+  if (srcOffset >= srcSize) {
+    GlobalUnlock(data);
+    return {};
+  }
+
+  HDC dc = GetDC(nullptr);
+  if (dc == nullptr) {
+    GlobalUnlock(data);
+    return {};
+  }
+
+  void *raw = nullptr;
+  HBITMAP dst = CreateDIBSection(dc, (BITMAPINFO *)&info, DIB_RGB_COLORS, &raw, nullptr, 0);
+  HDC dstDC = (dst != nullptr) ? CreateCompatibleDC(dc) : nullptr;
+  HGDIOBJ oldBitmap = (dstDC != nullptr) ? SelectObject(dstDC, dst) : nullptr;
+  if (dst == nullptr || raw == nullptr || dstDC == nullptr || oldBitmap == nullptr || oldBitmap == HGDI_ERROR) {
+    if (dstDC != nullptr) {
+      DeleteDC(dstDC);
+    }
+    if (dst != nullptr) {
+      DeleteObject(dst);
+    }
+    ReleaseDC(nullptr, dc);
+    GlobalUnlock(data);
+    return {};
+  }
+
   // copy source image to destination image
-  HDC dstDC = CreateCompatibleDC(dc);
-  HGDIOBJ oldBitmap = SelectObject(dstDC, dst);
   SetDIBitsToDevice(dstDC, 0, 0, w, h, 0, 0, 0, h, srcBits, bitmap, DIB_RGB_COLORS);
   SelectObject(dstDC, oldBitmap);
   DeleteDC(dstDC);
@@ -110,7 +152,7 @@ std::string MSWindowsClipboardBitmapConverter::toIClipboard(HANDLE data) const
 
   // extract data
   std::string image((const char *)&info, info.biSize);
-  image.append((const char *)raw, 4 * w * h);
+  image.append((const char *)raw, static_cast<size_t>(dstBytes));
 
   // clean up GDI
   DeleteObject(dst);
