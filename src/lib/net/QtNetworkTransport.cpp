@@ -118,6 +118,7 @@ QtNetworkTransport::QtNetworkTransport(QTcpSocket *socket, SecurityLevel securit
 {
   if (m_socket) {
     m_socket->setParent(this);
+    applySocketOptions();
     if (auto *ssl = qobject_cast<QSslSocket *>(m_socket)) {
       if (wantsTls() && ssl->isEncrypted()) {
         m_connected = true;
@@ -150,6 +151,19 @@ void QtNetworkTransport::createSocket()
   } else {
     m_socket = new QTcpSocket(this);
   }
+}
+
+void QtNetworkTransport::applySocketOptions()
+{
+  if (!m_socket) {
+    return;
+  }
+
+  // The input protocol sends many small latency-sensitive packets, so disable
+  // Nagle the same way the legacy stack (TCPSocket::init) does. Keepalive
+  // lets the OS notice half-open peers instead of relying on app heartbeats.
+  m_socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+  m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
 bool QtNetworkTransport::applyCertificate(QSslSocket *ssl, bool /*isServer*/)
@@ -343,6 +357,7 @@ size_t QtNetworkTransport::getWriteQueueSize() const
 void QtNetworkTransport::onConnected()
 {
   LOG_INFO("QtNetworkTransport: connected%s", wantsTls() ? " (TLS)" : "");
+  applySocketOptions();
   m_connected = true;
   m_fatalError = false;
   Q_EMIT transportConnected();

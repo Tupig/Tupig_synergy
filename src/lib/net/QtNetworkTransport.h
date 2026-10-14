@@ -77,6 +77,7 @@ Q_SIGNALS:
 private:
   void createSocket();
   void connectSignals();
+  void applySocketOptions();
   void processWriteQueue();
   bool applyCertificate(QSslSocket *ssl, bool isServer);
   bool wantsTls() const;
