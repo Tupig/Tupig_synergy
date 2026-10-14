@@ -25,6 +25,20 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
 )
 
+create_test(
+  NAME ValidatorTests
+  DEPENDS gui
+  SOURCE ValidatorTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
+)
+
+create_test(
+  NAME TlsUtilityTests
+  DEPENDS gui
+  SOURCE TlsUtilityTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/gui"
+)
+
 # The migration overlay lives in the synergy-gui sublibrary, which only
 # exists when the GUI is built.
 if(BUILD_GUI)
