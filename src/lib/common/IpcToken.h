@@ -29,4 +29,11 @@ bool writeIpcToken(const QString &serverName, const QString &token);
 //! console user can read a token that was created before anyone had logged on.
 bool refreshIpcTokenAccess(const QString &serverName);
 
+//! Restrict an already-created secret file to SYSTEM, Administrators, and the
+//! active console user (falling back to the writing process). Used by the IPC
+//! token path and by the TLS private-key writer. Prefer creating the file with
+//! an explicit DACL when the platform API allows it; this function closes the
+//! gap for writers that cannot pass security attributes at creation time.
+bool restrictSecretFilePermissions(const QString &path);
+
 } // namespace synergy
