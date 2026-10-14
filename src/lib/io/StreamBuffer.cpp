@@ -19,6 +19,12 @@ const void *StreamBuffer::peek(uint32_t n)
 {
   assert(n <= m_size);
 
+  // defensive: a release build has no assert, and consolidating past the
+  // buffered size would read out of bounds
+  if (n > m_size) {
+    return nullptr;
+  }
+
   // if requesting no data then return nullptr so we don't try to access
   // an empty list.
   if (n == 0) {
