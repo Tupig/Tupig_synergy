@@ -529,7 +529,10 @@ void MSWindowsWatchdog::initSasFunc()
 {
   // the SendSAS function is used to send a sas (secure attention sequence) to the
   // winlogon process. this is used to switch to the login screen.
-  HINSTANCE sasLib = LoadLibrary(L"sas.dll");
+  // Load only from System32: resolving the bare name would also search the
+  // application and current directories, which a low-privilege user may be
+  // able to write to when the install location is not protected.
+  HINSTANCE sasLib = LoadLibraryExW(L"sas.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   if (!sasLib) {
     LOG_ERR("could not load sas.dll");
     throw std::runtime_error(windowsErrorToString(GetLastError()));
