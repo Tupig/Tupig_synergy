@@ -76,6 +76,16 @@ MSWindowsWatchdog::MSWindowsWatchdog(bool foreground, FileLogOutputter &fileLogO
 MSWindowsWatchdog::~MSWindowsWatchdog()
 {
   stop();
+
+  // the reader thread has joined; close the pipe handles it was using
+  if (m_outputReadPipe != nullptr) {
+    CloseHandle(m_outputReadPipe);
+    m_outputReadPipe = nullptr;
+  }
+  if (m_outputWritePipe != nullptr) {
+    CloseHandle(m_outputWritePipe);
+    m_outputWritePipe = nullptr;
+  }
 }
 
 void MSWindowsWatchdog::startAsync()
@@ -505,7 +515,12 @@ void MSWindowsWatchdog::initOutputReadPipe()
   // in order to speed up the shutdown process when the Windows service needs to stop.
   if (DWORD mode = PIPE_NOWAIT; !SetNamedPipeHandleState(m_outputReadPipe, &mode, nullptr, nullptr)) {
     LOG_ERR("could not set pipe to non-blocking mode");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
+    const auto err = GetLastError();
+    CloseHandle(m_outputReadPipe);
+    CloseHandle(m_outputWritePipe);
+    m_outputReadPipe = nullptr;
+    m_outputWritePipe = nullptr;
+    throw std::runtime_error(windowsErrorToString(err));
   }
 }
 
