@@ -98,6 +98,16 @@ ServerProxy::~ServerProxy()
   m_events->removeHandler(EventTypes::StreamInputReady, m_stream->getEventTarget());
 }
 
+synergy::KeyboardLayoutManager &ServerProxy::layoutManager()
+{
+  if (m_layoutManager == nullptr) {
+    // the default constructor reads the local keyboard layouts from AppUtil,
+    // which only exists once the application has started
+    m_layoutManager = std::make_unique<synergy::KeyboardLayoutManager>();
+  }
+  return *m_layoutManager;
+}
+
 void ServerProxy::resetKeepAliveAlarm()
 {
   if (m_keepAliveAlarmTimer != nullptr) {
@@ -191,7 +201,7 @@ ServerProxy::ConnectionResult ServerProxy::parseHandshakeMessage(const uint8_t *
     // handshake is complete
     m_parser = &ServerProxy::parseMessage;
 
-    if (const auto missedKeyboardLayouts = m_layoutManager.getMissedLayouts(); !missedKeyboardLayouts.empty()) {
+    if (const auto missedKeyboardLayouts = layoutManager().getMissedLayouts(); !missedKeyboardLayouts.empty()) {
       LOG_WARN("server layouts missing on this computer: %s", missedKeyboardLayouts.c_str());
       ipcSendToClient("missingKeyboardLayouts", QString::fromStdString(missedKeyboardLayouts));
     }
@@ -982,7 +992,7 @@ void ServerProxy::setServerLanguages()
 {
   std::string serverLayout;
   ProtocolUtil::readf(m_stream, kMsgDLanguageSynchronisation + 4, &serverLayout);
-  m_layoutManager.setRemoteLayouts(serverLayout);
+  layoutManager().setRemoteLayouts(serverLayout);
 }
 
 void ServerProxy::setActiveServerLanguage(const std::string_view &language)
@@ -993,7 +1003,7 @@ void ServerProxy::setActiveServerLanguage(const std::string_view &language)
       m_serverLayout = language;
     }
 
-    if (!m_layoutManager.isLayoutInstalled(m_serverLayout)) {
+    if (!layoutManager().isLayoutInstalled(m_serverLayout)) {
       if (!m_isUserNotifiedAboutLayoutSyncError) {
         LOG_WARN("current server layout is not installed on client");
         m_isUserNotifiedAboutLayoutSyncError = true;

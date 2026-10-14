@@ -109,6 +109,10 @@ private:
   //! Consume one `DFTR` chunk from the server.
   void fileChunk();
 
+  //! Lazily created keyboard layout manager, so merely constructing a proxy
+  //! does not reach into the AppUtil singleton (tests have no application).
+  synergy::KeyboardLayoutManager &layoutManager();
+
 private:
   using MessageParser = ConnectionResult (ServerProxy::*)(const uint8_t *);
 
@@ -142,7 +146,7 @@ private:
   std::string m_clipboardDataCached;
   ClipboardChunkAssemblyState m_clipboardChunkState;
   bool m_isUserNotifiedAboutLayoutSyncError = false;
-  synergy::KeyboardLayoutManager m_layoutManager;
+  std::unique_ptr<synergy::KeyboardLayoutManager> m_layoutManager;
 
   //! Receives drag-and-drop files, subject to the fileTransfer settings.
   /*!
