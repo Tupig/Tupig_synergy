@@ -29,6 +29,8 @@
 #include <QString>
 #include <QStringDecoder>
 
+#include <algorithm>
+
 //
 // Free functions
 //
@@ -186,6 +188,9 @@ void MSWindowsWatchdog::mainLoop(const void *)
 {
   using enum ProcessState;
 
+  // a process that stays up at least this long counts as a healthy start
+  constexpr double kStableUptimeSeconds = 10.0;
+
   // this can throw when the snapshot/enumeration fails; letting it escape the
   // thread entry point would call std::terminate and kill the whole daemon
   try {
@@ -251,7 +256,7 @@ void MSWindowsWatchdog::mainLoop(const void *)
         break;
       }
 
-      m_startFailures = 0;
+      m_lastStartTime = Arch::time();
       m_processState = Running;
       LOG_DEBUG("started core process from watchdog");
     } break;
@@ -260,7 +265,12 @@ void MSWindowsWatchdog::mainLoop(const void *)
       LOG_VERBOSE("watchdog process in running state");
       if (!isProcessRunning()) {
         LOG_WARN("detected application not running, pid=%d", m_process->info().dwProcessId);
-        m_processState = StartPending;
+        // a process that stayed up counts as a healthy start; a quick crash
+        // keeps accumulating failures so the retry delay can grow
+        if (Arch::time() - m_lastStartTime >= kStableUptimeSeconds) {
+          m_startFailures = 0;
+        }
+        m_processState = handleStartError("process stopped unexpectedly");
       }
     } break;
 
@@ -468,8 +478,6 @@ void MSWindowsWatchdog::shutdownExistingProcesses()
 
 MSWindowsWatchdog::ProcessState MSWindowsWatchdog::handleStartError(const std::string_view &message)
 {
-  const auto kStartDelaySeconds = 1;
-
   m_startFailures++;
 
   if (!message.empty()) {
@@ -478,11 +486,14 @@ MSWindowsWatchdog::ProcessState MSWindowsWatchdog::handleStartError(const std::s
     LOG_CRIT("daemon failed to start process, unknown error");
   }
 
-  // When there has been more than one consecutive failure, slow down the retry rate.
+  // After consecutive failures, slow down the retry rate exponentially:
+  // 1s, 2s, 4s, ... capped at 60s.
   if (m_startFailures > 1) {
-    m_nextStartTime = Arch::time() + kStartDelaySeconds;
-    LOG_WARN("start failed %d times, delaying start", m_startFailures);
-    LOG_DEBUG("start delay, seconds=%d, time=%f", kStartDelaySeconds, m_nextStartTime.value());
+    const auto exponent = std::min<unsigned>(static_cast<unsigned>(m_startFailures) - 2u, 6u);
+    const auto delaySeconds = std::min<unsigned>(1u << exponent, 60u);
+    m_nextStartTime = Arch::time() + delaySeconds;
+    LOG_WARN("start failed %d times, delaying start by %u second(s)", m_startFailures, delaySeconds);
+    LOG_DEBUG("start delay, seconds=%u, time=%f", delaySeconds, m_nextStartTime.value());
     return ProcessState::StartScheduled;
   } else {
     LOG_INFO("retrying process start immediately");
