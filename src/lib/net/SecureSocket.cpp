@@ -20,6 +20,7 @@
 #include "net/TSocketMultiplexerMethodJob.h"
 #include <net/SslLogger.h>
 
+#include <QFile>
 #include <QString>
 
 #include <cstdlib>

@@ -26,6 +26,10 @@
 #include "server/PrimaryClient.h"
 #include "synergy/protocol/FileChunk.h"
 #include "synergy/protocol/FileTransferOutbound.h"
+
+#include <QString>
+#include <QStringList>
+
 #ifdef _WIN32
 #include <algorithm>
 #include <array>

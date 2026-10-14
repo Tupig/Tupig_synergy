@@ -28,6 +28,7 @@
 
 #include <QHostInfo>
 #include <QMetaEnum>
+#include <QString>
 
 #include <algorithm>
 #include <cstdlib>

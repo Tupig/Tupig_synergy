@@ -21,6 +21,8 @@
 #include "io/IStream.h"
 #include "ipc/CoreIpc.h"
 
+#include <QString>
+
 #include <algorithm>
 #include <chrono>
 #include <cstring>
