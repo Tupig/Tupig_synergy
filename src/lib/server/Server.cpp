@@ -1521,8 +1521,13 @@ void Server::onClipboardChanged(const BaseClientProxy *sender, ClipboardID id, u
     return;
   }
 
-  // should be the expected client
-  assert(sender == m_clients.find(clipboard.m_clipboardOwner)->second);
+  // should be the expected client; tolerate a late update from a
+  // screen that has since disconnected and released clipboard ownership
+  const auto ownerIt = m_clients.find(clipboard.m_clipboardOwner);
+  if (ownerIt == m_clients.end() || sender != ownerIt->second) {
+    LOG_WARN("ignored screen \"%s\" update of clipboard %d (not the clipboard owner)", getName(sender).c_str(), id);
+    return;
+  }
 
   // get data
   sender->getClipboard(id, &clipboard.m_clipboard);
@@ -2009,8 +2014,18 @@ bool Server::removeClient(BaseClientProxy *client)
   m_events->removeHandler(ClipboardChanged, client->getEventTarget());
 
   // remove from list
-  m_clients.erase(getName(client));
+  const std::string name = getName(client);
+  m_clients.erase(name);
   m_clientSet.erase(i);
+
+  // reset clipboard ownership so a late update from the removed screen
+  // cannot reference a stale owner entry
+  const std::string primaryName = getName(m_primaryClient);
+  for (auto &clipboard : m_clipboards) {
+    if (clipboard.m_clipboardOwner == name) {
+      clipboard.m_clipboardOwner = primaryName;
+    }
+  }
 
   return true;
 }
