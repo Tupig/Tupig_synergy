@@ -42,6 +42,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QHideEvent>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMenu>
@@ -54,6 +55,7 @@
 #include <QRegularExpressionValidator>
 #include <QScreen>
 #include <QScrollBar>
+#include <QShowEvent>
 
 #include <memory>
 #include <thread>
@@ -916,6 +918,24 @@ void MainWindow::handlePeerFingerprint(const QString &fingerprint)
     } else {
       m_checkedClients.removeAll(sha256Text);
     }
+  }
+}
+
+void MainWindow::hideEvent(QHideEvent *event)
+{
+  // No UI is visible while hidden (tray or minimized); suspend the periodic
+  // network poll and resume it in showEvent().
+  m_networkMonitor->stopMonitoring();
+  QMainWindow::hideEvent(event);
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+  QMainWindow::showEvent(event);
+  if (m_coreProcess.mode() == Settings::CoreMode::Server) {
+    // startMonitoring() runs an immediate update, which refreshes the IP label
+    // if the network changed while the window was hidden.
+    m_networkMonitor->startMonitoring();
   }
 }
 

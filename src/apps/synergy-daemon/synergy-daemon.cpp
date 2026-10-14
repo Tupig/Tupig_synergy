@@ -22,6 +22,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <wtsapi32.h>
 #endif
 
 #include <QCommandLineParser>
@@ -116,9 +117,21 @@ int main(int argc, char **argv)
     daemon.connectIpcServer(ipcServer);
 
     // Token files may be created before anyone is logged on. Only SYSTEM can
-    // see the console session, so the service refreshes both ACLs.
+    // see the console session, so the service refreshes both ACLs when the
+    // active console session changes (logon, logout, switch user) instead of
+    // rewriting the DACLs every second.
     QTimer tokenAccessTimer;
     QObject::connect(&tokenAccessTimer, &QTimer::timeout, &app, [] {
+      static constexpr DWORD kNoConsoleSession = 0xFFFFFFFF;
+      static DWORD lastSessionId = kNoConsoleSession;
+      const DWORD sessionId = WTSGetActiveConsoleSessionId();
+      if (sessionId == lastSessionId) {
+        return;
+      }
+      lastSessionId = sessionId;
+      if (sessionId == kNoConsoleSession) {
+        return;
+      }
       synergy::refreshIpcTokenAccess(QString::fromLatin1(kDaemonIpcName));
       synergy::refreshIpcTokenAccess(QString::fromLatin1(kCoreIpcName));
     });
