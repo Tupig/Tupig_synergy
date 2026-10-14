@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <array>
+#include <cstdint>
 #include <string>
 
 class XDGPowerManager
@@ -33,5 +35,13 @@ public:
     kScreenSaver,
     kSessionManager
   };
-  static bool inhibitScreenCall(InhibitScreenServices serviceID, bool state, std::string &error);
+
+private:
+  bool inhibitScreenCall(InhibitScreenServices serviceID, bool state, std::string &error) const;
+  bool sleepInhibitCall(bool state, InhibitScreenServices serviceID) const;
+
+  //! Inhibit cookies returned by the screen saver / session manager, per
+  //! service and per instance so two managers (for example a primary and a
+  //! secondary screen) cannot clear each other's inhibition.
+  mutable std::array<uint32_t, 2> m_cookies = {};
 };
