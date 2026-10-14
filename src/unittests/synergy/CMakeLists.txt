@@ -125,6 +125,14 @@ create_test(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 
+create_test(
+  NAME IpcServerTests
+  DEPENDS app
+  LIBS arch base io mt ${extra_libs}
+  SOURCE IpcServerTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
+)
+
 if(BUILD_X11_SUPPORT)
   create_test(
     NAME X11LayoutParserTests

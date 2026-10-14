@@ -28,3 +28,10 @@ create_test(
   SOURCE I18NTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/common"
 )
+
+create_test(
+  NAME IpcTokenTests
+  DEPENDS common
+  SOURCE IpcTokenTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/common"
+)
