@@ -36,6 +36,12 @@
 namespace synergy::gui {
 
 const int kRetryDelay = 1000;
+
+//! Upper bound for the blocking waitForStarted() in startForegroundProcess().
+//! The GUI mutex is held for this wait, so it must stay short: 5s is ample for
+//! a local exec, while the default 30s freezes the GUI on slow spawns.
+constexpr int kStartTimeoutMs = 5000;
+
 const auto kLineSplitRegex = QRegularExpression("\r|\n|\r\n");
 
 QString CoreProcess::processModeToString(const Settings::ProcessMode mode)
@@ -250,7 +256,7 @@ void CoreProcess::startForegroundProcess(const QStringList &args)
 
   m_process->start(m_appPath, args);
 
-  if (m_process->waitForStarted()) {
+  if (m_process->waitForStarted(kStartTimeoutMs)) {
     m_startedAt = std::chrono::steady_clock::now();
     setProcessState(Started);
   } else {
