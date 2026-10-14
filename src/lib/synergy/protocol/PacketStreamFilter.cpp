@@ -10,6 +10,7 @@
 #include "base/IEventQueue.h"
 
 #include <cstring>
+#include <vector>
 
 //
 // PacketStreamFilter
@@ -69,16 +70,20 @@ uint32_t PacketStreamFilter::read(void *buffer, uint32_t n)
 
 void PacketStreamFilter::write(const void *buffer, uint32_t count)
 {
-  // write the length of the payload
-  uint8_t length[4];
-  length[0] = (uint8_t)((count >> 24) & 0xff);
-  length[1] = (uint8_t)((count >> 16) & 0xff);
-  length[2] = (uint8_t)((count >> 8) & 0xff);
-  length[3] = (uint8_t)(count & 0xff);
-  getStream()->write(length, sizeof(length));
+  // build the length prefix and payload in a single buffer so the transport
+  // receives the whole frame in one write; the thread-local buffer avoids a
+  // heap allocation per message on the input hot path
+  thread_local std::vector<char> frame;
+  frame.resize(sizeof(uint32_t) + static_cast<size_t>(count));
+  frame[0] = static_cast<char>((count >> 24) & 0xff);
+  frame[1] = static_cast<char>((count >> 16) & 0xff);
+  frame[2] = static_cast<char>((count >> 8) & 0xff);
+  frame[3] = static_cast<char>(count & 0xff);
+  if (count != 0) {
+    memcpy(frame.data() + sizeof(uint32_t), buffer, count);
+  }
 
-  // write the payload
-  getStream()->write(buffer, count);
+  getStream()->write(frame.data(), static_cast<uint32_t>(frame.size()));
 }
 
 void PacketStreamFilter::shutdownInput()
