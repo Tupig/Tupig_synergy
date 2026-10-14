@@ -444,8 +444,7 @@ QtTransportListenSocket::QtTransportListenSocket(SecurityLevel securityLevel) : 
     // Self-signed client certificates must not abort the handshake (raw-stack
     // parity); the fingerprint database is the trust gate.
     QObject::connect(
-        sslServer, &QSslServer::sslErrors, sslServer,
-        [](QSslSocket *socket, const QList<QSslError> &errors) {
+        sslServer, &QSslServer::sslErrors, sslServer, [](QSslSocket *socket, const QList<QSslError> &errors) {
           for (const auto &err : errors) {
             LOG_DEBUG("QtTransportListenSocket: ignoring SSL error: %s", err.errorString().toStdString().c_str());
           }
