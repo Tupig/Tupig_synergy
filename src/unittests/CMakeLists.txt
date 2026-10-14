@@ -82,6 +82,7 @@ find_package(Qt6 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Test)
 
 add_subdirectory(base)
 add_subdirectory(common)
+add_subdirectory(client)
 add_subdirectory(synergy)
 add_subdirectory(gui)
 add_subdirectory(net)
