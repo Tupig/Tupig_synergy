@@ -85,11 +85,21 @@ void CondVarTests::waitReturnsTrueWhenSignalled()
   Thread notifier(new NotifyJob(mutex, ready));
 
   mutex.lock();
-  QVERIFY(ready.wait(5.0));
-  QVERIFY(static_cast<bool>(ready));
+  // the Stopwatch overload is the bounded wait: the plain wait(seconds) only
+  // performs a single (cancellation-latency capped) wait and returns false on
+  // that timeout even though the deadline has not passed
+  Stopwatch timer;
+  const bool signalled = ready.wait(timer, 5.0);
+  const bool value = static_cast<bool>(ready);
   mutex.unlock();
 
-  QVERIFY(notifier.wait(5.0));
+  // join before any assertion: an early return would leave the notifier
+  // touching destroyed locals
+  const bool notifierDone = notifier.wait(5.0);
+
+  QVERIFY(signalled);
+  QVERIFY(value);
+  QVERIFY(notifierDone);
 }
 
 void CondVarTests::waitTimesOutWithoutSignal()
@@ -120,9 +130,14 @@ void CondVarTests::broadcastWakesAllWaiters()
   ready.broadcast();
   mutex.unlock();
 
-  QVERIFY(first.wait(5.0));
-  QVERIFY(second.wait(5.0));
-  QCOMPARE(woken.load(), 2);
+  // join both before asserting anything that could return early
+  const bool firstDone = first.wait(5.0);
+  const bool secondDone = second.wait(5.0);
+  const int count = woken.load();
+
+  QVERIFY(firstDone);
+  QVERIFY(secondDone);
+  QCOMPARE(count, 2);
 }
 
 QTEST_MAIN(CondVarTests)
