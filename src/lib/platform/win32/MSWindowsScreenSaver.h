@@ -58,13 +58,8 @@ private:
   void watchDesktopThread(const void *);
   void watchProcessThread(const void *);
 
-  void setSecure(bool secure, bool saveSecureAsInt);
-  bool isSecure(bool *wasSecureAnInt) const;
-
 private:
   BOOL m_wasEnabled;
-  bool m_wasSecure = false;
-  bool m_wasSecureAnInt = false;
 
   HANDLE m_process = nullptr;
   Thread *m_watch = nullptr;

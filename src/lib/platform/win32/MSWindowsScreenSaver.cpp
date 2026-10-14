@@ -9,21 +9,15 @@
 
 #include "MSWindowsScreen.h"
 #include "arch/Arch.h"
-#include "arch/win32/ArchMiscWindows.h"
 #include "base/Log.h"
 #include "base/TMethodJob.h"
 #include "mt/Thread.h"
 
 #include <malloc.h>
-#include <tchar.h>
 
 #if !defined(SPI_GETSCREENSAVERRUNNING)
 #define SPI_GETSCREENSAVERRUNNING 114
 #endif
-
-static const TCHAR *g_isSecureNT = L"ScreenSaverIsSecure";
-static const TCHAR *g_isSecure9x = L"ScreenSaveUsePassword";
-static const TCHAR *const g_pathScreenSaverIsSecure[] = {L"Control Panel", L"Desktop", nullptr};
 
 //
 // MSWindowsScreenSaver
@@ -82,23 +76,16 @@ bool MSWindowsScreenSaver::checkStarted(UINT msg, WPARAM wParam, LPARAM lParam)
 void MSWindowsScreenSaver::enable()
 {
   SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, m_wasEnabled, 0, 0);
-
-  // restore password protection
-  if (m_wasSecure) {
-    setSecure(true, m_wasSecureAnInt);
-  }
 }
 
 void MSWindowsScreenSaver::disable()
 {
+  // Note: only the screen saver itself is turned off.  The password-protected
+  // re-lock setting (ScreenSaverIsSecure) is deliberately left untouched:
+  // flipping it from a process that can crash would leave the machine with
+  // lock-screen protection silently disabled.
   SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &m_wasEnabled, 0);
   SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, FALSE, 0, 0);
-
-  // disable password protected screensaver
-  m_wasSecure = isSecure(&m_wasSecureAnInt);
-  if (m_wasSecure) {
-    setSecure(false, m_wasSecureAnInt);
-  }
 }
 
 void MSWindowsScreenSaver::activate()
@@ -244,55 +231,4 @@ void MSWindowsScreenSaver::watchProcessThread(const void *)
       return;
     }
   }
-}
-
-void MSWindowsScreenSaver::setSecure(bool secure, bool saveSecureAsInt)
-{
-  HKEY hkey = ArchMiscWindows::addKey(HKEY_CURRENT_USER, g_pathScreenSaverIsSecure);
-  if (hkey == nullptr) {
-    return;
-  }
-
-  if (saveSecureAsInt) {
-    ArchMiscWindows::setValue(hkey, g_isSecureNT, secure ? 1 : 0);
-  } else {
-    ArchMiscWindows::setValue(hkey, g_isSecureNT, secure ? "1" : "0");
-  }
-
-  ArchMiscWindows::closeKey(hkey);
-}
-
-bool MSWindowsScreenSaver::isSecure(bool *wasSecureFlagAnInt) const
-{
-  // get the password protection setting key
-  HKEY hkey = ArchMiscWindows::openKey(HKEY_CURRENT_USER, g_pathScreenSaverIsSecure);
-  if (hkey == nullptr) {
-    return false;
-  }
-
-  // get the value.  the value may be an int or a string, depending
-  // on the version of windows.
-  bool result;
-  switch (ArchMiscWindows::typeOfValue(hkey, g_isSecureNT)) {
-  default:
-    result = false;
-    break;
-
-  case ArchMiscWindows::kUINT: {
-    DWORD value = ArchMiscWindows::readValueInt(hkey, g_isSecureNT);
-    *wasSecureFlagAnInt = true;
-    result = (value != 0);
-    break;
-  }
-
-  case ArchMiscWindows::kSTRING: {
-    std::wstring value = ArchMiscWindows::readValueString(hkey, g_isSecureNT);
-    *wasSecureFlagAnInt = false;
-    result = (value != L"0");
-    break;
-  }
-  }
-
-  ArchMiscWindows::closeKey(hkey);
-  return result;
 }
