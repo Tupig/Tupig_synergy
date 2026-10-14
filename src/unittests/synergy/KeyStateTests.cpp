@@ -127,9 +127,8 @@ void KeyStateTests::isKeyDown_keyDown_retrunsTrue()
   MockEventQueue eventQueue;
   MockKeyState keyState(eventQueue, keyMap);
 
-  synergy::KeyMap::KeyItem key;
-  key.m_button = 1;
-  keyState.fakeKeyDown(1, 0, 1, "en");
+  keyState.setPolledKeys({1});
+  keyState.updateKeyState();
 
   QVERIFY(keyState.isKeyDown(1));
 }
@@ -140,11 +139,9 @@ void KeyStateTests::updateKeyState_pollInsertsSingleKey_keyIsDown()
   MockEventQueue eventQueue;
   MockKeyState keyState(eventQueue, keyMap);
 
-  synergy::KeyMap::KeyItem key;
-  key.m_button = 1;
-  keyState.fakeKeyDown(1, 0, 1, "en");
-
+  keyState.setPolledKeys({1});
   keyState.updateKeyState();
+
   QVERIFY(keyState.isKeyDown(1));
 }
 
