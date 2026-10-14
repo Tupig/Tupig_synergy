@@ -95,10 +95,7 @@ void IpcTokenTests::writeSetsOwnerOnlyPermissions()
   const auto token = synergy::generateIpcToken();
   QVERIFY(synergy::writeIpcToken(m_serverName, token));
 
-  QCOMPARE(
-      QFile::permissions(synergy::ipcTokenPath(m_serverName)),
-      QFileDevice::ReadOwner | QFileDevice::WriteOwner
-  );
+  QCOMPARE(QFile::permissions(synergy::ipcTokenPath(m_serverName)), QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 }
 
 void IpcTokenTests::refreshRestoresOwnerOnlyPermissions()
@@ -107,9 +104,11 @@ void IpcTokenTests::refreshRestoresOwnerOnlyPermissions()
   QVERIFY(synergy::writeIpcToken(m_serverName, token));
 
   const auto path = synergy::ipcTokenPath(m_serverName);
-  QVERIFY(QFile::setPermissions(
-      path, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ReadGroup | QFileDevice::WriteGroup
-  ));
+  QVERIFY(
+      QFile::setPermissions(
+          path, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ReadGroup | QFileDevice::WriteGroup
+      )
+  );
 
   QVERIFY(synergy::refreshIpcTokenAccess(m_serverName));
   QCOMPARE(QFile::permissions(path), QFileDevice::ReadOwner | QFileDevice::WriteOwner);

@@ -127,8 +127,7 @@ void IpcServerTests::helloWithWrongVersionReportsMismatch()
 
   QTRY_VERIFY(client->bytesAvailable() > 0);
   QCOMPARE(
-      QString::fromUtf8(client->readAll()),
-      QStringLiteral("versionMismatch=%1\n").arg(QString::fromUtf8(kVersion))
+      QString::fromUtf8(client->readAll()), QStringLiteral("versionMismatch=%1\n").arg(QString::fromUtf8(kVersion))
   );
 }
 
