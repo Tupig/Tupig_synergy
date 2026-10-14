@@ -293,13 +293,13 @@ private:
   Time m_timeLost = 0;
 
   // true iff open and clipboard owned by a motif app
-  mutable bool m_motif;
+  mutable bool m_motif = false;
 
   // the added/cached clipboard data
-  mutable bool m_checkCache;
-  bool m_cached;
-  Time m_cacheTime;
-  bool m_added[static_cast<int>(IClipboard::Format::TotalFormats)];
+  mutable bool m_checkCache = false;
+  bool m_cached = false;
+  Time m_cacheTime = 0;
+  bool m_added[static_cast<int>(IClipboard::Format::TotalFormats)] = {};
   std::string m_data[static_cast<int>(IClipboard::Format::TotalFormats)];
 
   // conversion request replies
