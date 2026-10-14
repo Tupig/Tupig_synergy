@@ -12,8 +12,6 @@
 
 #include <string>
 
-using namespace synergy::server;
-
 namespace {
 
 //! Matches only System events, activating on them.
@@ -28,13 +26,13 @@ public:
   {
     return "system";
   }
-  FilterStatus match(const Event &e) override
+  InputFilter::FilterStatus match(const Event &e) override
   {
-    return e.getType() == EventTypes::System ? FilterStatus::Activate : FilterStatus::NoMatch;
+    return e.getType() == EventTypes::System ? InputFilter::FilterStatus::Activate : InputFilter::FilterStatus::NoMatch;
   }
 };
 
-//! Activates on System events and deactivates on KeyDown events.
+//! Activates on System events and deactivates on key-down events.
 class ToggleCondition : public InputFilter::Condition
 {
 public:
@@ -46,15 +44,15 @@ public:
   {
     return "toggle";
   }
-  FilterStatus match(const Event &e) override
+  InputFilter::FilterStatus match(const Event &e) override
   {
     if (e.getType() == EventTypes::System) {
-      return FilterStatus::Activate;
+      return InputFilter::FilterStatus::Activate;
     }
-    if (e.getType() == EventTypes::KeyDown) {
-      return FilterStatus::Deactivate;
+    if (e.getType() == EventTypes::KeyStateKeyDown) {
+      return InputFilter::FilterStatus::Deactivate;
     }
-    return FilterStatus::NoMatch;
+    return InputFilter::FilterStatus::NoMatch;
   }
 };
 
@@ -89,14 +87,14 @@ void InputFilterTests::ruleWithoutConditionNeverMatches()
 {
   InputFilter::Rule rule;
   QVERIFY(!rule.handleEvent(Event(EventTypes::System)));
-  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyDown)));
+  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyStateKeyDown)));
 }
 
 void InputFilterTests::conditionMatchesOnlyItsEventType()
 {
   InputFilter::Rule rule{new SystemOnlyCondition()};
   QVERIFY(rule.handleEvent(Event(EventTypes::System)));
-  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyDown)));
+  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyStateKeyDown)));
 }
 
 void InputFilterTests::activateAndDeactivateActionsRunInOrder()
@@ -112,12 +110,12 @@ void InputFilterTests::activateAndDeactivateActionsRunInOrder()
   QCOMPARE(activated, 1);
   QCOMPARE(deactivated, 0);
 
-  QVERIFY(rule.handleEvent(Event(EventTypes::KeyDown)));
+  QVERIFY(rule.handleEvent(Event(EventTypes::KeyStateKeyDown)));
   QCOMPARE(activated, 1);
   QCOMPARE(deactivated, 1);
 
   // an unrelated event matches neither list
-  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyUp)));
+  QVERIFY(!rule.handleEvent(Event(EventTypes::KeyStateKeyUp)));
   QCOMPARE(activated, 1);
   QCOMPARE(deactivated, 1);
 }
