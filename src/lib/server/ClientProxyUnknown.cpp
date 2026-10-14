@@ -41,7 +41,7 @@ std::string sanitizeClientName(const std::string &name)
   constexpr size_t kMaxClientNameLength = 255;
 
   std::string clean;
-  clean.reserve(std::min(name.size(), kMaxClientNameLength));
+  clean.reserve((std::min)(name.size(), kMaxClientNameLength));
   for (const char ch : name) {
     const auto byte = static_cast<unsigned char>(ch);
     if (byte < 0x20 || byte == 0x7F) {

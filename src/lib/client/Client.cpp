@@ -140,7 +140,7 @@ void Client::continueConnect(size_t addressIndex)
     // operation and does not perform DNS.  patch by Brent Priddy.
     NetworkAddress target(m_serverAddress);
     if (!m_resolvedIps.empty()) {
-      const auto index = std::min(addressIndex, m_resolvedIps.size() - 1);
+      const auto index = (std::min)(addressIndex, m_resolvedIps.size() - 1);
       target = NetworkAddress(m_resolvedIps[index], m_serverAddress.getPort());
       m_resolvedAddressesCount = m_resolvedIps.size();
       target.resolve(0);
