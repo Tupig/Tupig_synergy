@@ -9,6 +9,7 @@
 
 #include "base/FinalAction.h"
 #include "common/Constants.h"
+#include "common/IpcToken.h"
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -20,6 +21,11 @@
 #include <algorithm>
 #include <filesystem>
 #include <stdexcept>
+
+#if !defined(Q_OS_WIN)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 namespace synergy {
 
@@ -91,16 +97,28 @@ void generatePemSelfSignedCert(const QString &path, int keyLength)
   }
   auto certFree = finally([cert]() { X509_free(cert); });
 
-  ASN1_INTEGER_set(X509_get_serialNumber(cert), 1);
-  X509_gmtime_adj(X509_get_notBefore(cert), 0);
-  X509_gmtime_adj(X509_get_notAfter(cert), expirationDays * 24 * 3600);
-  X509_set_pubkey(cert, privateKey);
+  const auto ensure = [](bool ok, const char *what) {
+    if (!ok) {
+      throw std::runtime_error(std::string("certificate generation failed: ") + what);
+    }
+  };
+
+  ensure(ASN1_INTEGER_set(X509_get_serialNumber(cert), 1) == 1, "could not set serial number");
+  ensure(X509_gmtime_adj(X509_get_notBefore(cert), 0) != nullptr, "could not set validity start");
+  ensure(X509_gmtime_adj(X509_get_notAfter(cert), expirationDays * 24 * 3600) != nullptr, "could not set validity end");
+  ensure(X509_set_pubkey(cert, privateKey) == 1, "could not set public key");
 
   auto *name = X509_get_subject_name(cert);
-  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(kAppName), -1, -1, 0);
-  X509_set_issuer_name(cert, name);
+  ensure(name != nullptr, "could not get subject name");
+  ensure(
+      X509_NAME_add_entry_by_txt(
+          name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(kAppName), -1, -1, 0
+      ) == 1,
+      "could not set common name"
+  );
+  ensure(X509_set_issuer_name(cert, name) == 1, "could not set issuer name");
 
-  X509_sign(cert, privateKey, EVP_sha256());
+  ensure(X509_sign(cert, privateKey, EVP_sha256()) > 0, "could not sign certificate");
   const QFile file(path);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   const std::filesystem::path fsPath = file.filesystemFileName();
@@ -111,16 +129,32 @@ void generatePemSelfSignedCert(const QString &path, int keyLength)
 #if defined(Q_OS_WIN)
   auto fp = _wfopen(fsPath.native().c_str(), L"w");
 #else
-  auto fp = std::fopen(fsPath.native().c_str(), "w");
+  // create the file owner-readable/writable only, so a private key is never
+  // readable by other local users even for the moment before permissions are
+  // tightened below (fopen's mode is masked by umask and typically yields 0644)
+  const int fd = open(fsPath.native().c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+  auto *fp = (fd >= 0) ? fdopen(fd, "w") : nullptr;
 #endif
 
   if (!fp) {
     throw std::runtime_error("could not open certificate output path");
   }
-  auto fileClose = finally([fp]() { std::fclose(fp); });
 
-  PEM_write_PrivateKey(fp, privateKey, nullptr, nullptr, 0, nullptr, nullptr);
-  PEM_write_X509(fp, cert);
+  {
+    auto fileClose = finally([fp]() { std::fclose(fp); });
+    ensure(
+        PEM_write_PrivateKey(fp, privateKey, nullptr, nullptr, 0, nullptr, nullptr) == 1, "could not write private key"
+    );
+    ensure(PEM_write_X509(fp, cert) == 1, "could not write certificate");
+  }
+
+#if defined(Q_OS_WIN)
+  // the file inherited a broad DACL when it was created; restrict it to
+  // SYSTEM, Administrators, and the console user before anyone can read it
+  if (!synergy::restrictSecretFilePermissions(path)) {
+    throw std::runtime_error("could not restrict permissions on the private key file");
+  }
+#endif
 }
 
 QString formatSSLFingerprintColumns(const QByteArray &fingerprint)

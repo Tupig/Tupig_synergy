@@ -36,6 +36,7 @@
 #include "synergy/hooks/gui_hook.h"
 #endif
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QDebug>
@@ -47,6 +48,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QNetworkInterface>
+#include <QPointer>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
@@ -54,6 +56,7 @@
 #include <QScrollBar>
 
 #include <memory>
+#include <thread>
 
 #if defined(Q_OS_MACOS)
 #include <ApplicationServices/ApplicationServices.h>
@@ -153,7 +156,7 @@ MainWindow::MainWindow()
       Settings::setValue(Settings::Security::KeySize, kMinimumRsaBits);
     }
     if (!TlsUtility::isCertValid()) {
-      generateCertificate();
+      generateCertificateAsync();
     } else {
       m_fingerprint = {QCryptographicHash::Sha256, TlsUtility::certFingerprint()};
     }
@@ -294,6 +297,12 @@ void MainWindow::connectSlots()
 
   connect(ui->lineHostname, &QLineEdit::returnPressed, ui->btnRestartCore, &QPushButton::click);
   connect(ui->lineHostname, &QLineEdit::textChanged, this, &MainWindow::remoteHostChanged);
+  // debounce the settings write so typing a host name does not rewrite the
+  // whole settings file on every keystroke
+  m_remoteHostSaveTimer.setSingleShot(true);
+  m_remoteHostSaveTimer.setInterval(400);
+  connect(&m_remoteHostSaveTimer, &QTimer::timeout, this, &MainWindow::saveRemoteHost);
+  connect(ui->lineHostname, &QLineEdit::editingFinished, this, &MainWindow::saveRemoteHost);
 
   connect(ui->btnSaveServerConfig, &QPushButton::clicked, this, &MainWindow::saveServerConfig);
   connect(ui->btnConfigureServer, &QPushButton::clicked, this, [this] { showConfigureServer(""); });
@@ -653,6 +662,10 @@ void MainWindow::open()
   QTimer::singleShot(kCriticalDialogDelay, this, &messages::raiseCriticalDialog);
 
   if (Settings::value(Settings::Gui::AutoStartCore).toBool()) {
+    if (!m_certificateReady) {
+      qWarning() << "skipping core auto start, tls certificate is still being generated";
+      return;
+    }
     if (m_coreProcess.mode() == CoreMode::None) {
       qWarning() << "skipping core auto start, mode is not set";
       return;
@@ -1213,6 +1226,43 @@ bool MainWindow::generateCertificate()
   return true;
 }
 
+void MainWindow::generateCertificateAsync()
+{
+  m_certificateReady = false;
+
+  // capture the inputs on the GUI thread; RSA key generation can block for
+  // seconds and must not freeze window construction
+  const auto keyLength = std::max(kMinimumRsaBits, Settings::value(Settings::Security::KeySize).toInt());
+  const auto certPath = Settings::value(Settings::Security::Certificate).toString();
+
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QPointer<MainWindow> self(this);
+  std::thread([self, keyLength, certPath] {
+    const bool ok = TlsUtility::generateCertificateAt(certPath, keyLength);
+    if (!self) {
+      return;
+    }
+
+    QMetaObject::invokeMethod(
+        self.data(),
+        [self, ok] {
+          if (!self) {
+            return;
+          }
+          QApplication::restoreOverrideCursor();
+          self->m_certificateReady = true;
+          if (ok && TlsUtility::isCertValid()) {
+            self->m_fingerprint = {QCryptographicHash::Sha256, TlsUtility::certFingerprint()};
+            self->updateLocalFingerprint();
+          } else {
+            qCritical("failed to generate a tls certificate");
+          }
+        },
+        Qt::QueuedConnection
+    );
+  }).detach();
+}
+
 void MainWindow::serverClientsChanged(const QStringList &clients)
 {
   if (m_coreProcess.mode() != CoreMode::Server || !m_coreProcess.isStarted())
@@ -1240,10 +1290,21 @@ void MainWindow::remoteHostChanged(const QString &newRemoteHost)
 {
   m_coreProcess.setAddress(newRemoteHost);
   toggleCanRunCore(!newRemoteHost.isEmpty() && ui->rbModeClient->isChecked());
-  if (newRemoteHost.isEmpty()) {
+  // debounce the settings write: textChanged fires per keystroke and each
+  // save rewrites the whole settings file
+  m_remoteHostSaveTimer.start();
+}
+
+void MainWindow::saveRemoteHost()
+{
+  if (m_remoteHostSaveTimer.isActive()) {
+    m_remoteHostSaveTimer.stop();
+  }
+  const auto host = ui->lineHostname->text();
+  if (host.isEmpty()) {
     Settings::setValue(Settings::Client::RemoteHost);
   } else {
-    Settings::setValue(Settings::Client::RemoteHost, newRemoteHost);
+    Settings::setValue(Settings::Client::RemoteHost, host);
   }
 }
 

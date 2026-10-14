@@ -57,6 +57,7 @@ protected:
 
 private:
   void attemptConnection();
+  void scheduleRetry();
   void handleHandshakeMessage(const QStringList &parts);
 
   QLocalSocket *m_socket;

@@ -17,7 +17,6 @@
 
 #include <memory>
 
-class Client;
 class ClientInfo;
 class EventQueueTimer;
 class IClipboard;
@@ -25,6 +24,7 @@ namespace synergy {
 class IStream;
 }
 class IEventQueue;
+class IServerProxyClient;
 
 //! Proxy for server
 /*!
@@ -38,7 +38,7 @@ public:
   Process messages from the server on \p stream and forward to
   \p client.
   */
-  ServerProxy(Client *client, synergy::IStream *stream, IEventQueue *events);
+  ServerProxy(IServerProxyClient *client, synergy::IStream *stream, IEventQueue *events);
   ServerProxy(ServerProxy const &) = delete;
   ServerProxy(ServerProxy &&) = delete;
   ~ServerProxy();
@@ -109,10 +109,14 @@ private:
   //! Consume one `DFTR` chunk from the server.
   void fileChunk();
 
+  //! Lazily created keyboard layout manager, so merely constructing a proxy
+  //! does not reach into the AppUtil singleton (tests have no application).
+  synergy::KeyboardLayoutManager &layoutManager();
+
 private:
   using MessageParser = ConnectionResult (ServerProxy::*)(const uint8_t *);
 
-  Client *m_client = nullptr;
+  IServerProxyClient *m_client = nullptr;
   synergy::IStream *m_stream = nullptr;
 
   //! Validates input arriving from the server before it reaches the platform layer.
@@ -133,6 +137,8 @@ private:
 
   double m_keepAliveAlarm = 0.0;
   EventQueueTimer *m_keepAliveAlarmTimer = nullptr;
+  //! send one NOOP reply per incoming batch instead of one per message
+  bool m_needNoopReply = false;
 
   MessageParser m_parser = &ServerProxy::parseHandshakeMessage;
   IEventQueue *m_events = nullptr;
@@ -140,7 +146,7 @@ private:
   std::string m_clipboardDataCached;
   ClipboardChunkAssemblyState m_clipboardChunkState;
   bool m_isUserNotifiedAboutLayoutSyncError = false;
-  synergy::KeyboardLayoutManager m_layoutManager;
+  std::unique_ptr<synergy::KeyboardLayoutManager> m_layoutManager;
 
   //! Receives drag-and-drop files, subject to the fileTransfer settings.
   /*!

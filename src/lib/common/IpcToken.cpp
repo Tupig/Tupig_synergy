@@ -232,4 +232,9 @@ bool refreshIpcTokenAccess(const QString &serverName)
   return restrictTokenFile(ipcTokenPath(serverName));
 }
 
+bool restrictSecretFilePermissions(const QString &path)
+{
+  return restrictTokenFile(path);
+}
+
 } // namespace synergy

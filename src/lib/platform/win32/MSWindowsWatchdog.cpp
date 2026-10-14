@@ -9,6 +9,7 @@
 #include "App.h"
 #include "MSWindowsHandle.h"
 #include "arch/Arch.h"
+#include "arch/win32/ArchMiscWindows.h"
 #include "arch/win32/XArchWindows.h"
 #include "base/Log.h"
 #include "base/LogOutputters.h"
@@ -27,6 +28,8 @@
 #include <QByteArray>
 #include <QString>
 #include <QStringDecoder>
+
+#include <algorithm>
 
 //
 // Free functions
@@ -76,6 +79,16 @@ MSWindowsWatchdog::MSWindowsWatchdog(bool foreground, FileLogOutputter &fileLogO
 MSWindowsWatchdog::~MSWindowsWatchdog()
 {
   stop();
+
+  // the reader thread has joined; close the pipe handles it was using
+  if (m_outputReadPipe != nullptr) {
+    CloseHandle(m_outputReadPipe);
+    m_outputReadPipe = nullptr;
+  }
+  if (m_outputWritePipe != nullptr) {
+    CloseHandle(m_outputWritePipe);
+    m_outputWritePipe = nullptr;
+  }
 }
 
 void MSWindowsWatchdog::startAsync()
@@ -175,7 +188,18 @@ void MSWindowsWatchdog::mainLoop(const void *)
 {
   using enum ProcessState;
 
-  shutdownExistingProcesses();
+  // a process that stays up at least this long counts as a healthy start
+  constexpr double kStableUptimeSeconds = 10.0;
+
+  // this can throw when the snapshot/enumeration fails; letting it escape the
+  // thread entry point would call std::terminate and kill the whole daemon
+  try {
+    shutdownExistingProcesses();
+  } catch (std::exception &e) {
+    LOG_ERR("could not shut down existing processes: %s", e.what());
+  } catch (...) {
+    LOG_ERR("could not shut down existing processes");
+  }
 
   LOG_DEBUG("starting watchdog main loop");
   while (m_running) {
@@ -232,7 +256,7 @@ void MSWindowsWatchdog::mainLoop(const void *)
         break;
       }
 
-      m_startFailures = 0;
+      m_lastStartTime = Arch::time();
       m_processState = Running;
       LOG_DEBUG("started core process from watchdog");
     } break;
@@ -241,7 +265,12 @@ void MSWindowsWatchdog::mainLoop(const void *)
       LOG_VERBOSE("watchdog process in running state");
       if (!isProcessRunning()) {
         LOG_WARN("detected application not running, pid=%d", m_process->info().dwProcessId);
-        m_processState = StartPending;
+        // a process that stayed up counts as a healthy start; a quick crash
+        // keeps accumulating failures so the retry delay can grow
+        if (Arch::time() - m_lastStartTime >= kStableUptimeSeconds) {
+          m_startFailures = 0;
+        }
+        m_processState = handleStartError("process stopped unexpectedly");
       }
     } break;
 
@@ -283,8 +312,11 @@ bool MSWindowsWatchdog::isProcessRunning()
     return false;
   }
 
-  DWORD exitCode;
-  GetExitCodeProcess(m_process->info().hProcess, &exitCode);
+  DWORD exitCode = 0;
+  if (!GetExitCodeProcess(m_process->info().hProcess, &exitCode)) {
+    LOG_WARN("could not query process exit code, treating process as not running");
+    return false;
+  }
   return exitCode == STILL_ACTIVE;
 }
 
@@ -446,8 +478,6 @@ void MSWindowsWatchdog::shutdownExistingProcesses()
 
 MSWindowsWatchdog::ProcessState MSWindowsWatchdog::handleStartError(const std::string_view &message)
 {
-  const auto kStartDelaySeconds = 1;
-
   m_startFailures++;
 
   if (!message.empty()) {
@@ -456,11 +486,14 @@ MSWindowsWatchdog::ProcessState MSWindowsWatchdog::handleStartError(const std::s
     LOG_CRIT("daemon failed to start process, unknown error");
   }
 
-  // When there has been more than one consecutive failure, slow down the retry rate.
+  // After consecutive failures, slow down the retry rate exponentially:
+  // 1s, 2s, 4s, ... capped at 60s.
   if (m_startFailures > 1) {
-    m_nextStartTime = Arch::time() + kStartDelaySeconds;
-    LOG_WARN("start failed %d times, delaying start", m_startFailures);
-    LOG_DEBUG("start delay, seconds=%d, time=%f", kStartDelaySeconds, m_nextStartTime.value());
+    const auto exponent = std::min<unsigned>(static_cast<unsigned>(m_startFailures) - 2u, 6u);
+    const auto delaySeconds = std::min<unsigned>(1u << exponent, 60u);
+    m_nextStartTime = Arch::time() + delaySeconds;
+    LOG_WARN("start failed %d times, delaying start by %u second(s)", m_startFailures, delaySeconds);
+    LOG_DEBUG("start delay, seconds=%u, time=%f", delaySeconds, m_nextStartTime.value());
     return ProcessState::StartScheduled;
   } else {
     LOG_INFO("retrying process start immediately");
@@ -505,7 +538,12 @@ void MSWindowsWatchdog::initOutputReadPipe()
   // in order to speed up the shutdown process when the Windows service needs to stop.
   if (DWORD mode = PIPE_NOWAIT; !SetNamedPipeHandleState(m_outputReadPipe, &mode, nullptr, nullptr)) {
     LOG_ERR("could not set pipe to non-blocking mode");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
+    const auto err = GetLastError();
+    CloseHandle(m_outputReadPipe);
+    CloseHandle(m_outputWritePipe);
+    m_outputReadPipe = nullptr;
+    m_outputWritePipe = nullptr;
+    throw std::runtime_error(windowsErrorToString(err));
   }
 }
 
@@ -513,7 +551,10 @@ void MSWindowsWatchdog::initSasFunc()
 {
   // the SendSAS function is used to send a sas (secure attention sequence) to the
   // winlogon process. this is used to switch to the login screen.
-  HINSTANCE sasLib = LoadLibrary(L"sas.dll");
+  // Load only from System32: resolving the bare name would also search the
+  // application and current directories, which a low-privilege user may be
+  // able to write to when the install location is not protected.
+  HINSTANCE sasLib = LoadLibraryExW(L"sas.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   if (!sasLib) {
     LOG_ERR("could not load sas.dll");
     throw std::runtime_error(windowsErrorToString(GetLastError()));
@@ -544,8 +585,14 @@ void MSWindowsWatchdog::sasLoop(const void *) // NOSONAR - Thread entry point si
       continue;
     }
 
-    // Create a an event so that other processes can tell the daemon to call the `SendSAS` function.
-    MSWindowsHandle sendSasEvent(CreateEvent(nullptr, FALSE, FALSE, LPCWSTR(kSendSasEventName)));
+    // Create an event so that other processes can tell the daemon to call the `SendSAS` function.
+    // Restricted to SYSTEM and Administrators: only an elevated core may set it, and a
+    // low-privilege process cannot pre-create the name and trick the daemon into signalling.
+    MSWindowsHandle sendSasEvent(
+        ArchMiscWindows::createProtectedGlobalEvent(
+            LPCWSTR(kSendSasEventName), FALSE, FALSE, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+        )
+    );
     if (sendSasEvent.get() == nullptr) {
       LOG_ERR("could not create SAS event, error: %s", windowsErrorToString(GetLastError()).c_str());
       Arch::sleep(1);

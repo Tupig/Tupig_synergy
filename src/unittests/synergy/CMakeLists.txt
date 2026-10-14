@@ -30,6 +30,14 @@ create_test(
 )
 
 create_test(
+  NAME PacketStreamFilterTests
+  DEPENDS app
+  LIBS arch base io mt ${extra_libs}
+  SOURCE PacketStreamFilterTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
+)
+
+create_test(
   NAME IKeyStateTests
   DEPENDS app
   LIBS arch base ${extra_libs}
@@ -114,6 +122,14 @@ create_test(
   DEPENDS app
   LIBS arch base io ${extra_libs}
   SOURCE FileTransferOutboundTests.cpp
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
+)
+
+create_test(
+  NAME IpcServerTests
+  DEPENDS app
+  LIBS arch base io mt ${extra_libs}
+  SOURCE IpcServerTests.cpp
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/src/lib/synergy"
 )
 

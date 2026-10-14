@@ -28,6 +28,12 @@ QStringList splitIpcMessage(const QString &message)
   return {message.left(separator), message.mid(separator + 1)};
 }
 
+//! Maximum connection attempts per connectToServer() call.
+constexpr int kRetryLimit = 3;
+
+//! Base delay between connection attempts; attempt N waits N * this value.
+constexpr int kRetryBackoffMs = 200;
+
 } // namespace
 
 // QLocalSocket::errorOccurred was added in Qt 5.15; the pre-5.15 signal is
@@ -75,9 +81,9 @@ void IpcClient::connectToServer()
 
 void IpcClient::attemptConnection()
 {
-  if (const int retryLimit = 3; m_retryCount >= retryLimit) {
+  if (m_retryCount >= kRetryLimit) {
     qWarning().noquote() << QStringLiteral("%1 ipc client failed to connect after %2 attempts")
-                                .arg(m_typeName, QString::number(retryLimit));
+                                .arg(m_typeName, QString::number(kRetryLimit));
     m_state = State::Unconnected;
     Q_EMIT connectionFailed();
     return;
@@ -93,6 +99,9 @@ void IpcClient::attemptConnection()
   m_state = State::Connecting;
   m_retryCount++;
 
+  // Connection failures are handled by handleErrorOccurred, which is
+  // connected once in the constructor. Only the success path needs a
+  // one-shot handler, so a stale connection lambda can never accumulate.
   connect(
       m_socket, &QLocalSocket::connected, this,
       [this] {
@@ -112,26 +121,14 @@ void IpcClient::attemptConnection()
 #endif
   );
 
-  connect(
-      m_socket, kLocalSocketError, this,
-      [this] {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        disconnect(m_socket, kLocalSocketError, this, nullptr);
-#endif
-        qWarning().noquote(
-        ) << QStringLiteral("%1 ipc client failed to connect: %2").arg(m_typeName, m_socket->errorString());
-        m_socket->disconnectFromServer();
-        m_state = State::Unconnected;
-        QTimer::singleShot(0, this, &IpcClient::attemptConnection);
-      },
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-      Qt::SingleShotConnection
-#else
-      Qt::AutoConnection
-#endif
-  );
-
   m_socket->connectToServer(m_socketName);
+}
+
+void IpcClient::scheduleRetry()
+{
+  // linear backoff (0ms, 200ms, 400ms) so a missing server does not
+  // burn all attempts in a single event-loop turn
+  QTimer::singleShot(kRetryBackoffMs * m_retryCount, this, &IpcClient::attemptConnection);
 }
 
 void IpcClient::disconnectFromServer()
@@ -160,6 +157,11 @@ void IpcClient::handleDisconnected()
 void IpcClient::handleErrorOccurred()
 {
   if (m_state == State::Connecting) {
+    qWarning().noquote(
+    ) << QStringLiteral("%1 ipc client failed to connect: %2").arg(m_typeName, m_socket->errorString());
+    m_socket->disconnectFromServer();
+    m_state = State::Unconnected;
+    scheduleRetry();
     return;
   }
 

@@ -34,10 +34,12 @@
 #include <array>
 #endif
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <optional>
 
 using namespace synergy::server;
 
@@ -1300,7 +1302,7 @@ void Server::handleClipboardChanged(const Event &event, BaseClientProxy *client)
 void Server::handleKeyDownEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = getCurrentLanguageCached();
   onKeyDown(info->m_key, info->m_mask, info->m_button, lang, info->m_screens.c_str());
 }
 
@@ -1313,8 +1315,21 @@ void Server::handleKeyUpEvent(const Event &event)
 void Server::handleKeyRepeatEvent(const Event &event)
 {
   const auto *info = static_cast<IPlatformScreen::KeyInfo *>(event.getData());
-  auto lang = AppUtil::instance().getCurrentLanguageCode();
+  auto lang = getCurrentLanguageCached();
   onKeyRepeat(info->m_key, info->m_mask, info->m_count, info->m_button, lang);
+}
+
+const std::string &Server::getCurrentLanguageCached()
+{
+  // querying the layout is expensive on some platforms (X11 opens a display
+  // connection per call), so reuse the last result for a short interval
+  constexpr double kCacheSeconds = 2.0;
+  const double now = std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+  if (m_languageCodeCache.empty() || now - m_languageCodeCachedAt > kCacheSeconds) {
+    m_languageCodeCache = AppUtil::instance().getCurrentLanguageCode();
+    m_languageCodeCachedAt = now;
+  }
+  return m_languageCodeCache;
 }
 
 void Server::handleButtonDownEvent(const Event &event)
@@ -1349,6 +1364,13 @@ void Server::handleWheelEvent(const Event &event)
 
 void Server::handleSwitchWaitTimeout()
 {
+  // the target client may have disconnected, or the switch may have been
+  // stopped, while this one-shot timer was in flight
+  if (m_switchScreen == nullptr) {
+    stopSwitchWait();
+    return;
+  }
+
   // ignore if mouse is locked to screen
   if (isLockedToScreen()) {
     LOG_VERBOSE("locked to screen");
@@ -1521,14 +1543,19 @@ void Server::onClipboardChanged(const BaseClientProxy *sender, ClipboardID id, u
     return;
   }
 
-  // should be the expected client
-  assert(sender == m_clients.find(clipboard.m_clipboardOwner)->second);
+  // should be the expected client; tolerate a late update from a
+  // screen that has since disconnected and released clipboard ownership
+  const auto ownerIt = m_clients.find(clipboard.m_clipboardOwner);
+  if (ownerIt == m_clients.end() || sender != ownerIt->second) {
+    LOG_WARN("ignored screen \"%s\" update of clipboard %d (not the clipboard owner)", getName(sender).c_str(), id);
+    return;
+  }
 
   // get data
   sender->getClipboard(id, &clipboard.m_clipboard);
 
   std::string data = clipboard.m_clipboard.marshall();
-  if (data.size() > m_maximumClipboardSize * 1024) {
+  if (IClipboard::exceedsSizeLimit(data.size(), m_maximumClipboardSize)) {
     LOG_WARN("not sending clipboard data, exceeds limit: %i KB", m_maximumClipboardSize);
     return;
   }
@@ -1784,16 +1811,25 @@ void Server::onMouseMoveSecondary(int32_t dx, int32_t dy)
   LOG_VERBOSE("mouse move on secondary: %+d,%+d", dx, dy);
 
   // TODO: move this to client side and use a qt setting or cli arg instead of env var.
-  const static auto adjustEnv = "SYNERGY_MOUSE_ADJUSTMENT";
-  if (const char *envVal = std::getenv(adjustEnv); envVal) {
-    try {
-      double multiplier = std::stod(envVal);
-      dx = static_cast<int32_t>(std::round(dx * multiplier));
-      dy = static_cast<int32_t>(std::round(dy * multiplier));
-      LOG_VERBOSE("adjusted mouse x %.2f: %+d,%+d", multiplier, dx, dy);
-    } catch (const std::exception &e) {
-      LOG_ERR("invalid %s value: %s", adjustEnv, e.what());
+  // parse once and cache: getenv + stod on every mouse event is wasteful
+  const static auto adjustMultiplier = []() -> std::optional<double> {
+    constexpr auto kAdjustEnv = "SYNERGY_MOUSE_ADJUSTMENT";
+    const char *envVal = std::getenv(kAdjustEnv);
+    if (envVal == nullptr) {
+      return std::nullopt;
     }
+    try {
+      return std::stod(envVal);
+    } catch (const std::exception &e) {
+      LOG_ERR("invalid %s value: %s", kAdjustEnv, e.what());
+      return std::nullopt;
+    }
+  }();
+  if (adjustMultiplier.has_value()) {
+    const double multiplier = adjustMultiplier.value();
+    dx = static_cast<int32_t>(std::round(dx * multiplier));
+    dy = static_cast<int32_t>(std::round(dy * multiplier));
+    LOG_VERBOSE("adjusted mouse x %.2f: %+d,%+d", multiplier, dx, dy);
   }
 
   // mouse move on secondary (client's) screen
@@ -1928,24 +1964,37 @@ void Server::onMouseMoveSecondary(int32_t dx, int32_t dy)
     // same screen.  clamp mouse to edge.
     m_x = xOld + dx;
     m_y = yOld + dy;
+    // these diagnostics run for every motion event; only build the client
+    // name when verbose logging is actually enabled
+    const bool verboseLogs = CLOG->getFilter() >= LogLevel::Level::Verbose;
     if (m_x < ax) {
       m_x = ax;
-      LOG_VERBOSE("clamp to left of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to left of \"%s\"", getName(m_active).c_str());
+      }
     } else if (m_x > ax + aw - 1) {
       m_x = ax + aw - 1;
-      LOG_VERBOSE("clamp to right of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to right of \"%s\"", getName(m_active).c_str());
+      }
     }
     if (m_y < ay) {
       m_y = ay;
-      LOG_VERBOSE("clamp to top of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to top of \"%s\"", getName(m_active).c_str());
+      }
     } else if (m_y > ay + ah - 1) {
       m_y = ay + ah - 1;
-      LOG_VERBOSE("clamp to bottom of \"%s\"", getName(m_active).c_str());
+      if (verboseLogs) {
+        LOG_VERBOSE("clamp to bottom of \"%s\"", getName(m_active).c_str());
+      }
     }
 
     // warp cursor if it moved.
     if (m_x != xOld || m_y != yOld) {
-      LOG_VERBOSE("move on %s to %d,%d", getName(m_active).c_str(), m_x, m_y);
+      if (verboseLogs) {
+        LOG_VERBOSE("move on %s to %d,%d", getName(m_active).c_str(), m_x, m_y);
+      }
       m_active->mouseMove(m_x, m_y);
     }
   }
@@ -2009,8 +2058,24 @@ bool Server::removeClient(BaseClientProxy *client)
   m_events->removeHandler(ClipboardChanged, client->getEventTarget());
 
   // remove from list
-  m_clients.erase(getName(client));
+  const std::string name = getName(client);
+  m_clients.erase(name);
   m_clientSet.erase(i);
+
+  // reset clipboard ownership so a late update from the removed screen
+  // cannot reference a stale owner entry
+  const std::string primaryName = getName(m_primaryClient);
+  for (auto &clipboard : m_clipboards) {
+    if (clipboard.m_clipboardOwner == name) {
+      clipboard.m_clipboardOwner = primaryName;
+    }
+  }
+
+  // if we were waiting to switch to this client, cancel the pending switch
+  // before the client object is destroyed
+  if (client == m_switchScreen) {
+    stopSwitch();
+  }
 
   return true;
 }

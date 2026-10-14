@@ -11,6 +11,7 @@
 #include "ProtocolTypes.h"
 #include "ProtocolUtil.h"
 #include "StreamChunker.h"
+#include "TestStreams.h"
 #include "io/IStream.h"
 #include "synergy/core/SynergyException.h"
 
@@ -20,139 +21,6 @@
 #include <string>
 
 namespace {
-
-class MemoryStream : public synergy::IStream
-{
-public:
-  void push(const std::string &bytes)
-  {
-    m_queue.push_back(bytes);
-  }
-
-  void close() override
-  {
-    m_queue.clear();
-    m_inputShutdown = true;
-  }
-
-  uint32_t read(void *buffer, uint32_t n) override
-  {
-    if (m_inputShutdown || m_queue.empty() || n == 0) {
-      return 0;
-    }
-
-    auto &front = m_queue.front();
-    const size_t take = std::min(static_cast<size_t>(n), front.size());
-    if (buffer != nullptr) {
-      std::memcpy(buffer, front.data(), take);
-    }
-
-    front.erase(0, take);
-    if (front.empty()) {
-      m_queue.pop_front();
-    }
-
-    return static_cast<uint32_t>(take);
-  }
-
-  void write(const void *, uint32_t) override
-  {
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-    close();
-  }
-
-  void shutdownOutput() override
-  {
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<MemoryStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return !m_inputShutdown && !m_queue.empty();
-  }
-
-  uint32_t getSize() const override
-  {
-    size_t total = 0;
-    for (const auto &chunk : m_queue) {
-      total += chunk.size();
-    }
-    return static_cast<uint32_t>(std::min<size_t>(total, UINT32_MAX));
-  }
-
-private:
-  std::deque<std::string> m_queue;
-  bool m_inputShutdown = false;
-};
-
-class BufferWriteStream : public synergy::IStream
-{
-public:
-  const std::string &str() const
-  {
-    return m_buffer;
-  }
-
-  void close() override
-  {
-    m_outputShutdown = true;
-  }
-
-  uint32_t read(void *, uint32_t) override
-  {
-    return 0;
-  }
-
-  void write(const void *buffer, uint32_t n) override
-  {
-    if (!m_outputShutdown && n != 0) {
-      m_buffer.append(static_cast<const char *>(buffer), n);
-    }
-  }
-
-  void flush() override
-  {
-  }
-
-  void shutdownInput() override
-  {
-  }
-
-  void shutdownOutput() override
-  {
-    m_outputShutdown = true;
-  }
-
-  void *getEventTarget() const override
-  {
-    return const_cast<BufferWriteStream *>(this);
-  }
-
-  bool isReady() const override
-  {
-    return false;
-  }
-
-  uint32_t getSize() const override
-  {
-    return 0;
-  }
-
-private:
-  std::string m_buffer;
-  bool m_outputShutdown = false;
-};
 
 std::string encodeClipboardMsg(ClipboardID id, uint32_t seq, uint8_t mark, const std::string &data)
 {

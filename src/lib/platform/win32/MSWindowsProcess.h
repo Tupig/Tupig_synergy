@@ -28,9 +28,6 @@ public:
   BOOL startAsUser(HANDLE userToken, LPSECURITY_ATTRIBUTES sa);
   void shutdown(int timeout = kDefaultShutdownTimeout);
   DWORD waitForExit();
-  void createPipes();
-  std::wstring readStdOutput();
-  std::wstring readStdError();
 
   PROCESS_INFORMATION info() const
   {
@@ -47,13 +44,9 @@ public:
 private:
   void setStartupInfo(STARTUPINFO &si);
 
-  static std::wstring readOutput(HANDLE handle);
-
   std::wstring m_command;
   HANDLE m_stdOutput;
   HANDLE m_stdError;
-  HANDLE m_outputPipe = nullptr;
-  HANDLE m_errorPipe = nullptr;
   PROCESS_INFORMATION m_info;
   BOOL m_createProcessResult = FALSE;
 };

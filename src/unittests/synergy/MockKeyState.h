@@ -48,25 +48,17 @@ public:
   }
   void pollPressedKeys(KeyButtonSet &pressedKeys) const override
   {
-    pressedKeys.insert(1);
-  }
-  void fakeKeyDown(KeyID id, KeyModifierMask, KeyButton, const std::string &) override
-  {
-    m_key.m_button = id;
+    pressedKeys = m_polledKeys;
   }
 
-  bool isKeyDown(KeyButton id) const override
+  //! Keys reported as physically held down by the next pollPressedKeys().
+  void setPolledKeys(KeyButtonSet keys)
   {
-    return m_key.m_button == id;
-  }
-
-  void updateKeyState() override
-  {
-    // do Nothing
+    m_polledKeys = std::move(keys);
   }
 
 private:
-  synergy::KeyMap::KeyItem m_key;
+  KeyButtonSet m_polledKeys;
 };
 
 using KeyID = uint32_t;

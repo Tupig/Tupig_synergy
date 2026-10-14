@@ -95,6 +95,7 @@ MSWindowsScreen::MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *eve
   assert(s_screen == nullptr);
 
   s_screen = this;
+  bool oleInitialized = false;
   try {
     if (m_isPrimary && m_useHooks) {
       m_hook.loadLibrary();
@@ -120,7 +121,7 @@ MSWindowsScreen::MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *eve
       m_powerManager.disableSleep();
     }
 
-    OleInitialize(0);
+    oleInitialized = SUCCEEDED(OleInitialize(0));
 
     // Separate drop window: the main window is 1x1 and unsuitable as an OLE
     // target. RegisterDragDrop requires OleInitialize first.
@@ -144,6 +145,9 @@ MSWindowsScreen::MSWindowsScreen(bool isPrimary, bool useHooks, IEventQueue *eve
     }
     destroyWindow(m_dropWindow);
     m_dropWindow = nullptr;
+    if (oleInitialized) {
+      OleUninitialize();
+    }
     delete m_keyState;
     delete m_desks;
     delete m_screensaver;

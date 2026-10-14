@@ -393,13 +393,19 @@ void ArchDaemonWindows::start(const QString &name)
   SC_HANDLE service = OpenService(mgr, name.toStdWString().c_str(), SERVICE_START);
 
   if (service == nullptr) {
+    const auto err = GetLastError();
     CloseServiceHandle(mgr);
-    throw ArchDaemonFailedException(windowsErrorToString(GetLastError()));
+    throw ArchDaemonFailedException(windowsErrorToString(err));
   }
 
   // start the service
-  if (!StartService(service, 0, nullptr)) {
-    throw ArchDaemonFailedException(windowsErrorToString(GetLastError()));
+  const auto started = StartService(service, 0, nullptr);
+  // capture the error before closing handles, which can overwrite the last-error slot
+  const auto err = started ? ERROR_SUCCESS : GetLastError();
+  CloseServiceHandle(service);
+  CloseServiceHandle(mgr);
+  if (!started) {
+    throw ArchDaemonFailedException(windowsErrorToString(err));
   }
 }
 
@@ -415,16 +421,18 @@ void ArchDaemonWindows::stop(const QString &name)
   SC_HANDLE service = OpenService(mgr, name.toStdWString().c_str(), SERVICE_STOP | SERVICE_QUERY_STATUS);
 
   if (service == nullptr) {
+    const auto err = GetLastError();
     CloseServiceHandle(mgr);
-    throw ArchDaemonFailedException(windowsErrorToString(GetLastError()));
+    throw ArchDaemonFailedException(windowsErrorToString(err));
   }
 
   // ask the service to stop, asynchronously
   SERVICE_STATUS ss;
-  if (!ControlService(service, SERVICE_CONTROL_STOP, &ss)) {
-    DWORD dwErrCode = GetLastError();
-    if (dwErrCode != ERROR_SERVICE_NOT_ACTIVE) {
-      throw ArchDaemonFailedException(windowsErrorToString(GetLastError()));
-    }
+  const auto asked = ControlService(service, SERVICE_CONTROL_STOP, &ss);
+  const auto err = asked ? ERROR_SUCCESS : GetLastError();
+  CloseServiceHandle(service);
+  CloseServiceHandle(mgr);
+  if (!asked && err != ERROR_SERVICE_NOT_ACTIVE) {
+    throw ArchDaemonFailedException(windowsErrorToString(err));
   }
 }

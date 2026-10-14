@@ -48,9 +48,11 @@ void QtSocketFactoryTests::initTestCase()
   arch.init();
 #endif
 
-  const QString dir = QDir::tempPath() + "/synergy-qt-transport-tests";
-  QDir().mkpath(dir);
-  m_certPath = dir + "/test-cert.pem";
+  // Per-process directory so two builds or ctest instances on the same
+  // machine do not share certificates and settings.
+  m_testDir = QDir::tempPath() + QString("/synergy-qt-transport-tests-%1").arg(QCoreApplication::applicationPid());
+  QDir().mkpath(m_testDir);
+  m_certPath = m_testDir + "/test-cert.pem";
   synergy::generatePemSelfSignedCert(m_certPath, kMinimumRsaBits);
   QVERIFY(QFile::exists(m_certPath));
 
@@ -62,8 +64,8 @@ void QtSocketFactoryTests::initTestCase()
   QVERIFY(marker.open(QIODevice::WriteOnly));
   marker.close();
 
-  Settings::setSettingsFile(dir + "/test-settings.conf");
-  Settings::setStateFile(dir + "/test-state.conf");
+  Settings::setSettingsFile(m_testDir + "/test-settings.conf");
+  Settings::setStateFile(m_testDir + "/test-state.conf");
   Settings::setValue(Settings::Security::Certificate, m_certPath);
 }
 
@@ -71,7 +73,7 @@ void QtSocketFactoryTests::cleanupTestCase()
 {
   QFile::remove(m_markerFile);
   QDir(QFileInfo(m_markerFile).absolutePath()).rmdir(".");
-  QDir(QDir::tempPath() + "/synergy-qt-transport-tests").removeRecursively();
+  QDir(m_testDir).removeRecursively();
 }
 
 void QtSocketFactoryTests::init()
@@ -209,11 +211,15 @@ void QtSocketFactoryTests::tlsRejectsUntrustedServer()
   auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
   bool clientConnected = false;
   bool connectFailed = false;
+  QString failureReason;
   m_events->addHandler(synergy::EventTypes::DataSocketSecureConnected, client->getEventTarget(), [&](const auto &) {
     clientConnected = true;
   });
-  m_events->addHandler(synergy::EventTypes::DataSocketConnectionFailed, client->getEventTarget(), [&](const auto &) {
+  m_events->addHandler(synergy::EventTypes::DataSocketConnectionFailed, client->getEventTarget(), [&](const auto &e) {
     connectFailed = true;
+    if (const auto *info = static_cast<IDataSocket::ConnectionFailedInfo *>(e.getData()); info != nullptr) {
+      failureReason = QString::fromStdString(info->m_what);
+    }
   });
 
   client->connect(NetworkAddress("127.0.0.1", port));
@@ -221,8 +227,128 @@ void QtSocketFactoryTests::tlsRejectsUntrustedServer()
   QVERIFY(pump([&] { return connectFailed || clientConnected; }, 20000));
   QVERIFY(connectFailed);
   QVERIFY(!clientConnected);
+  // the failure must come from the fingerprint gate, not from any other
+  // connection error (port, handshake, etc.)
+  QVERIFY2(failureReason.contains(QStringLiteral("fingerprint")), qPrintable(failureReason));
   // (serverAccepted is not asserted here: when the client aborts right after
   // the handshake, QSslServer may never surface the connection at all.)
+}
+
+void QtSocketFactoryTests::tlsRejectsWrongFingerprint()
+{
+  QtSocketFactory factory(m_events);
+
+  // Trust a fingerprint that does not belong to the server certificate.
+  FingerprintDatabase db;
+  QByteArray bogus(32, '\0');
+  bogus[0] = '\x01';
+  db.addTrusted({QCryptographicHash::Sha256, bogus});
+  const QString dbPath = Settings::tlsTrustedServersDb();
+  QDir().mkpath(QFileInfo(dbPath).absolutePath());
+  QVERIFY(db.write(dbPath));
+
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
+  QVERIFY(qtListener != nullptr);
+
+  std::unique_ptr<IDataSocket> serverSocket;
+  m_events->addHandler(synergy::EventTypes::ListenSocketConnecting, listener->getEventTarget(), [&](const auto &) {
+    if (!serverSocket) {
+      serverSocket = listener->accept();
+    }
+  });
+
+  listener->bind(NetworkAddress("127.0.0.1", 0));
+  const quint16 port = qtListener->serverPort();
+  QVERIFY(port != 0);
+
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  bool clientConnected = false;
+  bool connectFailed = false;
+  QString failureReason;
+  m_events->addHandler(synergy::EventTypes::DataSocketSecureConnected, client->getEventTarget(), [&](const auto &) {
+    clientConnected = true;
+  });
+  m_events->addHandler(synergy::EventTypes::DataSocketConnectionFailed, client->getEventTarget(), [&](const auto &e) {
+    connectFailed = true;
+    if (const auto *info = static_cast<IDataSocket::ConnectionFailedInfo *>(e.getData()); info != nullptr) {
+      failureReason = QString::fromStdString(info->m_what);
+    }
+  });
+
+  client->connect(NetworkAddress("127.0.0.1", port));
+
+  QVERIFY(pump([&] { return connectFailed || clientConnected; }, 20000));
+  QVERIFY(connectFailed);
+  QVERIFY(!clientConnected);
+  QVERIFY2(failureReason.contains(QStringLiteral("fingerprint")), qPrintable(failureReason));
+}
+
+void QtSocketFactoryTests::tlsRejectsSmallRsaKey()
+{
+  QtSocketFactory factory(m_events);
+
+  // The server presents a 1024-bit RSA certificate; the client must reject it
+  // even though its fingerprint is trusted.
+  const QString smallCertPath = QFileInfo(m_certPath).absolutePath() + "/small-cert.pem";
+  if (!QFile::exists(smallCertPath)) {
+    synergy::generatePemSelfSignedCert(smallCertPath, 1024);
+  }
+  const QList<QSslCertificate> smallCerts = QSslCertificate::fromPath(smallCertPath);
+  QVERIFY(!smallCerts.isEmpty());
+  FingerprintDatabase db;
+  db.addTrusted({QCryptographicHash::Sha256, smallCerts.first().digest(QCryptographicHash::Sha256)});
+  const QString dbPath = Settings::tlsTrustedServersDb();
+  QDir().mkpath(QFileInfo(dbPath).absolutePath());
+  QVERIFY(db.write(dbPath));
+
+  const auto previousCert = Settings::value(Settings::Security::Certificate).toString();
+  Settings::setValue(Settings::Security::Certificate, smallCertPath);
+
+  auto listener = factory.createListen(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  auto *qtListener = dynamic_cast<QtListenSocket *>(listener.get());
+  QVERIFY(qtListener != nullptr);
+
+  std::unique_ptr<IDataSocket> serverSocket;
+  m_events->addHandler(synergy::EventTypes::ListenSocketConnecting, listener->getEventTarget(), [&](const auto &) {
+    if (!serverSocket) {
+      serverSocket = listener->accept();
+    }
+  });
+
+  listener->bind(NetworkAddress("127.0.0.1", 0));
+  const quint16 port = qtListener->serverPort();
+  QVERIFY(port != 0);
+
+  auto client = factory.create(IArchNetwork::AddressFamily::INet, SecurityLevel::Encrypted);
+  bool clientConnected = false;
+  bool connectFailed = false;
+  QString failureReason;
+  m_events->addHandler(synergy::EventTypes::DataSocketSecureConnected, client->getEventTarget(), [&](const auto &) {
+    clientConnected = true;
+  });
+  m_events->addHandler(synergy::EventTypes::DataSocketConnectionFailed, client->getEventTarget(), [&](const auto &e) {
+    connectFailed = true;
+    if (const auto *info = static_cast<IDataSocket::ConnectionFailedInfo *>(e.getData()); info != nullptr) {
+      failureReason = QString::fromStdString(info->m_what);
+    }
+  });
+
+  client->connect(NetworkAddress("127.0.0.1", port));
+
+  QVERIFY(pump([&] { return connectFailed || clientConnected; }, 20000));
+  QVERIFY(connectFailed);
+  QVERIFY(!clientConnected);
+  // On OpenSSL 3 with the system security level, a 1024-bit key is refused
+  // before the handshake, so accept either message; what matters is that the
+  // weak key never connects.
+  QVERIFY2(
+      failureReason.contains(QStringLiteral("RSA key too small")) ||
+          failureReason.contains(QStringLiteral("SSL Context")),
+      qPrintable(failureReason)
+  );
+
+  Settings::setValue(Settings::Security::Certificate, previousCert);
 }
 
 void QtSocketFactoryTests::tlsTrustedServerRoundTrip()

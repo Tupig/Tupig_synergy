@@ -14,6 +14,7 @@
 #include "common/Constants.h"
 
 #include <Psapi.h>
+#include <sddl.h>
 
 #include <array>
 #include <filesystem>
@@ -63,6 +64,40 @@ void ArchMiscWindows::init()
 {
   // stop windows system error dialogs from showing.
   SetErrorMode(SEM_FAILCRITICALERRORS);
+}
+
+HANDLE ArchMiscWindows::createProtectedGlobalEvent(
+    const std::wstring &name, BOOL manualReset, BOOL initialState, const wchar_t *sddl
+)
+{
+  PSECURITY_DESCRIPTOR descriptor = nullptr;
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl, SDDL_REVISION_1, &descriptor, nullptr)) {
+    return nullptr;
+  }
+
+  SECURITY_ATTRIBUTES attributes{};
+  attributes.nLength = sizeof(attributes);
+  attributes.lpSecurityDescriptor = descriptor;
+  attributes.bInheritHandle = FALSE;
+
+  const HANDLE event = CreateEventW(&attributes, manualReset, initialState, name.c_str());
+  const auto error = GetLastError();
+  LocalFree(descriptor);
+
+  if (event == nullptr) {
+    return nullptr;
+  }
+
+  // an object with this name already exists: a low-privilege process may have
+  // pre-created it, in which case this handle refers to an attacker-controlled
+  // object. Refuse it so the caller can retry or fail visibly.
+  if (error == ERROR_ALREADY_EXISTS) {
+    CloseHandle(event);
+    SetLastError(ERROR_ALREADY_EXISTS);
+    return nullptr;
+  }
+
+  return event;
 }
 
 HKEY ArchMiscWindows::openKey(HKEY key, const TCHAR *keyName)
@@ -352,21 +387,25 @@ BOOL WINAPI ArchMiscWindows::getProcessEntry(PROCESSENTRY32 &entry, DWORD proces
   BOOL gotEntry = Process32First(snapshot, &entry);
   if (!gotEntry) {
     LOG_ERR("could not get first process entry (error: %i)", GetLastError());
+    CloseHandle(snapshot);
     return FALSE;
   }
 
+  BOOL found = FALSE;
   while (gotEntry) {
 
     if (entry.th32ProcessID == processID) {
       // found current process
-      return TRUE;
+      found = TRUE;
+      break;
     }
 
     // now move on to the next entry (when we reach end, loop will stop)
     gotEntry = Process32Next(snapshot, &entry);
   }
 
-  return FALSE;
+  CloseHandle(snapshot);
+  return found;
 }
 
 HINSTANCE
@@ -527,15 +566,13 @@ bool ArchMiscWindows::isProcessElevated()
   }
 
   TOKEN_ELEVATION elevation;
-
-  try {
-    DWORD dwSize = sizeof(TOKEN_ELEVATION);
-    if (!GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &dwSize)) {
-      throw std::runtime_error(windowsErrorToString(GetLastError()));
-    }
-  } catch (...) {
-    CloseHandle(hToken);
-    throw;
+  DWORD dwSize = sizeof(TOKEN_ELEVATION);
+  const auto infoOk = GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &dwSize);
+  // capture the error before CloseHandle, which can overwrite the last-error slot
+  const auto err = infoOk ? ERROR_SUCCESS : GetLastError();
+  CloseHandle(hToken);
+  if (!infoOk) {
+    throw std::runtime_error(windowsErrorToString(err));
   }
 
   const auto isElevated = elevation.TokenIsElevated;

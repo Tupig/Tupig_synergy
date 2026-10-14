@@ -8,6 +8,7 @@
 
 #include "common/RelativePath.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 
@@ -51,8 +52,11 @@ void RelativePathTests::relativeToDirectoryRejectsPathsOutside()
 
 void RelativePathTests::canonicalFileMustStayInsideDirectory()
 {
-  const auto root = QDir(QDir::tempPath()).filePath(QStringLiteral("synergy-canonical-root"));
-  const auto sibling = QDir(QDir::tempPath()).filePath(QStringLiteral("synergy-canonical-root-outside"));
+  // unique root names so parallel test instances on one machine do not clash
+  const auto uniqueSuffix = QString::number(QCoreApplication::applicationPid());
+  const auto root = QDir(QDir::tempPath()).filePath(QStringLiteral("synergy-canonical-root-%1").arg(uniqueSuffix));
+  const auto sibling =
+      QDir(QDir::tempPath()).filePath(QStringLiteral("synergy-canonical-root-%1-outside").arg(uniqueSuffix));
   QDir().mkpath(root);
   QDir().mkpath(sibling);
 

@@ -551,9 +551,15 @@ const char *Config::dirName(Direction dir)
 {
   static const char *s_name[] = {"left", "right", "up", "down"};
 
-  assert(dir >= Direction::FirstDirection && dir <= Direction::LastDirection);
+  const auto index = static_cast<int>(dir) - static_cast<int>(Direction::FirstDirection);
+  assert(index >= 0 && index < static_cast<int>(sizeof(s_name) / sizeof(s_name[0])));
 
-  return s_name[static_cast<int>(dir) - static_cast<int>(Direction::FirstDirection)];
+  // defensive: a release build has no assert, and a bad index would read past the table
+  if (index < 0 || index >= static_cast<int>(sizeof(s_name) / sizeof(s_name[0]))) {
+    return "invalid";
+  }
+
+  return s_name[index];
 }
 
 InputFilter *Config::getInputFilter()

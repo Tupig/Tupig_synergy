@@ -114,8 +114,10 @@ void ProtocolUtil::vwritef(synergy::IStream *stream, const char *fmt, uint32_t s
     return;
   }
 
-  // fill buffer
-  std::vector<uint8_t> Buffer;
+  // fill buffer; reuse a thread-local buffer because protocol writes are on
+  // the input hot path and a fresh vector costs a heap allocation per message
+  static thread_local std::vector<uint8_t> Buffer;
+  Buffer.clear();
   writef(Buffer, fmt, args);
 
   try {

@@ -13,6 +13,7 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSystemTrayIcon>
+#include <QTimer>
 
 #include "common/Constants.h"
 #include "config/ServerConfig.h"
@@ -137,6 +138,7 @@ private:
   void daemonIpcClientConnectionFailed();
   void toggleCanRunCore(bool enableButtons);
   void remoteHostChanged(const QString &newRemoteHost);
+  void saveRemoteHost();
   void updateIpLabel(const QStringList &addresses);
   void updateTimeoutDelay(int newDelay);
 
@@ -154,7 +156,16 @@ private:
    */
   bool generateCertificate();
 
+  //! Generate the tls certificate on a worker thread so key generation does
+  //! not freeze the GUI. The auto start of the core waits for completion.
+  void generateCertificateAsync();
+
   Fingerprint m_fingerprint;
+
+  //! single-shot debounce for the remote host settings write
+  QTimer m_remoteHostSaveTimer;
+  //! false while the tls certificate is being generated on a worker thread
+  bool m_certificateReady = true;
 
   void serverClientsChanged(const QStringList &clients);
 

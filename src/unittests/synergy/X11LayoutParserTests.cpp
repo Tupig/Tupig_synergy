@@ -60,6 +60,11 @@ void X11LayoutParserTests::initTestCase()
   badEvdevFile3.close();
 }
 
+void X11LayoutParserTests::cleanupTestCase()
+{
+  QDir(kTestDir).removeRecursively();
+}
+
 void X11LayoutParserTests::xmlParse()
 {
   const QString badPath = QStringLiteral("%1/%2").arg(kTestDir, "notafile");

@@ -95,8 +95,11 @@ BOOL MSWindowsProcess::startAsUser(HANDLE userToken, LPSECURITY_ATTRIBUTES sa)
 
   LPVOID environment;
   if (!CreateEnvironmentBlock(&environment, userToken, FALSE)) {
+    const DWORD error = GetLastError();
     LOG_ERR("could not create environment block");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
+    // this function takes ownership of the token on every path
+    CloseHandle(userToken);
+    throw std::runtime_error(windowsErrorToString(error));
   }
 
   ZeroMemory(&m_info, sizeof(PROCESS_INFORMATION));
@@ -181,7 +184,7 @@ void MSWindowsProcess::shutdown(HANDLE handle, DWORD pid, int timeout)
     LOG_DEBUG("could not send close event to process");
   }
 
-  DWORD exitCode;
+  DWORD exitCode = 0;
   if (GetExitCodeProcess(handle, &exitCode)) {
     if (exitCode == STILL_ACTIVE) {
       LOG_DEBUG("process %d is still running", pid);
@@ -277,71 +280,6 @@ bool MSWindowsProcess::startDetachedAsSessionUser(
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
   return true;
-}
-
-void MSWindowsProcess::createPipes()
-{
-  SECURITY_ATTRIBUTES saAttr;
-  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-  saAttr.bInheritHandle = TRUE;
-  saAttr.lpSecurityDescriptor = nullptr;
-
-  if (!CreatePipe(&m_outputPipe, &m_stdOutput, &saAttr, 0)) {
-    LOG_ERR("could not create output pipe");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-
-  if (!CreatePipe(&m_errorPipe, &m_stdError, &saAttr, 0)) {
-    LOG_ERR("could not create error pipe");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-
-  // Set the pipes to non-blocking mode
-  DWORD mode = PIPE_NOWAIT;
-  if (!SetNamedPipeHandleState(m_outputPipe, &mode, nullptr, nullptr)) {
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-
-  if (!SetNamedPipeHandleState(m_errorPipe, &mode, nullptr, nullptr)) {
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-}
-
-std::wstring MSWindowsProcess::readStdOutput()
-{
-  return readOutput(m_outputPipe);
-}
-
-std::wstring MSWindowsProcess::readStdError()
-{
-  return readOutput(m_errorPipe);
-}
-
-std::wstring MSWindowsProcess::readOutput(HANDLE handle)
-{
-  const auto kOutputBufferSize = 4096;
-  wchar_t buffer[kOutputBufferSize]; // NOSONAR -- Idiomatic Win32
-
-  DWORD bytesRead;
-  DWORD totalBytesAvail;
-  DWORD bytesLeftThisMessage;
-
-  // Check if there is data available in the pipe, which prevents `ReadFile` from freezing execution.
-  if (!PeekNamedPipe(handle, nullptr, 0, nullptr, &totalBytesAvail, &bytesLeftThisMessage)) {
-    LOG_ERR("could not peek into pipe");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-
-  if (totalBytesAvail == 0) {
-    return {};
-  }
-
-  if (!ReadFile(handle, buffer, kOutputBufferSize, &bytesRead, nullptr)) {
-    LOG_ERR("could not read from pipe");
-    throw std::runtime_error(windowsErrorToString(GetLastError()));
-  }
-
-  return std::wstring(buffer, bytesRead);
 }
 
 } // namespace synergy::platform

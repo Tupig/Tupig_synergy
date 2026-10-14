@@ -524,8 +524,8 @@ void SettingsDialog::resetToDefault()
   ui->lineCommandExit->setText(Settings::defaultValue(Settings::Core::ScreenExitCommand).toString());
 
   const auto autoHide = Settings::defaultValue(Settings::Gui::Autohide).toBool();
-  ui->rbCloseToTray->setChecked(autoHide);
-  ui->rbExitOnClose->setChecked(!autoHide);
+  ui->rbAutoHide->setChecked(autoHide);
+  ui->rbShowOnStart->setChecked(!autoHide);
 
   const auto closeToTray = Settings::defaultValue(Settings::Gui::CloseToTray).toBool();
   ui->rbCloseToTray->setChecked(closeToTray);

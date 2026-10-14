@@ -140,6 +140,8 @@ private:
   bool m_elevateProcess = false;
   MSWindowsSession m_session;
   int m_startFailures = 0;
+  //! when the current process last transitioned to the running state
+  double m_lastStartTime = 0.0;
   FileLogOutputter &m_fileLogOutputter;
   bool m_foreground = false;
   std::wstring m_activeDesktop = {};

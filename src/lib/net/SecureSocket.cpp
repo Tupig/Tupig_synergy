@@ -417,6 +417,10 @@ void SecureSocket::initContext(bool server)
   // create new context from method
   const auto *m = const_cast<SSL_METHOD *>(method);
   m_ssl->m_context = SSL_CTX_new(m);
+  if (m_ssl->m_context == nullptr) {
+    SslLogger::logError();
+    throw SocketException(QStringLiteral("SSL_CTX_new failed"));
+  }
 
   // Prevent the usage of of all version prior to TLSv1.2 as they are known to
   // be vulnerable
@@ -424,10 +428,6 @@ void SecureSocket::initContext(bool server)
       m_ssl->m_context,
       SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_IGNORE_UNEXPECTED_EOF
   );
-
-  if (m_ssl->m_context == nullptr) {
-    SslLogger::logError();
-  }
 
   if (tlsRequiresPeerCertificate(m_securityLevel)) {
     // Request a peer certificate. set_cert_verify_callback replaces

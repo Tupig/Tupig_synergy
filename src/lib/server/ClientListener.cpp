@@ -225,10 +225,18 @@ void ClientListener::handleClientDisconnected(ClientProxy *client)
       m_events->removeHandler(EventTypes::ClientProxyDisconnected, client);
 
       // pull out the socket before deleting the client so
-      // we know which socket we no longer need
-      auto *socket = static_cast<IDataSocket *>(client->getStream());
+      // we know which socket we no longer need; the stream is the
+      // packet filter wrapping the socket, so unwrap it the same way
+      // the unknown-client failure path does
+      auto *filter = dynamic_cast<StreamFilter *>(client->getStream());
+      IDataSocket *socket = nullptr;
+      if (filter && !filter->adoptedStream()) {
+        socket = dynamic_cast<IDataSocket *>(filter->getStream());
+      }
       delete client;
-      removeClientSocket(socket);
+      if (socket) {
+        removeClientSocket(socket);
+      }
 
       break;
     }

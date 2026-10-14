@@ -353,6 +353,13 @@ private:
   void handleKeyboardBroadcastEvent(const Event &event);
   void handleLockCursorToScreenEvent(const Event &event);
 
+  //! Cached current keyboard layout language code.
+  /*!
+  Querying the layout is expensive on some platforms (X11 opens a display
+  connection per call), so the result is reused for a short interval.
+  */
+  const std::string &getCurrentLanguageCached();
+
   // event processing
   void onClipboardChanged(const BaseClientProxy *sender, ClipboardID id, uint32_t seqNum);
   void onScreensaver(bool activated);
@@ -407,9 +414,12 @@ private:
 
   // the client with focus
   BaseClientProxy *m_active = nullptr;
-
   // current configuration
   ServerConfig *m_config = nullptr;
+
+  // cached layout language code, refreshed when the cache interval expires
+  std::string m_languageCodeCache;
+  double m_languageCodeCachedAt = -1.0;
 
   // input filter (from m_config);
   InputFilter *m_inputFilter = nullptr;

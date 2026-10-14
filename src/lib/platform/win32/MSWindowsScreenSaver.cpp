@@ -148,8 +148,10 @@ void MSWindowsScreenSaver::deactivate()
 
 bool MSWindowsScreenSaver::isActive() const
 {
-  BOOL running;
-  SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &running, 0);
+  BOOL running = FALSE;
+  if (!SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &running, 0)) {
+    return false;
+  }
   return (running != FALSE);
 }
 
@@ -212,8 +214,11 @@ void MSWindowsScreenSaver::watchDesktopThread(const void *)
     // wait a bit
     Arch::sleep(0.2);
 
-    BOOL running;
-    SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &running, 0);
+    BOOL running = FALSE;
+    if (!SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &running, 0)) {
+      // unknown state; assume the screen saver is still running and keep waiting
+      continue;
+    }
     if (running) {
       continue;
     }

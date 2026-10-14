@@ -38,7 +38,7 @@ AppUtilWindows::AppUtilWindows(IEventQueue *events) : m_events(events), m_exitMo
   // where the dtor is called just before the event loop starts.
   LOG_DEBUG("waiting for event thread to start");
   std::unique_lock lock(m_eventThreadStartedMutex);
-  m_eventThreadStartedCond.wait(lock, [this] { return m_eventThreadRunning; });
+  m_eventThreadStartedCond.wait(lock, [this] { return m_eventThreadRunning.load(); });
   LOG_DEBUG("event thread started");
 }
 
@@ -184,7 +184,13 @@ HKL AppUtilWindows::getCurrentKeyboardLayout() const
 
 void AppUtilWindows::eventLoop()
 {
-  HANDLE hCloseEvent = CreateEvent(nullptr, TRUE, FALSE, kCloseEventName);
+  // The daemon opens this with EVENT_MODIFY_STATE to stop the core, and the
+  // desktop core itself may reopen it, so SYSTEM, Administrators, and the
+  // creating (owning) process are granted full access; everyone else is
+  // denied, which also blocks low-privilege pre-creation hijacks.
+  HANDLE hCloseEvent = ArchMiscWindows::createProtectedGlobalEvent(
+      kCloseEventName, TRUE, FALSE, L"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GA;;;OW)"
+  );
   if (!hCloseEvent) {
     LOG_CRIT("failed to create event for windows event loop");
     throw std::runtime_error(windowsErrorToString(GetLastError()));

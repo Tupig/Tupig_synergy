@@ -153,10 +153,8 @@ void ScreenSetupView::startDrag(Qt::DropActions)
 void ScreenSetupView::initViewItemOption(QStyleOptionViewItem *option) const
 {
   // HACK make a basic widget and init from it
-  auto w = new QWidget();
-  option->initFrom(w);
-  w->deleteLater();
-  delete w;
+  QWidget w;
+  option->initFrom(&w);
 
   option->decorationSize = QSize(96, 96);
   option->showDecorationSelected = true;
