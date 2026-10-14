@@ -421,6 +421,13 @@ void CoreProcess::start(std::optional<ProcessMode> processModeOption)
   setConnectionState(ConnectionState::Connecting);
 
   if (processMode == ProcessMode::Desktop) {
+    // a previous run may have left a finished QProcess behind; drop it so
+    // retry cycles do not accumulate process objects and signal connections
+    if (m_process != nullptr) {
+      m_process->disconnect(this);
+      m_process->deleteLater();
+      m_process = nullptr;
+    }
     m_process = new QProcess(this);
     connect(
         m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &CoreProcess::onProcessFinished,
