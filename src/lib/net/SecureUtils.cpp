@@ -97,16 +97,28 @@ void generatePemSelfSignedCert(const QString &path, int keyLength)
   }
   auto certFree = finally([cert]() { X509_free(cert); });
 
-  ASN1_INTEGER_set(X509_get_serialNumber(cert), 1);
-  X509_gmtime_adj(X509_get_notBefore(cert), 0);
-  X509_gmtime_adj(X509_get_notAfter(cert), expirationDays * 24 * 3600);
-  X509_set_pubkey(cert, privateKey);
+  const auto ensure = [](bool ok, const char *what) {
+    if (!ok) {
+      throw std::runtime_error(std::string("certificate generation failed: ") + what);
+    }
+  };
+
+  ensure(ASN1_INTEGER_set(X509_get_serialNumber(cert), 1) == 1, "could not set serial number");
+  ensure(X509_gmtime_adj(X509_get_notBefore(cert), 0) != nullptr, "could not set validity start");
+  ensure(X509_gmtime_adj(X509_get_notAfter(cert), expirationDays * 24 * 3600) != nullptr, "could not set validity end");
+  ensure(X509_set_pubkey(cert, privateKey) == 1, "could not set public key");
 
   auto *name = X509_get_subject_name(cert);
-  X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(kAppName), -1, -1, 0);
-  X509_set_issuer_name(cert, name);
+  ensure(name != nullptr, "could not get subject name");
+  ensure(
+      X509_NAME_add_entry_by_txt(
+          name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(kAppName), -1, -1, 0
+      ) == 1,
+      "could not set common name"
+  );
+  ensure(X509_set_issuer_name(cert, name) == 1, "could not set issuer name");
 
-  X509_sign(cert, privateKey, EVP_sha256());
+  ensure(X509_sign(cert, privateKey, EVP_sha256()) > 0, "could not sign certificate");
   const QFile file(path);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
   const std::filesystem::path fsPath = file.filesystemFileName();
@@ -130,8 +142,10 @@ void generatePemSelfSignedCert(const QString &path, int keyLength)
 
   {
     auto fileClose = finally([fp]() { std::fclose(fp); });
-    PEM_write_PrivateKey(fp, privateKey, nullptr, nullptr, 0, nullptr, nullptr);
-    PEM_write_X509(fp, cert);
+    ensure(
+        PEM_write_PrivateKey(fp, privateKey, nullptr, nullptr, 0, nullptr, nullptr) == 1, "could not write private key"
+    );
+    ensure(PEM_write_X509(fp, cert) == 1, "could not write certificate");
   }
 
 #if defined(Q_OS_WIN)
